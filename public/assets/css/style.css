@@ -1,0 +1,111 @@
+.required-label {
+	color: red;
+	}
+	.size-label {
+		font-size: .857rem;
+	}
+	.desain {
+		cursor: pointer;
+	}
+	.desain:hover {
+		border: 1px solid #48ABF7;
+	}
+	.switch {
+    display: inline-block;
+    /*width: 60px;*/
+    width: 3.1rem;
+    /*height: 34px;*/
+    height: 1.5rem;
+    position: relative;
+  }
+
+	.toggle-thumb {
+    position: absolute;
+    top: 0;
+    left:0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #e2e2e2;
+    border-radius: 40px;
+    cursor: pointer;
+    padding-left: 5px;
+    padding-right:7px;
+  }
+  .toggle-thumb i {
+  	font-size: 13px;
+  }
+  .toggle-thumb:before {
+    content: "";
+    height: 1rem;
+    width: 1rem;
+    position: absolute;
+    left: 4px;
+    bottom: 4px;
+    border-radius: 50%;
+    box-shadow: -1px 2px 3px 0 rgb(34 41 47 / 20%);
+    background-color: #fff;
+    transition: all .15s ease-out;
+    cursor: pointer;
+    user-select: none;
+  }
+  .checkbox {
+    opacity: 0;
+    width: 0;
+    height: 0;
+  }
+  .checkbox:checked + .toggle-thumb:before {
+    transform: translateX(26px);
+  }
+  .checkbox:checked + .toggle-thumb {
+    background: #f08490;
+    transition: all .2s ease-out;
+  }
+  .checkbox:checked + .toggle-thumb i {
+    color: white;
+  }
+.breadcrumb {
+    padding:0rem;
+    margin-bottom: 1rem;
+    background-color: transparent; 
+    border-radius: 0;
+}
+.text-pink-800 {
+	color: #f08490!important;
+}
+.btn-play {
+	background:#f08490;
+  padding: 10px 14px;
+  height: 40px;
+  width: 40px;
+}
+.form-label {
+	font-weight: bold;
+	font-size: 15px;
+}
+.sidebar .nav-item .collapse .collapse-inner .collapse-item.active, .sidebar .nav-item .collapsing .collapse-inner .collapse-item.active {
+    color: #e38e8e;
+}
+/*Animation*/
+.transisi {
+  background-color: red !important;
+}
+.p-10 {
+  padding: 10px;
+}
+@media (min-width: 768px) {
+  .sidebar .nav-item .nav-link {
+      padding: 9px 12px;
+  }
+  .sidebar .nav-item:hover{
+    color: #ffffff;
+    text-decoration: none;
+    background: rgba(0, 0, 0, 0.15);
+  }
+  .sidebar-dark .nav-item.active .nav-link {
+    background: rgba(0, 0, 0, 0.15);
+  }
+  
+}

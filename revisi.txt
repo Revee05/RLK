@@ -1,0 +1,16 @@
+1. Karya ganti seniman (dan nambah foto seniman)
+2. Stok tambah keterangan buah
+3. Berat diganti gram
+4. Keterangan panjang, lebar, tingg: menngunakan milimeter
+5. master harga produk harga di admin tanpa titik, di home keluar titik, dan muncul notif alert
+6. Kodisi kurang Kondisi
+7. Kelengkapan karya [master data] :
+	- Bonus figura, sapu tangan, nanti dikeluarkan dibawah deskripsi 
+8. Harga diskon telegram, ketika diskon disini harga awal di coret
+9. asuransi ganti proteksi kerusakan (dipertanyakan)
+10. Galeri Kami. seperti kontak us tambah menu di samping lelang. dikirm sample di telegram
+11. ukuran banner ?
+
+Upgrade kedepane :
+Harga bisa sesuai IDR / USD
+Tambah bahasa inggris / multibahasa

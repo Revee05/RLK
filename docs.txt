@@ -1,0 +1,15 @@
+- commadn run
+- register send email
+- checkout
+- riwayat pesanan
+- xendit
+
+password mail :
+noreplay@rasanyalelangkarya.online
+email recovery
+apembakar@gmail.com
+password : l3l@ng2121
+
+
+Penting!
+https://laracasts.com/discuss/channels/lumen/can-i-run-queue-jobs-manually-without-run-artisan-queuelisten

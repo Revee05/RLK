@@ -1,0 +1,149 @@
+/* === [AWAL] CSS KUSTOM === */
+
+/* Memberi 'nafas' dan bayangan pada header */
+.header-nav {
+    padding-top: 1rem;
+    padding-bottom: 1rem;
+    background-color: #ffffff;
+    border-bottom: 1px solid #eee;
+    transition: all 0.3s ease-in-out;
+}
+
+/* Efek shadow saat di-scroll */
+.header-nav.scrolled {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    border-bottom: 1px solid transparent;
+}
+
+/* Styling Logo */
+.header-nav .navbar-brand img {
+    height: 40px; /* Atur tinggi logo */
+}
+
+/* Styling Link Menu Utama */
+.header-nav .navbar-nav .nav-link {
+    font-weight: 500;
+    color: #333;
+    text-transform: uppercase;
+    font-size: 0.9rem;
+    position: relative;
+    transition: all 0.3s ease;
+    margin: 0 0.5rem;
+}
+
+/* Efek hover pada link */
+.header-nav .navbar-nav .nav-link:hover {
+    color: #0d6efd; /* Warna biru primer Bootstrap */
+}
+
+/* Garis bawah untuk link aktif/hover */
+.header-nav .navbar-nav .nav-link::after {
+    content: '';
+    display: block;
+    width: 0;
+    height: 2px;
+    background: #0d6efd;
+    transition: width 0.3s ease;
+    position: absolute;
+    bottom: -5px;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+.header-nav .navbar-nav .nav-link:hover::after,
+.header-nav .navbar-nav .nav-link.active::after {
+    width: 70%;
+}
+
+/* Link aktif */
+.header-nav .navbar-nav .nav-link.active {
+    color: #0d6efd;
+    font-weight: 700;
+}
+
+/* Styling Kotak Pencarian */
+.header-nav .search-box {
+    border: 1px solid #ddd;
+    border-radius: 50px;
+    overflow: hidden;
+    display: flex;
+}
+.header-nav .search-box .form-control {
+    border: none;
+    box-shadow: none;
+    background: transparent;
+    font-size: 0.9rem;
+}
+.header-nav .search-box .btn {
+    background: transparent;
+    border: none;
+    color: #555;
+}
+.header-nav .search-box:focus-within {
+    border-color: #0d6efd;
+    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+}
+
+/* Styling Dropdown Akun */
+.header-nav .account-dropdown-toggle {
+    text-decoration: none;
+    color: #333;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    font-size: 0.9rem;
+    border: 1px solid #ddd;
+    padding: 0.5rem 1rem;
+    border-radius: 50px;
+    transition: all 0.3s ease;
+}
+.header-nav .account-dropdown-toggle:hover {
+    background-color: #f8f9fa;
+    border-color: #ccc;
+}
+.header-nav .account-dropdown-toggle i {
+    font-size: 1.1rem;
+    margin-right: 8px;
+    color: #555;
+}
+.header-nav .dropdown-menu {
+    border-radius: 0.75rem; /* Lebih bulat */
+    border: 1px solid #eee;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+    margin-top: 0.5rem !important;
+}
+.header-nav .dropdown-item {
+    font-size: 0.9rem;
+    padding: 0.5rem 1.5rem;
+}
+
+/* Penyesuaian Mobile */
+@media (max-width: 991.98px) {
+    .header-nav .navbar-nav {
+        text-align: center; /* Menu di tengah */
+        margin-top: 1rem;
+    }
+    .header-nav .navbar-nav .nav-link {
+         padding: 0.75rem 0;
+    }
+    .header-nav .d-flex-mobile {
+        flex-direction: column; /* Susun vertikal di mobile */
+        width: 100%;
+        gap: 1rem; /* Beri jarak */
+        margin-top: 1rem;
+    }
+    .header-nav .search-box {
+        width: 100%;
+    }
+    .header-nav .account-dropdown {
+        width: 100%;
+    }
+    .header-nav .account-dropdown .btn {
+        width: 100%;
+    }
+    .header-nav .dropdown-menu {
+        width: 100%;
+        text-align: center;
+    }
+}
+/* === [AKHIR] CSS KUSTOM === */

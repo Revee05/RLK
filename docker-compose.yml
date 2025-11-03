@@ -1,0 +1,61 @@
+version: "3.3"
+services:
+  app:
+    build:
+      args:
+        user: stock
+        uid: 1000
+      context: ./
+      dockerfile: Dockerfile
+    image: lelang
+    container_name: lelang-app
+    restart: unless-stopped
+    working_dir: /var/www/
+    volumes:
+      - ./:/var/www
+      # - ./docker-compose/uploads:/usr/local/etc/php/conf.d
+    networks:
+      - lelang
+
+  db:
+    image: mysql:5.7
+    container_name: lelang-db
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: ${DB_DATABASE}
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
+      MYSQL_ROOT_USER: ${DB_USERNAME}
+      SERVICE_TAGS: dev
+      SERVICE_NAME: mysql
+    volumes:
+      - ./docker-compose/mysql:/docker-entrypoint-initdb.d
+    networks:
+      - lelang
+
+  nginx:
+    image: nginx:alpine
+    container_name: lelang-nginx
+    restart: unless-stopped
+    ports:
+      - 8000:80
+    volumes:
+      - ./:/var/www
+      - ./docker-compose/nginx:/etc/nginx/conf.d/
+    networks:
+      - lelang
+
+  phpmyadmin:
+    image: phpmyadmin
+    container_name: lelang-phpmyadmin
+    restart: unless-stopped
+    ports:
+      - 8080:80
+    environment:
+      - PMA_ARBITRARY=1
+      - UPLOAD_LIMIT=64M
+    networks:
+      - lelang
+
+networks:
+  lelang:
+    driver: bridge
