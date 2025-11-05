@@ -109,3 +109,13 @@
   }
   
 }
+/* Logo header responsive */
+.logo-img {
+    max-width: 140px;
+    max-height: 60px;
+    width: auto;
+    height: auto;
+    display: block;
+    margin: 0 auto;
+    object-fit: contain;
+}

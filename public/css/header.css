@@ -1,0 +1,240 @@
+/* Header Container */
+#header {
+    background: #fff;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.28);
+    border-bottom: 1px solid #eaeaea;
+    font-family: 'Inter', Arial, sans-serif;
+}
+
+.header-nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    min-height: 70px;
+    padding: 0 32px;
+    gap: 24px;
+}
+
+/* Logo & Title */
+.logo-area {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+.logo-img {
+    max-width: 100px;
+    max-height: 48px;
+    width: auto;
+    height: auto;
+    object-fit: contain;
+}
+.logo-title {
+    font-family: 'Inter', Arial, sans-serif;
+    font-weight: 600;
+    font-size: 1.1rem;
+    color: #222;
+    line-height: 1.1;
+    margin-left: 2px;
+    letter-spacing: -0.5px;
+}
+
+/* Menu */
+.menu-area {
+    display: flex;
+    gap: 30px;
+    align-items: center;
+    justify-content: flex-end;
+    flex: 1;
+    padding-right: 40px;
+}
+
+/* Link */
+.menu-area a {
+    font-weight: 500;
+    color: #222 !important;
+    font-size: 1rem;
+    text-decoration: none;
+    padding: 6px 0;
+    border-radius: 6px;
+    position: relative;
+}
+
+/* Garis animasi */
+.menu-area a::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    bottom: 0px; /* jarak garis dari teks */
+    width: 0%;
+    height: 2px;
+    background: #222;
+    transition: width .25s ease;
+}
+
+/* Hover + Active */
+.menu-area a:hover::after,
+.menu-area a.active::after {
+    width: 100%;
+}
+
+
+/* Dropdown arrow for menu */
+.menu-area .dropdown-toggle::after {
+    margin-left: 6px;
+    vertical-align: middle;
+}
+
+/* Action (Login & Cart) */
+.header-action {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    /* border: 1px solid crimson; */
+}
+.btn-login {
+    background: #0a2342;
+    color: #fff !important;
+    font-weight: 400;
+    border-radius: 8px;
+    padding: 7px 22px;
+    border: none;
+    font-size: 1rem;
+    transition: background 0.2s;
+    text-decoration: none;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    display: inline-block;
+}
+.btn-login:hover {
+    background: #48bfc3;
+    color: #fff !important;
+}
+.cart-icon {
+    font-size: 1.6rem;
+    color: #222;
+    margin-left: 8px;
+    cursor: pointer;
+    transition: color 0.2s;
+}
+.cart-icon:hover {
+    color: #48bfc3;
+}
+
+/* Hamburger menu button */
+.menu-toggle {
+    display: none;
+    flex-direction: column;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    margin-right: 8px;
+    z-index: 1001;
+}
+.menu-toggle span {
+    display: block;
+    height: 4px;
+    width: 100%;
+    background: #222;
+    margin: 5px 0;
+    border-radius: 2px;
+    transition: 0.3s;
+}
+
+/* Responsive */
+@media (max-width: 991px) {
+    .header-nav {
+        flex-direction: column;
+        align-items: flex-start;
+        padding: 0 12px;
+        min-height: 56px;
+    }
+    .menu-area {
+        gap: 18px;
+        font-size: 0.95rem;
+    }
+    .logo-title {
+        font-size: 1rem;
+    }
+    .btn-login {
+        padding: 7px 14px;
+        font-size: 0.95rem;
+    }
+    .cart-icon {
+        font-size: 1.3rem;
+    }
+}
+
+/* Responsive: show hamburger, hide menu */
+@media (max-width: 991px) {
+    .menu-toggle {
+        display: flex;
+    }
+    .menu-area {
+        display: none;
+        flex-direction: column;
+        background: #fff;
+        position: absolute;
+        top: 70px;
+        left: 0;
+        width: 100%;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+        z-index: 1000;
+        padding: 16px 0;
+    }
+    .menu-area.active {
+        display: flex;
+    }
+    .header-nav {
+        position: relative;
+    }
+}
+
+/* Responsive: header-action & hamburger sejajar kanan */
+@media (max-width: 991px) {
+    .header-nav {
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 12px;
+        min-height: 56px;
+        position: relative;
+    }
+    .logo-area {
+        flex: 0 0 auto;
+        margin-bottom: 0;
+    }
+    .header-action {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 0;
+    }
+    .menu-toggle {
+        display: flex;
+        margin-left: 8px;
+    }
+    .menu-area {
+        display: none;
+        flex-direction: column;
+        background: #fff;
+        position: absolute;
+        top: 56px;
+        right: 0;
+        width: 100%;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+        z-index: 1000;
+        padding: 16px 0;
+    }
+    .menu-area.active {
+        display: flex;
+    }
+    .menu-area a {
+        padding: 12px 24px;
+        font-size: 1rem;
+        border-radius: 0;
+        width: 100%;
+        text-align: left;
+    }
+}
