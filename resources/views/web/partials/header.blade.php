@@ -1,10 +1,11 @@
+<link href="{{ asset('assets/css/style.css') }}" rel="stylesheet">
 <header id="header" class="sticky-top sticky-box">
     <div class="container-fluid bg-white border-bottom px-4">
         <div class="row align-items-center">
             <div class="col-md-2 m-auto logo-mobile">
                 <div class="logo">
                     <a href="{{route('home')}}">
-                        <img src="{{asset('uploads/logos/'.$setting->logo)}}">
+                        <img src="{{asset('uploads/logos/'.$setting->logo)}}" class="logo-img" alt="Logo Rasanya Lelang Karya">
                     </a>
                 </div>
             </div>
@@ -27,7 +28,7 @@
                 </form>
                 <!-- Menu kanan -->
                 <div class="d-flex align-items-center">
-                    <a href="#" class="text-decoration-none text-dark px-2">TENTANG</a>
+                    <!-- <a href="#" class="text-decoration-none text-dark px-2">TENTANG</a> -->
                     @guest
                         <a href="{{route('login')}}" class="text-decoration-none text-dark px-2 @yield('login')">MASUK</a>
                     @else
