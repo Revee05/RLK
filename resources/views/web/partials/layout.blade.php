@@ -17,6 +17,8 @@
         <link href="{{asset('css/app.css')}}" rel="stylesheet" />
         <link href="{{asset('theme/css/styles.css')}}" rel="stylesheet" />
         <link href="{{asset('theme/css/omahkoding.css')}}?=v.0.0.14" rel="stylesheet" />
+        <link href="{{ asset('css/header.css') }}" rel="stylesheet">
+        <link href="{{ asset('css/footer.css') }}" rel="stylesheet">
         <!-- Custom fonts for this template-->
         <link href="{{asset('assets/vendor/fontawesome-free/css/all.min.css')}}" rel="stylesheet" type="text/css">
         {{-- <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/1.0.18/vue.min.js"></script> --}}
