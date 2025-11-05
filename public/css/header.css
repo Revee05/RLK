@@ -1,7 +1,7 @@
 /* Header Container */
 #header {
     background: #fff;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.28);
     border-bottom: 1px solid #eaeaea;
     font-family: 'Inter', Arial, sans-serif;
 }
@@ -45,8 +45,10 @@
     align-items: center;
     justify-content: flex-end;
     flex: 1;
-    /* border: 1px solid crimson; */
+    padding-right: 40px;
 }
+
+/* Link */
 .menu-area a {
     font-weight: 500;
     color: #222 !important;
@@ -54,16 +56,27 @@
     text-decoration: none;
     padding: 6px 0;
     border-radius: 6px;
-    transition: background 0.2s, color 0.2s;
     position: relative;
 }
-.menu-area a:hover, .menu-area a.active {
-    background: none;
-    color: #222 !important;
-    text-decoration: underline;
-    text-underline-offset: 4px; 
-    text-decoration-thickness: 2px;
+
+/* Garis animasi */
+.menu-area a::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    bottom: 0px; /* jarak garis dari teks */
+    width: 0%;
+    height: 2px;
+    background: #222;
+    transition: width .25s ease;
 }
+
+/* Hover + Active */
+.menu-area a:hover::after,
+.menu-area a.active::after {
+    width: 100%;
+}
+
 
 /* Dropdown arrow for menu */
 .menu-area .dropdown-toggle::after {
