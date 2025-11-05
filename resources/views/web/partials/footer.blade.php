@@ -1,47 +1,49 @@
-<footer class="py-5" id="footer">
-    <div class="section">
-        <div class="container">
-            <div class="d-flex justify-content-between footer-mobile">
-                <div class="d-block">
-                    <img src="{{asset('assets/img/logo-lelang.png')}}">
-                    <p class="m-0 text-center text-white">Hak Cipta © 2023 Lelang. All rights reserved.</p>
-                </div>
-                <div class="d-block">
-                     <p class="m-0 text-center text-white py-1">Contact Us</p>
-                     <div class="d-inline-flex py-1 text-center w-100 justify-content-center">
-                         
-                        <a href="mailto:rasanyalelangkarya@gmail.com" class="d-block text-decoration-none footer-icon-top">
-                            <i class="fas fa-envelope"></i>
-                        </a>
-                        <a href="https://api.whatsapp.com/send/?phone=6285742829289" class="d-block text-decoration-none footer-icon-top">
-                            <i class="fab fa-whatsapp"></i>
-                        </a>
-                        
-                     </div>
-                     <p class="m-0 text-center text-white py-1">Official Channel</p>
-                     <div class="d-inline-flex text-center w-100 justify-content-center">
-                         
-                        <a href="https://www.instagram.com/{{$social['instagram'] ?? '#'}}" class="d-block text-decoration-none footer-icon-bottom">
-                            <i class="fab fa-instagram"></i>
-                        </a>
-                        <a href="{{$social['website'] ?? '#'}}" class="d-block text-decoration-none footer-icon-bottom">
-                            <i class="fas fa-globe"></i>
-                        </a>
-                        <a href="https://twitter.com/{{$social['twitter'] ?? '#'}}" class="d-block text-decoration-none footer-icon-bottom">
-                            <i class="fab fa-twitter"></i>
-                        </a>
-                        <a href="https://tiktok.com/{{$social['tiktok'] ?? '#'}}" class="d-block text-decoration-none footer-icon-bottom">
-                            <i class="fab fa-tiktok"></i>
-                        </a>
-                        <a href="https://youtube.com/{{$social['youtube'] ?? '#'}}" class="d-block text-decoration-none footer-icon-bottom">
-                            <i class="fab fa-youtube"></i>
-                        </a>
-                        
-                        
-                     </div>
-                </div>
+<footer class="main-footer">
+    <div class="container footer-container">
+
+        <div class="footer-left-block">
+            <a href="{{ route('home') }}">
+                <img src="{{ asset('uploads/logos/'.$setting->logo) }}" class="footer-logo" alt="Logo">
+            </a>
+            <p class="footer-copyright">
+                © {{ date('Y') }} Rasanya Lelang Karya. All rights reserved.
+            </p>
+            <div class="footer-legal-links">
+                <a href="#">Terms of Service</a> |
+                <a href="#">Privacy Policy</a>
             </div>
         </div>
-        
-    </div>
+
+        <div class="footer-right-block">
+            <div class="row">
+                
+                <div class="col-md-4">
+                    <h5 class="footer-heading">Tentang</h5>
+                    <ul class="footer-links">
+                        <li><a href="#">Tentang Perusahaan</a></li>
+                        <li><a href="#">Tentang Tim Kerja</a></li>
+                    </ul>
+                </div>
+
+                <div class="col-md-4">
+                    <h5 class="footer-heading">Panduan</h5>
+                    <ul class="footer-links">
+                        <li><a href="#">Panduan Beli</a></li>
+                        <li><a href="#">Panduan Jual</a></li>
+                    </ul>
+                </div>
+
+                <div class="col-md-4">
+                    <h5 class="footer-heading">Ikuti kami</h5>
+                    <div class="footer-social-icons">
+                        <a href="#" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#" aria-label="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
+                        <a href="#" aria-label="YouTube"><i class="fab fa-youtube"></i></a>
+                        <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+                    </div>
+                </div>
+                
+            </div> 
+        </div> 
+    </div> 
 </footer>
