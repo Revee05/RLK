@@ -113,6 +113,7 @@ KONTEN (Lengkap dengan Perbaikan)
                 <a href="{{ route('blogs') }}" class="blog-see-all-link">Semua postingan >></a>
             </div>
         </div>
+    </section>
 
         <div class="row">
             @foreach($blogs->take(2) as $blog)
