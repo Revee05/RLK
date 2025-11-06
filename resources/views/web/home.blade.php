@@ -1,296 +1,155 @@
 @extends('web.partials.layout')
 @section('home','aktiv')
+
+{{-- 
+================================
+CSS SEKARANG MEMANGGIL FILE BARU
+================================
+--}}
 @section('css')
- <link href="{{asset('theme/owlcarousel/assets/owl.carousel.min.css')}}" rel="stylesheet" />
- <link href="{{asset('theme/owlcarousel/assets/owl.theme.default.min.css')}}" rel="stylesheet" />
- <style type="text/css">
-    .main-content {
-        position: relative;
-    }
-    .custom-nav {
-        position: absolute;
-        top: 30%;
-        left: 0;
-        right: 0;
-    }
-    .custom-nav .owl-prev, .owl-next {
-        position: absolute;
-        height: 50px;
-        width: 50px;
-        color: inherit;
-        background: none;
-        border: none;
-        border-radius: 50% !important;
-        z-index: 100;
-        background-color: #ffffff70 !important;
-    }
-    .custom-nav .owl-prev i {
-        font-size: 20px;
-        margin: 10px;
-        color: black;
-    }
-    .custom-nav .owl-next i {
-        font-size: 20px;
-        margin: 10px;
-        color: black;
-    }
-    
-    .owl-prev {
-        left: 0;
-    }
-    .owl-next {
-        right: 0;
-    }
-    .follow-icon-bottom {
-        height: 35px;
-        width: 35px;
-        color: black;
-        margin: 0px 40px;
-        font-size: 25px;
-    }
-    s{
-       text-decoration : line-through;
-    }
-    .blog-figure {
-        position: relative;
-        overflow: hidden;
-        height:385px;
-        width: 100%;
-    }
-    .blog-figure img{
-        object-fit: cover;
-        object-position: center;
-        height:100%;
-        width: 100%;
-    }
-    .section-about {
-        background-color: #343a40;
-    }
-    .mark-lelang {
-        position: absolute;
-        z-index: 10;
-        top: 10px;
-        right: 10px;
-    }
- </style>
+    <link href="{{ asset('css/home_new.css') }}" rel="stylesheet">
 @endsection
+
+{{-- 
+================================
+KONTEN (Lengkap dengan Perbaikan)
+================================
+--}}
 @section('content')
-<section>
-    <div class="container-fluid">
-        <div class="row">
-            <div class="col-md-12 px-0">
-                <div class="carousel slide" id="myCarousel" data-bs-ride="carousel">
-                    <div class="carousel-inner">
-                        @foreach($sliders as $idx => $slide)
-                        <div class="carousel-item carausel-figure @if($idx == 0) active @endif">
-                            <img class="d-block" src="{{asset('uploads/sliders/'.$slide->image)}}">
-                        </div>
-                        @endforeach
-                    </div>
-                    <button class="carousel-control-prev" type="button" data-bs-target="#myCarousel" data-bs-slide="prev">
-                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-                    </button>
-                    <button class="carousel-control-next" type="button" data-bs-target="#myCarousel" data-bs-slide="next">
-                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
-    <div class="container">
-        <div class="row py-3 px-3">
-            <div class="col-md-12 text-center">
-                <h2 class="lelang-terbaru">Lelang Terbaru</h2>
-            </div>
-        </div>
-        <div class="row">
-            <div class="col-md-12 px-0">
-                <div class="main-content">
-                    <div class="owl-carousel owl-theme">
-                         @foreach($products as $produk)
-                        <div class="item">
-                              <a href="{{route('detail',$produk->slug)}}" class="text-decoration-none">
-                    
-                                <div class="card h-100 card-produk">
-                                    <!-- Product image-->
-                                    <div class="card-figure">
-                                    <img class="card-img-top card-image" src="{{asset($produk->imageUtama->path ?? 'assets/img/default.jpg')}}" alt="{{$produk->title}}" />
-                                    <div class="mark-lelang btn btn-light rounded-0 border">
-                                        LELANG
-                                    </div>
-                                    </div>
-                                    <!-- Product details-->
-                                    <div class="card-body p-2">
-                                        <div class="text-left">
-                                            <h5 class="fw-bolder produk-title">{{$produk->title}}</h5>
-                                            <div class="kategori-produk">
-                                                <a class="text-decoration-none text-dark" href="{{route('products.category',$produk->kategori->slug)}}">
-                                                    {{$produk->kategori->name}}
-                                                </a>
-                                            </div>
-                                            <!-- Product name-->
-                                            {{-- <span class="span-lelang">Lelang saat ini</span> --}}
-                                            <!-- Product price-->
-                                            <div class="price-produk">
-                                                @if($produk->diskon > 0)
-                                                <s>{{$produk->price_str}}</s> 
-                                                @php
-                                                $getDiskon = $produk->diskon / 100;
-                                                $neWPrice = $getDiskon * $produk->price;
-                                                @endphp
-                                                <span class="text-danger">{{$neWPrice}}</span>
-                                                @else
-                                                {{$produk->price_str}}
-                                                @endif
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="card-footer text-center">
-                                        <a href="{{route('detail',$produk->slug)}}" class="btn btn-block w-100">BID</a>
-                                    </div>
-                                </div>
-                            </a>
-                        </div>
-                        @endforeach
-                    </div>
-                    <div class="owl-theme">
-                        <div class="owl-controls">
-                            <div class="custom-nav owl-nav"></div>
-                        </div>
-                    </div>
-                </div>
-                <div class="d-block text-center py-3">
-                    <a href="{{route('lelang')}}" class="btn btn-danger rounded-0">Lihat Semua Lelang</a>
-                </div>
-            </div>
-        </div>
-    </div>
-</section>
-<section class="section-about">
-    <div class="container-fluid py-4">
-        <div class="row justify-content-md-center">
-            <div class="col-md-9 text-center">
-                <h2 class="text-white">About Us</h2>
-                <p class="text-white">Wadah pengkarya terus berkarya dari karya</p>
-            </div>
-        </div>
-    </div>
-</section>
-<section>
-@if(isset($blogs) && !empty($blogs) && count($blogs) > 0)
-    <section>
-        <div class="container">
-            <div class="row py-2 justify-content-md-center pb-5">
-                <div class="text-center">
-                    <h2>Featured Article</h2>
-                </div>
-                <div class="col-md-12 scrolling-pagination">
-                    @foreach($blogs as $blog)
-                    <div class="d-flex justify-content-between border my-3">
-                        <div class="d-block w-50 p-4 p-4-mobile">
-                          <div class="d-block text-left text-mb">{{ucwords($blog->author->name)}}</div>
-                          <div class="d-block text-left text-mb">{{$blog->date_indo}}</div>
-                          <a href="{{route('web.blog.detail',$blog->slug)}}" class="d-block text-decoration-none fw-500 text-dark pt-5 fs-5 blog-title-mobile">
-                              {{$blog->title}}
-                          </a>
-                          <div class="py-3 desc-mobile">
-                              {{-- {!!$blog->body!!} --}}
-                              {!!Str::limit($blog->body, 250)!!}
-                          </div>
-                        </div>
-                        <div class="d-block w-50">
-                            <div class="blog-figure">
-                                <img src="{{asset('uploads/blogs/'.$blog->image)}}">
-                            </div>
-                        </div>
-                    </div>
-                    @endforeach
-                    {{$blogs->links()}}
-                </div>
-                    <div class="d-block text-center py-3">
-                        <a href="{{route('blogs')}}" class="btn btn-danger rounded-0">Lihat Semua Artikel</a>
-                    </div>
-            </div>
-        </div>
-    </section>
-@endif
-<section style="background:#f1f1f1;" class="py-3">
+
+<section class="hero-section">
     <div class="container">
         <div class="row">
-            <div class="col-md-2">
-                <h2 class="ikuti-kami-h2">Ikuti Kami</h2>
-            </div>
-            <div class="col-md-10">
-                 <div class="d-inline-flex text-center w-100 ikuti-kami">
-                         
-                        <a href="https://www.instagram.com/{{$social['instagram'] ?? '#'}}" class="d-block text-decoration-none follow-icon-bottom">
-                            <i class="fab fa-instagram"></i>
-                        </a>
-                        <a href="{{$social['website'] ?? '#'}}" class="d-block text-decoration-none follow-icon-bottom">
-                            <i class="fas fa-globe"></i>
-                        </a>
-                        <a href="https://twitter.com/{{$social['twitter'] ?? '#'}}" class="d-block text-decoration-none follow-icon-bottom">
-                            <i class="fab fa-twitter"></i>
-                        </a>
-                        <a href="https://tiktok.com/{{$social['tiktok'] ?? '#'}}" class="d-block text-decoration-none follow-icon-bottom">
-                            <i class="fab fa-tiktok"></i>
-                        </a>
-                        <a href="https://youtube.com/{{$social['youtube'] ?? '#'}}" class="d-block text-decoration-none follow-icon-bottom">
-                            <i class="fab fa-youtube"></i>
-                        </a>
-                        
-                        
-                     </div>
+            <div class="col-lg-12">
+                <h1>Koleksi Karya Seniman Terbaik di Semarang</h1>
+                <p>Temukan Nilai Sesungguhnya dari Sebuah Karya Melalui Lelang Terbuka di Rasanya Lelang Karya</p>
+                
+                <form action="{{route('web.search')}}" method="GET" class="hero-search">
+                    <input type="text" class="form-control search-input-none" placeholder="cari karya seni..." aria-label="Recipient's username" aria-describedby="basic-addon2" name="q">
+                    <button type="submit">
+                        <i class="fa fa-search"></i>
+                        Cari
+                    </button>
+                </form>
             </div>
         </div>
     </div>
 </section>
 
+<section>
+    <div class="container"> 
+        <div class="row">
+            <div class="col-md-12"> 
+                <div class="carousel slide slider-container" id="myCarousel" data-bs-ride="carousel">
+                    
+                    <div class="carousel-inner">
+                        @foreach($sliders as $idx => $slide)
+                        <div class="carousel-item @if($idx == 0) active @endif">
+                            <img class="d-block w-100" src="{{asset('uploads/sliders/'.$slide->image)}}">
+                        </div>
+                        @endforeach
+                    </div>
+                    
+                    <button class="carousel-control-prev" type="button" data-bs-target="#myCarousel" data-bs-slide="prev">
+                        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                    </button>
+                    <button class="carousel-control-next" type="button" data-bs-target="#myCarousel" data-bs-slide="next">
+                        <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                    </button>
+
+                    <div class="hero-overlay-box">
+                        <h4>Semarang Art Festival</h4>
+                        <p>Lelang Online 15 November - 31 Desember 2025</p>
+                        <a href="#" class="btn btn-detail">Detail</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="section-padding auction-section">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-12">
+                <h2 class="section-title">General Auction</h2>
+            </div>
+        </div>
+
+        <div class="row">
+
+            @if($products->isNotEmpty())
+                @foreach($products->take(3) as $produk)
+                <div class="col-lg-4 col-md-6 mb-4">
+                    <div class="card-auction">
+                        <img src="{{asset($produk->imageUtama->path ?? 'assets/img/default.jpg')}}" alt="{{$produk->title}}">
+                        <div class="card-body">
+                            <h5>{{ $produk->title }}</h5> 
+                            <p class="text-decoration-none text-dark" href="{{route('products.category',$produk->kategori->slug)}}">{{$produk->kategori->name}}</p>
+                            
+                            <a href="{{route('detail',$produk->slug)}}" class="btn btn-outline-custom">Bid Sekarang</a>
+                        </div>
+                    </div>
+                </div>
+                @endforeach
+            @else
+                <div class="col-lg-8 text-center py-5">
+                    <p style="color: #6c757d; font-size: 1.1rem;">Belum ada karya lelang aktif yang tersedia saat ini.</p>
+                </div>
+            @endif
+
+        </div>
+    </div>
+</section>
+
+@if(isset($blogs) && $blogs->isNotEmpty())
+<section class="section-padding blog-section">
+    <div class="container">
+        <div class="row align-items-center mb-4">
+            <div class="col-6">
+                <h2 class="section-title mb-0">Blog</h2>
+            </div>
+            <div class="col-6 text-end">
+                <a href="{{ route('blogs') }}" class="blog-see-all-link">Semua postingan >></a>
+            </div>
+        </div>
+
+        <div class="row">
+            @foreach($blogs->take(2) as $blog)
+            
+            <div class="col-lg-6 mb-4 d-flex"> 
+                
+                <div class="card-blog">
+                    <img src="{{asset('uploads/blogs/'.$blog->image)}}" alt="{{$blog->title}}">
+                    <div class="card-body">
+                        <h5>{{ $blog->title }}</h5>
+                        <p>{!! Str::limit(strip_tags($blog->body), 150) !!}</p>
+                        
+                        <a href="{{route('web.blog.detail',$blog->slug)}}" class="btn btn-outline-custom">Lihat lebih banyak</a>
+                    </div>
+                </div>
+            </div>
+            @endforeach
+        </div>
+    </div>
+</section>
+@endif
+
 @endsection
+
+{{-- 
+================================
+JAVASCRIPT (Hanya untuk Slider)
+================================
+--}}
 @section('js')
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jscroll/2.4.1/jquery.jscroll.min.js"></script>
-    <script src="{{asset('theme/owlcarousel/owl.carousel.min.js')}}"></script>
+    
     <script type="text/javascript">
     $(document).ready(function(){
         $('#myCarousel').carousel({
             interval: 2000
         });
-
-        $('.main-content .owl-carousel').owlCarousel({
-            loop: true,
-            margin: 10,
-            nav: true,
-            navText: [
-                '<i class="fa fa-angle-left" aria-hidden="true"></i>',
-                '<i class="fa fa-angle-right" aria-hidden="true"></i>'
-            ],
-            navContainer: '.main-content .custom-nav',
-            dots:false,
-            responsive:{
-                0:{
-                    items: 2
-                },
-                600:{
-                    items: 4
-                },
-                1000:{
-                    items: 4
-                }
-            }
-        });
-        $('ul.pagination').hide();
-            $(function() {
-                $('.scrolling-pagination').jscroll({
-                    autoTrigger: true,
-                    padding: 0,
-                    nextSelector: '.pagination li.active + li a',
-                    contentSelector: 'div.scrolling-pagination',
-                    callback: function() {
-                        $('ul.pagination').remove();
-                    }
-                });
-            });
     })
     </script>
 @endsection
