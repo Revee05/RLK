@@ -52,6 +52,7 @@ document.addEventListener("DOMContentLoaded", function() {
     if(toggle && menu){
         toggle.addEventListener('click', function() {
             menu.classList.toggle('active');
+            toggle.classList.toggle('active'); // untuk animasi hamburger
         });
     }
 });
