@@ -15,7 +15,7 @@
                 <strong>{{ $message }}</strong>
             </span>
             @enderror
-        </div>        
+        </div>
         <div class="form-group">
             <input id="password" type="password" class="form-control form-control-user @error('password') is-invalid @enderror" name="password" required autocomplete="new-password" placeholder="New Password">
             @error('password')
