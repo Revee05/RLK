@@ -280,3 +280,43 @@
 .card-coming-soon img {
     display: none;
 }
+
+@media (max-width: 767px) {
+    
+    /* Opsional: Perkecil tinggi slider di mobile agar tidak terlalu besar */
+    .carousel-item {
+        height: 400px; 
+    }
+
+    .hero-overlay-box {
+        /* * Posisikan ulang agar responsif: 
+         * 15px dari kiri, 15px dari kanan, 15px dari bawah.
+         */
+        left: 15px;
+        right: 15px; 
+        bottom: 15px;
+        
+        /* Hapus 'max-width' agar lebarnya pas (mengikuti left/right) */
+        max-width: none; 
+        
+        /* Perkecil padding di mobile */
+        padding: 20px;
+
+        /* Buat teks dan tombol jadi rata tengah */
+        text-align: center; 
+    }
+
+    .hero-overlay-box h4 {
+        font-size: 1.5rem; /* Perkecil font judul */
+    }
+
+    .hero-overlay-box p {
+        font-size: 0.9rem; /* Perkecil font subtitle */
+        margin-bottom: 15px;
+    }
+    
+    /* Tombol 'Detail' akan otomatis di tengah karena text-align: center */
+    .hero-overlay-box .btn-detail {
+        padding: 6px 22px; /* Sedikit perkecil tombolnya */
+    }
+}
