@@ -72,9 +72,94 @@
         top: 10px;
         right: 10px;
     }
- </style>
+    .hero-koleksi {
+        background-color: #fff;
+        font-family: 'Inter', sans-serif;
+    }
+
+    .hero-koleksi h1 {
+        font-weight: 700;
+        color: #111;
+        font-size: 2rem;
+        line-height: 1.4;
+    }
+
+    .hero-koleksi .subtitle {
+        color: #666;
+        font-size: 0.95rem;
+        white-space: nowrap; /* biar satu baris aja */
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 100%;
+    }
+
+    .search-bar {
+        max-width: 420px;
+        margin: 0 auto;
+        width: 100%;
+    }
+
+    .search-wrapper {
+        position: relative;
+        border-radius: 50px;
+        overflow: hidden;
+        background-color: #22b6b6;
+    }
+
+    .search-input {
+        border: none;
+        border-radius: 50px;
+        padding: 12px 50px 12px 20px;
+        width: 100%;
+        background-color: #22b6b6;
+        color: #fff;
+        font-size: 0.95rem;
+    }
+
+    .search-input::placeholder {
+        color: rgba(255, 255, 255, 0.8);
+    }
+
+    .search-input:focus {
+        outline: none;
+        background-color: #1fa1a1;
+    }
+
+    .btn-search {
+        position: absolute;
+        right: 15px;
+        top: 50%;
+        transform: translateY(-50%);
+        background: none;
+        border: none;
+        color: white;
+        font-size: 1.2rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+    }
+    .btn-search i {
+        color: #fff;
+    }
+</style>
 @endsection
 @section('content')
+<section class="hero-koleksi text-center py-5">
+    <div class="container">
+        <h1 class="fw-bold">Koleksi Karya Seniman Terbaik</h1>
+        <p class="subtitle mt-3">
+            Temukan Nilai Sesungguhnya dari Sebuah Karya Melalui Lelang Terbuka di Rasanya Lelang Karya
+        </p>
+
+        <form action="{{ route('web.search') }}" method="GET" class="search-bar d-flex justify-content-center mt-4">
+            <input type="text" name="q" class="form-control search-input" placeholder="Cari" required>
+            <button type="submit" class="btn btn-search">
+                <i class="fa fa-search"></i>
+            </button>
+        </form>
+    </div>
+</section>
 <section>
     <div class="container-fluid">
         <div class="row">
