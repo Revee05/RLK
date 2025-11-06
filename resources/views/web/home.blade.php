@@ -142,6 +142,143 @@
     .btn-search i {
         color: #fff;
     }
+    .carausel-figure {
+        position: relative;
+        height: 420px; /* lebih pendek dan modern */
+        overflow: hidden;
+    }
+
+    .carausel-figure img {
+        object-fit: cover;
+        width: 100%;
+        height: 100%;
+        filter: brightness(65%); /* biar teksnya lebih kontras */
+        transition: transform 0.8s ease;
+    }
+
+    .carausel-figure:hover img {
+        transform: scale(1.05); /* efek zoom halus */
+    }
+
+    .carousel-caption-custom {
+        position: absolute;
+        top: 50%;
+        left: 10%;
+        transform: translateY(-50%);
+        color: #fff;
+        max-width: 500px;
+        font-family: 'Inter', sans-serif;
+    }
+
+    .carousel-caption-custom h2 {
+        font-size: 2rem;
+        font-weight: 700;
+        margin-bottom: 10px;
+        text-shadow: 1px 1px 8px rgba(0, 0, 0, 0.3);
+    }
+
+    .carousel-caption-custom p {
+        font-size: 1rem;
+        line-height: 1.5;
+        margin-bottom: 20px;
+        color: #eaeaea;
+    }
+
+    .carousel-caption-custom .btn {
+        background-color: #22b6b6;
+        border: none;
+        color: #fff;
+        transition: 0.3s;
+        font-weight: 500;
+    }
+
+    .carousel-caption-custom .btn:hover {
+        background-color: #1b9a9a;
+    }
+
+    .custom-slider {
+        position: relative;
+        width: 90%;
+        margin: 40px auto;
+        overflow: hidden;
+        border-radius: 18px;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+    }
+
+    .carousel-item {
+        height: 600px;
+        background-size: cover;
+        background-position: center;
+        transition: transform 1s ease-in-out;
+    }
+
+    /* box teks di pojok kiri bawah */
+    .slider-text-box {
+        position: absolute;
+        bottom: 40px;
+        left: 50px;
+        background-color: #001b44; /* navy gelap */
+        color: #fff;
+        padding: 22px 30px;
+        border-radius: 12px;
+        max-width: 450px;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.4);
+    }
+
+    .slider-text-box h2 {
+        font-family: 'Inter', sans-serif;
+        font-weight: 600;
+        font-size: 22px;
+        margin-bottom: 8px;
+    }
+
+    .slider-text-box p {
+        font-family: 'Inter', sans-serif;
+        font-weight: 400;
+        font-size: 15px;
+        margin-bottom: 14px;
+        opacity: 0.95;
+    }
+
+    /* tombol kecil putih */
+    .btn-slider {
+        background-color: #fff !important;
+        color: #001b44 !important;
+        font-size: 14px;
+        padding: 6px 16px;
+        border-radius: 25px;
+        text-decoration: none;
+        font-weight: 500;
+        transition: all 0.3s ease;
+    }
+
+    .btn-slider:hover {
+        background-color: #f0f0f0 !important;
+    }
+
+    /* indikator titik di bawah */
+    .carousel-indicators {
+        bottom: 10px;
+    }
+
+    .carousel-indicators [data-bs-target] {
+        background-color: #fff;
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        opacity: 0.6;
+    }
+
+    .carousel-indicators .active {
+        opacity: 1;
+    }
+
+    /* sembunyikan tombol next/prev */
+    .carousel-control-prev,
+    .carousel-control-next {
+        display: none !important;
+    }
+
 </style>
 @endsection
 @section('content')
@@ -160,25 +297,34 @@
         </form>
     </div>
 </section>
+
 <section>
     <div class="container-fluid">
         <div class="row">
             <div class="col-md-12 px-0">
-                <div class="carousel slide" id="myCarousel" data-bs-ride="carousel">
-                    <div class="carousel-inner">
+                <div class="carousel slide custom-slider" id="myCarousel" data-bs-ride="carousel" data-bs-interval="4000">
+                    <div class="carousel-indicators">
                         @foreach($sliders as $idx => $slide)
-                        <div class="carousel-item carausel-figure @if($idx == 0) active @endif">
-                            <img class="d-block" src="{{asset('uploads/sliders/'.$slide->image)}}">
-                        </div>
+                            <button type="button" data-bs-target="#myCarousel" data-bs-slide-to="{{$idx}}" class="@if($idx == 0) active @endif"></button>
                         @endforeach
                     </div>
-                    <button class="carousel-control-prev" type="button" data-bs-target="#myCarousel" data-bs-slide="prev">
-                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-                    </button>
-                    <button class="carousel-control-next" type="button" data-bs-target="#myCarousel" data-bs-slide="next">
-                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
-                    </button>
+
+                    <div class="carousel-inner">
+                        @foreach($sliders as $idx => $slide)
+                            <div class="carousel-item @if($idx == 0) active @endif"
+                                style="background-image: url('{{ asset('uploads/sliders/'.$slide->image) }}');">
+                            </div>
+                        @endforeach
+                    </div>
+
+                    <div class="slider-text-box text-start">
+                        <h2>Semarang Art Festival</h2>
+                        <p>Lelang Online 15 November - 31 Desember 2025</p>
+                        <a href="{{ route('lelang') }}" class="btn btn-light btn-slider">Detail</a>
+                    </div>
+
                 </div>
+
             </div>
         </div>
     </div>
