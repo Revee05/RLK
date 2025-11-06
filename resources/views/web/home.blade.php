@@ -214,37 +214,6 @@
         </div>
     </section>
 @endif
-<section style="background:#f1f1f1;" class="py-3">
-    <div class="container">
-        <div class="row">
-            <div class="col-md-2">
-                <h2 class="ikuti-kami-h2">Ikuti Kami</h2>
-            </div>
-            <div class="col-md-10">
-                 <div class="d-inline-flex text-center w-100 ikuti-kami">
-                         
-                        <a href="https://www.instagram.com/{{$social['instagram'] ?? '#'}}" class="d-block text-decoration-none follow-icon-bottom">
-                            <i class="fab fa-instagram"></i>
-                        </a>
-                        <a href="{{$social['website'] ?? '#'}}" class="d-block text-decoration-none follow-icon-bottom">
-                            <i class="fas fa-globe"></i>
-                        </a>
-                        <a href="https://twitter.com/{{$social['twitter'] ?? '#'}}" class="d-block text-decoration-none follow-icon-bottom">
-                            <i class="fab fa-twitter"></i>
-                        </a>
-                        <a href="https://tiktok.com/{{$social['tiktok'] ?? '#'}}" class="d-block text-decoration-none follow-icon-bottom">
-                            <i class="fab fa-tiktok"></i>
-                        </a>
-                        <a href="https://youtube.com/{{$social['youtube'] ?? '#'}}" class="d-block text-decoration-none follow-icon-bottom">
-                            <i class="fab fa-youtube"></i>
-                        </a>
-                        
-                        
-                     </div>
-            </div>
-        </div>
-    </div>
-</section>
 
 @endsection
 @section('js')
