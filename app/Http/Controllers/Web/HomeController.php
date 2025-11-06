@@ -26,8 +26,8 @@ class HomeController extends Controller
 
         $products = Products::active()->orderBy('id','desc')->take(8)->get();
         $sliders = Sliders::active()->get();
-        $blog = Posts::Blog()->orderBy('id','desc')->where('status','PUBLISHED')->take(6)->get();
-        $blogs = $blog->paginated(2);
+
+        $blogs = Posts::Blog()->orderBy('id','desc')->where('status','PUBLISHED')->take(2)->get();
 
         return view('web.home',compact('products','sliders','blogs'));
     }
@@ -128,29 +128,32 @@ class HomeController extends Controller
             Log::error('Page :'. $e->getMessage());
         }
     }
+    
     public function search(Request $request)
-    {   
-        try {
-            
-            $q = $request->input('q');
+    { 
+      try {
+    
+        $q = $request->input('q');
 
-            $validator = Validator::make(['q'=>$q], [
-                'q'=>['required','string','min:3','max:90']
-            ]);
+        $validator = Validator::make(['q'=>$q], ['q'=>['required','string','min:1','max:90']
+        ]);
 
-            if ($validator->fails()) {
-                abort('404');
-            }
+        if ($validator->fails()) {
+          
+        return redirect()->route('home'); 
+        }
 
-            $products = Products::active()->where('title', 'LIKE', "%$q%")->paginate(16);
-            $products->appends(['q' => $q]);
-            
-            return view('web.search', compact('q', 'products'))->with('products', $products);
-        
+
+        $products = Products::active()->where('title', 'LIKE', "%$q%")->paginate(16);
+        $products->appends(['q' => $q]);
+    
+        return view('web.search', compact('q', 'products'));
+    
         } catch (Exception $e) {
-            Log::error('Search :'. $e->getMessage());
+        Log::error('Search :'. $e->getMessage());
         }
     }
+    
     public function galeriKami()
     {
         return view('web.galeri-kami');
