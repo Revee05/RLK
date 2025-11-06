@@ -1,47 +1,45 @@
-<footer class="py-5" id="footer">
-    <div class="section">
-        <div class="container">
-            <div class="d-flex justify-content-between footer-mobile">
-                <div class="d-block">
-                    <img src="{{asset('assets/img/logo-lelang.png')}}">
-                    <p class="m-0 text-center text-white">Hak Cipta © 2023 Lelang. All rights reserved.</p>
-                </div>
-                <div class="d-block">
-                     <p class="m-0 text-center text-white py-1">Contact Us</p>
-                     <div class="d-inline-flex py-1 text-center w-100 justify-content-center">
-                         
-                        <a href="mailto:rasanyalelangkarya@gmail.com" class="d-block text-decoration-none footer-icon-top">
-                            <i class="fas fa-envelope"></i>
-                        </a>
-                        <a href="https://api.whatsapp.com/send/?phone=6285742829289" class="d-block text-decoration-none footer-icon-top">
-                            <i class="fab fa-whatsapp"></i>
-                        </a>
-                        
-                     </div>
-                     <p class="m-0 text-center text-white py-1">Official Channel</p>
-                     <div class="d-inline-flex text-center w-100 justify-content-center">
-                         
-                        <a href="https://www.instagram.com/{{$social['instagram'] ?? '#'}}" class="d-block text-decoration-none footer-icon-bottom">
-                            <i class="fab fa-instagram"></i>
-                        </a>
-                        <a href="{{$social['website'] ?? '#'}}" class="d-block text-decoration-none footer-icon-bottom">
-                            <i class="fas fa-globe"></i>
-                        </a>
-                        <a href="https://twitter.com/{{$social['twitter'] ?? '#'}}" class="d-block text-decoration-none footer-icon-bottom">
-                            <i class="fab fa-twitter"></i>
-                        </a>
-                        <a href="https://tiktok.com/{{$social['tiktok'] ?? '#'}}" class="d-block text-decoration-none footer-icon-bottom">
-                            <i class="fab fa-tiktok"></i>
-                        </a>
-                        <a href="https://youtube.com/{{$social['youtube'] ?? '#'}}" class="d-block text-decoration-none footer-icon-bottom">
-                            <i class="fab fa-youtube"></i>
-                        </a>
-                        
-                        
-                     </div>
-                </div>
+<link href="{{ asset('css/footer.css') }}" rel="stylesheet">
+<footer class="footer">
+    <div class="footer__container">
+        <div class="footer__left">
+            <img src="{{ asset('assets/img/690969f1e0df8.png') }}" class="footer__logo" alt="Logo">
+            <div class="footer__copyright">
+                © 2023 Rasanya Lelang Karya. All rights reserved.
+            </div>
+            <div class="footer__links">
+                <a href="#">Terms of Service</a> | <a href="#">Privacy Policy</a>
             </div>
         </div>
-        
+        <div class="footer__center">
+            <div class="footer__section">
+                <div class="footer__title">Tentang</div>
+                <a href="#">Tentang Perusahaan</a>
+                <a href="#">Tentang Tim Kerja</a>
+            </div>
+            <div class="footer__section">
+                <div class="footer__title">Panduan</div>
+                <a href="#">Panduan Beli</a>
+                <a href="#">Panduan Jual</a>
+            </div>
+        </div>
+        <div class="footer__right">
+            <div class="footer__title">Ikuti kami</div>
+            <div class="footer__social">
+                <a href="mailto:rasanyalelangkarya@gmail.com" class="footer__icon">
+                    <i class="fas fa-envelope"></i>
+                </a>
+                <a href="https://api.whatsapp.com/send/?phone=6285742829289" class="footer__icon">
+                    <i class="fab fa-whatsapp"></i>
+                </a>
+                <a href="https://instagram.com/{{$social['instagram'] ?? '#'}}" target="_blank" class="footer__icon"><i
+                        class="fab fa-instagram"></i></a>
+                <a href="https://youtube.com/{{$social['youtube'] ?? '#'}}" target="_blank" class="footer__icon"><i
+                        class="fab fa-youtube"></i></a>
+                <a href="{{$social['facebook'] ?? '#'}}" target="_blank" class="footer__icon"><i
+                        class="fab fa-facebook"></i></a>
+                <a href="{{$social['linkedin'] ?? '#'}}" target="_blank" class="footer__icon"><i
+                        class="fab fa-linkedin"></i></a>
+            </div>
+        </div>
     </div>
 </footer>
