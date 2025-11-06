@@ -118,7 +118,7 @@
 }
 
 .menu-toggle {
-    display: flex;
+    display: none;
     flex-direction: column;
     justify-content: center;
     align-items: center;
@@ -161,9 +161,6 @@
     top: 19px;
 }
 
-/* =========================
-   Responsive (max-width:991px)
-   ========================= */
 @media (max-width: 991px) {
     .header-nav {
         flex-direction: row;
@@ -194,9 +191,6 @@
         gap: 8px;
         margin-bottom: 0;
     }
-    .menu-toggle {
-        display: flex;
-    }
     .menu-area {
         flex-direction: column;
         background: #fff;
@@ -216,16 +210,19 @@
         gap: 18px;
         font-size: 0.95rem;
     }
-    .menu-area.active {
-        opacity: 1;
-        pointer-events: auto;
-        transform: translateY(0) scaleY(1);
-    }
     .menu-area a {
         padding: 12px 24px;
         font-size: 1rem;
         border-radius: 0;
         width: 100%;
         text-align: left;
+    }
+    .menu-area.active {
+        opacity: 1;
+        pointer-events: auto;
+        transform: translateY(0) scaleY(1);
+    }
+    .menu-toggle {
+        display: flex;
     }
 }
