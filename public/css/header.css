@@ -64,7 +64,7 @@
     content: "";
     position: absolute;
     left: 0;
-    bottom: 0px; /* jarak garis dari teks */
+    bottom: 0px;
     width: 0%;
     height: 2px;
     background: #222;
@@ -81,6 +81,61 @@
 .menu-area .dropdown-toggle::after {
     margin-left: 6px;
     vertical-align: middle;
+    display: none !important;
+}
+
+.menu-area .dropdown-menu-nav {
+    position: relative;
+    display: inline-block;
+}
+.menu-area .dropdown-toggle {
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    position: relative;
+}
+.menu-area .dropdown-toggle::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 0%;
+    height: 2px;
+    background: #222;
+    transition: width .25s ease;
+    display: block;
+}
+.menu-area .dropdown-toggle:hover::after,
+.menu-area .dropdown-toggle.active::after {
+    width: 100%;
+}
+.menu-area .dropdown-menu {
+    display: none;
+    position: absolute;
+    top: 110%;
+    left: 0;
+    min-width: 160px;
+    background: #fff;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    border-radius: 8px;
+    z-index: 100;
+    padding: 6px 0;
+}
+.menu-area .dropdown-menu.show {
+    display: block;
+}
+.menu-area .dropdown-item {
+    padding: 10px 18px;
+    display: block;
+    color: #222;
+    text-decoration: none;
+    font-size: 1rem;
+    transition: background 0.2s;
+}
+.menu-area .dropdown-item:hover {
+    background: #f2f6fa;
+    color: #0a2342;
 }
 
 /* Profile Icon Lingkaran */
@@ -248,6 +303,8 @@
     }
     .menu-area {
         flex-direction: column;
+        align-items: flex-start;
+        padding: 16px 0;
         background: #fff;
         position: absolute;
         top: 56px;
@@ -255,7 +312,6 @@
         width: 100%;
         box-shadow: 0 2px 8px rgba(0,0,0,0.04);
         z-index: 1000;
-        padding: 16px 0;
         opacity: 0;
         pointer-events: none;
         transform: translateY(-30px) scaleY(0.95);
@@ -264,6 +320,32 @@
             transform 0.35s cubic-bezier(.4,0,.2,1);
         gap: 18px;
         font-size: 0.95rem;
+    }
+    .menu-area .dropdown-menu-nav {
+        width: 100%;
+    }
+    .menu-area .dropdown-toggle {
+        width: 100%;
+        justify-content: space-between;
+        padding: 12px 24px;
+        font-size: 1.1rem;
+    }
+    .menu-area .dropdown-menu {
+        position: static;
+        box-shadow: none;
+        background: #f8f9fa;
+        border-radius: 0;
+        min-width: 0;
+        width: 100%;
+        padding: 0;
+    }
+    .menu-area .dropdown-menu .dropdown-item {
+        padding-left: 40px;
+        font-size: 1rem;
+        border-bottom: 1px solid #eee;
+    }
+    .menu-area .dropdown-menu .dropdown-item:last-child {
+        border-bottom: none;
     }
     .menu-area a {
         padding: 12px 24px;
