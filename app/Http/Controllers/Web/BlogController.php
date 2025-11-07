@@ -11,7 +11,7 @@ class BlogController extends Controller
     public function index(Request $request)
     { 
         $query = Posts::Blog()
-            ->where('status', 'PUBLISHED');
+            ->where('status', 'PUBLISHED'); 
 
         if ($request->filled('search')) {
             $search = $request->search;

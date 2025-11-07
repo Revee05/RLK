@@ -88,7 +88,7 @@
         margin-top: 40px; /* jarak dari atas */
     }
 </style>
-@endsection
+@endsection 
 @section('content')
 <section>
     <div class="container">
