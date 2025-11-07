@@ -112,7 +112,7 @@
                         </button>
                     </div>
                     <select name="filter" class="form-select rounded-pill border-secondary-subtle shadow-sm" style="width: 160px;" onchange="this.form.submit()">
-                        <option value="">Semua Topik</option>
+                        <option value="">Filter</option>
                         <option value="seni" {{ request('filter') == 'seni' ? 'selected' : '' }}>Seni</option>
                         <option value="lelang" {{ request('filter') == 'lelang' ? 'selected' : '' }}>Lelang</option>
                         <option value="lifestyle" {{ request('filter') == 'lifestyle' ? 'selected' : '' }}>Lifestyle</option>
