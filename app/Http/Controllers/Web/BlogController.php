@@ -9,7 +9,7 @@ use Validator;
 class BlogController extends Controller
 {
     public function index(Request $request)
-    {
+    { 
         $query = Posts::Blog()
             ->where('status', 'PUBLISHED');
 

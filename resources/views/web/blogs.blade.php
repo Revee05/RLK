@@ -17,7 +17,7 @@
         width: 100%;
         transition: transform 0.3s ease;
     }
-
+ 
     .blog-figure:hover img {
         transform: scale(1.05);
     }
