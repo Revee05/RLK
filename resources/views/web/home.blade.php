@@ -295,23 +295,6 @@ KONTEN (Lengkap dengan Perbaikan)
 ================================
 --}}
 @section('content')
-<section class="hero-koleksi text-center py-5">
-    <div class="container">
-        <h1 class="fw-bold">Koleksi Karya Seniman Terbaik</h1>
-        <p class="subtitle mt-3">
-            Temukan Nilai Sesungguhnya dari Sebuah Karya Melalui Lelang Terbuka di Rasanya Lelang Karya
-        </p>
-
-        <form action="{{ route('web.search') }}" method="GET" class="search-bar d-flex justify-content-center mt-4">
-            <input type="text" name="q" class="form-control search-input" placeholder="Cari" required>
-            <button type="submit" class="btn btn-search">
-                <i class="fa fa-search"></i>
-            </button>
-        </form>
-    </div>
-</section>
-
-
 <section class="hero-section">
     <div class="container">
         <div class="row">
@@ -334,14 +317,6 @@ KONTEN (Lengkap dengan Perbaikan)
 <section>
     <div class="container"> 
         <div class="row">
-            <div class="col-md-12 px-0">
-                <div class="carousel slide custom-slider" id="myCarousel" data-bs-ride="carousel" data-bs-interval="4000">
-                    <div class="carousel-indicators">
-                        @foreach($sliders as $idx => $slide)
-                            <button type="button" data-bs-target="#myCarousel" data-bs-slide-to="{{$idx}}" class="@if($idx == 0) active @endif"></button>
-                        @endforeach
-                    </div>
-
             <div class="col-md-12"> 
                 <div class="carousel slide slider-container" id="myCarousel" data-bs-ride="carousel">
                     
@@ -355,14 +330,6 @@ KONTEN (Lengkap dengan Perbaikan)
                         </div>
                         @endforeach
                     </div>
-
-                    <div class="slider-text-box text-start">
-                        <h2>Semarang Art Festival</h2>
-                        <p>Lelang Online 15 November - 31 Desember 2025</p>
-                        <a href="{{ route('lelang') }}" class="btn btn-light btn-slider">Detail</a>
-                    </div>
-
-                    
                     <button class="carousel-control-prev" type="button" data-bs-target="#myCarousel" data-bs-slide="prev">
                         <span class="carousel-control-prev-icon" aria-hidden="true"></span>
                     </button>
