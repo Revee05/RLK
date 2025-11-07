@@ -8,11 +8,62 @@ use App\Posts;
 use Validator;
 class BlogController extends Controller
 {
-    public function index()
-    {
-        $blogs = Posts::Blog()->where('status','PUBLISHED')->orderBy('id','desc')->paginate(10);
-        return view('web.blogs',compact('blogs'));
+    public function index(Request $request)
+    { 
+        $query = Posts::Blog()
+            ->where('status', 'PUBLISHED');
+
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('title', 'like', "%{$search}%")
+                ->orWhere('body', 'like', "%{$search}%");
+            });
+        }
+
+        if ($request->filled('filter')) {
+            $filter = strtolower($request->filter);
+            $query->where(function ($q) use ($filter) {
+                $q->where('title', 'like', "%{$filter}%")
+                ->orWhere('body', 'like', "%{$filter}%");
+            });
+        }
+
+        switch ($request->sort) {
+            case 'oldest':
+                $query->orderBy('created_at', 'asc');
+                break;
+
+            case 'title_asc':
+                $query->orderBy('title', 'asc');
+                break;
+
+            case 'title_desc':
+                $query->orderBy('title', 'desc');
+                break;
+
+            case 'author_asc':
+                $query->join('users', 'posts.user_id', '=', 'users.id')
+                    ->orderBy('users.name', 'asc')
+                    ->select('posts.*');
+                break;
+
+            case 'author_desc':
+                $query->join('users', 'posts.user_id', '=', 'users.id')
+                    ->orderBy('users.name', 'desc')
+                    ->select('posts.*');
+                break;
+
+            default:
+                $query->orderBy('created_at', 'desc'); // default = Terbaru
+                break;
+        }
+
+        $blogs = $query->paginate(10);
+
+        return view('web.blogs', compact('blogs', 'request'));
     }
+
     public function detail($slug)
     {
 
