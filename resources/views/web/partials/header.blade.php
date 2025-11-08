@@ -5,14 +5,15 @@
         <!-- Logo -->
         <div class="logo-area">
             <a href="{{ route('home') }}">
-                <img src="{{ asset('uploads/logos/'.$setting->logo) }}" class="logo-img" alt="Logo Rasanya Lelang Karya">
+                <img src="{{ asset('uploads/logos/'.$setting->logo) }}" class="logo-img"
+                    alt="Logo Rasanya Lelang Karya">
             </a>
         </div>
         <!-- Menu -->
         <nav class="menu-area">
             <a href="{{ route('home') }}" class="@yield('home')">Beranda</a>
-            <a href="{{ route('lelang') }}" class="@yield('lelang')">Lelang</a>
-            
+            <a href="{{ route('lelang') }}" class="@yield('lelang')">Koleksi Karya</a>
+
             <div class="dropdown-menu-nav">
                 <a href="#" class="dropdown-toggle" id="tentangDropdown">
                     Tentang <span class="fa fa-caret-down caret-icon"></span>
@@ -22,9 +23,9 @@
                     <a class="dropdown-item" href="#">Tim</a>
                 </div>
             </div>
-            
+
             <a>Seniman</a>
-            
+
             <div class="dropdown-menu-nav">
                 <a href="#" class="dropdown-toggle" id="panduanDropdown">
                     Panduan <span class="fa fa-caret-down caret-icon"></span>
@@ -38,27 +39,27 @@
         <!-- Action & Hamburger (sejajar kanan) -->
         <div class="header-action">
             @guest
-                <a href="{{ route('login') }}" class="btn-login @yield('login')">Masuk</a>
+            <a href="{{ route('login') }}" class="btn-login @yield('login')">Masuk</a>
             @else
-                <div class="profile-dropdown">
-                    <a href="#" class="profile-icon" id="profileDropdown" title="Profil">
-                        <i class="fa fa-user-circle"></i>
+            <div class="profile-dropdown">
+                <a href="#" class="profile-icon" id="profileDropdown" title="Profil">
+                    <i class="fa fa-user-circle"></i>
+                </a>
+                <div class="dropdown-menu" id="profileDropdownMenu">
+                    @if(Auth::user()->access == 'admin')
+                    <a class="dropdown-item" href="{{ route('admin.dashboard') }}">Dashboard</a>
+                    @else
+                    <a class="dropdown-item" href="{{ route('account.dashboard') }}">Profile</a>
+                    @endif
+                    <a class="dropdown-item" href="{{ route('logout') }}"
+                        onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
+                        Log Out
                     </a>
-                    <div class="dropdown-menu" id="profileDropdownMenu">
-                        @if(Auth::user()->access == 'admin')
-                            <a class="dropdown-item" href="{{ route('admin.dashboard') }}">Dashboard</a>
-                        @else
-                            <a class="dropdown-item" href="{{ route('account.dashboard') }}">Profile</a>
-                        @endif
-                        <a class="dropdown-item" href="{{ route('logout') }}"
-                           onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
-                            Log Out
-                        </a>
-                        <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
-                            @csrf
-                        </form>
-                    </div>
+                    <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
+                        @csrf
+                    </form>
                 </div>
+            </div>
             @endguest
             <a><i class="fa fa-shopping-cart cart-icon"></i></a>
             <!-- Hamburger Toggle -->
@@ -97,7 +98,6 @@ document.addEventListener("DOMContentLoaded", function() {
             }
         });
     }
-
     // Helper for dropdown menu with caret animation
     function setupDropdown(btnId, menuId) {
         var btn = document.getElementById(btnId);
