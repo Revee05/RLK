@@ -28,7 +28,6 @@ class HomeController extends Controller
 
         $products = Products::active()->orderBy('id','desc')->take(8)->get();
         $sliders = Sliders::active()->get();
-
         $blogs = Posts::Blog()->orderBy('id','desc')->where('status','PUBLISHED')->take(2)->get();
 
         // 2. TAMBAHKAN INI (Mengambil 1 event aktif terbaru)
@@ -142,30 +141,6 @@ class HomeController extends Controller
     
     public function search(Request $request)
     { 
-
-      try {
-    
-        $q = $request->input('q');
-
-        $validator = Validator::make(['q'=>$q], ['q'=>['required','string','min:1','max:90']
-        ]);
-
-        if ($validator->fails()) {
-          
-        return redirect()->route('home'); 
-        }
-
-
-        $products = Products::active()->where('title', 'LIKE', "%$q%")->paginate(16);
-        $products->appends(['q' => $q]);
-    
-        return view('web.search', compact('q', 'products'));
-    
-        } catch (Exception $e) {
-        Log::error('Search :'. $e->getMessage());
-        }
-    }
-    
       // ... (sisa kode Anda tetap sama) ...
       try {
     
@@ -189,7 +164,6 @@ class HomeController extends Controller
       Log::error('Search :'. $e->getMessage());
       }
     }
-
 
     public function galeriKami()
     {
