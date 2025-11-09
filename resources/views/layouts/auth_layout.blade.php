@@ -14,11 +14,11 @@
         href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i"
         rel="stylesheet">
     <!-- Custom styles for this template-->
-<<<<<<< HEAD
+
     {{-- <link href="{{ asset('assets/css/sb-admin-2.min.css') }}" rel="stylesheet"> --}}
-=======
+
     <link href="{{ asset('assets/css/sb-admin-2.min.css') }}" rel="stylesheet">
->>>>>>> Az-Zauqy
+
     <link href="{{ asset('assets/css/style-auth.css') }}" rel="stylesheet">
 
 </head>
@@ -36,13 +36,12 @@
         <a href="{{ route('home') }}" class="auth-close" title="Close">
             <i class="far fa-times-circle"></i>
         </a>
-<<<<<<< HEAD
         <div class="auth-inside-container">
             <div class="auth-left">
                 @yield('content')
             </div>
             <div class="auth-image"></div>
-=======
+
         <!-- Outer Row -->
         <!-- <div class="text-center">
                     <a href="{{ route('home') }}">
@@ -59,7 +58,6 @@
             <div class="col-md-6 d-none d-md-block h-100 p-0">
                 <div class="auth-image"></div>
             </div>
->>>>>>> Az-Zauqy
         </div>
     </div>
     <!-- Bootstrap core JavaScript-->
@@ -71,8 +69,7 @@
     <script src="{{ asset('assets/js/sb-admin-2.min.js') }}"></script>
 </body>
 
-<<<<<<< HEAD
 </html>
-=======
+
 </html>
->>>>>>> Az-Zauqy
+
