@@ -276,7 +276,6 @@
         font-size: 1.5rem; /* Perkecil font judul */
     }
 
-<<<<<<< HEAD
 .card-coming-soon .coming-soon-icon {
     font-size: 3rem; /* Ukuran ikon */
     color: #00b8a9; /* Warna ikon hijau toska */
@@ -321,8 +320,6 @@
         font-size: 1.5rem; /* Perkecil font judul */
     }
 
-=======
->>>>>>> feature/event-crud
     .hero-overlay-box p {
         font-size: 0.9rem; /* Perkecil font subtitle */
         margin-bottom: 15px;
@@ -332,8 +329,4 @@
     .hero-overlay-box .btn-detail {
         padding: 6px 22px; /* Sedikit perkecil tombolnya */
     }
-<<<<<<< HEAD
 }
-=======
-}
->>>>>>> feature/event-crud
