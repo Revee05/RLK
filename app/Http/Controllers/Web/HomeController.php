@@ -28,10 +28,7 @@ class HomeController extends Controller
 
         $products = Products::active()->orderBy('id','desc')->take(8)->get();
         $sliders = Sliders::active()->get();
-<<<<<<< HEAD
 
-=======
->>>>>>> Az-Zauqy
         $blogs = Posts::Blog()->orderBy('id','desc')->where('status','PUBLISHED')->take(2)->get();
 
         // 2. TAMBAHKAN INI (Mengambil 1 event aktif terbaru)
@@ -145,7 +142,7 @@ class HomeController extends Controller
     
     public function search(Request $request)
     { 
-<<<<<<< HEAD
+
       try {
     
         $q = $request->input('q');
@@ -169,7 +166,6 @@ class HomeController extends Controller
         }
     }
     
-=======
       // ... (sisa kode Anda tetap sama) ...
       try {
     
@@ -194,7 +190,7 @@ class HomeController extends Controller
       }
     }
 
->>>>>>> Az-Zauqy
+
     public function galeriKami()
     {
         return view('web.galeri-kami');
