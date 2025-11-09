@@ -1,76 +1,75 @@
-@extends('layouts.app_new') @section('content')
+@extends('layouts.auth_layout')
+@section('content')
+    <!-- Nested Row within Card Body -->
+    <div class="auth-card-body d-flex flex-column p-5 justify-content-center align-items-center">
+        <div class="text-center">
+            @if (isset($setting) && !empty($setting->logo) && file_exists(public_path('uploads/logos/' . $setting->logo)))
+                <a href="{{ route('home') }}">
+                    <img src="{{ asset('uploads/logos/' . $setting->logo) }}" alt="{{ config('app.name', 'Lelang') }}"
+                        class="img-fluid mb-4 auth-logo">
+                </a>
+            @else
+                <a href="{{ route('home') }}" class="d-inline-block mb-3 text-decoration-none">
+                    <img src="{{ asset('assets/img/logo-lelang.png') }}" alt="{{ config('app.name', 'Lelang') }}"
+                        class="img-fluid mb-4 auth-logo">
+                </a>
+            @endif
+        </div>
+        <form class="user mb-4 w-75" method="POST" action="{{ route('register') }}">
+            @csrf
+            <div class="form-group">
+                <input type="text" class="form-control form-control-user text-black @error('name') is-invalid @enderror"
+                    name="name" value="{{ old('name') }}" required autocomplete="name" placeholder="Name" autofocus>
+                @error('name')
+                    <span class="invalid-feedback" role="alert">
+                        <strong>{{ $message }}</strong>
+                    </span>
+                @enderror
+            </div>
+            <div class="form-group">
+                <input type="text"
+                    class="form-control form-control-user text-black @error('username') is-invalid @enderror"
+                    name="username" value="{{ old('username') }}" required autocomplete="username" placeholder="Username"
+                    autofocus>
+                @error('username')
+                    <span class="invalid-feedback" role="alert">
+                        <strong>{{ $message }}</strong>
+                    </span>
+                @enderror
+            </div>
+            <div class="form-group">
+                <input type="email" class="form-control form-control-user text-black @error('email') is-invalid @enderror"
+                    name="email" value="{{ old('email') }}" required autocomplete="email" placeholder="Email">
+                @error('email')
+                    <span class="invalid-feedback" role="alert">
+                        <strong>{{ $message }}</strong>
+                    </span>
+                @enderror
+            </div>
 
-<div class="text-center">
-    <h4 class="h4 text-gray-900 mb-4">Register</h4>
-</div>
-
-<form class="user" method="POST" action="{{ route('register') }}">
-    @csrf
-
-    <div class="form-group">
-        <input type="text" class="form-control form-control-with-icon-left @error('name') is-invalid @enderror" 
-               id="name" name="name" value="{{ old('name') }}" required autocomplete="name" 
-               placeholder="Name" autofocus>
-        
-        <span class="fas fa-user form-icon"></span> @error('name')
-            <span class="invalid-feedback" role="alert">
-                <strong>{{ $message }}</strong>
-            </span>
-        @enderror
+            <div class="form-group">
+                <input type="password"
+                    class="form-control form-control-user text-black @error('password') is-invalid @enderror"
+                    name="password" required autocomplete="new-password" placeholder="Password">
+                @error('password')
+                    <span class="invalid-feedback" role="alert">
+                        <strong>{{ $message }}</strong>
+                    </span>
+                @enderror
+            </div>
+            <div class="form-group">
+                <input type="password" class="form-control form-control-user text-black" placeholder="Ulangi Password"
+                    name="password_confirmation" required autocomplete="new-password">
+            </div>
+            <button type="submit" class="btn btn-black btn-user btn-block text-button-normal">
+                {{ __('Register') }}
+            </button>
+            {{-- <a href="index.html" class="btn btn-google btn-user btn-block">
+            <i class="fab fa-google fa-fw"></i> Daftar dengan Google
+        </a> --}}
+        </form>
+        <div class="text-center">
+            <a class="font-weight-normal text-black" href="{{ route('login') }}">Sudah memiliki akun? Login</a>
+        </div>
     </div>
-
-    <div class="form-group">
-        <input type="text" class="form-control form-control-with-icon-left @error('username') is-invalid @enderror" 
-               id="username" name="username" value="{{ old('username') }}" required autocomplete="username" 
-               placeholder="Username">
-        
-        <span class="fas fa-at form-icon"></span> @error('username')
-            <span class="invalid-feedback" role="alert">
-                <strong>{{ $message }}</strong>
-            </span>
-        @enderror
-    </div>
-
-    <div class="form-group">
-        <input type="email" class="form-control form-control-with-icon-left @error('email') is-invalid @enderror" 
-               id="email" name="email" value="{{ old('email') }}" required autocomplete="email" 
-               placeholder="Email">
-        
-        <span class="fas fa-envelope form-icon"></span> @error('email')
-            <span class="invalid-feedback" role="alert">
-                <strong>{{ $message }}</strong>
-            </span>
-        @enderror
-    </div>
-    
-    <div class="form-group">
-        <input type="password" class="form-control form-control-with-icon-left form-control-with-icon-right @error('password') is-invalid @enderror" 
-               id="password" name="password" required autocomplete="new-password" 
-               placeholder="Password">
-        
-        <span class="fas fa-lock form-icon"></span> <span class="fas fa-eye toggle-password" id="togglePassword"></span> @error('password')
-            <span class="invalid-feedback" role="alert">
-                <strong>{{ $message }}</strong>
-            </span>
-        @enderror
-    </div>
-
-    <div class="form-group">
-        <input type="password" class="form-control form-control-with-icon-left form-control-with-icon-right" 
-               id="password_confirmation" name="password_confirmation" required autocomplete="new-password" 
-               placeholder="Ulangi Password">
-        
-        <span class="fas fa-lock form-icon"></span> <span class="fas fa-eye toggle-password" id="togglePasswordConfirmation"></span> </div>
-    
-    <button type="submit" class="btn btn-danger btn-block">
-        {{ __('Register') }}
-    </button>
-    <hr>
-    
-</form>
-
-<div class="text-center">
-    <a class="small" href="{{route('login')}}">Sudah memiliki akun? Login!</a>
-</div>
-
 @endsection

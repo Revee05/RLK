@@ -1,38 +1,64 @@
+<link href="{{ asset('css/header.css') }}" rel="stylesheet">
 
 <header id="header" class="sticky-top">
     <div class="header-nav container-fluid">
         <!-- Logo -->
         <div class="logo-area">
-            <a href="{{route('home')}}">
-                <img src="{{asset('uploads/logos/'.$setting->logo)}}" class="logo-img" alt="Logo Rasanya Lelang Karya">
+            <a href="{{ route('home') }}">
+                <img src="{{ asset('uploads/logos/'.$setting->logo) }}" class="logo-img" alt="Logo Rasanya Lelang Karya">
             </a>
         </div>
         <!-- Menu -->
         <nav class="menu-area">
-            <a href="{{route('home')}}" class="@yield('home')">Beranda</a>
-            <a href="{{route('lelang')}}" class="@yield('lelang')">Lelang</a>
-            <a>Tentang</a>
+            <a href="{{ route('home') }}" class="@yield('home')">Beranda</a>
+            <a href="{{ route('lelang') }}" class="@yield('lelang')">Lelang</a>
+            
+            <div class="dropdown-menu-nav">
+                <a href="#" class="dropdown-toggle" id="tentangDropdown">
+                    Tentang <span class="fa fa-caret-down caret-icon"></span>
+                </a>
+                <div class="dropdown-menu" id="tentangDropdownMenu">
+                    <a class="dropdown-item" href="#">Perusahaan</a>
+                    <a class="dropdown-item" href="#">Tim</a>
+                </div>
+            </div>
+            
             <a>Seniman</a>
-            <a>Panduan</a>
+            
+            <div class="dropdown-menu-nav">
+                <a href="#" class="dropdown-toggle" id="panduanDropdown">
+                    Panduan <span class="fa fa-caret-down caret-icon"></span>
+                </a>
+                <div class="dropdown-menu" id="panduanDropdownMenu">
+                    <a class="dropdown-item" href="#">Panduan Beli</a>
+                    <a class="dropdown-item" href="#">Panduan Jual</a>
+                </div>
+            </div>
         </nav>
         <!-- Action & Hamburger (sejajar kanan) -->
         <div class="header-action">
             @guest
-                <a href="{{route('login')}}" class="btn-login @yield('login')">Masuk</a>
+                <a href="{{ route('login') }}" class="btn-login @yield('login')">Masuk</a>
             @else
-                @if(Auth::user()->access == 'admin')
-                    <a href="{{route('admin.dashboard')}}" class="btn-login">{{strtoupper(Auth::user()->name)}}</a>
-                @else
-                    <a href="{{route('account.dashboard')}}" class="btn-login">{{strtoupper(Auth::user()->name)}}</a>
-                @endif
-                <a class="btn-login" href="{{ route('logout') }}" 
-                    onclick="event.preventDefault();
-                    document.getElementById('logout-form').submit();">
-                    <i class="fa fa-sign-out-alt"></i>
-                </a>
-                <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
-                    @csrf
-                </form>
+                <div class="profile-dropdown">
+                    <a href="#" class="profile-icon" id="profileDropdown" title="Profil">
+                        <i class="fa fa-user-circle"></i>
+                    </a>
+                    <div class="dropdown-menu" id="profileDropdownMenu">
+                        @if(Auth::user()->access == 'admin')
+                            <a class="dropdown-item" href="{{ route('admin.dashboard') }}">Dashboard</a>
+                        @else
+                            <a class="dropdown-item" href="{{ route('account.dashboard') }}">Profile</a>
+                        @endif
+                        <a class="dropdown-item" href="{{ route('logout') }}"
+                           onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
+                            Log Out
+                        </a>
+                        <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
+                            @csrf
+                        </form>
+                    </div>
+                </div>
             @endguest
             <a><i class="fa fa-shopping-cart cart-icon"></i></a>
             <!-- Hamburger Toggle -->
@@ -43,16 +69,57 @@
             </button>
         </div>
     </div>
-    
 </header>
+
 <script>
 document.addEventListener("DOMContentLoaded", function() {
+    // Hamburger menu
     var toggle = document.getElementById('menuToggle');
     var menu = document.querySelector('.menu-area');
-    if(toggle && menu){
+    if (toggle && menu) {
         toggle.addEventListener('click', function() {
             menu.classList.toggle('active');
+            toggle.classList.toggle('active');
         });
     }
+
+    // Profile dropdown
+    var profileBtn = document.getElementById('profileDropdown');
+    var profileMenu = document.getElementById('profileDropdownMenu');
+    if (profileBtn && profileMenu) {
+        profileBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            profileMenu.classList.toggle('show');
+        });
+        document.addEventListener('click', function(e) {
+            if (!profileBtn.contains(e.target) && !profileMenu.contains(e.target)) {
+                profileMenu.classList.remove('show');
+            }
+        });
+    }
+
+    // Helper for dropdown menu with caret animation
+    function setupDropdown(btnId, menuId) {
+        var btn = document.getElementById(btnId);
+        var menu = document.getElementById(menuId);
+        var parent = btn ? btn.closest('.dropdown-menu-nav') : null;
+        if (btn && menu && parent) {
+            btn.addEventListener('click', function(e) {
+                e.preventDefault();
+                menu.classList.toggle('show');
+                parent.classList.toggle('open');
+            });
+            document.addEventListener('click', function(e) {
+                if (!btn.contains(e.target) && !menu.contains(e.target)) {
+                    menu.classList.remove('show');
+                    parent.classList.remove('open');
+                }
+            });
+        }
+    }
+
+    // Tentang & Panduan dropdown
+    setupDropdown('tentangDropdown', 'tentangDropdownMenu');
+    setupDropdown('panduanDropdown', 'panduanDropdownMenu');
 });
 </script>

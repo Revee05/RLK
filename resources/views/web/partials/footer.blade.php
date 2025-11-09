@@ -1,49 +1,45 @@
-<footer class="main-footer">
-    <div class="container footer-container">
-
-        <div class="footer-left-block">
-            <a href="{{ route('home') }}">
-                <img src="{{ asset('uploads/logos/'.$setting->logo) }}" class="footer-logo" alt="Logo">
-            </a>
-            <p class="footer-copyright">
-                © {{ date('Y') }} Rasanya Lelang Karya. All rights reserved.
-            </p>
-            <div class="footer-legal-links">
-                <a href="#">Terms of Service</a> |
-                <a href="#">Privacy Policy</a>
+<link href="{{ asset('css/footer.css') }}" rel="stylesheet">
+<footer class="footer">
+    <div class="footer__container">
+        <div class="footer__left">
+            <img src="{{ asset('assets/img/690969f1e0df8.png') }}" class="footer__logo" alt="Logo">
+            <div class="footer__copyright">
+                © 2023 Rasanya Lelang Karya. All rights reserved.
+            </div>
+            <div class="footer__links">
+                <a href="#">Terms of Service</a> | <a href="#">Privacy Policy</a>
             </div>
         </div>
-
-        <div class="footer-right-block">
-            <div class="row">
-                
-                <div class="col-md-4">
-                    <h5 class="footer-heading">Tentang</h5>
-                    <ul class="footer-links">
-                        <li><a href="#">Tentang Perusahaan</a></li>
-                        <li><a href="#">Tentang Tim Kerja</a></li>
-                    </ul>
-                </div>
-
-                <div class="col-md-4">
-                    <h5 class="footer-heading">Panduan</h5>
-                    <ul class="footer-links">
-                        <li><a href="#">Panduan Beli</a></li>
-                        <li><a href="#">Panduan Jual</a></li>
-                    </ul>
-                </div>
-
-                <div class="col-md-4">
-                    <h5 class="footer-heading">Ikuti kami</h5>
-                    <div class="footer-social-icons">
-                        <a href="#" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
-                        <a href="#" aria-label="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
-                        <a href="#" aria-label="YouTube"><i class="fab fa-youtube"></i></a>
-                        <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
-                    </div>
-                </div>
-                
-            </div> 
-        </div> 
-    </div> 
+        <div class="footer__center">
+            <div class="footer__section">
+                <div class="footer__title">Tentang</div>
+                <a href="#">Tentang Perusahaan</a>
+                <a href="#">Tentang Tim Kerja</a>
+            </div>
+            <div class="footer__section">
+                <div class="footer__title">Panduan</div>
+                <a href="#">Panduan Beli</a>
+                <a href="#">Panduan Jual</a>
+            </div>
+        </div>
+        <div class="footer__right">
+            <div class="footer__title">Ikuti kami</div>
+            <div class="footer__social">
+                <a href="mailto:rasanyalelangkarya@gmail.com" class="footer__icon">
+                    <i class="fas fa-envelope"></i>
+                </a>
+                <a href="https://api.whatsapp.com/send/?phone=6285742829289" class="footer__icon">
+                    <i class="fab fa-whatsapp"></i>
+                </a>
+                <a href="https://instagram.com/{{$social['instagram'] ?? '#'}}" target="_blank" class="footer__icon"><i
+                        class="fab fa-instagram"></i></a>
+                <a href="https://youtube.com/{{$social['youtube'] ?? '#'}}" target="_blank" class="footer__icon"><i
+                        class="fab fa-youtube"></i></a>
+                <a href="{{$social['facebook'] ?? '#'}}" target="_blank" class="footer__icon"><i
+                        class="fab fa-facebook"></i></a>
+                <a href="{{$social['linkedin'] ?? '#'}}" target="_blank" class="footer__icon"><i
+                        class="fab fa-linkedin"></i></a>
+            </div>
+        </div>
+    </div>
 </footer>
