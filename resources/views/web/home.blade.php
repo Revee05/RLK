@@ -25,10 +25,9 @@ KONTEN (Lengkap dengan Perbaikan)
                 <p>Temukan Nilai Sesungguhnya dari Sebuah Karya Melalui Lelang Terbuka di Rasanya Lelang Karya</p>
                 
                 <form action="{{route('web.search')}}" method="GET" class="hero-search">
-                    <input type="text" class="form-control search-input-none" placeholder="cari karya seni..." aria-label="Recipient's username" aria-describedby="basic-addon2" name="q">
+                    <input type="text" class="form-control search-input-none" placeholder="Cari" aria-label="Recipient's username" aria-describedby="basic-addon2" name="q">
                     <button type="submit">
                         <i class="fa fa-search"></i>
-                        Cari
                     </button>
                 </form>
             </div>
@@ -116,7 +115,7 @@ KONTEN (Lengkap dengan Perbaikan)
     <div class="container">
         <div class="row align-items-center mb-4">
             <div class="col-6">
-                <h2 class="section-title mb-0">Blog</h2>
+                <h2 class="section-title mb-0">Online Blog</h2>
             </div>
             <div class="col-6 text-end">
                 <a href="{{ route('blogs') }}" class="blog-see-all-link">Semua postingan >></a>
