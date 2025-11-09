@@ -69,8 +69,8 @@
             <a class="font-weight-normal text-black" href="{{ route('login') }}">Sudah memiliki akun? Login</a>
         </div>
     </div>
-<<<<<<< HEAD
+
 @endsection
-=======
+
 @endsection
->>>>>>> Az-Zauqy
+
