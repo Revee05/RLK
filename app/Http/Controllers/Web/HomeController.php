@@ -19,6 +19,8 @@ use Hash;
 use App\Kelengkapan;
 use App\Sliders;
 use Carbon\Carbon;
+use App\Event; // <-- 1. TAMBAHKAN INI
+
 class HomeController extends Controller
 {
     public function index()
@@ -26,19 +28,28 @@ class HomeController extends Controller
 
         $products = Products::active()->orderBy('id','desc')->take(8)->get();
         $sliders = Sliders::active()->get();
+<<<<<<< HEAD
 
+=======
+>>>>>>> Az-Zauqy
         $blogs = Posts::Blog()->orderBy('id','desc')->where('status','PUBLISHED')->take(2)->get();
 
-        return view('web.home',compact('products','sliders','blogs'));
+        // 2. TAMBAHKAN INI (Mengambil 1 event aktif terbaru)
+        $featuredEvent = Event::where('status', 'active')->latest()->first();
+
+        // 3. MODIFIKASI INI (Tambahkan 'featuredEvent' ke compact)
+        return view('web.home',compact('products','sliders','blogs', 'featuredEvent'));
     }
+
     public function lelang()
     {
         $products = Products::active()->orderBy('id','desc')->paginate(16);
         return view('web.lelang',compact('products'));
-
     }
+
     public function detail($slug)
     {
+        // ... (sisa kode Anda tetap sama) ...
         //cek data is exist
         $validator = Validator::make(['slug'=>$slug], [
             'slug'=>['required','exists:products,slug']
@@ -74,8 +85,10 @@ class HomeController extends Controller
              Log::error('Detail Product :'. $e->getMessage());
         }
     }
+
     public function category($slug)
     {
+        // ... (sisa kode Anda tetap sama) ...
         //cek data is exist
         $validator = Validator::make(['slug'=>$slug], [
             'slug'=>['required','exists:kategori,slug']
@@ -102,9 +115,10 @@ class HomeController extends Controller
             Log::error('By Kategori :'. $e->getMessage());
         }
     }
+
     public function page($slug)
     {
-
+        // ... (sisa kode Anda tetap sama) ...
         $validator = Validator::make(['slug'=>$slug], [
             'slug'=>['required','exists:posts,slug']
         ]);
@@ -131,6 +145,7 @@ class HomeController extends Controller
     
     public function search(Request $request)
     { 
+<<<<<<< HEAD
       try {
     
         $q = $request->input('q');
@@ -154,12 +169,40 @@ class HomeController extends Controller
         }
     }
     
+=======
+      // ... (sisa kode Anda tetap sama) ...
+      try {
+    
+      $q = $request->input('q');
+
+      $validator = Validator::make(['q'=>$q], ['q'=>['required','string','min:1','max:90']
+      ]);
+
+      if ($validator->fails()) {
+        
+      return redirect()->route('home'); 
+      }
+
+
+      $products = Products::active()->where('title', 'LIKE', "%$q%")->paginate(16);
+      $products->appends(['q' => $q]);
+    
+      return view('web.search', compact('q', 'products'));
+    
+      } catch (Exception $e) {
+      Log::error('Search :'. $e->getMessage());
+      }
+    }
+
+>>>>>>> Az-Zauqy
     public function galeriKami()
     {
         return view('web.galeri-kami');
     }
+
     public function seniman($slug)
     {
+        // ... (sisa kode Anda tetap sama) ...
         //cek data is exist
         $validator = Validator::make(['slug'=>$slug], [
             'slug'=>['required','exists:karya,slug']

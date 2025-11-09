@@ -8,6 +8,7 @@ CSS SEKARANG MEMANGGIL FILE BARU
 --}}
 @section('css')
     <link href="{{ asset('css/home_new.css') }}" rel="stylesheet">
+<<<<<<< HEAD
  <link href="{{asset('theme/owlcarousel/assets/owl.carousel.min.css')}}" rel="stylesheet" />
  <link href="{{asset('theme/owlcarousel/assets/owl.theme.default.min.css')}}" rel="stylesheet" />
  <style type="text/css">
@@ -287,6 +288,8 @@ CSS SEKARANG MEMANGGIL FILE BARU
     }
 
 </style>
+=======
+>>>>>>> Az-Zauqy
 @endsection
 
 {{-- 
@@ -295,10 +298,15 @@ KONTEN (Lengkap dengan Perbaikan)
 ================================
 --}}
 @section('content')
+<<<<<<< HEAD
+=======
+
+>>>>>>> Az-Zauqy
 <section class="hero-section">
     <div class="container">
         <div class="row">
             <div class="col-lg-12">
+<<<<<<< HEAD
                 <h1>Koleksi Karya Seniman Terbaik di Semarang</h1>
                 <p>Temukan Nilai Sesungguhnya dari Sebuah Karya Melalui Lelang Terbuka di Rasanya Lelang Karya</p>
                 
@@ -307,6 +315,15 @@ KONTEN (Lengkap dengan Perbaikan)
                     <button type="submit">
                         <i class="fa fa-search"></i>
                         Cari
+=======
+                <h1>Koleksi Karya Seniman Terbaik dari Indonesia</h1>
+                <p>Temukan Nilai Sesungguhnya dari Sebuah Karya Melalui Lelang Terbuka di Rasanya Lelang Karya</p>
+                
+                <form action="{{route('web.search')}}" method="GET" class="hero-search">
+                    <input type="text" class="form-control search-input-none" placeholder="Cari" aria-label="Recipient's username" aria-describedby="basic-addon2" name="q">
+                    <button type="submit">
+                        <i class="fa fa-search"></i>
+>>>>>>> Az-Zauqy
                     </button>
                 </form>
             </div>
@@ -322,14 +339,21 @@ KONTEN (Lengkap dengan Perbaikan)
                     
                     <div class="carousel-inner">
                         @foreach($sliders as $idx => $slide)
+<<<<<<< HEAD
                             <div class="carousel-item @if($idx == 0) active @endif"
                                 style="background-image: url('{{ asset('uploads/sliders/'.$slide->image) }}');">
                             </div>
+=======
+>>>>>>> Az-Zauqy
                         <div class="carousel-item @if($idx == 0) active @endif">
                             <img class="d-block w-100" src="{{asset('uploads/sliders/'.$slide->image)}}">
                         </div>
                         @endforeach
                     </div>
+<<<<<<< HEAD
+=======
+                    
+>>>>>>> Az-Zauqy
                     <button class="carousel-control-prev" type="button" data-bs-target="#myCarousel" data-bs-slide="prev">
                         <span class="carousel-control-prev-icon" aria-hidden="true"></span>
                     </button>
@@ -337,13 +361,30 @@ KONTEN (Lengkap dengan Perbaikan)
                         <span class="carousel-control-next-icon" aria-hidden="true"></span>
                     </button>
 
+<<<<<<< HEAD
+=======
+                    {{-- 
+>>>>>>> Az-Zauqy
                     <div class="hero-overlay-box">
                         <h4>Semarang Art Festival</h4>
                         <p>Lelang Online 15 November - 31 Desember 2025</p>
                         <a href="#" class="btn btn-detail">Detail</a>
+<<<<<<< HEAD
                     </div>
                 </div>
 
+=======
+                    </div> 
+                    --}}
+
+                    @if($featuredEvent) <div class="hero-overlay-box">
+                        <h4>{{ $featuredEvent->title }}</h4>
+                        <p>{{ $featuredEvent->subtitle }}</p>
+                        <a href="{{ $featuredEvent->link ?? '#' }}" class="btn btn-detail">Detail</a>
+                    </div>
+                    @endif
+                    </div>
+>>>>>>> Az-Zauqy
             </div>
         </div>
     </div>
@@ -388,13 +429,20 @@ KONTEN (Lengkap dengan Perbaikan)
     <div class="container">
         <div class="row align-items-center mb-4">
             <div class="col-6">
+<<<<<<< HEAD
                 <h2 class="section-title mb-0">Blog</h2>
+=======
+                <h2 class="section-title mb-0">Online Blog</h2>
+>>>>>>> Az-Zauqy
             </div>
             <div class="col-6 text-end">
                 <a href="{{ route('blogs') }}" class="blog-see-all-link">Semua postingan >></a>
             </div>
         </div>
+<<<<<<< HEAD
     </section>
+=======
+>>>>>>> Az-Zauqy
 
         <div class="row">
             @foreach($blogs->take(2) as $blog)

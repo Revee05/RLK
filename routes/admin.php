@@ -30,6 +30,15 @@ Route::resource('/posts','PostsController',['as'=>'admin']);
 Route::get('/blogs/status/{id}','BlogsController@status')->name('admin.blogs.status');
 Route::post('blogs/taging','BlogsController@getTag')->name('admin.blogs.tagpost');
 Route::resource('/blogs','BlogsController',['as'=>'admin']);
+
+/*
+=========================================================
+==   TAMBAHKAN ROUTE EVENT ANDA DI SINI BERSAMA BLOGS  ==
+=========================================================
+*/
+Route::resource('/events','EventController',['as' => 'admin']);
+
+
 Route::group(['prefix' => '/master'], function () {
     Route::resource('/kategori','KategoriController',['as' => 'master']);
     Route::resource('/sliders','SlidersController',['as' => 'master']);
@@ -78,9 +87,3 @@ Route::resource('/daftar-pemenang','DaftarPemenangController',['as' => 'admin'])
  Route::get('/user/status/{id}','UsersController@status')->name('admin.user.status');
  Route::resource('/user','UsersController',['as' => 'admin']);
 });
-
-
-
-
-
-
