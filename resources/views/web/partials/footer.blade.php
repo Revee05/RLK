@@ -31,14 +31,14 @@
                 <a href="https://api.whatsapp.com/send/?phone=6285742829289" class="footer__icon">
                     <i class="fab fa-whatsapp"></i>
                 </a>
-                <a href="https://instagram.com/{{$social['instagram'] ?? '#'}}" target="_blank" class="footer__icon"><i
+                <a href="https://www.instagram.com/rasanyalelangkarya" target="_blank" class="footer__icon"><i
                         class="fab fa-instagram"></i></a>
-                <a href="https://youtube.com/{{$social['youtube'] ?? '#'}}" target="_blank" class="footer__icon"><i
+                <a href="https://youtube.com/@rasanyalelang" target="_blank" class="footer__icon"><i
                         class="fab fa-youtube"></i></a>
-                <a href="{{$social['facebook'] ?? '#'}}" target="_blank" class="footer__icon"><i
+                <a href="https://www.facebook.com/share/14QpzWRdTHa/" target="_blank" class="footer__icon"><i
                         class="fab fa-facebook"></i></a>
-                <a href="{{$social['linkedin'] ?? '#'}}" target="_blank" class="footer__icon"><i
-                        class="fab fa-linkedin"></i></a>
+                <a href=" https://www.tiktok.com/@rasanyalelangkarya" target="_blank" class="footer__icon"><i
+                        class="fab fa-tiktok"></i></a>
             </div>
         </div>
     </div>
