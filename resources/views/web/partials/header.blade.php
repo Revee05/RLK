@@ -61,7 +61,9 @@
                 </div>
             </div>
             @endguest
-            <a href="{{ url('/cart') }}"><i class="fa fa-shopping-cart cart-icon"></i></a>
+            <a href="{{ url('/cart') }}">
+                <img src="{{ asset('assets/img/shopping-cart.svg') }}" alt="Cart" class="cart-svg" style="width:28px; height:28px; vertical-align:middle;">
+            </a>
             <!-- Hamburger Toggle -->
             <button class="menu-toggle" id="menuToggle" aria-label="Toggle menu">
                 <span></span>

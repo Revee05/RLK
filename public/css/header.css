@@ -240,15 +240,16 @@
     background: #48bfc3;
     color: #fff !important;
 }
-.cart-icon {
-    font-size: 1.6rem;
-    color: #222;
-    margin-left: 8px;
+
+.cart-svg {
+    transition: 
+        transform 0.18s cubic-bezier(.4,0,.2,1),
+        filter 0.18s cubic-bezier(.4,0,.2,1);
     cursor: pointer;
-    transition: color 0.2s;
 }
-.cart-icon:hover {
-    color: #48bfc3;
+.cart-svg:hover {
+    transform: scale(1.18) rotate(-8deg);
+    /* filter: drop-shadow(0 0 8px #48bfc3) brightness(1.2); */
 }
 
 /* =========================
@@ -305,7 +306,6 @@
     }
     .logo-title { font-size: 1rem; }
     .btn-login { padding: 7px 14px; font-size: 0.95rem; }
-    .cart-icon { font-size: 1.3rem; }
     .logo-area { flex: 0 0 auto; margin-bottom: 0; }
     .header-action { gap: 8px; margin-bottom: 0; }
     .menu-area {
