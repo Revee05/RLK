@@ -39,6 +39,18 @@
                         class="fab fa-facebook"></i></a>
                 <a href=" https://www.tiktok.com/@rasanyalelangkarya" target="_blank" class="footer__icon"><i
                         class="fab fa-tiktok"></i></a>
+                <a href="https://www.threads.net/@rasanyalelangkarya" target="_blank" class="footer__icon"
+                    title="Threads">
+                    <img src="{{ asset('assets/img/threads.png') }}" alt="Threads" style="width:20px; height:20px; object-fit:contain;">
+                </a>
+                <a href="https://x.com/rasanyalelangkarya" target="_blank" class="footer__icon" title="X (Twitter)">
+                    <!-- SVG X (Twitter) -->
+                    <svg width="20" height="20" viewBox="0 0 512 512" fill="currentColor"
+                        xmlns="http://www.w3.org/2000/svg">
+                        <path
+                            d="M370.6 64H464l-192 192 192 192h-93.4L256 337.9 141.4 448H48l192-192L48 64h93.4L256 174.1 370.6 64z" />
+                    </svg>
+                </a>
             </div>
         </div>
     </div>
