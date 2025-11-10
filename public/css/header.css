@@ -92,7 +92,7 @@
     background: none;
     box-shadow: none;
     color: #0a2342 !important;
-    text-shadow: 0 0 8px #48bfc3, 0 0 12px #48bfc3;
+    text-shadow: 0 0 8px #ff7e5f;
     transition: text-shadow 0.2s, color 0.2s;
 }
 
