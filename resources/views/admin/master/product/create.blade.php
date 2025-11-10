@@ -124,7 +124,18 @@ text-transform: capitalize;
                     {{ Form::submit('Simpan', array('class' => 'btn btn-primary btn-sm rounded-0')) }}
                     {{-- Erors notification --}}
                     @include('admin.partials._errors')
-                    
+                    @if ($errors->any())
+    <div class="alert alert-danger">
+        <ul>
+            @foreach ($errors->all() as $error)
+                <li>{{ $error }}</li>
+            @endforeach
+        </ul>
+        <hr>
+        <strong>Data yang dikirim:</strong>
+        <pre>{{ print_r(old(), true) }}</pre>
+    </div>
+@endif
                 </div>
             </div>
         </div>

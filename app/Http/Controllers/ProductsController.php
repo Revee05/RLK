@@ -2,12 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use Exception;
 use Illuminate\Http\Request;
 use App\Kategori;
 use App\Karya;
 use App\Products;
 use App\ProductImage;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use App\Product\Uploads as Upload;
 use App\Kelengkapan;
