@@ -43,7 +43,7 @@
                     title="Threads">
                     <img src="{{ asset('assets/img/threads.png') }}" alt="Threads" style="width:20px; height:20px; object-fit:contain;">
                 </a>
-                <a href="https://x.com/rasanyalelangkarya" target="_blank" class="footer__icon" title="X (Twitter)">
+                <a href="https://x.com/rasanyalelang" target="_blank" class="footer__icon" title="X (Twitter)">
                     <!-- SVG X (Twitter) -->
                     <svg width="20" height="20" viewBox="0 0 512 512" fill="currentColor"
                         xmlns="http://www.w3.org/2000/svg">
