@@ -57,11 +57,12 @@ class ProductsController extends Controller
             'method'     => $request->method(),
             'url'        => $request->fullUrl(),
         ];
-        Log::info('=== DATA REQUEST ===', $logContext);
-        Log::info(var_export($request->all(), true), $logContext);
-        Log::info('=== END DATA REQUEST ===', $logContext);
-        
-        // dd($request->all());
+        if (app()->environment('local', 'testing')) {
+            Log::info('=== DATA REQUEST ===', $logContext);
+            Log::info(var_export($request->all(), true), $logContext);
+            Log::info('=== END DATA REQUEST ===', $logContext);
+        }
+            
         $this->validate($request,[
             'title'=> 'required',
             'description'=> 'required',
@@ -211,9 +212,11 @@ class ProductsController extends Controller
             'method'     => $request->method(),
             'url'        => $request->fullUrl(),
         ];
-        Log::info('=== DATA REQUEST ===', $logContext);
-        Log::info(var_export($request->all(), true), $logContext);
-        Log::info('=== END DATA REQUEST ===', $logContext);
+        if (app()->environment('local', 'testing')) {
+            Log::info('=== DATA REQUEST ===', $logContext);
+            Log::info(var_export($request->all(), true), $logContext);
+            Log::info('=== END DATA REQUEST ===', $logContext);
+        }
 
         $this->validate($request,[
             'title'=> 'required',
@@ -375,15 +378,23 @@ class ProductsController extends Controller
     /**
      * Utility: log exception lengkap dengan context dan stack trace
      */
+
     private function logException(string $message, Exception $e, array $context = []): void
     {
-        Log::error($message, array_merge($context, [
-            'exception_class' => get_class($e),
-            'exception_msg'   => $e->getMessage(),
-            'file'            => $e->getFile(),
-            'line'            => $e->getLine(),
-            'trace'           => $e->getTraceAsString(),
-        ]));
+        if (app()->environment('local', 'testing')) {
+            Log::error($message, array_merge($context, [
+                'exception_class' => get_class($e),
+                'exception_msg'   => $e->getMessage(),
+                'file'            => $e->getFile(),
+                'line'            => $e->getLine(),
+                'trace'           => $e->getTraceAsString(),
+            ]));
+        } else {
+            Log::error($message, array_merge($context, [
+                'exception_class' => get_class($e),
+                'exception_msg'   => $e->getMessage(),
+            ]));
+        }
     }
 
 }
