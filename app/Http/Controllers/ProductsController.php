@@ -204,18 +204,16 @@ class ProductsController extends Controller
     public function update(Request $request, $id)
     {
         // Tambah context global untuk setiap log pada request ini
-        Log::withContext([
+        $logContext = [
             'request_id' => (string) Str::uuid(),
             'user_id'    => optional(Auth::user())->id,
             'ip'         => $request->ip(),
             'method'     => $request->method(),
             'url'        => $request->fullUrl(),
-        ]);
-
-        // Log request
-        Log::info('=== DATA REQUEST ===');
-        Log::info(var_export($request->all(), true));
-        Log::info('=== END DATA REQUEST ===');
+        ];
+        Log::info('=== DATA REQUEST ===', $logContext);
+        Log::info(var_export($request->all(), true), $logContext);
+        Log::info('=== END DATA REQUEST ===', $logContext);
 
         $this->validate($request,[
             'title'=> 'required',
