@@ -2,12 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use Exception;
 use Illuminate\Http\Request;
 use App\Kategori;
 use App\Karya;
 use App\Products;
 use App\ProductImage;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use App\Product\Uploads as Upload;
 use App\Kelengkapan;
@@ -47,7 +49,20 @@ class ProductsController extends Controller
      */
     public function store(Request $request)
     {
-        // dd($request->all());
+        // Tambah context global untuk setiap log pada request ini
+        $logContext = [
+            'request_id' => (string) Str::uuid(),
+            'user_id'    => optional(Auth::user())->id,
+            'ip'         => $request->ip(),
+            'method'     => $request->method(),
+            'url'        => $request->fullUrl(),
+        ];
+        if (app()->environment('local', 'testing')) {
+            Log::info('=== DATA REQUEST ===', $logContext);
+            Log::info(var_export($request->all(), true), $logContext);
+            Log::info('=== END DATA REQUEST ===', $logContext);
+        }
+            
         $this->validate($request,[
             'title'=> 'required',
             'description'=> 'required',
@@ -56,13 +71,13 @@ class ProductsController extends Controller
             'karya_id'=> 'required|exists:karya,id',
             'stock'=> 'required|numeric',
             'sku'=> 'required|unique:products',
-            'asuransi'=> 'required',
+            'asuransi'=> 'nullable',
             'long'=> 'required|numeric',
             'width'=> 'required|numeric',
             'height'=> 'required|numeric',
             'kondisi'=> 'required',
             'kelipatan'=> 'required|numeric',
-            'end_date'=> '',
+            'end_date'=> 'nullable|date_format:Y-m-d H:i:s',
         ],[
             'title.required' => 'Judul harus diisi',
             'description.required' => 'Deskripsi produk harus diisi',
@@ -72,13 +87,13 @@ class ProductsController extends Controller
             'stock.required' => 'Stok produk harus diisi',
             'sku.required' => 'SKU/Kode Unik produk harus diisi',
             'sku.unique' => 'SKU/Kode Unik produk sudah ada, ganti kode yang lain',
-            'asuransi.required' => 'Asuransi produk harus diisi',
             'long.required' => 'Panjang produk harus diisi',
             'width.required' => 'Lebar produk harus diisi',
             'height.required' => 'Tinggi produk harus diisi',
             'kondisi.required' => 'Kondisi produk harus diisi',
             'kelipatan.required' => 'Kelipatan produk harus diisi',
             'end_date.required' => 'Tanggal berakhir harus diisi',
+            'end_date.date_format' => 'Format tanggal harus Y-m-d H:i:s',
         ]);
 
         // save product
@@ -86,6 +101,12 @@ class ProductsController extends Controller
             
             $harga = str_replace(".","", $request->price);
             $kelipatan = str_replace(".","", $request->kelipatan);
+
+            // Normalisasi end_date
+            $endDate = $request->end_date;
+            if ($endDate && strlen($endDate) === 16) { // format Y-m-d H:i
+                $endDate .= ':00';
+            }
 
             $product = Products::create([
                 'user_id'=> Auth::user()->id,
@@ -101,12 +122,12 @@ class ProductsController extends Controller
                 'weight'=> $request->weight,
                 'asuransi'=> $request->asuransi ? 1 : 0,
                 'long'=> $request->long,
+                'height'=> $request->height,
                 'width'=> $request->width,
-                'status'=> $request->status,
+                'status'=> $request->status ?? '1',
                 'kondisi'=> $request->kondisi,
                 'kelipatan'=> $kelipatan,
-                'end_date'=> $request->end_date,
-                'status'=> $request->status ?? '1',
+                'end_date' => $endDate,
             ]);
             //save kelengkapan karya
             if(!empty($request->kelengkapan_id)){
@@ -138,10 +159,10 @@ class ProductsController extends Controller
                 ProductImage::insert($image);
                 
             } catch (Exception $e) {
-                 Log::error("Save images error ".$e->getMessage());   
+                $this->logException('Save images error', $e, ['phase' => 'store', 'product_id' => $product->id ?? null]);
             }
         } catch (Exception $e) {
-            Log::error("Save product error ".$e->getMessage());   
+            $this->logException('Save product error', $e, ['phase' => 'store']);
         }
 
         return redirect()->route('master.product.index');
@@ -182,6 +203,20 @@ class ProductsController extends Controller
      */
     public function update(Request $request, $id)
     {
+        // Tambah context global untuk setiap log pada request ini
+        $logContext = [
+            'request_id' => (string) Str::uuid(),
+            'user_id'    => optional(Auth::user())->id,
+            'ip'         => $request->ip(),
+            'method'     => $request->method(),
+            'url'        => $request->fullUrl(),
+        ];
+        if (app()->environment('local', 'testing')) {
+            Log::info('=== DATA REQUEST ===', $logContext);
+            Log::info(var_export($request->all(), true), $logContext);
+            Log::info('=== END DATA REQUEST ===', $logContext);
+        }
+
         $this->validate($request,[
             'title'=> 'required',
             'description'=> 'required',
@@ -190,13 +225,14 @@ class ProductsController extends Controller
             'karya_id'=> 'required|exists:karya,id',
             'stock'=> 'required|numeric',
             'sku'=> 'required',
-            'asuransi'=> 'required',
+            'asuransi'=> 'nullable',
             'long'=> 'required|numeric',
+            'height'=> 'required|numeric',
             'width'=> 'required|numeric',
             'height'=> 'required|numeric',
             'kondisi'=> 'required',
             'kelipatan'=> 'required|numeric',
-            'end_date'=> '',
+            'end_date'=> 'nullable|date_format:Y-m-d H:i:s',
         ],[
             'title.required' => 'Judul harus diisi',
             'description.required' => 'Deskripsi produk harus diisi',
@@ -205,18 +241,25 @@ class ProductsController extends Controller
             'karya_id.required' => 'Karya produk harus diisi',
             'stock.required' => 'Stok produk harus diisi',
             'sku.required' => 'SKU/Kode Unik produk harus diisi',
-            'asuransi.required' => 'Asuransi produk harus diisi',
             'long.required' => 'Panjang produk harus diisi',
             'width.required' => 'Lebar produk harus diisi',
             'height.required' => 'Tinggi produk harus diisi',
             'kondisi.required' => 'Kondisi produk harus diisi',
             'kelipatan.required' => 'Kelipatan produk harus diisi',
             'end_date.required' => 'Tanggal berakhir harus diisi',
+            'end_date.date_format' => 'Format tanggal harus Y-m-d H:i:s',
         ]);
 
         // save product
         try {
             $product = Products::findOrFail($id);
+
+            // Normalisasi end_date
+            $endDate = $request->end_date;
+            if ($endDate && strlen($endDate) === 16) { // format Y-m-d H:i
+                $endDate .= ':00';
+            }
+
             $product->update([
                 'user_id'=> Auth::user()->id,
                 'kategori_id'=> $request->kategori_id,
@@ -231,12 +274,12 @@ class ProductsController extends Controller
                 'weight'=> $request->weight,
                 'asuransi'=> $request->asuransi ? 1 : 0,
                 'long'=> $request->long,
+                'height'=> $request->height,
                 'width'=> $request->width,
-                'status'=> $request->status,
+                'status'=> $request->status ?? '1',
                 'kondisi'=> $request->kondisi,
                 'kelipatan'=> $request->kelipatan,
-                'end_date'=> $request->end_date,
-                'status'=> $request->status ?? '1',
+                'end_date' => $endDate,
             ]);
             // if(!empty($request->kelengkapan_id)){
             //     //hapus dulu
@@ -284,10 +327,10 @@ class ProductsController extends Controller
                 }
                 
             } catch (Exception $e) {
-                 Log::error("Save images error ".$e->getMessage());   
+                $this->logException('Save images error', $e, ['phase' => 'update', 'product_id' => $id]);
             }
         } catch (Exception $e) {
-            Log::error("Save product error ".$e->getMessage());   
+            $this->logException('Save product error', $e, ['phase' => 'update', 'product_id' => $id]);
         }
 
         return redirect()->route('master.product.index');
@@ -306,7 +349,7 @@ class ProductsController extends Controller
              $product->delete();
              return back();
         } catch (Exception $e) {
-            Log::error("destroy ".$e->getMessage());  
+            $this->logException('Destroy product error', $e, ['product_id' => $id]);
         }
     }
     public function status($id)
@@ -326,9 +369,30 @@ class ProductsController extends Controller
             }
             return back()->with('message', 'Data Bid belum ada!');
         } catch (Exception $e) {
-            Log::error("Reset Bid ".$e->getMessage());
+            $this->logException('Reset Bid error', $e, ['product_id' => $id]);
         }
-       
+    }
+
+    /**
+     * Utility: log exception lengkap dengan context dan stack trace
+     */
+
+    private function logException(string $message, Exception $e, array $context = []): void
+    {
+        if (app()->environment('local', 'testing')) {
+            Log::error($message, array_merge($context, [
+                'exception_class' => get_class($e),
+                'exception_msg'   => $e->getMessage(),
+                'file'            => $e->getFile(),
+                'line'            => $e->getLine(),
+                'trace'           => $e->getTraceAsString(),
+            ]));
+        } else {
+            Log::error($message, array_merge($context, [
+                'exception_class' => get_class($e),
+                'exception_msg'   => $e->getMessage(),
+            ]));
+        }
     }
 
 }
