@@ -7,42 +7,56 @@
 }
 .hero-section h1 {
     font-weight: 700;
-    font-size: 2.5rem;
+    font-size: 3rem;
+    max-width: 700px;
+    margin: 15px auto;
 }
 .hero-section p {
     font-size: 1.1rem;
-    color: #6c757d;
-    max-width: 600px;
+    color: #383b3d;
+    max-width: 800px;
     margin: 15px auto;
 }
+
 .hero-search {
-    max-width: 450px;
+    max-width: 300px; 
     margin: 25px auto;
     display: flex;
-    border: 1px solid #dee2e6;
+    border: 1px solid #00b8a9;
     border-radius: 50px;
-    background-color: #e9ecef4d;
-    padding: 5px;
+    background-color: #00b8a9; 
+    overflow: hidden; 
 }
+
 .hero-search input {
     border: none;
-    background: transparent;
-    flex-grow: 1;
-    padding: 10px 20px;
+    background: transparent; 
+    flex-grow: 1; 
+    padding: 12px 20px; 
+    color: white; 
+    font-size: 1rem;
+    font-weight: 500;
 }
+
+.hero-search input::placeholder {
+    color: white;
+    opacity: 0.9;
+}
+
 .hero-search input:focus {
     outline: none;
     box-shadow: none;
 }
+
 .hero-search button {
     border: none;
-    background-color: #00b8a9; /* Warna hijau toska */
-    color: white;
-    border-radius: 50px;
-    padding: 10px 25px;
+    background: transparent; 
+    color: white; 
+    padding-left: 15px; 
+    padding-right: 20px;
     display: flex;
     align-items: center;
-    gap: 5px;
+    border-radius: 0; 
 }
 
 /* === BAGIAN SLIDER (Modifikasi) === */
@@ -65,7 +79,7 @@
     position: absolute;
     bottom: 25px;
     left: 25px;
-    background-color: rgba(33, 37, 41, 0.85);
+    background-color: rgba(13, 27, 42, 0.9);
     color: white;
     padding: 25px;
     border-radius: 10px;
@@ -172,52 +186,59 @@
     color: #0d6efd; /* Efek hover biru */
 }
 
+/* Card Kustom untuk Blog (DENGAN PERBAIKAN ALIGNMENT) */
 .card-blog {
     background-color: white;
     border: 1px solid #dee2e6;
     border-radius: 10px;
     overflow: hidden; 
-    height: 100%; /* Kartu mengisi tinggi kolom */
+    width: 100%;
+    height: 100%; /* 1. Kartu mengisi tinggi kolom (karena ada d-flex di col-lg-6) */
     
-    /* TAMBAHAN: Jadikan kartu ini flex container */
+    /* 2. Jadikan kartu sebagai flex container vertikal */
     display: flex;
     flex-direction: column;
 }
+
 .card-blog img {
     width: 100%;
     height: 220px;
     object-fit: cover;
 }
+
 .card-blog .card-body {
     padding: 25px;
+    
+    /* 3. Jadikan card-body sebagai flex container vertikal */
     display: flex;
     flex-direction: column;
     
-    /* TAMBAHAN: Buat card-body mengisi sisa ruang */
+    /* 4. Buat card-body mengisi sisa ruang di kartu */
     flex-grow: 1; 
-    
-    /* HAPUS: Ini tidak perlu lagi di sini */
-    /* height: 100%; */ 
 }
+
 .card-blog h5 {
     font-weight: 600;
 }
+
 .card-blog p {
     font-size: 0.95rem;
     color: #6c757d;
     display: -webkit-box;
     -webkit-line-clamp: 3;
-    -webkit-box-orient: vertical;  
+    -webkit-box-orient: vertical; 	
     overflow: hidden;
-    flex-grow: 1; /* Memastikan teks mengisi ruang */
+    
+    /* 5. Buat paragraf mengisi ruang yang tersedia (mendorong tombol ke bawah) */
+    flex-grow: 1; 
 }
+
+/* MENJADI SEPERTI INI */
 .card-blog .btn {
     border-radius: 50px;
     padding: 8px 30px;
     font-weight: 600;
-    align-self: flex-start; /* Tombol tetap di kiri */
-    
-    /* Ini akan mendorong tombol ke bawah */
+    align-self: center; /* <-- TOMBOL JADI DI TENGAH */
     margin-top: auto; 
 }
 
@@ -226,38 +247,34 @@
     display: none;
 }
 
-/* === Tambahan untuk Kartu 'Segera Hadir' === */
-.card-coming-soon {
-    display: flex; /* Menggunakan flexbox untuk tata letak konten */
-    align-items: center; /* Pusatkan secara vertikal */
-    justify-content: center; /* Pusatkan secara horizontal */
-    text-align: center;
-    background: linear-gradient(135deg, #f8f9fa, #e9ecef); /* Gradien abu-abu */
-    color: #495057; /* Warna teks lebih gelap */
-    min-height: 400px; /* Agar tingginya seragam dengan kartu lain */
-    border: 1px dashed #ced4da; /* Border putus-putus */
-}
+@media (max-width: 767px) {
+    
+    /* Opsional: Perkecil tinggi slider di mobile agar tidak terlalu besar */
+    .carousel-item {
+        height: 400px; 
+    }
 
-.card-coming-soon .card-body {
-    display: flex;
-    flex-direction: column;
-    align-items: center; /* Pusatkan item di dalam body */
-    justify-content: center;
-    padding: 25px;
-}
+    .hero-overlay-box {
+        /* * Posisikan ulang agar responsif: 
+         * 15px dari kiri, 15px dari kanan, 15px dari bawah.
+         */
+        left: 15px;
+        right: 15px; 
+        bottom: 15px;
+        
+        /* Hapus 'max-width' agar lebarnya pas (mengikuti left/right) */
+        max-width: none; 
+        
+        /* Perkecil padding di mobile */
+        padding: 20px;
 
-.card-coming-soon h5 {
-    font-size: 1.5rem; /* Judul lebih besar */
-    font-weight: 700;
-    margin-bottom: 10px;
-}
+        /* Buat teks dan tombol jadi rata tengah */
+        text-align: center; 
+    }
 
-.card-coming-soon p {
-    font-size: 1rem;
-    color: #6c757d;
-    margin-bottom: 20px;
-    max-width: 80%; /* Batasi lebar paragraf */
-}
+    .hero-overlay-box h4 {
+        font-size: 1.5rem; /* Perkecil font judul */
+    }
 
 .card-coming-soon .coming-soon-icon {
     font-size: 3rem; /* Ukuran ikon */
@@ -272,4 +289,44 @@
 /* Pastikan kartu coming soon tidak memiliki gambar utama */
 .card-coming-soon img {
     display: none;
+}
+
+@media (max-width: 767px) {
+    
+    /* Opsional: Perkecil tinggi slider di mobile agar tidak terlalu besar */
+    .carousel-item {
+        height: 400px; 
+    }
+
+    .hero-overlay-box {
+        /* * Posisikan ulang agar responsif: 
+         * 15px dari kiri, 15px dari kanan, 15px dari bawah.
+         */
+        left: 15px;
+        right: 15px; 
+        bottom: 15px;
+        
+        /* Hapus 'max-width' agar lebarnya pas (mengikuti left/right) */
+        max-width: none; 
+        
+        /* Perkecil padding di mobile */
+        padding: 20px;
+
+        /* Buat teks dan tombol jadi rata tengah */
+        text-align: center; 
+    }
+
+    .hero-overlay-box h4 {
+        font-size: 1.5rem; /* Perkecil font judul */
+    }
+
+    .hero-overlay-box p {
+        font-size: 0.9rem; /* Perkecil font subtitle */
+        margin-bottom: 15px;
+    }
+    
+    /* Tombol 'Detail' akan otomatis di tengah karena text-align: center */
+    .hero-overlay-box .btn-detail {
+        padding: 6px 22px; /* Sedikit perkecil tombolnya */
+    }
 }

@@ -24,6 +24,7 @@ class Products extends Model
         'weight',
         'asuransi',
         'long',
+        'height',
         'width',
         'status',
         'kondisi',

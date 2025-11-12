@@ -73,12 +73,14 @@ class SettingController extends Controller
             'social.youtube' => 'required',
             'social.twitter' => 'required',
             'social.tiktok' => 'required',
+            'social.threads' => 'required',
         ],[
             'social.facebook'    => 'Can\'t Null',
             'social.instagram'    => 'Can\'t Null',
             'social.youtube'    => 'Can\'t Null',
             'social.twitter'    => 'Can\'t Null',
             'social.tiktok'    => 'Can\'t Null',
+            'social.threads'    => 'Can\'t Null',
         ]);
         try {
             

@@ -11303,3 +11303,8 @@ textarea.form-control-lg {
 .ig {
   background-color: var(--bs-pink) !important;
 }
+
+/* Mengatur tinggi logo di header */
+div.logo img {
+    max-height: 50px; /* <-- INI KUNCINYA */
+}
