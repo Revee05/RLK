@@ -1,12 +1,15 @@
 .footer {
-    background: #F7F7F7;
+    position: relative;
+    background: #f7f7f7;
     padding: 40px 0 20px 0;
-    font-family: 'Inter', Arial, sans-serif;
+    font-family: "Inter", Arial, sans-serif;
     font-size: 15px;
     color: #222;
     background-color: #fafafa;
     border-top: 1px solid #3c3b3b;
+    bottom: -2rem;
 }
+
 .footer__container {
     max-width: 1200px;
     margin: 0 auto;
@@ -143,7 +146,7 @@
         padding: 8px;
         border-radius: 50%;
         background: #f0f0f0;
-        box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
     }
     .footer__copyright {
         font-size: 13px;
