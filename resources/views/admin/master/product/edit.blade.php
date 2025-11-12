@@ -249,7 +249,7 @@ text-transform: capitalize;
             allowInput: true,
             enableTime: true,
             noCalendar: false,
-            dateFormat: 'Y-m-d H:i',
+            dateFormat: 'Y-m-d H:i:S',
             time_24hr: true,
             disableMobile:true
         });

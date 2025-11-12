@@ -11,7 +11,7 @@
         width: 80px;
         overflow: hidden;
         position: relative;
-          border: 1px solid  #5a5c69;
+          border: 1px solid  #0425ffff;
     }
     .figure img {
         height: 100%;
@@ -32,11 +32,28 @@
         </a>
     </h1>
 
+    {{-- Success notification --}}
+    @include('admin.partials._success')
+    @if(session('success'))
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        {{ session('success') }}
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+        </button>
+    </div>
+    @endif
+    @if(session('error'))
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        {{ session('error') }}
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+        </button>
+    </div>
+    @endif
+
     <!-- DataTales Example -->
     <div class="card shadow mb-4">
         <div class="card-body">
-            {{-- Success notification --}}
-            @include('admin.partials._success')
             <div class="table-responsive">
                 <table class="table table-bordered table-sm" id="dataTable" width="100%" cellspacing="0">
                     <thead>
