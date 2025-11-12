@@ -17,29 +17,29 @@
                 <div class="card-body">
                     <div class="form-group">
                         {{ Form::label('name', 'Facebook') }}
-                        {{ Form::text('social[facebook]', $setting->social['facebook'] ?? '', array('class' => 'form-control form-control-sm ','placeholder' => 'Nama Facebook')) }}
+                        {{ Form::text('social[facebook]', $setting->social['facebook'] ?? '', array('class' => 'form-control form-control-sm ','placeholder' => 'Link Facebook')) }}
                     </div>
                     <div class="form-group">
                         {{ Form::label('name', 'Instagram') }}
-                        {{ Form::text('social[instagram]', $setting->social['instagram'] ?? '', array('class' => 'form-control form-control-sm ','placeholder' => 'Nama instagram')) }}
+                        {{ Form::text('social[instagram]', $setting->social['instagram'] ?? '', array('class' => 'form-control form-control-sm ','placeholder' => 'Link instagram')) }}
                     </div>
                     <div class="form-group">
                         {{ Form::label('name', 'Youtube') }}
-                        {{ Form::text('social[youtube]', $setting->social['youtube'] ?? '', array('class' => 'form-control form-control-sm ','placeholder' => 'Nama youtube')) }}
+                        {{ Form::text('social[youtube]', $setting->social['youtube'] ?? '', array('class' => 'form-control form-control-sm ','placeholder' => 'Link youtube')) }}
                     </div>
                     <div class="form-group">
                         {{ Form::label('name', 'Twitter') }}
-                        {{ Form::text('social[twitter]', $setting->social['twitter'] ?? '', array('class' => 'form-control form-control-sm ','placeholder' => 'Nama twitter')) }}
+                        {{ Form::text('social[twitter]', $setting->social['twitter'] ?? '', array('class' => 'form-control form-control-sm ','placeholder' => 'Link twitter')) }}
                     </div>
                     <div class="form-group">
                         {{ Form::label('name', 'Tiktok') }}
-                        {{ Form::text('social[tiktok]', $setting->social['tiktok'] ?? '', array('class' => 'form-control form-control-sm ','placeholder' => 'Nama tiktok')) }}
+                        {{ Form::text('social[tiktok]', $setting->social['tiktok'] ?? '', array('class' => 'form-control form-control-sm ','placeholder' => 'Link tiktok')) }}
                     </div>
-                    
-                    
-                    
-                    
-                    
+                    <div class="form-group">
+                        {{ Form::label('name', 'Threads') }}
+                        {{ Form::text('social[threads]', $setting->social['threads'] ?? '', array('class' => 'form-control form-control-sm ','placeholder' => 'Link Threads')) }}
+                    </div>
+
                     <input type="hidden" name="id" value="{{$setting->id}}">
                     {{ Form::submit('Simpan', array('class' => 'btn btn-primary btn-sm rounded-0')) }}
                     
