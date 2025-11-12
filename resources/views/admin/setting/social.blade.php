@@ -5,49 +5,49 @@
 <!-- Begin Page Content -->
 <div class="container-fluid">
     <!-- Page Heading -->
-    <h1 class="h5 mb-4 text-gray-800">Setting
-    <small>Media Social</small>
-    {{-- <a href="" class="btn btn-primary btn-sm float-right"><i class="fa fa-plus-circle"></i> Create</a> --}}
-    </h1>
-    {{ Form::open(array('route' => 'setting.update.social')) }}
+    <div class="d-flex justify-content-between align-items-center mb-2">
+        <h1 class="h5 text-gray-800 mb-0">Setting
+            <small>Media Social</small>
+        </h1>
+    </div>
+    {{ Form::open(['route' => 'setting.update.social', 'onsubmit' => 'return showSuccess()']) }}
     <div class="row">
         <div class="col-sm-6">
-            
             <div class="card shadow mb-4 rounded-0">
                 <div class="card-body">
+                    @if(session('message'))
+                        <div id="notif-success" class="alert alert-success py-2 px-3 mb-3" style="font-size: 0.95rem;">
+                            {{ session('message') }}
+                        </div>
+                    @endif
                     <div class="form-group">
                         {{ Form::label('name', 'Facebook') }}
-                        {{ Form::text('social[facebook]', $setting->social['facebook'] ?? '', array('class' => 'form-control form-control-sm ','placeholder' => 'Link Facebook')) }}
+                        {{ Form::text('social[facebook]', $setting->social['facebook'] ?? '', ['class' => 'form-control form-control-sm','placeholder' => 'Link Facebook']) }}
                     </div>
                     <div class="form-group">
                         {{ Form::label('name', 'Instagram') }}
-                        {{ Form::text('social[instagram]', $setting->social['instagram'] ?? '', array('class' => 'form-control form-control-sm ','placeholder' => 'Link instagram')) }}
+                        {{ Form::text('social[instagram]', $setting->social['instagram'] ?? '', ['class' => 'form-control form-control-sm','placeholder' => 'Link instagram']) }}
                     </div>
                     <div class="form-group">
                         {{ Form::label('name', 'Youtube') }}
-                        {{ Form::text('social[youtube]', $setting->social['youtube'] ?? '', array('class' => 'form-control form-control-sm ','placeholder' => 'Link youtube')) }}
+                        {{ Form::text('social[youtube]', $setting->social['youtube'] ?? '', ['class' => 'form-control form-control-sm','placeholder' => 'Link youtube']) }}
                     </div>
                     <div class="form-group">
                         {{ Form::label('name', 'Twitter') }}
-                        {{ Form::text('social[twitter]', $setting->social['twitter'] ?? '', array('class' => 'form-control form-control-sm ','placeholder' => 'Link twitter')) }}
+                        {{ Form::text('social[twitter]', $setting->social['twitter'] ?? '', ['class' => 'form-control form-control-sm','placeholder' => 'Link twitter']) }}
                     </div>
                     <div class="form-group">
                         {{ Form::label('name', 'Tiktok') }}
-                        {{ Form::text('social[tiktok]', $setting->social['tiktok'] ?? '', array('class' => 'form-control form-control-sm ','placeholder' => 'Link tiktok')) }}
+                        {{ Form::text('social[tiktok]', $setting->social['tiktok'] ?? '', ['class' => 'form-control form-control-sm','placeholder' => 'Link tiktok']) }}
                     </div>
                     <div class="form-group">
                         {{ Form::label('name', 'Threads') }}
-                        {{ Form::text('social[threads]', $setting->social['threads'] ?? '', array('class' => 'form-control form-control-sm ','placeholder' => 'Link Threads')) }}
+                        {{ Form::text('social[threads]', $setting->social['threads'] ?? '', ['class' => 'form-control form-control-sm','placeholder' => 'Link Threads']) }}
                     </div>
-
                     <input type="hidden" name="id" value="{{$setting->id}}">
-                    {{ Form::submit('Simpan', array('class' => 'btn btn-primary btn-sm rounded-0')) }}
-                    
+                    {{ Form::submit('Simpan', ['class' => 'btn btn-primary btn-sm rounded-0']) }}
                 </div>
             </div>
-            {{-- <p>
-            <div class="badge badge-danger"><i class="fa fa-exclamation"></i></div>
-                Simpan nama usernamenya saja !</p> --}}
         </div>
     </div>
     {{ Form::close() }}
@@ -55,4 +55,16 @@
     @include('admin.partials._errors')
 </div>
 <!-- /.container-fluid -->
+
+@push('scripts')
+<script>
+function showSuccess() {
+    document.getElementById('notif-success').innerText = 'Data media sosial berhasil disimpan!';
+    setTimeout(function() {
+        document.getElementById('notif-success').innerText = '';
+    }, 2000);
+    return true; // lanjutkan submit
+}
+</script>
+@endpush
 @endsection
