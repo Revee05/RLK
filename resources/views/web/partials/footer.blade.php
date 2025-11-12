@@ -4,7 +4,7 @@
         <div class="footer__left">
             <img src="{{ asset('assets/img/690969f1e0df8.png') }}" class="footer__logo" alt="Logo">
             <div class="footer__copyright">
-                © 2023 Rasanya Lelang Karya. All rights reserved.
+                © 2025 Rasanya Lelang Karya. All rights reserved.
             </div>
             <div class="footer__links">
                 <a href="#">Terms of Service</a> | <a href="#">Privacy Policy</a>
@@ -31,13 +31,13 @@
                 <a href="https://api.whatsapp.com/send/?phone=6285742829289" class="footer__icon">
                     <i class="fab fa-whatsapp"></i>
                 </a>
-                <a href="https://instagram.com/{{$social['instagram'] ?? '#'}}" target="_blank" class="footer__icon"><i
+                <a href="{{ $social['instagram'] ?? '#' }}" target="_blank" class="footer__icon"><i
                         class="fab fa-instagram"></i></a>
-                <a href="https://youtube.com/{{$social['youtube'] ?? '#'}}" target="_blank" class="footer__icon"><i
+                <a href="https://youtube.com/{{ $social['youtube'] ?? '#' }}" target="_blank" class="footer__icon"><i
                         class="fab fa-youtube"></i></a>
-                <a href="{{$social['facebook'] ?? '#'}}" target="_blank" class="footer__icon"><i
+                <a href="{{ $social['facebook'] ?? '#' }}" target="_blank" class="footer__icon"><i
                         class="fab fa-facebook"></i></a>
-                <a href="{{$social['linkedin'] ?? '#'}}" target="_blank" class="footer__icon"><i
+                <a href="{{ $social['linkedin'] ?? '#' }}" target="_blank" class="footer__icon"><i
                         class="fab fa-linkedin"></i></a>
             </div>
         </div>
