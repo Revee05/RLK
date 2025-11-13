@@ -15,10 +15,18 @@ require_once  __DIR__ . "/admin.php";
 require_once  __DIR__ . "/account.php";
 
 Auth::routes();
-
+// sample routes
 Route::get('/cart', function () {
     return view('web.cart');
 });
+Route::get('/all-other-product', function () {
+    return view('web.productsPage.MerchAllProductPage');
+})->name('all-other-products');
+Route::get('/detail-products', function () {
+    return view('web.productsPage.MerchDetailProductPage');
+})->name('detail-products');
+
+// prod routes
 Route::get('/','Web\HomeController@index')->name('home');
 Route::get('/lelang','Web\HomeController@lelang')->name('lelang');
 Route::get('/blogs','Web\BlogController@index')->name('blogs');
