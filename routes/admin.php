@@ -34,6 +34,14 @@ Route::delete('blogs/image/{id}/delete', 'BlogsController@deleteImage');
 Route::post('blogs/image/{id}/replace', 'BlogsController@replaceImage');
 Route::post('blogs/image/{id}/set-cover/{blogId}', 'BlogsController@setCover');
 
+/*
+=========================================================
+==   TAMBAHKAN ROUTE EVENT ANDA DI SINI BERSAMA BLOGS  ==
+=========================================================
+*/
+Route::resource('/events','EventController',['as' => 'admin']);
+
+
 Route::group(['prefix' => '/master'], function () {
     Route::resource('/kategori','KategoriController',['as' => 'master']);
     Route::resource('/sliders','SlidersController',['as' => 'master']);
@@ -82,9 +90,3 @@ Route::resource('/daftar-pemenang','DaftarPemenangController',['as' => 'admin'])
  Route::get('/user/status/{id}','UsersController@status')->name('admin.user.status');
  Route::resource('/user','UsersController',['as' => 'admin']);
 });
-
-
-
-
-
-
