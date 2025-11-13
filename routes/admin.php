@@ -30,6 +30,10 @@ Route::resource('/posts','PostsController',['as'=>'admin']);
 Route::get('/blogs/status/{id}','BlogsController@status')->name('admin.blogs.status');
 Route::post('blogs/taging','BlogsController@getTag')->name('admin.blogs.tagpost');
 Route::resource('/blogs','BlogsController',['as'=>'admin']);
+Route::delete('blogs/image/{id}/delete', 'BlogsController@deleteImage');
+Route::post('blogs/image/{id}/replace', 'BlogsController@replaceImage');
+Route::post('blogs/image/{id}/set-cover/{blogId}', 'BlogsController@setCover');
+
 Route::group(['prefix' => '/master'], function () {
     Route::resource('/kategori','KategoriController',['as' => 'master']);
     Route::resource('/sliders','SlidersController',['as' => 'master']);
