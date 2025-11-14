@@ -39,17 +39,26 @@
         <small class="text-muted">Hold CTRL/Command untuk memilih lebih dari satu kategori.</small>
     </div>
     <div class="mb-3">
-        <label for="images" class="form-label">Product Images</label>
+        <label for="images" class="form-label">Product Images - bisa upload lebih dari satu - max 2Mb/img</label>
         <input type="file" name="images[]" class="form-control" multiple onchange="previewImages(event)">
-        <div class="row mt-2" id="preview-container"></div>
+        <div class="row mt-2 g-3" id="preview-container"></div>
         @if(isset($merchProduct) && $merchProduct->images)
-            <div class="row mt-2">
+            <div class="row mt-3 g-3">
                 @foreach($merchProduct->images as $img)
-                    <div class="col-auto mb-2 text-center">
-                        <img src="{{ asset($img->image_path) }}" alt="Image" width="60" class="mb-1 d-block mx-auto">
-                        <div class="form-check mt-1">
-                            <input class="form-check-input" type="checkbox" name="delete_images[]" value="{{ $img->id }}" id="delimg{{ $img->id }}">
-                            <label class="form-check-label small" for="delimg{{ $img->id }}">Hapus</label>
+                    <div class="col-auto">
+                        <div class="card shadow-sm" style="width: 120px;">
+                            <img src="{{ asset($img->image_path) }}" alt="Image" class="card-img-top mt-2" style="height: 90px; object-fit: cover;">
+                            <div class="card-body p-2">
+                                <input type="text"
+                                       name="existing_image_labels[{{ $img->id }}]"
+                                       class="form-control form-control-sm mb-1"
+                                       placeholder="Label"
+                                       value="{{ old('existing_image_labels.'.$img->id, $img->label) }}">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="delete_images[]" value="{{ $img->id }}" id="delimg{{ $img->id }}">
+                                    <label class="form-check-label small" for="delimg{{ $img->id }}">Hapus</label>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 @endforeach
@@ -72,18 +81,35 @@
 <script>
 function previewImages(event) {
     const files = event.target.files;
-    const container = document.getElementById('preview-container');
-    container.innerHTML = '';
+    const preview = document.getElementById('preview-container');
+    preview.innerHTML = '';
     if(files) {
-        Array.from(files).forEach(file => {
+        Array.from(files).forEach((file, idx) => {
             const reader = new FileReader();
             reader.onload = function(e) {
+                const col = document.createElement('div');
+                col.className = 'col-auto';
+                const card = document.createElement('div');
+                card.className = 'card shadow-sm';
+                card.style.width = '120px';
                 const img = document.createElement('img');
                 img.src = e.target.result;
-                img.width = 80;
-                img.className = "me-2 mb-2";
-                container.appendChild(img);
-            }
+                img.className = 'card-img-top';
+                img.style.height = '90px';
+                img.style.objectFit = 'cover';
+                const body = document.createElement('div');
+                body.className = 'card-body p-2';
+                const input = document.createElement('input');
+                input.type = 'text';
+                input.name = 'image_labels['+idx+']';
+                input.placeholder = 'Label';
+                input.className = 'form-control form-control-sm mb-1';
+                body.appendChild(input);
+                card.appendChild(img);
+                card.appendChild(body);
+                col.appendChild(card);
+                preview.appendChild(col);
+            };
             reader.readAsDataURL(file);
         });
     }

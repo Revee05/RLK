@@ -34,6 +34,8 @@ class MerchProductController extends Controller
                 'status' => 'required',
                 'categories' => 'nullable|array',
                 'images.*' => 'nullable|image|max:2048',
+                'image_labels' => 'nullable|array',
+                'image_labels.*' => 'nullable|string|max:255',
             ]);
 
             $data = $request->only(['name', 'description', 'price', 'stock', 'status', 'discount']);
@@ -49,11 +51,12 @@ class MerchProductController extends Controller
             // Handle multi image upload with Uploads class
             if ($request->hasFile('images')) {
                 $uploader = new Uploads();
-                foreach ($request->file('images') as $img) {
+                foreach ($request->file('images') as $idx => $img) {
                     $path = $uploader->handleUploadProduct($img);
                     MerchProductImage::create([
                         'merch_product_id' => $merchProduct->id,
                         'image_path' => $path,
+                        'label' => $request->image_labels[$idx] ?? null,
                     ]);
                 }
             }
@@ -76,7 +79,6 @@ class MerchProductController extends Controller
     {
         try {
             $merchProduct = MerchProduct::findOrFail($id);
-
             $request->validate([
                 'name' => 'required',
                 'price' => 'required|integer',
@@ -85,6 +87,10 @@ class MerchProductController extends Controller
                 'status' => 'required',
                 'categories' => 'nullable|array',
                 'images.*' => 'nullable|image|max:2048',
+                'image_labels' => 'nullable|array',
+                'image_labels.*' => 'nullable|string|max:255',
+                'existing_image_labels' => 'nullable|array',
+                'existing_image_labels.*' => 'nullable|string|max:255',
             ]);
 
             $data = $request->only(['name', 'description', 'price', 'stock', 'status', 'discount']);
@@ -111,14 +117,25 @@ class MerchProductController extends Controller
                 }
             }
 
-            // Handle new images with Uploads class
+            // Update label gambar yang masih ada
+            if ($request->has('existing_image_labels')) {
+                foreach ($request->existing_image_labels as $imgId => $lbl) {
+                    $img = $merchProduct->images()->find($imgId);
+                    if ($img) {
+                        $img->label = $lbl;
+                        $img->save();
+                    }
+                }
+            }
+            // Upload gambar baru + label
             if ($request->hasFile('images')) {
                 $uploader = new \App\Product\Uploads();
-                foreach ($request->file('images') as $img) {
+                foreach ($request->file('images') as $idx => $img) {
                     $path = $uploader->handleUploadProduct($img);
                     \App\models\MerchProductImage::create([
                         'merch_product_id' => $merchProduct->id,
                         'image_path' => $path,
+                        'label' => $request->image_labels[$idx] ?? null,
                     ]);
                 }
             }

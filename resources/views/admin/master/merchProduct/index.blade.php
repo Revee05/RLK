@@ -47,7 +47,12 @@
                 </td>
                 <td>
                     @foreach($merchProduct->images as $img)
-                        <img src="{{ asset($img->image_path) }}" alt="Image" width="40" class="mb-1">
+                        <div class="d-inline-block text-center me-1">
+                            <img src="{{ asset($img->image_path) }}" alt="Image" width="40" class="mb-1">
+                            @if($img->label)
+                                <div class="small">{{ $img->label }}</div>
+                            @endif
+                        </div>
                     @endforeach
                 </td>
                 <td>
