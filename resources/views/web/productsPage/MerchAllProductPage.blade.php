@@ -9,7 +9,7 @@
 <div class="container py-4">
     <h2 class="text-center fw-bold mb-4">Products Design</h2>
     <div class="d-flex justify-content-between align-items-center mb-3">
-        <input type="text" class="form-control w-auto" style="min-width:220px;" placeholder="Search product...">
+        <input type="text" class="form-control w-auto" style="min-width:1000px; border-radius:50px;" placeholder="Search product...">
         <div>
             <button class="btn btn-outline-secondary btn-sm me-2">Filter</button>
             <button class="btn btn-outline-secondary btn-sm">Sort</button>

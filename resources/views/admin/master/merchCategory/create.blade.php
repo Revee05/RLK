@@ -5,7 +5,11 @@
 @section('merchcategory','active')
 @section('content')
 <div class="container">
-    <h1>Add Category</h1>
-    @include('admin.master.merchCategory.form', ['mode' => 'create'])
+    <h4>Tambah Kategori Merchandise</h4>
+    @include('admin.master.merchCategory.form')
 </div>
 @endsection
+
+@push('scripts')
+    @stack('scripts')
+@endpush

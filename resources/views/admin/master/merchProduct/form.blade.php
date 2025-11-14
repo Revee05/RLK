@@ -40,12 +40,17 @@
     </div>
     <div class="mb-3">
         <label for="images" class="form-label">Product Images</label>
-        <input type="file" name="images[]" class="form-control" multiple>
+        <input type="file" name="images[]" class="form-control" multiple onchange="previewImages(event)">
+        <div class="row mt-2" id="preview-container"></div>
         @if(isset($merchProduct) && $merchProduct->images)
             <div class="row mt-2">
                 @foreach($merchProduct->images as $img)
-                    <div class="col-auto mb-2">
-                        <img src="{{ asset('storage/'.$img->image_path) }}" alt="Image" width="80">
+                    <div class="col-auto mb-2 text-center">
+                        <img src="{{ asset($img->image_path) }}" alt="Image" width="60" class="mb-1 d-block mx-auto">
+                        <div class="form-check mt-1">
+                            <input class="form-check-input" type="checkbox" name="delete_images[]" value="{{ $img->id }}" id="delimg{{ $img->id }}">
+                            <label class="form-check-label small" for="delimg{{ $img->id }}">Hapus</label>
+                        </div>
                     </div>
                 @endforeach
             </div>
@@ -54,11 +59,34 @@
     <div class="mb-3">
         <label for="status" class="form-label">Status</label>
         <select name="status" class="form-control">
-            <option value="active" {{ (old('status', $merchProduct->status ?? '') == 'active') ? 'selected' : '' }}>Active</option>
-            <option value="inactive" {{ (old('status', $merchProduct->status ?? '') == 'inactive') ? 'selected' : '' }}>Inactive</option>
+            <option value="active" {{ (old('status', $merchProduct->status ?? 'inactive') == 'active') ? 'selected' : '' }}>Publish</option>
+            <option value="inactive" {{ (old('status', $merchProduct->status ?? 'inactive') == 'inactive') ? 'selected' : '' }}>Draft</option>
         </select>
     </div>
     <button type="submit" class="btn btn-primary">
         {{ isset($mode) && $mode == 'edit' ? 'Update' : 'Create' }}
     </button>
 </form>
+
+@push('scripts')
+<script>
+function previewImages(event) {
+    const files = event.target.files;
+    const container = document.getElementById('preview-container');
+    container.innerHTML = '';
+    if(files) {
+        Array.from(files).forEach(file => {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const img = document.createElement('img');
+                img.src = e.target.result;
+                img.width = 80;
+                img.className = "me-2 mb-2";
+                container.appendChild(img);
+            }
+            reader.readAsDataURL(file);
+        });
+    }
+}
+</script>
+@endpush

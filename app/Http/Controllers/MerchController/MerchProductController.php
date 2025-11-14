@@ -88,7 +88,7 @@ class MerchProductController extends Controller
             ]);
 
             $data = $request->only(['name', 'description', 'price', 'stock', 'status', 'discount']);
-            $data['slug'] = Str::slug($request->name);
+            $data['slug'] = \Illuminate\Support\Str::slug($request->name);
 
             $merchProduct->update($data);
 
@@ -97,12 +97,26 @@ class MerchProductController extends Controller
                 $merchProduct->categories()->sync($request->categories);
             }
 
+            // Hapus gambar lama jika dicentang
+            if ($request->has('delete_images')) {
+                foreach ($request->delete_images as $imgId) {
+                    $img = $merchProduct->images()->find($imgId);
+                    if ($img) {
+                        // Hapus file fisik di public/uploads/...
+                        if (file_exists(public_path($img->image_path))) {
+                            unlink(public_path($img->image_path));
+                        }
+                        $img->delete();
+                    }
+                }
+            }
+
             // Handle new images with Uploads class
             if ($request->hasFile('images')) {
-                $uploader = new Uploads();
+                $uploader = new \App\Product\Uploads();
                 foreach ($request->file('images') as $img) {
                     $path = $uploader->handleUploadProduct($img);
-                    MerchProductImage::create([
+                    \App\models\MerchProductImage::create([
                         'merch_product_id' => $merchProduct->id,
                         'image_path' => $path,
                     ]);
@@ -119,10 +133,22 @@ class MerchProductController extends Controller
     public function destroy($id)
     {
         try {
-            $merchProduct = MerchProduct::findOrFail($id);
+            $merchProduct = MerchProduct::with('images')->findOrFail($id);
+
+            // Hapus file fisik gambar di public/uploads/...
+            foreach ($merchProduct->images as $img) {
+                if (file_exists(public_path($img->image_path))) {
+                    unlink(public_path($img->image_path));
+                }
+            }
+
+            // Hapus relasi gambar di database
             $merchProduct->images()->delete();
+            // Hapus relasi kategori
             $merchProduct->categories()->detach();
+            // Hapus produk
             $merchProduct->delete();
+
             return redirect()->route('master.merchProduct.index')->with('success', 'Product deleted!');
         } catch (\Exception $e) {
             \Log::error('MerchProduct Delete Error: '.$e->getMessage(), ['trace' => $e->getTraceAsString()]);

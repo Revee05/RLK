@@ -23,13 +23,18 @@ class MerchCategoryController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'name' => 'required|unique:merch_categories,name',
+            'categories' => 'required|array|min:1',
+            'categories.*.name' => 'required|string|distinct|unique:merch_categories,name',
         ]);
-        MerchCategory::create([
-            'name' => $request->name,
-            'slug' => Str::slug($request->name),
-        ]);
-        return redirect()->route('master.merchCategory.index')->with('success', 'Category created!');
+
+        foreach ($request->categories as $category) {
+            MerchCategory::create([
+                'name' => $category['name'],
+                'slug' => \Illuminate\Support\Str::slug($category['name']),
+            ]);
+        }
+
+        return redirect()->route('master.merchCategory.index')->with('success', 'Categories created!');
     }
 
     public function edit($id)
