@@ -3,11 +3,6 @@
 
 @section('css')
     <link href="{{ asset('css/MerchProductPage.css') }}" rel="stylesheet">
-    <style>
-        .cell.span-2 {
-            grid-column: span 2;
-        }
-    </style>
 @endsection
 
 @section('content')
@@ -42,7 +37,6 @@ let isLoading = false;
 function renderProduct(product, idx) {
     let batchIdx = idx % 21;
     let cellClass = "cell";
-    // Atur cell span-2 sesuai pola
     if (batchIdx === 0 || batchIdx === 8 || batchIdx === 16) cellClass += " span-2";
     let imageUrl = (product.images && product.images.length > 0 && product.images[0].image_path)
         ? `/${product.images[0].image_path}`
@@ -50,12 +44,11 @@ function renderProduct(product, idx) {
     return `
     <div class="${cellClass}">
         <div class="card product-card h-100">
+            ${product.discount ? `<div class="discount-badge">-${product.discount}%</div>` : ''}
             <img src="${imageUrl}" class="card-img-top" alt="${product.name}">
             <div class="card-body text-left p-2">
                 <div class="product-title">${product.name}</div>
                 <div class="product-price">Rp ${Number(product.price).toLocaleString('id-ID')}</div>
-                <div class="product-stock">Stok: ${product.stock}</div>
-                ${product.discount ? `<div class="product-discount">Diskon: ${product.discount}%</div>` : ''}
             </div>
         </div>
     </div>
@@ -70,7 +63,12 @@ function fetchProducts(batch = 1) {
         .then(data => {
             const grid = document.getElementById('products-grid');
             data.products.forEach((product, idx) => {
-                grid.insertAdjacentHTML('beforeend', renderProduct(product, (batch-1)*21 + idx));
+                if (product) {
+                    grid.insertAdjacentHTML('beforeend', renderProduct(product, idx));
+                } else {
+                    // Optional: render cell kosong jika ingin grid tetap rapat
+                    grid.insertAdjacentHTML('beforeend', `<div class="cell${([0,8,16].includes(idx) ? ' span-2' : '')}"></div>`);
+                }
             });
             if(data.count < 21) {
                 document.getElementById('load-more').style.display = 'none';

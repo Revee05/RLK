@@ -17,30 +17,54 @@ class GetMerchProduct extends Controller
         $batch = max(1, (int) $request->query('batch', 1));
         $perPage = 21;
 
-        // Strict: force perPage to always be 21, ignore any user input for limit
-        $products = MerchProduct::with('images')
-            ->select(['id', 'name', 'slug', 'price', 'stock', 'status', 'discount'])
+        // Ambil produk featured dan normal
+        $featured = MerchProduct::with('images')
+            ->select(['id', 'name', 'slug', 'price', 'stock', 'status', 'discount', 'type'])
             ->where('status', 'active')
-            ->skip(($batch - 1) * $perPage)
-            ->take($perPage)
-            ->get();
+            ->where('type', 'featured')
+            ->orderByDesc('created_at')
+            ->skip(($batch - 1) * 3)
+            ->take(3)
+            ->get()
+            ->values();
 
-        // Ensure strict max 21 per batch
-        if ($products->count() > $perPage) {
-            $products = $products->slice(0, $perPage);
+        $normal = MerchProduct::with('images')
+            ->select(['id', 'name', 'slug', 'price', 'stock', 'status', 'discount', 'type'])
+            ->where('status', 'active')
+            ->where('type', 'normal')
+            ->orderByDesc('created_at')
+            ->skip(($batch - 1) * 18)
+            ->take(18)
+            ->get()
+            ->values();
+
+        // Susun urutan produk: featured hanya di span2, normal hanya di cell biasa
+        $result = [];
+        $featuredIdx = 0;
+        $normalIdx = 0;
+        $span2Idx = [0, 8, 16];
+
+        for ($i = 0; $i < $perPage; $i++) {
+            if (in_array($i, $span2Idx)) {
+                // Hanya featured di cell span-2
+                $result[] = isset($featured[$featuredIdx]) ? $featured[$featuredIdx++] : null;
+            } else {
+                // Hanya normal di cell biasa
+                $result[] = isset($normal[$normalIdx]) ? $normal[$normalIdx++] : null;
+            }
         }
 
         // Log hasil fetching
         \Log::info('Fetch merch products batch', [
             'batch' => $batch,
-            'count' => $products->count(),
-            'product_ids' => $products->pluck('id')->toArray(),
+            'count' => count(array_filter($result)),
+            'product_ids' => collect($result)->filter()->pluck('id')->toArray(),
         ]);
 
         return response()->json([
             'batch' => $batch,
-            'count' => $products->count(),
-            'products' => $products->values(),
+            'count' => count(array_filter($result)),
+            'products' => array_values($result),
         ]);
     }
 }

@@ -50,32 +50,104 @@
 
 /* Card style */
 .card.product-card {
-    border-radius: 10px;
-    min-height: 150px;
-    border: 1px solid #000000;
-    box-shadow: 2px 2px 5px rgba(26, 1, 1, 0.13);
+    min-height: 170px;
+    box-shadow: 0 4px 16px rgba(5,26,54,0.08), 0 1.5px 4px rgba(5,26,54,0.10);
     cursor: pointer;
+    background: linear-gradient(135deg, #f8fafc 80%, #e3e9f3 100%);
+    transition: box-shadow 0.2s, transform 0.2s;
+    position: relative;
+    overflow: hidden;
+    /* border: 1px solid crimson; */
 }
 
-.card-img-top {
-    height: 150px;
+.card-img-top { /* Untuk cell span 1 (normal) */
+    width: 100%;
+    aspect-ratio: 4 / 3;
     object-fit: cover;
-    border-radius: 10px 10px 0 0;
+    display: block;
+    /* border: 1px solid crimson; */
+}
+
+.cell.span-2 .card-img-top {
+    height: 180px;              /* Untuk cell span 2 (featured) */
+    aspect-ratio: 2.70 / 1;
 }
 
 .card-body {
-    padding: 8px 6px;
-    margin-left: 10px;
+    padding: 14px 12px 12px 12px;
+    margin-left: 15px;
+    /* border: 1px solid #ff0000; */
 }
 
-.product-title,
+.product-title {
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: #051A36;
+    margin-bottom: 4px;
+    letter-spacing: 0.01em;
+}
+
 .product-price {
-    font-size: 0.95rem;
+    font-size: 1rem;
+    font-weight: 700;
+    color: #0d6efd;
+    margin-bottom: 2px;
+}
+
+.product-discount {
+    font-size: 0.92rem;
+    color: #e74c3c;
+    font-weight: 500;
+    margin-bottom: 2px;
+}
+
+.product-stock {
+    font-size: 0.85rem;
+    color: #6c757d;
+    margin-bottom: 0;
+}
+
+.cell {
+    transition: transform 0.15s, box-shadow 0.15s;
+    background: #fff;
+    box-shadow: 0 1px 4px rgba(5,26,54,0.06);
+    overflow: hidden;
+    /* border: 1px solid crimson; */
+}
+
+.cell:hover {
+    transform: translateY(-2px) scale(1.01);
+    box-shadow: 0 4px 16px rgba(5,26,54,0.13);
+    border-color: #d0d7e2;
 }
 
 .cell.span-2 {
     grid-column: span 2;
 }
+
+/* Tambahkan di bawah .card.product-card */
+.discount-badge {
+    position: absolute;
+    top: 2px;
+    right: 2px;
+    z-index: 2;
+    background: linear-gradient(90deg, #ff5858 60%, #ffb347 100%);
+    color: #fff;
+    font-weight: bold;
+    font-size: 1rem;
+    padding: 6px 14px 6px 12px;
+    border-radius: 18px 6px 18px 6px;
+    box-shadow: 0 2px 8px rgba(255,88,88,0.12);
+    letter-spacing: 0.02em;
+    border: 2px solid #fff;
+    transition: transform 0.15s;
+    pointer-events: none;
+}
+
+.card.product-card:hover .discount-badge {
+    transform: scale(1.08) rotate(-2deg);
+}
+
 
 @media (max-width: 991.98px) {
     .products-grid-parent {
@@ -85,11 +157,4 @@
         grid-column: span 2;
     }
 }
-@media (max-width: 575.98px) {
-    .products-grid-parent {
-        grid-template-columns: 1fr;
-    }
-    .cell.span-2 {
-        grid-column: span 1;
-    }
-}
+
