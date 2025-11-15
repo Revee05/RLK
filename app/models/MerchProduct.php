@@ -8,7 +8,7 @@ class MerchProduct extends Model
     protected $table = 'merch_products';
 
     protected $fillable = [
-        'name', 'slug', 'description', 'price', 'stock', 'status', 'discount'
+        'name', 'slug', 'description', 'price', 'stock', 'status', 'discount', 'type'
     ];
 
     // Relasi ke gambar (multi image)

@@ -34,6 +34,7 @@ class MerchProductController extends Controller
                 'status' => 'required',
                 'categories' => 'nullable|array',
                 'images.*' => 'nullable|image|max:2048',
+                'type' => 'required|in:normal,featured',
                 'image_labels' => 'nullable|array',
                 'image_labels.*' => 'nullable|string|max:255',
             ]);
@@ -86,6 +87,7 @@ class MerchProductController extends Controller
                 'discount' => 'nullable|integer',
                 'status' => 'required',
                 'categories' => 'nullable|array',
+                'type' => 'required|in:normal,featured',
                 'images.*' => 'nullable|image|max:2048',
                 'image_labels' => 'nullable|array',
                 'image_labels.*' => 'nullable|string|max:255',

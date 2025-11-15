@@ -65,6 +65,28 @@
             </div>
         @endif
     </div>
+    <div class="form-group">
+        <label for="type">Tipe Produk</label>
+        <select name="type" id="type" class="form-control" required>
+            <option value="normal" {{ old('type', $merchProduct->type ?? '') == 'normal' ? 'selected' : '' }}>Normal</option>
+            <option value="featured" {{ old('type', $merchProduct->type ?? '') == 'featured' ? 'selected' : '' }}>Featured</option>
+        </select>
+        <small class="form-text text-muted">
+            <b>Normal:</b> Produk tampil di cell biasa.<br>
+            <b>Featured:</b> Produk tampil di cell besar (span 2 kolom).
+        </small>
+        <div style="margin-top:8px;">
+            <div style="display:grid;grid-template-columns:repeat(4,20px);gap:8px;align-items:center;">
+                <div style="background:#007bff;height:20px;grid-column:span 2;border-radius:3px;" title="Featured"></div>
+                <div style="background:#6c757d;height:20px;border-radius:3px;" title="Normal"></div>
+                <div style="background:#6c757d;height:20px;border-radius:3px;" title="Normal"></div>
+            </div>
+            <div style="font-size:11px;color:#888;margin-top:2px;">
+                <span style="display:inline-block;width:40px;text-align:center;color:#007bff;">Featured</span>
+                <span style="display:inline-block;width:40px;text-align:center;margin-left:16px;color:#6c757d;">Normal</span>
+            </div>
+        </div>
+    </div>
     <div class="mb-3">
         <label for="status" class="form-label">Status</label>
         <select name="status" class="form-control">
