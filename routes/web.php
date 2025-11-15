@@ -27,6 +27,7 @@ Route::get('/detail-products', function () {
 })->name('detail-products');
 
 // prod routes
+
 Route::get('/','Web\HomeController@index')->name('home');
 Route::get('/lelang','Web\HomeController@lelang')->name('lelang');
 Route::get('/blogs','Web\BlogController@index')->name('blogs');
@@ -40,6 +41,9 @@ Route::get('/blog/{slug}','Web\BlogController@detail')->name('web.blog.detail');
 Route::get('/bid/messages/{slug}', 'Web\ChatsController@fetchMessages');
 Route::get('/category/{slug}','Web\HomeController@category')->name('products.category');
 Route::get('/seniman/{slug}','Web\HomeController@seniman')->name('products.seniman');
+
+// merch product route
+Route::get('/merch-products/batch', 'Web\MerchProduct\GetMerchProduct')->name('merch.products.batch');
 
 //midtrans-callback
 Route::post('/payments/midtrans-notification','Account\PaymentCallbackController@receive');

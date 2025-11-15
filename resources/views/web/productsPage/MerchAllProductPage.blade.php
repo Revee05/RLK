@@ -3,116 +3,90 @@
 
 @section('css')
     <link href="{{ asset('css/MerchProductPage.css') }}" rel="stylesheet">
+    <style>
+        .cell.span-2 {
+            grid-column: span 2;
+        }
+    </style>
 @endsection
 
 @section('content')
 <div class="container py-4">
     <h2 class="text-center fw-bold mb-4">Products Design</h2>
-    <div class="d-flex justify-content-between align-items-center mb-3">
-        <input type="text" class="form-control w-auto" style="min-width:1000px; border-radius:50px;" placeholder="Search product...">
-        <div>
-            <button class="btn btn-outline-secondary btn-sm me-2">Filter</button>
+    <div class="products-grid-header mb-4">
+        <input type="text" class="form-control search-input" placeholder="Search Product...">
+        <div class="d-flex">
+            <button class="btn btn-outline-secondary btn-sm">Filter</button>
             <button class="btn btn-outline-secondary btn-sm">Sort</button>
         </div>
     </div>
-    <div class="products-grid-parent mb-4">
-        <div class="div1">
-            <a href="{{ url('detail-products') }}" class="text-decoration-none text-dark">
-                <div class="card product-card h-100">
-                    <img src="https://placehold.co/500x400?text=Main+Back+Design" class="card-img-top" alt="Main Product">
-                    <div class="card-body">
-                        <div class="product-title mb-1">Dragon</div>
-                        <div class="product-desc mb-1">Streetwear Kaos</div>
-                        <div class="product-price mb-2">Rp 85.000</div>
-                        <div class="product-status">Stok: Available</div>
-                    </div>
-                </div>
-            </a>
-        </div>
-        <div class="div2">
-            <div class="card product-card h-100">
-                <img src="https://placehold.co/250x250?text=Front+Model" class="card-img-top" alt="Model Front">
-                <div class="card-body">
-                    <div class="product-title mb-1">Dragon</div>
-                    <div class="product-desc mb-1">Streetwear Kaos</div>
-                    <div class="product-status">Stok: Available</div>
-                </div>
-            </div>
-        </div>
-        <div class="div3">
-            <div class="card product-card h-100">
-                <img src="https://placehold.co/250x250?text=Front+Logo" class="card-img-top" alt="Front Logo">
-                <div class="card-body">
-                    <div class="product-title mb-1">Dragon</div>
-                    <div class="product-desc mb-1">Streetwear Kaos</div>
-                    <div class="product-status">Stok: Available</div>
-                </div>
-            </div>
-        </div>
-        <div class="div4">
-            <div class="card product-card h-100">
-                <img src="https://placehold.co/250x250?text=Back+Design" class="card-img-top" alt="Back Design">
-                <div class="card-body">
-                    <div class="product-title mb-1">Dragon</div>
-                    <div class="product-desc mb-1">Streetwear Kaos</div>
-                    <div class="product-status">Stok: Available</div>
-                </div>
-            </div>
-        </div>
-        <div class="div5">
-            <div class="card product-card h-100">
-                <img src="https://placehold.co/250x250?text=Side+Model" class="card-img-top" alt="Side Model">
-                <div class="card-body">
-                    <div class="product-title mb-1">Dragon</div>
-                    <div class="product-desc mb-1">Streetwear Kaos</div>
-                    <div class="product-status">Stok: Available</div>
-                </div>
-            </div>
-        </div>
-        <div class="div6">
-            <div class="card product-card h-100">
-                <img src="https://placehold.co/250x250?text=Front+Flat" class="card-img-top" alt="Front Flat">
-                <div class="card-body">
-                    <div class="product-title mb-1">Dragon</div>
-                    <div class="product-desc mb-1">Streetwear Kaos</div>
-                    <div class="product-status">Stok: Available</div>
-                </div>
-            </div>
-        </div>
-        <div class="div7">
-            <div class="card product-card h-100">
-                <img src="https://placehold.co/250x250?text=Back+Flat" class="card-img-top" alt="Back Flat">
-                <div class="card-body">
-                    <div class="product-title mb-1">Dragon</div>
-                    <div class="product-desc mb-1">Streetwear Kaos</div>
-                    <div class="product-status">Stok: Available</div>
-                </div>
-            </div>
-        </div>
-        <div class="div8">
-            <div class="card product-card h-100">
-                <img src="https://placehold.co/250x250?text=Model+1" class="card-img-top" alt="Model 1">
-                <div class="card-body">
-                    <div class="product-title mb-1">Dragon</div>
-                    <div class="product-desc mb-1">Streetwear Kaos</div>
-                    <div class="product-status">Stok: Available</div>
-                </div>
-            </div>
-        </div>
-        <div class="div9">
-            <div class="card product-card h-100">
-                <img src="https://placehold.co/500x250?text=Model+2" class="card-img-top" alt="Model 2">
-                <div class="card-body">
-                    <div class="product-title mb-1">Dragon</div>
-                    <div class="product-desc mb-1">Streetwear Kaos</div>
-                    <div class="product-status">Stok: Available</div>
-                </div>
-            </div>
-        </div>
+    <div id="products-grid" class="products-grid-parent">
+        <!-- Produk akan dimunculkan di sini -->
+    </div>
+    <div class="text-center mt-4">
+        <button id="load-more" class="btn btn-primary">Load More</button>
     </div>
 </div>
 @endsection
 
 @section('js')
-    <!-- Tambahkan JS khusus halaman ini jika diperlukan -->
+<script>
+let currentBatch = 1;
+let isLoading = false;
+
+// Index cell yang span 2 pada setiap batch 21 data
+// Baris 1: 0 (span2), 1, 2, 3
+// Baris 2: 4, 5, 6, 7
+// Baris 3: 8 (span1), 9 (span2), 10 (span1)
+// dst
+function renderProduct(product, idx) {
+    let batchIdx = idx % 21;
+    let cellClass = "cell";
+    // Atur cell span-2 sesuai pola
+    if (batchIdx === 0 || batchIdx === 8 || batchIdx === 16) cellClass += " span-2";
+    let imageUrl = (product.images && product.images.length > 0 && product.images[0].image_path)
+        ? `/${product.images[0].image_path}`
+        : `https://placehold.co/300x250?text=${encodeURIComponent(product.name)}`;
+    return `
+    <div class="${cellClass}">
+        <div class="card product-card h-100">
+            <img src="${imageUrl}" class="card-img-top" alt="${product.name}">
+            <div class="card-body text-left p-2">
+                <div class="product-title">${product.name}</div>
+                <div class="product-price">Rp ${Number(product.price).toLocaleString('id-ID')}</div>
+                <div class="product-stock">Stok: ${product.stock}</div>
+                ${product.discount ? `<div class="product-discount">Diskon: ${product.discount}%</div>` : ''}
+            </div>
+        </div>
+    </div>
+    `;
+}
+
+function fetchProducts(batch = 1) {
+    if(isLoading) return;
+    isLoading = true;
+    fetch("{{ route('merch.products.batch') }}?batch=" + batch)
+        .then(res => res.json())
+        .then(data => {
+            const grid = document.getElementById('products-grid');
+            data.products.forEach((product, idx) => {
+                grid.insertAdjacentHTML('beforeend', renderProduct(product, (batch-1)*21 + idx));
+            });
+            if(data.count < 21) {
+                document.getElementById('load-more').style.display = 'none';
+            }
+            isLoading = false;
+        })
+        .catch(() => { isLoading = false; });
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    fetchProducts(currentBatch);
+
+    document.getElementById('load-more').addEventListener('click', function() {
+        currentBatch++;
+        fetchProducts(currentBatch);
+    });
+});
+</script>
 @endsection
