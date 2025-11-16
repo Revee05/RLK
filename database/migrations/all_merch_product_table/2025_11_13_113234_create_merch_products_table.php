@@ -1,4 +1,5 @@
 <?php
+
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -15,9 +16,11 @@ class CreateMerchProductsTable extends Migration
             $table->integer('price');
             $table->integer('stock')->default(0);
             $table->unsignedBigInteger('category_id')->nullable();
-            $table->integer('discount')->default(0);
             $table->enum('status', ['active', 'inactive'])->default('active');
-            $table->timestamps();
+            $table->enum('type', ['normal', 'featured'])->default('normal');
+            $table->timestamp('created_at')->nullable();
+            $table->timestamp('updated_at')->nullable();
+            $table->integer('discount')->default(0);
         });
     }
 
