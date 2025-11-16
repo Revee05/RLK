@@ -15,16 +15,16 @@ require_once  __DIR__ . "/admin.php";
 require_once  __DIR__ . "/account.php";
 
 Auth::routes();
-// sample routes
+// sample routes dev 
 Route::get('/cart', function () {
     return view('web.cart');
 });
+
+// route untuk view
 Route::get('/all-other-product', function () {
     return view('web.productsPage.MerchAllProductPage');
-})->name('all-other-products');
-Route::get('/detail-products', function () {
-    return view('web.productsPage.MerchDetailProductPage');
-})->name('detail-products');
+})->name('all-other-product'); // untuk return view halaman produk merch
+
 
 // prod routes
 
@@ -43,8 +43,8 @@ Route::get('/category/{slug}','Web\HomeController@category')->name('products.cat
 Route::get('/seniman/{slug}','Web\HomeController@seniman')->name('products.seniman');
 
 // merch product route
-Route::get('/merch-products/batch', 'Web\MerchProduct\GetMerchProduct')->name('merch.products.batch');
 Route::get('/merch/{slug}', 'Web\MerchProduct\getDetail')->name('merch.products.detail');
+Route::get('/merch-products/json', 'Web\MerchProduct\GetMerchProduct')->name('merch.products.json');
 
 //midtrans-callback
 Route::post('/payments/midtrans-notification','Account\PaymentCallbackController@receive');

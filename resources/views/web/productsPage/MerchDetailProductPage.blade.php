@@ -2,7 +2,7 @@
 @section('sampleproduct','aktiv')
 
 @section('css')
-    <link href="{{ asset('css/MerchDetailProduct.css') }}" rel="stylesheet">
+    <link href="{{ asset('css/MerchDetailProducts.css') }}" rel="stylesheet">
 @endsection
 
 @section('content')

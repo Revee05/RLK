@@ -68,7 +68,10 @@ $(document).ready(function() {
         table.search(this.value).draw();
     }, 1000);
 
-    searchInput.off('input').on('input', debouncedSearch);
+    
+    searchInput.off('keyup.DT input.DT');
+    
+    searchInput.on('input', debouncedSearch);
 });
 </script>
 @endpush

@@ -8,18 +8,30 @@ class CreateMerchCategoriesTable extends Migration
 {
     public function up()
     {
+        // --- merch_categories ---
         Schema::create('merch_categories', function (Blueprint $table) {
             $table->bigIncrements('id');
+
             $table->string('name');
             $table->string('slug')->unique();
-            $table->timestamps();
+
+            $table->timestamp('created_at')->nullable();
+            $table->timestamp('updated_at')->nullable();
+
+            // Index sesuai DDL
+            $table->index('name', 'idx_name');
         });
 
-        // Pivot table untuk relasi many-to-many (jika satu produk bisa punya banyak kategori)
+        // --- merch_category_product (pivot) ---
         Schema::create('merch_category_product', function (Blueprint $table) {
             $table->unsignedBigInteger('merch_product_id');
             $table->unsignedBigInteger('merch_category_id');
-            $table->primary(['merch_product_id', 'merch_category_id'], 'merch_cat_prod_primary');
+
+            // Primary key sesuai DDL
+            $table->primary(
+                ['merch_product_id', 'merch_category_id'],
+                'merch_category_product_primary'
+            );
         });
     }
 
