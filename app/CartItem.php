@@ -19,4 +19,10 @@ class CartItem extends Model
         // Ganti 'App\Product' menjadi 'App\Products'
         return $this->belongsTo('App\Products', 'product_id'); 
     }
+
+    public function merchProduct()
+    {
+        // Pastikan menunjuk ke Class 'MerchProduct' di namespace Anda
+        return $this->belongsTo('App\models\MerchProduct', 'merch_product_id');
+    }
 }
