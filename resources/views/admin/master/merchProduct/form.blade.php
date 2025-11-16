@@ -122,15 +122,8 @@
     </button>
 </form>
 
-{{-- Summernote CSS --}}
-<link href="https://cdnjs.cloudflare.com/ajax/libs/summernote/0.8.20/summernote-lite.min.css" rel="stylesheet">
-{{-- jQuery --}}
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-{{-- Summernote JS --}}
-<script src="https://cdnjs.cloudflare.com/ajax/libs/summernote/0.8.20/summernote-lite.min.js"></script>
 
 <script>
-
 function previewImages(event) {
     const files = event.target.files;
     const preview = document.getElementById('preview-container');
