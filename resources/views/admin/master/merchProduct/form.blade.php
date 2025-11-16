@@ -12,6 +12,26 @@
         <input type="text" name="name" class="form-control" value="{{ old('name', $merchProduct->name ?? '') }}"
             required>
     </div>
+
+    <div class="mb-3">
+        <label for="size" class="form-label">Size</label> 
+        <small class="text-muted">(isi jika product memerlukan data size)</small>
+        <select name="size[]" id="size" class="form-control" multiple>
+            @php
+                $sizes = ['XS', 'S', 'M', 'L', 'XL', 'XXL'];
+                $selectedSizes = old('size', isset($merchProduct) && $merchProduct->size ? $merchProduct->size : []);
+                // Jika $selectedSizes adalah string JSON, decode ke array
+                if (is_string($selectedSizes)) {
+                    $selectedSizes = json_decode($selectedSizes, true) ?? [];
+                }
+            @endphp
+            @foreach($sizes as $sz)
+                <option value="{{ $sz }}" {{ in_array($sz, $selectedSizes) ? 'selected' : '' }}>{{ $sz }}</option>
+            @endforeach
+        </select>
+        <small class="text-muted">Pilih lebih dari satu size dengan CTRL/Command.</small>
+    </div>
+
     <div class="mb-3">
         <label for="price" class="form-label">Price</label>
         <input type="number" name="price" class="form-control" value="{{ old('price', $merchProduct->price ?? '') }}"
