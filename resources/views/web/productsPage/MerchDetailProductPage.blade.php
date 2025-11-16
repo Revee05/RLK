@@ -34,7 +34,7 @@
                 @endif
             </div>
             <p class="product-desc mb-3">
-                {{ $product->description }}
+                {!! $product->description !!}
             </p>
             <div class="mb-3">
                 <strong>Stok:</strong> {{ $product->stock }}
