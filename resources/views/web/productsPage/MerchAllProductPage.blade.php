@@ -54,8 +54,9 @@ function renderProduct(product, idx) {
         priceHtml = `<span class="product-price">Rp ${Number(product.price).toLocaleString('id-ID')}</span>`;
     }
 
+    // render view
     return `
-    <div class="${cellClass}">
+    <a href="/merch/${product.slug}" class="${cellClass}" style="text-decoration:none; color:inherit;">
         <div class="card product-card h-100">
             ${product.discount ? `<div class="discount-badge">-${product.discount}%</div>` : ''}
             <img src="${imageUrl}" class="card-img-top" alt="${product.name}">
@@ -64,7 +65,7 @@ function renderProduct(product, idx) {
                 <div>${priceHtml}</div>
             </div>
         </div>
-    </div>
+    </a>
     `;
 }
 
@@ -80,7 +81,7 @@ function fetchProducts(batch = 1) {
                     grid.insertAdjacentHTML('beforeend', renderProduct(product, idx));
                 } else {
                     // Optional: render cell kosong jika ingin grid tetap rapat
-                    grid.insertAdjacentHTML('beforeend', `<div class="cell${([0,8,16].includes(idx) ? ' span-2' : '')}"></div>`);
+                    // grid.insertAdjacentHTML('beforeend', `<div class="cell${([0,8,16].includes(idx) ? ' span-2' : '')}"></div>`);
                 }
             });
             if(data.count < 21) {

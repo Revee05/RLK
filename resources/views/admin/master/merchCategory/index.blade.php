@@ -47,12 +47,28 @@
 <!-- DataTables JS -->
 <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
 <script>
+function debounce(func, wait) {
+    let timeout;
+    return function(...args) {
+        clearTimeout(timeout);
+        timeout = setTimeout(() => func.apply(this, args), wait);
+    };
+}
+
 $(document).ready(function() {
-    $('#categoryTable').DataTable({
+    const table = $('#categoryTable').DataTable({
         "columnDefs": [
             { "orderable": false, "targets": 3 } // Kolom Action tidak bisa sorting
         ]
     });
+
+    // Debounce untuk search input DataTables
+    const searchInput = $('div.dataTables_filter input');
+    const debouncedSearch = debounce(function() {
+        table.search(this.value).draw();
+    }, 1000);
+
+    searchInput.off('input').on('input', debouncedSearch);
 });
 </script>
 @endpush

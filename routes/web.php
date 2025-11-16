@@ -44,6 +44,7 @@ Route::get('/seniman/{slug}','Web\HomeController@seniman')->name('products.senim
 
 // merch product route
 Route::get('/merch-products/batch', 'Web\MerchProduct\GetMerchProduct')->name('merch.products.batch');
+Route::get('/merch/{slug}', 'Web\MerchProduct\getDetail')->name('merch.products.detail');
 
 //midtrans-callback
 Route::post('/payments/midtrans-notification','Account\PaymentCallbackController@receive');

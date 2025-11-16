@@ -3,6 +3,26 @@
 @section('title','Daftar Merchandise Product')
 @section('collapseMerch','show')
 @section('merchproduct','active')
+
+<style>
+    .shrinkable-name {
+        max-width: 150px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        display: inline-block;
+        vertical-align: middle;
+    }
+    .shrinkable-category {
+        max-width: 120px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        display: inline-block;
+        vertical-align: middle;
+    }
+</style>
+
 @section('content')
 <div class="container">
     <h1>All Merchandise Products</h1>
@@ -15,6 +35,7 @@
                 <th>No</th>
                 <th>Name</th>
                 <th>Categories</th>
+                <th>Type</th>
                 <th>Price</th>
                 <th>Discount</th>
                 <th>Stock</th>
@@ -27,11 +48,20 @@
             @forelse($merchProducts as $merchProduct)
             <tr>
                 <td>{{ $loop->iteration }}</td>
-                <td>{{ $merchProduct->name }}</td>
+                <td><span class="shrinkable-name" title="{{ $merchProduct->name }}">{{ $merchProduct->name }}</span></td>
                 <td>
-                    @foreach($merchProduct->categories as $cat)
-                        <span class="badge bg-info text-dark">{{ $cat->name }}</span>
-                    @endforeach
+                    <span class="shrinkable-category" title="{{ $merchProduct->categories->pluck('name')->join(', ') }}">
+                        @foreach($merchProduct->categories as $cat)
+                            <span class="badge bg-info text-dark">{{ $cat->name }}</span>
+                        @endforeach
+                    </span>
+                </td>
+                <td>
+                    @if($merchProduct->type === 'featured')
+                        <span class="badge bg-primary text-white">Featured</span>
+                    @else
+                        <span class="badge bg-secondary text-white">Normal</span>
+                    @endif
                 </td>
                 <td>{{ $merchProduct->price }}</td>
                 <td>{{ $merchProduct->discount }}</td>
@@ -66,7 +96,7 @@
             </tr>
             @empty
             <tr>
-                <td colspan="9" class="text-center">No merchandise products found.</td>
+                <td colspan="10" class="text-center">No merchandise products found.</td>
             </tr>
             @endforelse
         </tbody>

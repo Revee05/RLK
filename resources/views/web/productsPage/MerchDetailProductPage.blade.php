@@ -11,31 +11,34 @@
         <!-- Gambar utama & thumbnail -->
         <div class="col-lg-6">
             <div class="main-image mb-3">
-                <img src="https://placehold.co/500x400?text=Main+Image" alt="Cyborg 6 T-shirt" class="img-fluid rounded">
+                <img src="{{ $product->images->first() ? asset($product->images->first()->image_path) : 'https://placehold.co/500x400?text=No+Image' }}" alt="{{ $product->name }}" class="img-fluid rounded">
             </div>
             <div class="thumb-images d-flex gap-2">
-                <img src="https://placehold.co/70x70?text=1" class="img-thumbnail" alt="thumb1">
-                <img src="https://placehold.co/70x70?text=2" class="img-thumbnail" alt="thumb2">
-                <img src="https://placehold.co/70x70?text=3" class="img-thumbnail" alt="thumb3">
-                <img src="https://placehold.co/70x70?text=4" class="img-thumbnail" alt="thumb4">
+                @foreach($product->images->skip(1) as $img)
+                    <img src="{{ asset($img->image_path) }}" class="img-thumbnail" alt="thumb">
+                @endforeach
             </div>
         </div>
         <!-- Detail produk -->
         <div class="col-lg-6">
-            <h2 class="product-title mb-2">Cyborg 6 from Dippolar</h2>
-            <div class="product-category mb-2">Merchandise Kaos</div>
-            <div class="product-price mb-3">Rp. 85.000</div>
+            <h2 class="product-title mb-2">{{ $product->name }}</h2>
+            <div class="product-category mb-2">
+                {{ $product->categories->pluck('name')->join(', ') }}
+            </div>
+            <div class="product-price mb-3">
+                @if($product->discount)
+                    Rp. {{ number_format($product->price * (1 - $product->discount/100), 0, ',', '.') }}
+                    <span class="text-muted text-decoration-line-through ms-2">Rp. {{ number_format($product->price, 0, ',', '.') }}</span>
+                @else
+                    Rp. {{ number_format($product->price, 0, ',', '.') }}
+                @endif
+            </div>
             <p class="product-desc mb-3">
-                Kaos dengan desain ilustrasi bertema cyborg kaiju ini menghadirkan nuansa keunikan dan gaya streetwear. 
-                Menggunakan bahan katun combed 30s, nyaman dipakai sehari-hari, cocok untuk koleksi dan dipadukan dengan berbagai outfit.
+                {{ $product->description }}
             </p>
-            <ul class="product-detail-list mb-3">
-                <li>Bahan: 100% Cotton Combed 30s</li>
-                <li>Ukuran: M-L-XL</li>
-                <li>Sablon: Plastisol (digital print high detail)</li>
-                <li>Unisex</li>
-                <li>Limited edition</li>
-            </ul>
+            <div class="mb-3">
+                <strong>Stok:</strong> {{ $product->stock }}
+            </div>
             <button class="btn btn-primary btn-lg w-100 mb-3">Tambahkan ke keranjang</button>
             <div class="product-shipping-info">
                 <strong>Pengiriman:</strong> Pengiriman dilakukan setiap hari kerja.
@@ -47,18 +50,29 @@
 <div class="related-products-section container pb-5">
     <h4 class="mb-4">Related products</h4>
     <div class="row g-4">
-        @for($i=1; $i<=8; $i++)
+        @foreach($relatedProducts as $related)
         <div class="col-6 col-md-3">
-            <div class="card related-product-card h-100">
-                <img src="https://placehold.co/300x140?text=Related+{{ $i }}" class="card-img-top" alt="Related Product {{ $i }}">
-                <div class="card-body">
-                    <div class="related-product-title">Product</div>
-                    <div class="related-product-desc">Description of {{ $i == 1 ? 'first' : ($i == 2 ? 'second' : ($i == 3 ? 'third' : ($i == 4 ? 'fourth' : ($i == 5 ? 'fifth' : ($i == 6 ? 'sixth' : ($i == 7 ? 'seventh' : 'eighth')))))) }} product</div>
-                    <div class="related-product-price">$19.99</div>
+            <a href="{{ route('merch.products.detail', $related->slug) }}" style="text-decoration:none; color:inherit;">
+                <div class="card related-product-card h-100">
+                    <img src="{{ $related->images->first() ? asset($related->images->first()->image_path) : 'https://placehold.co/300x140?text=No+Image' }}" class="card-img-top" alt="{{ $related->name }}">
+                    <div class="card-body text-center">
+                        <div class="related-product-title mb-1 fw-semibold">{{ $related->name }}</div>
+                        @if($related->discount)
+                            <div class="related-product-price text-danger fw-bold">
+                                Rp. {{ number_format($related->price * (1 - $related->discount/100), 0, ',', '.') }}
+                                <span class="text-muted text-decoration-line-through ms-2 small">Rp. {{ number_format($related->price, 0, ',', '.') }}</span>
+                            </div>
+                            <div class="badge bg-danger mt-2">-{{ $related->discount }}%</div>
+                        @else
+                            <div class="related-product-price fw-bold">
+                                Rp. {{ number_format($related->price, 0, ',', '.') }}
+                            </div>
+                        @endif
+                    </div>
                 </div>
-            </div>
+            </a>
         </div>
-        @endfor
+        @endforeach
     </div>
 </div>
 @endsection

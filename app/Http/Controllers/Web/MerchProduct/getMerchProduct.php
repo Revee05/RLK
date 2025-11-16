@@ -54,12 +54,14 @@ class GetMerchProduct extends Controller
             }
         }
 
-        // Log hasil fetching
-        \Log::info('Fetch merch products batch', [
-            'batch' => $batch,
-            'count' => count(array_filter($result)),
-            'product_ids' => collect($result)->filter()->pluck('id')->toArray(),
-        ]);
+        // Log hasil fetching hanya jika env local atau development
+        if (app()->environment(['local', 'development', 'dev'])) {
+            \Log::info('Fetch merch products batch', [
+                'batch' => $batch,
+                'count' => count(array_filter($result)),
+                'product_ids' => collect($result)->filter()->pluck('id')->toArray(),
+            ]);
+        }
 
         return response()->json([
             'batch' => $batch,

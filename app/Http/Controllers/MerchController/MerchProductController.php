@@ -105,12 +105,12 @@ class MerchProductController extends Controller
                 $merchProduct->categories()->sync($request->categories);
             }
 
-            // Hapus gambar lama jika dicentang
+            // delete image
             if ($request->has('delete_images')) {
                 foreach ($request->delete_images as $imgId) {
                     $img = $merchProduct->images()->find($imgId);
                     if ($img) {
-                        // Hapus file fisik di public/uploads/...
+                        
                         if (file_exists(public_path($img->image_path))) {
                             unlink(public_path($img->image_path));
                         }
@@ -119,7 +119,7 @@ class MerchProductController extends Controller
                 }
             }
 
-            // Update label gambar yang masih ada
+            // Update label
             if ($request->has('existing_image_labels')) {
                 foreach ($request->existing_image_labels as $imgId => $lbl) {
                     $img = $merchProduct->images()->find($imgId);
