@@ -33,5 +33,10 @@ Route::get('/bid/messages/{slug}', 'Web\ChatsController@fetchMessages');
 Route::get('/category/{slug}','Web\HomeController@category')->name('products.category');
 Route::get('/seniman/{slug}','Web\HomeController@seniman')->name('products.seniman');
 
+// Route bagian cart
+Route::get('/cart', 'Web\CartController@index')->name('cart.index')->middleware('auth');
+Route::post('/cart/add/{productId}', 'Web\CartController@addToCart')->name('cart.add')->middleware('auth');
+Route::delete('/cart/{cartItem}', 'Web\CartController@destroy')->name('cart.destroy')->middleware('auth');
+
 //midtrans-callback
 Route::post('/payments/midtrans-notification','Account\PaymentCallbackController@receive');
