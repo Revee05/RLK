@@ -41,6 +41,19 @@ function renderProduct(product, idx) {
     let imageUrl = (product.images && product.images.length > 0 && product.images[0].image_path)
         ? `/${product.images[0].image_path}`
         : `https://placehold.co/300x250?text=${encodeURIComponent(product.name)}`;
+
+    // Hitung harga setelah diskon jika ada
+    let priceHtml = '';
+    if (product.discount && product.discount > 0) {
+        let discountedPrice = Math.round(product.price * (1 - product.discount / 100));
+        priceHtml = `
+            <span class="product-price">Rp ${discountedPrice.toLocaleString('id-ID')}</span>
+            <span class="product-price-original">Rp ${Number(product.price).toLocaleString('id-ID')}</span>
+        `;
+    } else {
+        priceHtml = `<span class="product-price">Rp ${Number(product.price).toLocaleString('id-ID')}</span>`;
+    }
+
     return `
     <div class="${cellClass}">
         <div class="card product-card h-100">
@@ -48,7 +61,7 @@ function renderProduct(product, idx) {
             <img src="${imageUrl}" class="card-img-top" alt="${product.name}">
             <div class="card-body text-left p-2">
                 <div class="product-title">${product.name}</div>
-                <div class="product-price">Rp ${Number(product.price).toLocaleString('id-ID')}</div>
+                <div>${priceHtml}</div>
             </div>
         </div>
     </div>
