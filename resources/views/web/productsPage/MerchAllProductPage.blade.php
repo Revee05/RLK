@@ -72,7 +72,7 @@ function renderProduct(product, idx) {
 function fetchProducts(batch = 1) {
     if(isLoading) return;
     isLoading = true;
-    fetch("{{ route('merch.products.batch') }}?batch=" + batch)
+    fetch("{{ route('merch.products.json') }}?batch=" + batch)
         .then(res => res.json())
         .then(data => {
             const grid = document.getElementById('products-grid');
