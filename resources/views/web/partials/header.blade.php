@@ -12,7 +12,16 @@
         <!-- Menu -->
         <nav class="menu-area">
             <a href="{{ route('home') }}" class="@yield('home')">Beranda</a>
-            <a href="{{ route('lelang') }}" class="@yield('lelang')">Koleksi Karya</a>
+            
+            <div class="dropdown-menu-nav">
+                <a href="#" class="dropdown-toggle @yield('lelang')" id="koleksiKaryaDropdown">
+                    Koleksi Karya <span class="fa fa-caret-down caret-icon"></span>
+                </a>
+                <div class="dropdown-menu" id="koleksiKaryaDropdownMenu">
+                    <a class="dropdown-item" href="{{ route('lelang') }}">All Auction Products</a>
+                    <a class="dropdown-item" href="{{ route('all-other-products') }}">Other Products</a>
+                </div>
+            </div>
 
             <div class="dropdown-menu-nav">
                 <a href="#" class="dropdown-toggle" id="tentangDropdown">
@@ -34,7 +43,7 @@
                     <a class="dropdown-item" href="#">Panduan Beli</a>
                     <a class="dropdown-item" href="#">Panduan Jual</a>
                 </div>
-            </div>
+            </div>        
         </nav>
         <!-- Action & Hamburger (sejajar kanan) -->
         <div class="header-action">
@@ -123,5 +132,6 @@ document.addEventListener("DOMContentLoaded", function() {
     // Tentang & Panduan dropdown
     setupDropdown('tentangDropdown', 'tentangDropdownMenu');
     setupDropdown('panduanDropdown', 'panduanDropdownMenu');
+    setupDropdown('koleksiKaryaDropdown', 'koleksiKaryaDropdownMenu');
 });
 </script>
