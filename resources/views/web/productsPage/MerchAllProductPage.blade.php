@@ -23,12 +23,29 @@
                 <i class="fa fa-search text-secondary"></i>
             </button>
         </form>
-        <button type="button" class="btn btn-outline-secondary rounded-pill d-flex align-items-center gap-1" style="height:38px;">
-            <i class="fa fa-filter"></i> filters
-        </button>
-        <button type="button" class="btn btn-outline-secondary rounded-pill d-flex align-items-center gap-1" style="height:38px;">
-            <i class="fa fa-sort"></i> sort by
-        </button>
+        <!-- Filter kategori -->
+        <div class="dropdown">
+            <button class="btn btn-outline-secondary rounded-pill d-flex align-items-center gap-1 dropdown-toggle" type="button" id="filterDropdown" data-bs-toggle="dropdown" aria-expanded="false" style="height:38px;">
+                <i class="fa fa-filter"></i> <span id="filter-label">filters</span>
+            </button>
+            <ul class="dropdown-menu" aria-labelledby="filterDropdown" id="category-dropdown">
+                <li><a class="dropdown-item category-item" data-category="">Semua Kategori</a></li>
+                {{-- Kategori akan diisi via JS --}}
+            </ul>
+        </div>
+        <!-- Sort by -->
+        <div class="dropdown">
+            <button class="btn btn-outline-secondary rounded-pill d-flex align-items-center gap-1 dropdown-toggle" type="button" id="sortDropdown" data-bs-toggle="dropdown" aria-expanded="false" style="height:38px;">
+                <i class="fa fa-sort"></i> <span id="sort-label">sort by</span>
+            </button>
+            <ul class="dropdown-menu" aria-labelledby="sortDropdown" id="sort-dropdown">
+                <li><a class="dropdown-item sort-item" data-sort="">Default</a></li>
+                <li><a class="dropdown-item sort-item" data-sort="newest">Product Terbaru</a></li>
+                <li><a class="dropdown-item sort-item" data-sort="oldest">Product Terlama</a></li>
+                <li><a class="dropdown-item sort-item" data-sort="cheapest">Product Termurah</a></li>
+                <li><a class="dropdown-item sort-item" data-sort="priciest">Product Termahal</a></li>
+            </ul>
+        </div>
     </div>
     <div id="products-grid" class="products-grid-parent">
         <!-- Produk akan dimunculkan di sini -->
@@ -44,6 +61,18 @@
 let currentBatch = 1;
 let isLoading = false;
 let currentSearch = "";
+let currentCategory = "";
+let currentSort = "";
+
+// Fetch categories from API and populate dropdown
+function populateCategories(categories) {
+    const dropdown = document.getElementById('category-dropdown');
+    // Hapus kategori lama kecuali "Semua Kategori"
+    dropdown.innerHTML = `<li><a class="dropdown-item category-item" data-category="">Semua Kategori</a></li>`;
+    categories.forEach(cat => {
+        dropdown.innerHTML += `<li><a class="dropdown-item category-item" data-category="${cat.slug}">${cat.name}</a></li>`;
+    });
+}
 
 function renderProduct(product, idx) {
     let batchIdx = idx % 21;
@@ -78,14 +107,19 @@ function renderProduct(product, idx) {
     `;
 }
 
-function fetchProducts(batch = 1, search = "") {
+function fetchProducts(batch = 1, search = "", category = "", sort = "") {
     if(isLoading) return;
     isLoading = true;
     let url = "{{ route('merch.products.json') }}?batch=" + batch;
     if (search) url += "&search=" + encodeURIComponent(search);
+    if (category) url += "&category=" + encodeURIComponent(category);
+    if (sort) url += "&sort=" + encodeURIComponent(sort);
     fetch(url)
         .then(res => res.json())
         .then(data => {
+            // Populate categories dropdown (sekali saja)
+            if (data.categories) populateCategories(data.categories);
+
             const grid = document.getElementById('products-grid');
             if(batch === 1) grid.innerHTML = "";
             data.products.forEach((product, idx) => {
@@ -104,20 +138,40 @@ function fetchProducts(batch = 1, search = "") {
 }
 
 document.addEventListener('DOMContentLoaded', function() {
-    fetchProducts(currentBatch, currentSearch);
+    fetchProducts(currentBatch, currentSearch, currentCategory, currentSort);
 
     document.getElementById('load-more').addEventListener('click', function() {
         currentBatch++;
-        fetchProducts(currentBatch, currentSearch);
+        fetchProducts(currentBatch, currentSearch, currentCategory, currentSort);
     });
 
-    // Hanya submit form yang trigger search
+    // Submit search
     const searchInput = document.querySelector('.search-input');
     document.getElementById('search-form').addEventListener('submit', function(e) {
         e.preventDefault();
         currentSearch = searchInput.value;
         currentBatch = 1;
-        fetchProducts(currentBatch, currentSearch);
+        fetchProducts(currentBatch, currentSearch, currentCategory, currentSort);
+    });
+
+    // Filter kategori
+    document.getElementById('category-dropdown').addEventListener('click', function(e) {
+        if (e.target.classList.contains('category-item')) {
+            currentCategory = e.target.getAttribute('data-category');
+            document.getElementById('filter-label').textContent = e.target.textContent;
+            currentBatch = 1;
+            fetchProducts(currentBatch, currentSearch, currentCategory, currentSort);
+        }
+    });
+
+    // Sort by
+    document.getElementById('sort-dropdown').addEventListener('click', function(e) {
+        if (e.target.classList.contains('sort-item')) {
+            currentSort = e.target.getAttribute('data-sort');
+            document.getElementById('sort-label').textContent = e.target.textContent;
+            currentBatch = 1;
+            fetchProducts(currentBatch, currentSearch, currentCategory, currentSort);
+        }
     });
 });
 </script>

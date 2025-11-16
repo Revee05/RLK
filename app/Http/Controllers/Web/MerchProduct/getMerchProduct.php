@@ -5,19 +5,23 @@ namespace App\Http\Controllers\Web\MerchProduct;
 use App\Http\Controllers\Controller;
 use App\models\MerchProduct;
 use Illuminate\Http\Request;
+use App\models\MerchCategory;
 
 class GetMerchProduct extends Controller
 {
-    /**
-     * Fetch merch products in batches of 21, only selected fields.
-     * Example: /api/merch-products?batch=1
-     */
+    protected function getCategories()
+    {
+        return MerchCategory::select('id', 'name', 'slug')->orderBy('name')->get();
+    }
+
     public function __invoke(Request $request)
     {
         $batch = max(1, (int) $request->query('batch', 1));
         $perPage = 21;
 
         $search = $request->query('search');
+        $category = $request->query('category');
+        $sort = $request->query('sort');
 
         $featuredQuery = MerchProduct::with('images')
             ->select(['id', 'name', 'slug', 'price', 'stock', 'status', 'discount', 'type'])
@@ -27,9 +31,19 @@ class GetMerchProduct extends Controller
         if ($search) {
             $featuredQuery->where('name', 'like', '%' . $search . '%');
         }
+        if ($category) {
+            $featuredQuery->whereHas('categories', function($q) use ($category) {
+                $q->where('slug', $category);
+            });
+        }
+        // Sorting
+        if ($sort == 'newest') $featuredQuery->orderByDesc('created_at');
+        elseif ($sort == 'oldest') $featuredQuery->orderBy('created_at');
+        elseif ($sort == 'cheapest') $featuredQuery->orderBy('price');
+        elseif ($sort == 'priciest') $featuredQuery->orderByDesc('price');
+        else $featuredQuery->orderByDesc('created_at');
 
         $featured = $featuredQuery
-            ->orderByDesc('created_at')
             ->skip(($batch - 1) * 3)
             ->take(3)
             ->get()
@@ -43,9 +57,19 @@ class GetMerchProduct extends Controller
         if ($search) {
             $normalQuery->where('name', 'like', '%' . $search . '%');
         }
+        if ($category) {
+            $normalQuery->whereHas('categories', function($q) use ($category) {
+                $q->where('slug', $category);
+            });
+        }
+        // Sorting
+        if ($sort == 'newest') $normalQuery->orderByDesc('created_at');
+        elseif ($sort == 'oldest') $normalQuery->orderBy('created_at');
+        elseif ($sort == 'cheapest') $normalQuery->orderBy('price');
+        elseif ($sort == 'priciest') $normalQuery->orderByDesc('price');
+        else $normalQuery->orderByDesc('created_at');
 
         $normal = $normalQuery
-            ->orderByDesc('created_at')
             ->skip(($batch - 1) * 18)
             ->take(18)
             ->get()
@@ -76,10 +100,14 @@ class GetMerchProduct extends Controller
             ]);
         }
 
+        // Jika ingin mengirim kategori ke response (misal untuk dropdown filter)
+        $categories = $this->getCategories();
+
         return response()->json([
             'batch' => $batch,
             'count' => count(array_filter($result)),
             'products' => array_values($result),
+            'categories' => $categories, // <-- tambahkan ini jika perlu
         ]);
     }
 }
