@@ -52,6 +52,8 @@ Route::group(['prefix' => '/master'], function () {
     Route::get('/product/reset/{id}','ProductsController@resetBid')->name('master.product.reset.bid');
     Route::get('/product/status/{id}','ProductsController@status')->name('master.product.status');
     Route::resource('/product','ProductsController',['as' => 'master']);
+    Route::resource('/merchProduct', 'MerchController\MerchProductController', ['as' => 'master']);
+    Route::resource('/merchCategory', 'MerchController\MerchCategoryController', ['as' => 'master']);
 });
 Route::resource('/daftar-penawaran','DaftarPenawaranController',['as' => 'admin']);
 Route::resource('/daftar-pemenang','DaftarPemenangController',['as' => 'admin']);
