@@ -2,7 +2,7 @@
 @section('all-other-products','aktiv')
 
 @section('css')
-    <link href="{{ asset('css/MerchProductPage.css') }}" rel="stylesheet">
+<link href="{{ asset('css/MerchProductPage.css') }}" rel="stylesheet">
 @endsection
 
 @section('content')
@@ -10,22 +10,17 @@
     <h2 class="text-center fw-bold mb-4">Products Design</h2>
     <div class="products-grid-header mb-4 d-flex align-items-center gap-2 flex-wrap">
         <form id="search-form" class="position-relative flex-grow-1 d-flex" style="max-width:600px;">
-            <input 
-                type="text" 
-                class="form-control search-input rounded-pill ps-4 pe-5"
-                placeholder="Search . . . ."
-                style="height: 38px;"
-                value="{{ request('search') }}"
-            >
-            <button type="submit" id="search-btn"
-                class="btn position-absolute end-0 top-50 translate-middle-y me-3"
+            <input type="text" class="form-control search-input rounded-pill ps-4 pe-5" placeholder="Search . . . ."
+                style="height: 38px;" value="{{ request('search') }}">
+            <button type="submit" id="search-btn" class="btn position-absolute end-0 top-50 translate-middle-y me-3"
                 style="z-index:2; background:transparent; border:none; width:38px; height:38px; display:flex; align-items:center; justify-content:center;">
                 <i class="fa fa-search text-secondary"></i>
             </button>
         </form>
         <!-- Filter kategori -->
         <div class="dropdown">
-            <button class="btn btn-outline-secondary rounded-pill d-flex align-items-center gap-1 dropdown-toggle" type="button" id="filterDropdown" data-bs-toggle="dropdown" aria-expanded="false" style="height:38px;">
+            <button class="btn btn-outline-secondary rounded-pill d-flex align-items-center gap-1 dropdown-toggle"
+                type="button" id="filterDropdown" data-bs-toggle="dropdown" aria-expanded="false" style="height:38px;">
                 <i class="fa fa-filter"></i> <span id="filter-label">filters</span>
             </button>
             <ul class="dropdown-menu" aria-labelledby="filterDropdown" id="category-dropdown">
@@ -35,7 +30,8 @@
         </div>
         <!-- Sort by -->
         <div class="dropdown">
-            <button class="btn btn-outline-secondary rounded-pill d-flex align-items-center gap-1 dropdown-toggle" type="button" id="sortDropdown" data-bs-toggle="dropdown" aria-expanded="false" style="height:38px;">
+            <button class="btn btn-outline-secondary rounded-pill d-flex align-items-center gap-1 dropdown-toggle"
+                type="button" id="sortDropdown" data-bs-toggle="dropdown" aria-expanded="false" style="height:38px;">
                 <i class="fa fa-sort"></i> <span id="sort-label">sort by</span>
             </button>
             <ul class="dropdown-menu" aria-labelledby="sortDropdown" id="sort-dropdown">
@@ -63,14 +59,27 @@ let isLoading = false;
 let currentSearch = "";
 let currentCategory = "";
 let currentSort = "";
+let categoriesCached = null;
+let categoriesVersionCached = null;
 
-// Fetch categories from API and populate dropdown
+function scrollToGrid() {
+    const grid = document.getElementById('products-grid');
+    if (grid) {
+        grid.scrollIntoView({
+            behavior: 'smooth',
+            block: 'start'
+        });
+    }
+}
+
 function populateCategories(categories) {
+    if (!categories || categories.length === 0) return;
+    categoriesCached = categories;
     const dropdown = document.getElementById('category-dropdown');
-    // Hapus kategori lama kecuali "Semua Kategori"
     dropdown.innerHTML = `<li><a class="dropdown-item category-item" data-category="">Semua Kategori</a></li>`;
     categories.forEach(cat => {
-        dropdown.innerHTML += `<li><a class="dropdown-item category-item" data-category="${cat.slug}">${cat.name}</a></li>`;
+        dropdown.innerHTML +=
+            `<li><a class="dropdown-item category-item" data-category="${cat.slug}">${cat.name}</a></li>`;
     });
 }
 
@@ -78,9 +87,9 @@ function renderProduct(product, idx) {
     let batchIdx = idx % 21;
     let cellClass = "cell";
     if (batchIdx === 0 || batchIdx === 8 || batchIdx === 16) cellClass += " span-2";
-    let imageUrl = (product.images && product.images.length > 0 && product.images[0].image_path)
-        ? `/${product.images[0].image_path}`
-        : `https://placehold.co/300x250?text=${encodeURIComponent(product.name)}`;
+    let imageUrl = (product.images && product.images.length > 0 && product.images[0].image_path) ?
+        `/${product.images[0].image_path}` :
+        `https://placehold.co/300x250?text=${encodeURIComponent(product.name)}`;
 
     let priceHtml = '';
     if (product.discount && product.discount > 0) {
@@ -108,7 +117,7 @@ function renderProduct(product, idx) {
 }
 
 function fetchProducts(batch = 1, search = "", category = "", sort = "") {
-    if(isLoading) return;
+    if (isLoading) return;
     isLoading = true;
     let url = "{{ route('merch.products.json') }}?batch=" + batch;
     if (search) url += "&search=" + encodeURIComponent(search);
@@ -117,27 +126,57 @@ function fetchProducts(batch = 1, search = "", category = "", sort = "") {
     fetch(url)
         .then(res => res.json())
         .then(data => {
-            // Populate categories dropdown (sekali saja)
-            if (data.categories) populateCategories(data.categories);
+            // Cek versi kategori
+            if (data.categories_version) {
+                const localVersion = localStorage.getItem('merch_categories_version');
+                if (localVersion !== data.categories_version) {
+                    // Versi berubah, update cache & render ulang
+                    if (data.categories && data.categories.length) {
+                        localStorage.setItem('merch_categories', JSON.stringify(data.categories));
+                        localStorage.setItem('merch_categories_version', data.categories_version);
+                        categoriesCached = data.categories;
+                        populateCategories(data.categories);
+                    }
+                }
+            }
 
             const grid = document.getElementById('products-grid');
-            if(batch === 1) grid.innerHTML = "";
+            if (batch === 1) {
+                grid.innerHTML = "";
+                scrollToGrid(); // scroll ke atas grid saat filter/search/sort baru
+            }
             data.products.forEach((product, idx) => {
                 if (product) {
                     grid.insertAdjacentHTML('beforeend', renderProduct(product, idx));
                 }
             });
-            if(data.count < 21) {
+            if (data.count < 21) {
                 document.getElementById('load-more').style.display = 'none';
             } else {
                 document.getElementById('load-more').style.display = '';
             }
             isLoading = false;
         })
-        .catch(() => { isLoading = false; });
+        .catch(() => {
+            isLoading = false;
+        });
 }
 
 document.addEventListener('DOMContentLoaded', function() {
+    // Cek localStorage untuk kategori & versinya
+    const cached = localStorage.getItem('merch_categories');
+    const cachedVersion = localStorage.getItem('merch_categories_version');
+    if (cached && cachedVersion) {
+        try {
+            const categories = JSON.parse(cached);
+            categoriesVersionCached = cachedVersion;
+            if (Array.isArray(categories) && categories.length > 0) {
+                categoriesCached = categories;
+                populateCategories(categories);
+            }
+        } catch (e) {}
+    }
+
     fetchProducts(currentBatch, currentSearch, currentCategory, currentSort);
 
     document.getElementById('load-more').addEventListener('click', function() {
@@ -159,6 +198,10 @@ document.addEventListener('DOMContentLoaded', function() {
         if (e.target.classList.contains('category-item')) {
             currentCategory = e.target.getAttribute('data-category');
             document.getElementById('filter-label').textContent = e.target.textContent;
+            // Highlight aktif
+            document.querySelectorAll('#category-dropdown .category-item').forEach(item => item
+                .classList.remove('active'));
+            e.target.classList.add('active');
             currentBatch = 1;
             fetchProducts(currentBatch, currentSearch, currentCategory, currentSort);
         }
@@ -169,6 +212,10 @@ document.addEventListener('DOMContentLoaded', function() {
         if (e.target.classList.contains('sort-item')) {
             currentSort = e.target.getAttribute('data-sort');
             document.getElementById('sort-label').textContent = e.target.textContent;
+            // Highlight aktif
+            document.querySelectorAll('#sort-dropdown .sort-item').forEach(item => item.classList
+                .remove('active'));
+            e.target.classList.add('active');
             currentBatch = 1;
             fetchProducts(currentBatch, currentSearch, currentCategory, currentSort);
         }

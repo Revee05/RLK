@@ -16,14 +16,34 @@ class GetMerchProduct extends Controller
 
     public function __invoke(Request $request)
     {
-        $batch = max(1, (int) $request->query('batch', 1));
-        $perPage = 21;
+        // Validasi batch
+        $batch = (int) $request->query('batch', 1);
+        if ($batch < 1) $batch = 1;
+
+        // Validasi sort
+        $allowedSort = ['', 'newest', 'oldest', 'cheapest', 'priciest'];
+        $sort = $request->query('sort', '');
+        if (!in_array($sort, $allowedSort)) {
+            $sort = '';
+        }
+
+        // Validasi category (hanya slug yang ada di database)
+        $category = $request->query('category');
+        if ($category) {
+            $exists = \App\models\MerchCategory::where('slug', $category)->exists();
+            if (!$exists) $category = null;
+        }
 
         $search = $request->query('search');
-        $category = $request->query('category');
-        $sort = $request->query('sort');
+            if ($search && strlen($search) > 50) {
+                $search = substr($search, 0, 50);
+        }
+        $perPage = 21;
 
-        $featuredQuery = MerchProduct::with('images')
+        // Featured products
+        $featuredQuery = MerchProduct::with(['images' => function($q) {
+            $q->select('id', 'merch_product_id', 'image_path');
+        }])
             ->select(['id', 'name', 'slug', 'price', 'stock', 'status', 'discount', 'type'])
             ->where('status', 'active')
             ->where('type', 'featured');
@@ -43,13 +63,12 @@ class GetMerchProduct extends Controller
         elseif ($sort == 'priciest') $featuredQuery->orderByDesc('price');
         else $featuredQuery->orderByDesc('created_at');
 
-        $featured = $featuredQuery
-            ->skip(($batch - 1) * 3)
-            ->take(3)
-            ->get()
-            ->values();
+        $featured = $featuredQuery->simplePaginate(3, ['*'], 'featured_page', $batch);
 
-        $normalQuery = MerchProduct::with('images')
+        // Normal products
+        $normalQuery = MerchProduct::with(['images' => function($q) {
+            $q->select('id', 'merch_product_id', 'image_path');
+        }])
             ->select(['id', 'name', 'slug', 'price', 'stock', 'status', 'discount', 'type'])
             ->where('status', 'active')
             ->where('type', 'normal');
@@ -69,11 +88,7 @@ class GetMerchProduct extends Controller
         elseif ($sort == 'priciest') $normalQuery->orderByDesc('price');
         else $normalQuery->orderByDesc('created_at');
 
-        $normal = $normalQuery
-            ->skip(($batch - 1) * 18)
-            ->take(18)
-            ->get()
-            ->values();
+        $normal = $normalQuery->simplePaginate(18, ['*'], 'normal_page', $batch);
 
         // Susun urutan produk: featured hanya di span2, normal hanya di cell biasa
         $result = [];
@@ -83,10 +98,8 @@ class GetMerchProduct extends Controller
 
         for ($i = 0; $i < $perPage; $i++) {
             if (in_array($i, $span2Idx)) {
-                // Hanya featured di cell span-2
                 $result[] = isset($featured[$featuredIdx]) ? $featured[$featuredIdx++] : null;
             } else {
-                // Hanya normal di cell biasa
                 $result[] = isset($normal[$normalIdx]) ? $normal[$normalIdx++] : null;
             }
         }
@@ -100,14 +113,17 @@ class GetMerchProduct extends Controller
             ]);
         }
 
-        // Jika ingin mengirim kategori ke response (misal untuk dropdown filter)
         $categories = $this->getCategories();
+        $categories_version = MerchCategory::max('updated_at') ?: now();
 
         return response()->json([
             'batch' => $batch,
             'count' => count(array_filter($result)),
             'products' => array_values($result),
-            'categories' => $categories, // <-- tambahkan ini jika perlu
+            'categories' => $categories,
+            'categories_version' => $categories_version,
+            'has_more_featured' => $featured->hasMorePages(),
+            'has_more_normal' => $normal->hasMorePages(),
         ]);
     }
 }

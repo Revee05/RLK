@@ -177,6 +177,11 @@
     font-size: 1rem;
 }
 
+.dropdown-item.active, .dropdown-item:active {
+    background-color: #0d6efd;
+    color: #fff;
+}
+
 @media (max-width: 991.98px) {
     .products-grid-parent {
         grid-template-columns: 1fr 1fr;
