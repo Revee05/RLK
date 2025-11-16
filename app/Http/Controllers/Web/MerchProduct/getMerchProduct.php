@@ -17,21 +17,34 @@ class GetMerchProduct extends Controller
         $batch = max(1, (int) $request->query('batch', 1));
         $perPage = 21;
 
-        // Ambil produk featured dan normal
-        $featured = MerchProduct::with('images')
+        $search = $request->query('search');
+
+        $featuredQuery = MerchProduct::with('images')
             ->select(['id', 'name', 'slug', 'price', 'stock', 'status', 'discount', 'type'])
             ->where('status', 'active')
-            ->where('type', 'featured')
+            ->where('type', 'featured');
+
+        if ($search) {
+            $featuredQuery->where('name', 'like', '%' . $search . '%');
+        }
+
+        $featured = $featuredQuery
             ->orderByDesc('created_at')
             ->skip(($batch - 1) * 3)
             ->take(3)
             ->get()
             ->values();
 
-        $normal = MerchProduct::with('images')
+        $normalQuery = MerchProduct::with('images')
             ->select(['id', 'name', 'slug', 'price', 'stock', 'status', 'discount', 'type'])
             ->where('status', 'active')
-            ->where('type', 'normal')
+            ->where('type', 'normal');
+
+        if ($search) {
+            $normalQuery->where('name', 'like', '%' . $search . '%');
+        }
+
+        $normal = $normalQuery
             ->orderByDesc('created_at')
             ->skip(($batch - 1) * 18)
             ->take(18)

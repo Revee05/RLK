@@ -8,12 +8,27 @@
 @section('content')
 <div class="container py-4">
     <h2 class="text-center fw-bold mb-4">Products Design</h2>
-    <div class="products-grid-header mb-4">
-        <input type="text" class="form-control search-input" placeholder="Search Product...">
-        <div class="d-flex">
-            <button class="btn btn-outline-secondary btn-sm">Filter</button>
-            <button class="btn btn-outline-secondary btn-sm">Sort</button>
-        </div>
+    <div class="products-grid-header mb-4 d-flex align-items-center gap-2 flex-wrap">
+        <form id="search-form" class="position-relative flex-grow-1 d-flex" style="max-width:600px;">
+            <input 
+                type="text" 
+                class="form-control search-input rounded-pill ps-4 pe-5"
+                placeholder="Search . . . ."
+                style="height: 38px;"
+                value="{{ request('search') }}"
+            >
+            <button type="submit" id="search-btn"
+                class="btn position-absolute end-0 top-50 translate-middle-y me-3"
+                style="z-index:2; background:transparent; border:none; width:38px; height:38px; display:flex; align-items:center; justify-content:center;">
+                <i class="fa fa-search text-secondary"></i>
+            </button>
+        </form>
+        <button type="button" class="btn btn-outline-secondary rounded-pill d-flex align-items-center gap-1" style="height:38px;">
+            <i class="fa fa-filter"></i> filters
+        </button>
+        <button type="button" class="btn btn-outline-secondary rounded-pill d-flex align-items-center gap-1" style="height:38px;">
+            <i class="fa fa-sort"></i> sort by
+        </button>
     </div>
     <div id="products-grid" class="products-grid-parent">
         <!-- Produk akan dimunculkan di sini -->
@@ -28,12 +43,8 @@
 <script>
 let currentBatch = 1;
 let isLoading = false;
+let currentSearch = "";
 
-// Index cell yang span 2 pada setiap batch 21 data
-// Baris 1: 0 (span2), 1, 2, 3
-// Baris 2: 4, 5, 6, 7
-// Baris 3: 8 (span1), 9 (span2), 10 (span1)
-// dst
 function renderProduct(product, idx) {
     let batchIdx = idx % 21;
     let cellClass = "cell";
@@ -42,7 +53,6 @@ function renderProduct(product, idx) {
         ? `/${product.images[0].image_path}`
         : `https://placehold.co/300x250?text=${encodeURIComponent(product.name)}`;
 
-    // Hitung harga setelah diskon jika ada
     let priceHtml = '';
     if (product.discount && product.discount > 0) {
         let discountedPrice = Math.round(product.price * (1 - product.discount / 100));
@@ -54,7 +64,6 @@ function renderProduct(product, idx) {
         priceHtml = `<span class="product-price">Rp ${Number(product.price).toLocaleString('id-ID')}</span>`;
     }
 
-    // render view
     return `
     <a href="/merch/${product.slug}" class="${cellClass}" style="text-decoration:none; color:inherit;">
         <div class="card product-card h-100">
@@ -69,23 +78,25 @@ function renderProduct(product, idx) {
     `;
 }
 
-function fetchProducts(batch = 1) {
+function fetchProducts(batch = 1, search = "") {
     if(isLoading) return;
     isLoading = true;
-    fetch("{{ route('merch.products.json') }}?batch=" + batch)
+    let url = "{{ route('merch.products.json') }}?batch=" + batch;
+    if (search) url += "&search=" + encodeURIComponent(search);
+    fetch(url)
         .then(res => res.json())
         .then(data => {
             const grid = document.getElementById('products-grid');
+            if(batch === 1) grid.innerHTML = "";
             data.products.forEach((product, idx) => {
                 if (product) {
                     grid.insertAdjacentHTML('beforeend', renderProduct(product, idx));
-                } else {
-                    // Optional: render cell kosong jika ingin grid tetap rapat
-                    // grid.insertAdjacentHTML('beforeend', `<div class="cell${([0,8,16].includes(idx) ? ' span-2' : '')}"></div>`);
                 }
             });
             if(data.count < 21) {
                 document.getElementById('load-more').style.display = 'none';
+            } else {
+                document.getElementById('load-more').style.display = '';
             }
             isLoading = false;
         })
@@ -93,11 +104,20 @@ function fetchProducts(batch = 1) {
 }
 
 document.addEventListener('DOMContentLoaded', function() {
-    fetchProducts(currentBatch);
+    fetchProducts(currentBatch, currentSearch);
 
     document.getElementById('load-more').addEventListener('click', function() {
         currentBatch++;
-        fetchProducts(currentBatch);
+        fetchProducts(currentBatch, currentSearch);
+    });
+
+    // Hanya submit form yang trigger search
+    const searchInput = document.querySelector('.search-input');
+    document.getElementById('search-form').addEventListener('submit', function(e) {
+        e.preventDefault();
+        currentSearch = searchInput.value;
+        currentBatch = 1;
+        fetchProducts(currentBatch, currentSearch);
     });
 });
 </script>

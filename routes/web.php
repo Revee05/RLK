@@ -20,7 +20,7 @@ Route::get('/cart', function () {
     return view('web.cart');
 });
 
-// route view
+// route untuk view
 Route::get('/all-other-product', function () {
     return view('web.productsPage.MerchAllProductPage');
 })->name('all-other-product'); // untuk return view halaman produk merch
