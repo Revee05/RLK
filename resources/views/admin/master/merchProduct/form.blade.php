@@ -28,9 +28,10 @@
             required>
     </div>
     <div class="mb-3">
-        <label for="description" class="form-label">Description</label>
-        <textarea name="description" class="form-control"
-            required>{{ old('description', $merchProduct->description ?? '') }}</textarea>
+        <label for="deskripsi" class="form-label">Deskripsi Produk</label>
+        <textarea name="description" id="deskripsi" class="form-control" required>
+            {{ old('description', $merchProduct->description ?? '') }}
+        </textarea>
     </div>
     <div class="mb-3">
         <label for="categories" class="form-label">Categories</label>
@@ -121,8 +122,15 @@
     </button>
 </form>
 
-@push('scripts')
+{{-- Summernote CSS --}}
+<link href="https://cdnjs.cloudflare.com/ajax/libs/summernote/0.8.20/summernote-lite.min.css" rel="stylesheet">
+{{-- jQuery --}}
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+{{-- Summernote JS --}}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/summernote/0.8.20/summernote-lite.min.js"></script>
+
 <script>
+
 function previewImages(event) {
     const files = event.target.files;
     const preview = document.getElementById('preview-container');
@@ -159,4 +167,3 @@ function previewImages(event) {
     }
 }
 </script>
-@endpush
