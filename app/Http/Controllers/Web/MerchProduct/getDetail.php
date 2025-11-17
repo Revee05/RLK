@@ -25,7 +25,7 @@ class getDetail extends Controller
                 return $q->whereIn('merch_categories.id', $product->categories->pluck('id'));
             })
             ->where('id', '!=', $product->id)
-            ->limit(8)
+            ->limit(6)
             ->get();
 
         // Log hasil fetching hanya jika environment local atau development

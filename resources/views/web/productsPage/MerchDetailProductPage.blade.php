@@ -51,7 +51,7 @@
     <h4 class="mb-4">Related products</h4>
     <div class="row g-4">
         @foreach($relatedProducts as $related)
-        <div class="col-6 col-md-3">
+        <div class="col-12 col-md-4">
             <a href="{{ route('merch.products.detail', $related->slug) }}" style="text-decoration:none; color:inherit;">
                 <div class="card related-product-card h-100">
                     <img src="{{ $related->images->first() ? asset($related->images->first()->image_path) : 'https://placehold.co/300x140?text=No+Image' }}" class="card-img-top" alt="{{ $related->name }}">
