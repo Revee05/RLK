@@ -13,83 +13,55 @@ class CartController extends Controller
 {
     public function index()
     {
+        // PERUBAHAN: Hanya memuat relasi merchProduct
+        // Kita juga tambahkan whereNotNull agar item lelang lama (jika ada) tidak ikut terambil
         $cartItems = CartItem::with([
-                             'product.images',         
-                             'product.kategori',       
-                             'merchProduct.images',    
-                             'merchProduct.categories' 
-                         ])
-                         ->where('user_id', Auth::id())
-                         ->get();
+                                'merchProduct.images',
+                                'merchProduct.categories' 
+                             ])
+                             ->where('user_id', Auth::id())
+                             ->whereNotNull('merch_product_id') // Hanya ambil Merch
+                             ->get();
 
         return view('web.cart', compact('cartItems'));
-    }
-
-    // Anda juga butuh fungsi untuk memasukkan data
-    // saat lelang berakhir (ini hanya CONTOH)
-    // Ini dipanggil oleh sistem Anda saat lelang ditutup
-    public function processAuctionWinner($productId, $userId, $winningPrice)
-    {
-        // Cek dulu
-        $existing = CartItem::where('user_id', $userId)->where('products_id', $productId)->first();
-
-        if (!$existing) {
-             CartItem::create([
-                'user_id' => $userId,
-                'products_id' => $productId,
-                'quantity' => 1,
-                'price' => $winningPrice // Harga final dari tabel 'bid'
-            ]);
-        }
     }
 
     public function addMerchToCart(Request $request, $merchProductId)
     {
         $merchProduct = MerchProduct::findOrFail($merchProductId);
         $user = Auth::user();
-
-        // Cek stok jika perlu (Anda punya 'stock' di tabel merch)
-        // if ($merchProduct->stock < 1) { ... }
-
-        // Cek apakah item (merch) sudah ada di keranjang user
+        
         $existingItem = CartItem::where('user_id', $user->id)
                                 ->where('merch_product_id', $merchProduct->id)
                                 ->first();
 
         if ($existingItem) {
-            // Jika sudah ada, tambahkan quantity-nya
             $existingItem->quantity += $request->input('quantity', 1);
             $existingItem->save();
         } else {
-            // Jika belum ada, buat record baru
             CartItem::create([
                 'user_id' => $user->id,
-                'product_id' => null, // PENTING: null untuk lelang
-                'merch_product_id' => $merchProduct->id, // PENTING: isi ID merch
+                // 'product_id' tidak perlu diisi (otomatis null di database)
+                'merch_product_id' => $merchProduct->id, 
                 'quantity' => $request->input('quantity', 1),
-                'price' => $merchProduct->price, // Salin harga merch saat ini
+                'price' => $merchProduct->price,
             ]);
         }
-
+        
         return redirect()->route('cart.index')->with('success', 'Merchandise ditambahkan.');
     }
 
     public function updateQuantity(Request $request, CartItem $cartItem)
     {
-        // 1. Keamanan: Pastikan item ini milik user
         if ($cartItem->user_id !== Auth::id()) {
-            return response()->json(['success' => false, 'message' => 'Tidak diizinkan.'], 403);
+            return response()->json(['success' => false], 403);
         }
 
-        // 2. Validasi input dari JavaScript
         $newQuantity = (int)$request->input('quantity');
-        if ($newQuantity < 1) {
-            $newQuantity = 1;
-        }
+        if ($newQuantity < 1) $newQuantity = 1;
 
-        // 3. Cek Stok (HANYA jika ini item merchandise)
+        // Cek Stok Merch (Langsung cek, tanpa if/else lelang)
         if ($cartItem->merch_product_id) {
-            // Kita muat relasinya (jika belum)
             $cartItem->load('merchProduct'); 
             $stock = $cartItem->merchProduct->stock;
             
@@ -97,26 +69,14 @@ class CartController extends Controller
                 return response()->json([
                     'success' => false, 
                     'message' => 'Stok tidak mencukupi (sisa ' . $stock . ')',
-                    'quantity' => $stock // Kembalikan ke angka stok maks
-                ], 422); // 422 = Unprocessable Entity
-            }
-        
-        // 4. Cek kuantitas untuk LELANG (tidak boleh > 1)
-        } elseif ($cartItem->product_id) {
-            if ($newQuantity > 1) {
-                return response()->json([
-                    'success' => false, 
-                    'message' => 'Kuantitas barang lelang hanya bisa 1.',
-                    'quantity' => 1 // Paksa kembali ke 1
+                    'quantity' => $stock 
                 ], 422);
             }
         }
 
-        // 5. Simpan ke database
         $cartItem->quantity = $newQuantity;
         $cartItem->save();
 
-        // 6. Kirim respons sukses kembali ke JavaScript
         return response()->json([
             'success' => true,
             'newQuantity' => $cartItem->quantity
@@ -125,14 +85,8 @@ class CartController extends Controller
 
     public function destroy(CartItem $cartItem)
     {
-        // Keamanan: Pastikan item ini milik user yang sedang login
-        if ($cartItem->user_id !== Auth::id()) {
-            abort(403, 'Tindakan tidak diizinkan.');
-        }
-
+        if ($cartItem->user_id !== Auth::id()) abort(403);
         $cartItem->delete();
-
-        // 'with('success', ...)' ini opsional, untuk menampilkan pesan
         return redirect()->route('cart.index')->with('success', 'Item berhasil dihapus.');
     }
 }
