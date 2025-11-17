@@ -1,0 +1,92 @@
+<?php
+
+namespace App\Http\Controllers\Web;
+
+use App\Http\Controllers\Controller;
+use Illuminate\Http\Request;
+use App\UserAddress;
+use App\Shipper;
+use App\OrderMerch;
+use Illuminate\Support\Str;
+use App\Provinsi;
+
+class CheckoutMerchController extends Controller
+{
+    public function index()
+    {
+        // Ambil cart dari session
+        $cart = session()->get('cart', []);
+
+        if (empty($cart)) {
+            return redirect('/cart')->with('error', 'Keranjang masih kosong!');
+        }
+
+        // Hitung subtotal
+        $subtotal = collect($cart)->sum(function ($item) {
+            return $item['price'] * $item['quantity'];
+        });
+
+        // Hitung total barang
+        $totalQty = collect($cart)->sum('quantity');
+
+        // Ambil alamat user
+        $addresses = UserAddress::where('user_id', auth()->id())->get();
+
+        // Ambil shipper
+        $shippers = Shipper::all();
+
+        // Ambil semua provinsi
+        $provinsi = Provinsi::all();
+
+        return view('web.checkout.index', compact(
+            'cart',
+            'subtotal',
+            'totalQty',
+            'addresses',
+            'shippers',
+            'provinsi'
+        ));
+    }
+
+    public function process(Request $request)
+    {
+        $request->validate([
+            'address_id'   => 'required',
+            'shipper_id'   => 'required',
+            'jenis_ongkir' => 'required',
+            'total_ongkir' => 'required|integer',
+        ]);
+
+        $cart = session()->get('cart', []);
+        if (empty($cart)) {
+            return redirect('/cart')->with('error', 'Keranjang kosong.');
+        }
+
+        $totalBarang = collect($cart)->sum(fn($item) => $item['price'] * $item['quantity']);
+        $totalTagihan = $totalBarang + $request->total_ongkir;
+
+        // Simpan ke database
+        $order = OrderMerch::create([
+            'user_id'       => auth()->id(),
+            'address_id'    => $request->address_id,
+            'items'         => json_encode($cart), // simpan aman
+            'shipper_id'    => $request->shipper_id,
+            'jenis_ongkir'  => $request->jenis_ongkir,
+            'total_ongkir'  => $request->total_ongkir,
+            'total_tagihan' => $totalTagihan,
+            'invoice'       => 'INV-' . strtoupper(Str::random(10)),
+            'status'        => 'pending',
+        ]);
+
+        // Bersihkan cart
+        session()->forget('cart');
+
+        return redirect()->route('checkout.success', $order->invoice);
+    }
+
+    public function success($invoice)
+    {
+        $order = OrderMerch::where('invoice', $invoice)->firstOrFail();
+        return view('web.checkout.success', compact('order'));
+    }
+}
