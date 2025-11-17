@@ -162,6 +162,25 @@
     transform: scale(1.08) rotate(-2deg);
 }
 
+.products-grid-header .form-control {
+    border-radius: 50px;
+    box-shadow: none;
+}
+.products-grid-header .btn {
+    border-radius: 50px;
+    min-width: 50px;
+    font-weight: 500;
+}
+.products-grid-header .fa-search,
+.products-grid-header .fa-filter,
+.products-grid-header .fa-sort {
+    font-size: 1rem;
+}
+
+.dropdown-item.active, .dropdown-item:active {
+    background-color: #0d6efd;
+    color: #fff;
+}
 
 @media (max-width: 991.98px) {
     .products-grid-parent {
