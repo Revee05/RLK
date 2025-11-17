@@ -43,6 +43,13 @@ Route::get('/bid/messages/{slug}', 'Web\ChatsController@fetchMessages');
 Route::get('/category/{slug}','Web\HomeController@category')->name('products.category');
 Route::get('/seniman/{slug}','Web\HomeController@seniman')->name('products.seniman');
 
+// Route bagian cart
+Route::get('/cart', 'Web\CartController@index')->name('cart.index')->middleware('auth');
+Route::post('/cart/add/{productId}', 'Web\CartController@addToCart')->name('cart.add')->middleware('auth');
+Route::delete('/cart/{cartItem}', 'Web\CartController@destroy')->name('cart.destroy')->middleware('auth');
+Route::post('/cart/add-merch/{merchProductId}', 'Web\CartController@addMerchToCart')->name('cart.addMerch')->middleware('auth');
+Route::post('/cart/update/{cartItem}', 'Web\CartController@updateQuantity')->name('cart.update')->middleware('auth');
+
 // merch product route
 Route::get('/merch/{slug}', 'Web\MerchProduct\getDetail')->name('merch.products.detail');
 Route::get('/merch-products/json', 'Web\MerchProduct\GetMerchProduct')->name('merch.products.json');
