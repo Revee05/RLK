@@ -39,7 +39,7 @@ class MerchProductController extends Controller
                 'image_labels.*' => 'nullable|string|max:255',
             ]);
 
-            $data = $request->only(['name', 'description', 'price', 'stock', 'status', 'discount']);
+            $data = $request->only(['name', 'description', 'price', 'stock', 'status', 'discount', 'type']);
             $data['slug'] = Str::slug($request->name);
 
             $merchProduct = MerchProduct::create($data);
@@ -95,7 +95,7 @@ class MerchProductController extends Controller
                 'existing_image_labels.*' => 'nullable|string|max:255',
             ]);
 
-            $data = $request->only(['name', 'description', 'price', 'stock', 'status', 'discount']);
+            $data = $request->only(['name', 'description', 'price', 'stock', 'status', 'discount', 'type']);
             $data['slug'] = \Illuminate\Support\Str::slug($request->name);
 
             $merchProduct->update($data);
