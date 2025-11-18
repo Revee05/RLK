@@ -150,7 +150,7 @@ function fetchProducts(batch = 1, search = "", category = "", sort = "") {
                     grid.insertAdjacentHTML('beforeend', renderProduct(product, idx));
                 }
             });
-            if (data.count < 21) {
+            if (!data.has_more_featured && !data.has_more_normal) {
                 document.getElementById('load-more').style.display = 'none';
             } else {
                 document.getElementById('load-more').style.display = '';
