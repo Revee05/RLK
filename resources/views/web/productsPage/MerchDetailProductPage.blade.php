@@ -39,7 +39,12 @@
             <div class="mb-3">
                 <strong>Stok:</strong> {{ $product->stock }}
             </div>
-            <button class="btn btn-primary btn-lg w-100 mb-3">Tambahkan ke keranjang</button>
+            
+            <form action="{{ route('cart.addMerch', $product->id) }}" method="POST">
+                @csrf
+                <input type="number" name="quantity" value="1" min="1">
+                <button class="btn btn-primary btn-lg w-100 mb-3">Tambahkan ke keranjang</button>
+            </form>
             <div class="product-shipping-info">
                 <strong>Pengiriman:</strong> Pengiriman dilakukan setiap hari kerja.
             </div>
