@@ -15,7 +15,7 @@ require_once  __DIR__ . "/admin.php";
 require_once  __DIR__ . "/account.php";
 
 Auth::routes();
-// sample routes dev 
+// sample routes
 Route::get('/cart', function () {
     return view('web.cart');
 });
@@ -23,8 +23,10 @@ Route::get('/cart', function () {
 // route untuk view
 Route::get('/all-other-product', function () {
     return view('web.productsPage.MerchAllProductPage');
-})->name('all-other-product'); // untuk return view halaman produk merch
-
+})->name('all-other-product');
+Route::get('/detail-products', function () {
+    return view('web.productsPage.MerchDetailProductPage');
+})->name('detail-products');
 
 // prod routes
 
@@ -44,8 +46,8 @@ Route::get('/category/{slug}','Web\HomeController@category')->name('products.cat
 Route::get('/seniman/{slug}','Web\HomeController@seniman')->name('products.seniman');
 
 // merch product route
+Route::get('/merch-products/batch', 'Web\MerchProduct\GetMerchProduct')->name('merch.products.batch');
 Route::get('/merch/{slug}', 'Web\MerchProduct\getDetail')->name('merch.products.detail');
-Route::get('/merch-products/json', 'Web\MerchProduct\GetMerchProduct')->name('merch.products.json');
 
 //midtrans-callback
 Route::post('/payments/midtrans-notification','Account\PaymentCallbackController@receive');
@@ -53,17 +55,16 @@ Route::post('/payments/midtrans-notification','Account\PaymentCallbackController
 //Checkout
 Route::post('/checkout/process', 'Web\CheckoutMerchController@process')->name('checkout.process');
 Route::get('/checkout/success/{invoice}', 'Web\CheckoutMerchController@success')->name('checkout.success');
-Route::post('/address/store', [AddressController::class, 'store'])->name('address.store');
+Route::post('/checkout/set-address', 'Web\CheckoutMerchController@setAddress')->name('checkout.set-address');
 
-// API untuk fetch lokasi (dipakai AJAX di form)
-Route::get('/get-kabupaten/{id}', function($id){
-    return \App\Kabupaten::where('provinsi_id', $id)->get();
-});
+// List semua provinsi
+Route::get('/lokasi/provinsi', 'ProvinsiController@getAll')->name('lokasi.provinsi');
 
-Route::get('/get-kecamatan/{id}', function($id){
-    return \App\Kecamatan::where('kabupaten_id', $id)->get();
-});
+// List kabupaten berdasarkan provinsi
+Route::get('/lokasi/kabupaten/{provinsi_id}', 'KabupatenController@getByProvinsi')->name('lokasi.kabupaten');
 
-Route::get('/get-desa/{id}', function($id){
-    return \App\Desa::where('kecamatan_id', $id)->get();
-});
+// List kecamatan berdasarkan kabupaten
+Route::get('/lokasi/kecamatan/{kabupaten_id}', 'KecamatanController@getByKabupaten')->name('lokasi.kecamatan');
+
+Route::post('/alamat/store', 'UserAddressController@store')->name('alamat.store');
+Route::get('/alamat/refresh', 'UserAddressController@refreshList')->name('alamat.refresh');

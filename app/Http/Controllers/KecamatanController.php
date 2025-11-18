@@ -7,34 +7,27 @@ use App\Kabupaten;
 use App\Kecamatan;
 class KecamatanController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
     public function index()
     {
         $kecamatans = Kecamatan::all();
         return view('admin.master.kecamatan.index',compact('kecamatans'));
     }
 
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
+    public function getByKabupaten($kabupaten_id)
+    {
+        return response()->json(
+            Kecamatan::where('kabupaten_id', $kabupaten_id)
+                ->select('id', 'nama_kecamatan')
+                ->get()
+        );
+    }
+
     public function create()
     {
         $kabupatens = Kabupaten::pluck('nama_kabupaten','id');
         return view('admin.master.kecamatan.create',compact('kabupatens'));
     }
 
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
     public function store(Request $request)
     {
         $request->validate([
@@ -55,23 +48,11 @@ class KecamatanController extends Controller
         }
     }
 
-    /**
-     * Display the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
     public function show($id)
     {
         //
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
     public function edit($id)
     {
         $kecamatan = Kecamatan::findOrFail($id);
@@ -79,13 +60,6 @@ class KecamatanController extends Controller
         return view('admin.master.kecamatan.edit',compact('kecamatan','kabupatens'));
     }
 
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
     public function update(Request $request, $id)
     {
          $request->validate([
@@ -107,12 +81,6 @@ class KecamatanController extends Controller
         }
     }
 
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
     public function destroy($id)
     {
          try {
