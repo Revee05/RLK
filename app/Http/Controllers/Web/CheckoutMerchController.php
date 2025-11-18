@@ -9,6 +9,9 @@ use App\Shipper;
 use App\OrderMerch;
 use Illuminate\Support\Str;
 use App\Provinsi;
+use App\Kabupaten;
+use App\Kecamatan;
+
 
 class CheckoutMerchController extends Controller
 {
@@ -82,6 +85,30 @@ class CheckoutMerchController extends Controller
         session()->forget('cart');
 
         return redirect()->route('checkout.success', $order->invoice);
+    }
+
+    public function setAddress(Request $request)
+    {
+        $address = UserAddress::with(['provinsi','kabupaten'])
+                    ->find($request->address_id);
+
+        if(!$address){
+            return response()->json(['status'=>'error']);
+        }
+
+        session(['checkout_address' => $address]);
+
+        return response()->json([
+            'status' => 'success',
+            'address' => [
+                'label' => $address->label,
+                'name' => $address->name,
+                'phone' => $address->phone,
+                'address' => $address->address,
+                'kabupaten' => $address->kabupaten->nama_kabupaten ?? '',
+                'provinsi' => $address->provinsi->nama_provinsi ?? ''
+            ]
+        ]);
     }
 
     public function success($invoice)
