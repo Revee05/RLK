@@ -4,7 +4,9 @@ namespace App\Http\Controllers\MerchController;
 use App\Http\Controllers\Controller;
 use App\models\MerchProduct;
 use App\models\MerchCategory;
-use App\models\MerchProductImage;
+use App\models\MerchProductVariant;
+use App\models\MerchProductVariantImage;
+use App\models\MerchProductVariantSize;
 use App\Product\Uploads;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -13,7 +15,12 @@ class MerchProductController extends Controller
 {
     public function index()
     {
-        $merchProducts = MerchProduct::with(['categories', 'images'])->get();
+        $merchProducts = MerchProduct::with([
+            'categories',
+            'variants.images',
+            'variants.sizes'
+        ])->get();
+
         return view('admin.master.merchProduct.index', compact('merchProducts'));
     }
 
@@ -27,16 +34,24 @@ class MerchProductController extends Controller
     {
         try {
             $request->validate([
-                'name' => 'required',
+                'name' => 'required|string|max:255',
                 'price' => 'required|integer',
                 'stock' => 'required|integer',
-                'discount' => 'nullable|integer',
-                'status' => 'required',
-                'categories' => 'nullable|array',
-                'images.*' => 'nullable|image|max:2048',
+                'status' => 'required|in:active,inactive',
                 'type' => 'required|in:normal,featured',
-                'image_labels' => 'nullable|array',
-                'image_labels.*' => 'nullable|string|max:255',
+                'discount' => 'nullable|integer',
+                'variants' => 'array',
+                'variants.*.name' => 'required|string|max:255',
+                'variants.*.code' => 'nullable|string|max:255',
+                'variants.*.is_default' => 'nullable|boolean',
+                'variants.*.sizes' => 'array',
+                'variants.*.sizes.*.size' => 'required|string|max:50',
+                'variants.*.sizes.*.stock' => 'nullable|integer',
+                'variants.*.sizes.*.price' => 'nullable|integer',
+                'variants.*.sizes.*.discount' => 'nullable|integer',
+                'variants.*.images' => 'array',
+                'variants.*.images.*.image_path' => 'required|file|image|max:2048',
+                'variants.*.images.*.label' => 'nullable|string|max:255',
             ]);
 
             $data = $request->only(['name', 'description', 'price', 'stock', 'status', 'discount', 'type']);
@@ -44,21 +59,50 @@ class MerchProductController extends Controller
 
             $merchProduct = MerchProduct::create($data);
 
-            // Attach categories
             if ($request->has('categories')) {
-                $merchProduct->categories()->sync($request->categories);
+                $merchProduct->categories()->attach($request->categories);
             }
 
-            // Handle multi image upload with Uploads class
-            if ($request->hasFile('images')) {
-                $uploader = new Uploads();
-                foreach ($request->file('images') as $idx => $img) {
-                    $path = $uploader->handleUploadProduct($img);
-                    MerchProductImage::create([
-                        'merch_product_id' => $merchProduct->id,
-                        'image_path' => $path,
-                        'label' => $request->image_labels[$idx] ?? null,
+            // Tentukan variant default dari input radio (misal: name="default_variant" value=idx)
+            $defaultVariantIdx = $request->input('default_variant');
+
+            if ($request->filled('variants')) {
+                foreach ($request->variants as $variantIdx => $variantData) {
+                    $isDefault = ($variantIdx == $defaultVariantIdx) ? 1 : 0;
+
+                    $variant = $merchProduct->variants()->create([
+                        'name' => $variantData['name'],
+                        'code' => $variantData['code'] ?? null,
+                        'is_default' => $isDefault,
                     ]);
+
+                    // Handle images upload
+                    if (!empty($variantData['images'])) {
+                        foreach ($variantData['images'] as $imgIdx => $img) {
+                            if (isset($img['image_path']) && $img['image_path'] instanceof \Illuminate\Http\UploadedFile) {
+                                $uploader = new Uploads();
+                                $path = $uploader->handleUpload($img['image_path']);
+                            } else {
+                                $path = $img['image_path'] ?? null;
+                            }
+                            $variant->images()->create([
+                                'image_path' => $path,
+                                'label' => $img['label'] ?? null,
+                            ]);
+                        }
+                    }
+
+                    // Handle sizes
+                    if (!empty($variantData['sizes'])) {
+                        foreach ($variantData['sizes'] as $size) {
+                            $variant->sizes()->create([
+                                'size' => $size['size'],
+                                'stock' => $size['stock'] ?? 0,
+                                'price' => $size['price'] ?? null,
+                                'discount' => $size['discount'] ?? 0,
+                            ]);
+                        }
+                    }
                 }
             }
 
@@ -71,8 +115,14 @@ class MerchProductController extends Controller
 
     public function edit($id)
     {
-        $merchProduct = MerchProduct::with(['categories', 'images'])->findOrFail($id);
+        $merchProduct = MerchProduct::with([
+            'categories',
+            'variants.images',
+            'variants.sizes'
+        ])->findOrFail($id);
+
         $categories = MerchCategory::all();
+
         return view('admin.master.merchProduct.edit', compact('merchProduct', 'categories'));
     }
 
@@ -80,66 +130,130 @@ class MerchProductController extends Controller
     {
         try {
             $merchProduct = MerchProduct::findOrFail($id);
+
             $request->validate([
-                'name' => 'required',
+                'name' => 'required|string|max:255',
                 'price' => 'required|integer',
                 'stock' => 'required|integer',
-                'discount' => 'nullable|integer',
-                'status' => 'required',
-                'categories' => 'nullable|array',
+                'status' => 'required|in:active,inactive',
                 'type' => 'required|in:normal,featured',
-                'images.*' => 'nullable|image|max:2048',
-                'image_labels' => 'nullable|array',
-                'image_labels.*' => 'nullable|string|max:255',
-                'existing_image_labels' => 'nullable|array',
-                'existing_image_labels.*' => 'nullable|string|max:255',
+                'discount' => 'nullable|integer',
+                'variants' => 'array',
+                'variants.*.id' => 'nullable|integer',
+                'variants.*.name' => 'required|string|max:255',
+                'variants.*.code' => 'nullable|string|max:255',
+                'variants.*.is_default' => 'nullable|boolean',
+                'variants.*.sizes' => 'array',
+                'variants.*.sizes.*.id' => 'nullable|integer',
+                'variants.*.sizes.*.size' => 'required|string|max:50',
+                'variants.*.sizes.*.stock' => 'nullable|integer',
+                'variants.*.sizes.*.price' => 'nullable|integer',
+                'variants.*.sizes.*.discount' => 'nullable|integer',
+                'variants.*.images' => 'array',
+                'variants.*.images.*.id' => 'nullable|integer',
+                'variants.*.images.*.image_path' => 'nullable|file|image|max:2048',
+                'variants.*.images.*.label' => 'nullable|string|max:255',
             ]);
 
             $data = $request->only(['name', 'description', 'price', 'stock', 'status', 'discount', 'type']);
-            $data['slug'] = \Illuminate\Support\Str::slug($request->name);
+            $data['slug'] = Str::slug($request->name);
 
             $merchProduct->update($data);
 
-            // Sync categories
             if ($request->has('categories')) {
                 $merchProduct->categories()->sync($request->categories);
             }
 
-            // delete image
-            if ($request->has('delete_images')) {
-                foreach ($request->delete_images as $imgId) {
-                    $img = $merchProduct->images()->find($imgId);
-                    if ($img) {
-                        
-                        if (file_exists(public_path($img->image_path))) {
-                            unlink(public_path($img->image_path));
+            // Reset semua is_default ke 0 dulu
+            $merchProduct->variants()->update(['is_default' => 0]);
+            $defaultVariantIdx = $request->input('default_variant');
+
+            // Sync variants, images, sizes
+            $keptVariantIds = [];
+            foreach ((array) $request->variants as $variantIdx => $variantData) {
+                $isDefault = ($variantIdx == $defaultVariantIdx) ? 1 : 0;
+
+                if (!empty($variantData['id'])) {
+                    $variant = $merchProduct->variants()->where('id', $variantData['id'])->firstOrFail();
+                    $variant->update([
+                        'name' => $variantData['name'],
+                        'code' => $variantData['code'] ?? null,
+                        'is_default' => $isDefault,
+                    ]);
+                } else {
+                    $variant = $merchProduct->variants()->create([
+                        'name' => $variantData['name'],
+                        'code' => $variantData['code'] ?? null,
+                        'is_default' => $isDefault,
+                    ]);
+                }
+
+                $keptVariantIds[] = $variant->id;
+
+                // images
+                $keptImageIds = [];
+                foreach ((array) ($variantData['images'] ?? []) as $imgIdx => $img) {
+                    if (!empty($img['id'])) {
+                        $image = $variant->images()->where('id', $img['id'])->firstOrFail();
+                        // Jika ada file baru, upload dan replace
+                        if (isset($img['image_path']) && $img['image_path'] instanceof \Illuminate\Http\UploadedFile) {
+                            $uploader = new Uploads();
+                            $path = $uploader->handleUpload($img['image_path']);
+                            $image->update([
+                                'image_path' => $path,
+                                'label' => $img['label'] ?? null,
+                            ]);
+                        } else {
+                            $image->update([
+                                'label' => $img['label'] ?? null,
+                            ]);
                         }
-                        $img->delete();
+                    } else {
+                        if (isset($img['image_path']) && $img['image_path'] instanceof \Illuminate\Http\UploadedFile) {
+                            $uploader = new Uploads();
+                            $path = $uploader->handleUpload($img['image_path']);
+                        } else {
+                            $path = $img['image_path'] ?? null;
+                        }
+                        $image = $variant->images()->create([
+                            'image_path' => $path,
+                            'label' => $img['label'] ?? null,
+                        ]);
                     }
+                    $keptImageIds[] = $image->id;
+                }
+                if (!empty($keptImageIds)) {
+                    $variant->images()->whereNotIn('id', $keptImageIds)->delete();
+                }
+
+                // sizes
+                $keptSizeIds = [];
+                foreach ((array) ($variantData['sizes'] ?? []) as $szIdx => $sz) {
+                    if (!empty($sz['id'])) {
+                        $size = $variant->sizes()->where('id', $sz['id'])->firstOrFail();
+                        $size->update([
+                            'size' => $sz['size'],
+                            'stock' => $sz['stock'] ?? 0,
+                            'price' => $sz['price'] ?? null,
+                            'discount' => $sz['discount'] ?? 0,
+                        ]);
+                    } else {
+                        $size = $variant->sizes()->create([
+                            'size' => $sz['size'],
+                            'stock' => $sz['stock'] ?? 0,
+                            'price' => $sz['price'] ?? null,
+                            'discount' => $sz['discount'] ?? 0,
+                        ]);
+                    }
+                    $keptSizeIds[] = $size->id;
+                }
+                if (!empty($keptSizeIds)) {
+                    $variant->sizes()->whereNotIn('id', $keptSizeIds)->delete();
                 }
             }
 
-            // Update label
-            if ($request->has('existing_image_labels')) {
-                foreach ($request->existing_image_labels as $imgId => $lbl) {
-                    $img = $merchProduct->images()->find($imgId);
-                    if ($img) {
-                        $img->label = $lbl;
-                        $img->save();
-                    }
-                }
-            }
-            // Upload gambar baru + label
-            if ($request->hasFile('images')) {
-                $uploader = new \App\Product\Uploads();
-                foreach ($request->file('images') as $idx => $img) {
-                    $path = $uploader->handleUploadProduct($img);
-                    \App\models\MerchProductImage::create([
-                        'merch_product_id' => $merchProduct->id,
-                        'image_path' => $path,
-                        'label' => $request->image_labels[$idx] ?? null,
-                    ]);
-                }
+            if (!empty($keptVariantIds)) {
+                $merchProduct->variants()->whereNotIn('id', $keptVariantIds)->delete();
             }
 
             return redirect()->route('master.merchProduct.index')->with('success', 'Product updated!');
@@ -152,20 +266,10 @@ class MerchProductController extends Controller
     public function destroy($id)
     {
         try {
-            $merchProduct = MerchProduct::with('images')->findOrFail($id);
+            $merchProduct = MerchProduct::findOrFail($id);
 
-            // Hapus file fisik gambar di public/uploads/...
-            foreach ($merchProduct->images as $img) {
-                if (file_exists(public_path($img->image_path))) {
-                    unlink(public_path($img->image_path));
-                }
-            }
-
-            // Hapus relasi gambar di database
-            $merchProduct->images()->delete();
-            // Hapus relasi kategori
+            // detach categories; variants + children akan terhapus via cascade
             $merchProduct->categories()->detach();
-            // Hapus produk
             $merchProduct->delete();
 
             return redirect()->route('master.merchProduct.index')->with('success', 'Product deleted!');

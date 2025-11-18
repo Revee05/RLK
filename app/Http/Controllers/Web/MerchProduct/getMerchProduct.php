@@ -35,15 +35,18 @@ class GetMerchProduct extends Controller
         }
 
         $search = $request->query('search');
-            if ($search && strlen($search) > 50) {
-                $search = substr($search, 0, 50);
+        if ($search && strlen($search) > 50) {
+            $search = substr($search, 0, 50);
         }
         $perPage = 21;
 
         // Featured products
-        $featuredQuery = MerchProduct::with(['images' => function($q) {
-            $q->select('id', 'merch_product_id', 'image_path');
-        }])
+        $featuredQuery = MerchProduct::with([
+            'variants.images' => function($q) {
+                $q->select('id', 'merch_product_variant_id', 'image_path', 'label');
+            },
+            'variants.sizes'
+        ])
             ->select(['id', 'name', 'slug', 'price', 'stock', 'status', 'discount', 'type'])
             ->where('status', 'active')
             ->where('type', 'featured');
@@ -66,9 +69,12 @@ class GetMerchProduct extends Controller
         $featured = $featuredQuery->simplePaginate(3, ['*'], 'featured_page', $batch);
 
         // Normal products
-        $normalQuery = MerchProduct::with(['images' => function($q) {
-            $q->select('id', 'merch_product_id', 'image_path');
-        }])
+        $normalQuery = MerchProduct::with([
+            'variants.images' => function($q) {
+                $q->select('id', 'merch_product_variant_id', 'image_path', 'label');
+            },
+            'variants.sizes'
+        ])
             ->select(['id', 'name', 'slug', 'price', 'stock', 'status', 'discount', 'type'])
             ->where('status', 'active')
             ->where('type', 'normal');

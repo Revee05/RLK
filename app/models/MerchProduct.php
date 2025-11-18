@@ -11,13 +11,13 @@ class MerchProduct extends Model
         'name', 'slug', 'description', 'price', 'stock', 'status', 'discount', 'type'
     ];
 
-    // Relasi ke gambar (multi image)
-    public function images()
-    {
-        return $this->hasMany(MerchProductImage::class, 'merch_product_id');
-    }
 
     // Relasi ke kategori (many to many)
+    public function variants()
+    {
+        return $this->hasMany(MerchProductVariant::class, 'merch_product_id');
+    }
+
     public function categories()
     {
         return $this->belongsToMany(MerchCategory::class, 'merch_category_product', 'merch_product_id', 'merch_category_id');
