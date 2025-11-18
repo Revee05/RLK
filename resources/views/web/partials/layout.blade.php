@@ -50,5 +50,7 @@
         <script src="{{asset('theme/js/scripts.js')}}"></script>
         
         @yield('js')
+
+        @stack('scripts')
     </body>
 </html>
