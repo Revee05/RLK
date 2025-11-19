@@ -39,7 +39,7 @@ class GetMerchProduct extends Controller
         // Featured products (ambil hanya defaultVariant)
         $featuredQuery = MerchProduct::with([
             'defaultVariant.images' => function($q) {
-                $q->select('id', 'merch_product_variant_id', 'image_path', 'label')->limit(1);
+                $q->select('id', 'merch_product_variant_id', 'image_path', 'label')->limit(18);
             },
             'defaultVariant.sizes' => function($q) {
                 $q->orderBy('id'); // atau tambahkan where('is_default', 1) jika ada flag default
@@ -69,7 +69,7 @@ class GetMerchProduct extends Controller
         // Normal products (ambil hanya defaultVariant)
         $normalQuery = MerchProduct::with([
             'defaultVariant.images' => function($q) {
-                $q->select('id', 'merch_product_variant_id', 'image_path', 'label')->limit(1);
+                $q->select('id', 'merch_product_variant_id', 'image_path', 'label')->limit(3);
             },
             'defaultVariant.sizes' => function($q) {
                 $q->orderBy('id'); // atau tambahkan where('is_default', 1) jika ada flag default

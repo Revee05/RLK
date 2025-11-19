@@ -20,28 +20,9 @@ class MerchProductController extends Controller
             'categories',
             'variants.images',
             'variants.sizes'
-        ])->get();
-
-        if (app()->environment(['local', 'development', 'dev'])) {
-            $logProducts = $merchProducts->map(function ($p) {
-                return [
-                    'id' => $p->id,
-                    'name' => $p->name,
-                    'categories' => $p->categories->pluck('name')->toArray(),
-                    // 'type' => $p->type,
-                    // 'price' => $p->price,
-                    // 'discount' => $p->discount,
-                    'stock' => $p->stock,
-                    'status' => $p->status,
-                    'variants' => $p->variants->pluck('name')->toArray(),
-                    // 'images' => $p->variants->flatMap->images->pluck('image_path')->toArray(), // opsional
-                ];
-            });
-            \Log::debug('MerchProductController@index dashboard response', [
-                'count' => $merchProducts->count(),
-                'products' => $logProducts,
-            ]);
-        }
+        ])
+        ->orderByDesc('created_at')
+        ->get();
 
         return view('admin.master.merchProduct.index', compact('merchProducts'));
     }
