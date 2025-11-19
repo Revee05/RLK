@@ -1,18 +1,18 @@
 <!-- MODAL PILIH ALAMAT -->
 <div class="modal fade" id="addressModal" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered modal-lg">
-    <div class="modal-content">
+    <div class="modal-content address-modal">
 
-      <div class="modal-header">
-        <h5 class="modal-title fw-bold">Pilih Alamat Pengiriman</h5>
+      <div class="modal-header border-0 pb-0">
+        <h5 class="fw-bold">Daftar Alamat</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
       </div>
 
       <div class="modal-body">
 
         <!-- Tambah Alamat -->
-        <div class="text-center mb-3">
-            <button type="button" class="btn btn-dark w-100" id="btn-add-address">
+        <div class="address-item">
+            <button type="button" class="btn btn-dark w-100 py-2" id="btn-add-address">
                 Tambah Alamat
             </button>
         </div>
@@ -25,15 +25,16 @@
                            data-id="{{ $address->id }}"
                            data-name="{{ $address->name }}"
                            data-phone="{{ $address->phone }}"
-                           data-label="{{ $address->label }}"
+                           data-label="{{ $address->label_address   }}"
                            data-address="{{ $address->address }}"
                            data-provinsi="{{ $address->provinsi->nama_provinsi ?? '' }}"
                            data-kabupaten="{{ $address->kabupaten->nama_kabupaten ?? '' }}">
                         <div>
-                            <h6 class="fw-bold mb-1">{{ $address->label }}</h6>
+                            <h6 class="fw-bold mb-1">{{ $address->label_address }}</h6>
                             <div class="small text-muted">
-                                {{ $address->name }} • {{ $address->phone }} <br>
-                                {{ $address->address }} <br>
+                                {{ $address->name }} <br>
+                                {{ $address->phone }} <br>
+                                {{ $address->address }},
                                 {{ $address->kabupaten->nama_kabupaten ?? '-' }},
                                 {{ $address->provinsi->nama_provinsi ?? '-' }}
                             </div>
@@ -85,7 +86,7 @@ document.addEventListener("DOMContentLoaded", function () {
                         if (checkoutContainer) {
                             checkoutContainer.innerHTML = `
                                 <div class="address-card border border-primary rounded p-3 mb-3">
-                                    <h6 class="fw-bold mb-1">${data.address.label}</h6>
+                                    <h6 class="fw-bold mb-1">${data.address.label_address}</h6>
                                     <div class="small text-muted">
                                         ${data.address.name} • ${data.address.phone} <br>
                                         ${data.address.address} <br>
@@ -187,16 +188,16 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 
     window.reloadAddressList = function () {
-        fetch("{{ route('alamat.refresh') }}")
-            .then(res => res.json())
-            .then(data => {
+    fetch("{{ route('alamat.refresh') }}")
+        .then(res => res.json())
+        .then(data => {
 
-                const list = document.getElementById("address-list");
-                list.innerHTML = data.html;
+            const list = document.getElementById("address-list");
+            list.innerHTML = data.html;
 
-                // re-bind click event pada card
-                bindAddressCardEvents();
-            });
+            // re-bind click event pada card
+            bindAddressCardEvents();
+        });
     }
 
 });

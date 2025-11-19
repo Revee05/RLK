@@ -30,39 +30,53 @@ class UserAddressController extends Controller
      */
     public function store(Request $request)
     {
-        $validated = $request->validate([
-            'name'          => 'required|string',
-            'phone'         => 'required|string',
-            'address'       => 'required|string',
-            'provinsi_id'   => 'required|integer',
-            'kabupaten_id'  => 'required|integer',
-            'kecamatan_id'  => 'required|integer',
-            'label_address' => 'nullable|string',
-            'note'          => 'nullable|string',
-            'pinpoint'      => 'nullable|string',
-        ]);
+        try {
+            $validated = $request->validate([
+                'name'          => 'required|string',
+                'phone'         => 'required|string',
+                'address'       => 'required|string',
+                'provinsi_id'   => 'required|integer',
+                'kabupaten_id'  => 'required|integer',
+                'kecamatan_id'  => 'required|integer',
+                'label_address' => 'nullable|string',
+            ]);
 
-        $data = [
-            'user_id'       => auth()->id(),
-            'name'          => $validated['name'],
-            'phone'         => $validated['phone'],
-            'address'       => $validated['address'],
-            'provinsi_id'   => $validated['provinsi_id'],
-            'kabupaten_id'  => $validated['kabupaten_id'],
-            'kecamatan_id'  => $validated['kecamatan_id'],
-            'label_address' => $validated['label_address'] ?? null,
-            'desa_id'       => null,
-            'kodepos'       => null,
-        ];
+            $data = [
+                'user_id'       => auth()->id(),
+                'name'          => $validated['name'],
+                'phone'         => $validated['phone'],
+                'address'       => $validated['address'],
+                'provinsi_id'   => $validated['provinsi_id'],
+                'kabupaten_id'  => $validated['kabupaten_id'],
+                'kecamatan_id'  => $validated['kecamatan_id'],
+                'label_address' => $validated['label_address'] ?? null,
+                'desa_id'       => null,
+                'kodepos'       => null,
+            ];
 
-        $save = UserAddress::create($data);
+            $save = UserAddress::create($data);
 
-        return response()->json([
-            "status" => "success",
-            "message" => "Alamat berhasil disimpan",
-            "data" => $save
-        ]);
+            return response()->json([
+                "status" => "success",
+                "message" => "Alamat berhasil disimpan",
+                "data" => $save
+            ]);
+
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'status' => 'error',
+                'errors' => $e->errors()
+            ], 422);
+
+        } catch (\Exception $e) {
+            // fallback untuk semua error lain
+            return response()->json([
+                'status' => 'error',
+                'message' => $e->getMessage()
+            ], 500);
+        }
     }
+
 
     public function refreshList()
     {

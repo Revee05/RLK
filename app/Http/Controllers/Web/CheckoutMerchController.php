@@ -101,15 +101,36 @@ class CheckoutMerchController extends Controller
         return response()->json([
             'status' => 'success',
             'address' => [
-                'label' => $address->label,
+                'label_address' => $address->label_address,
                 'name' => $address->name,
                 'phone' => $address->phone,
                 'address' => $address->address,
+                'kecamatan' => $address->kecamatan->nama_kecamatan ?? '',
                 'kabupaten' => $address->kabupaten->nama_kabupaten ?? '',
-                'provinsi' => $address->provinsi->nama_provinsi ?? ''
+                'provinsi' => $address->provinsi->nama_provinsi ?? '',
             ]
         ]);
     }
+
+    public function calculateShipping(Request $request)
+    {
+        // Ambil semua kurir dari tabel shippers
+        $shippers = Shipper::select('id', 'name')->get();
+
+        $result = [];
+
+        foreach ($shippers as $ship) {
+            $result[] = [
+                'id'    => $ship->id,
+                'name'  => $ship->name,
+                'price' => 0,       // flat 0
+                'eta'   => '-',     // default
+            ];
+        }
+
+        return response()->json($result);
+    }
+
 
     public function success($invoice)
     {
