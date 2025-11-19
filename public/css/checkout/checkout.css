@@ -1,16 +1,129 @@
-.address-card {
-    border: 2px solid #0d6efd; /* navy/primary */
-    border-radius: 8px;
-    padding: 12px;
-    margin-bottom: 12px;
-    background-color: #fff;
+/* ========================
+   GLOBAL LAYOUT
+======================== */
+body {
+    background-color: #fafbfc;
+    font-family: 'Inter', sans-serif;
 }
 
-.address-card h6 {
-    font-size: 1rem;
+h2, h6, .fw-bold {
+    color: #0d1b2a;
 }
 
-.address-card .small {
-    font-size: 0.85rem;
-    color: #6c757d;
+/* ========================
+   ADDRESS SECTION
+======================== */
+#checkout-selected-address .address-card {
+    border: 1px solid #d8e3f0 !important;
+    border-radius: 14px !important;
+    padding: 18px 20px !important;
+    background: #ffffff;
+}
+
+#checkout-selected-address h6 {
+    font-size: 15px;
+    font-weight: 700;
+}
+
+#checkout-selected-address .small {
+    font-size: 13px;
+    line-height: 1.4;
+}
+
+.btn-dark {
+    background: #0b1e3f !important;
+    border: none;
+    border-radius: 10px !important;
+    padding: 10px 16px;
+}
+
+/* ========================
+   SHIPPING OPTIONS
+======================== */
+.card {
+    border-radius: 16px !important;
+    border: 1px solid #e0e7f1 !important;
+}
+
+.card-body {
+    padding: 22px 26px !important;
+}
+
+label.pointer {
+    cursor: pointer;
+    border-radius: 14px !important;
+    border: 1px solid #d8e3f0 !important;
+    transition: 0.15s;
+}
+
+label.pointer:hover {
+    background-color: #f5f9ff;
+    border-color: #9bb8e2 !important;
+}
+
+/* shipping radio */
+.shipper-radio {
+    width: 18px;
+    height: 18px;
+    margin-top: 4px;
+}
+
+/* ========================
+   NOTE AREA
+======================== */
+textarea.form-control {
+    border-radius: 14px !important;
+    border: 1px solid #d8e3f0;
+    resize: none;
+}
+
+/* ========================
+   PRODUCT SUMMARY RIGHT
+======================== */
+.card img {
+    object-fit: cover;
+    border-radius: 12px;
+}
+
+.card-body hr {
+    margin: 18px 0;
+    opacity: 0.3;
+}
+
+/* Price text size */
+#total_price {
+    font-weight: 700;
+    color: #0b1e3f;
+}
+
+/* ========================
+   PAYMENT METHOD
+======================== */
+#payment-method-card {
+    border-radius: 16px !important;
+}
+
+/* ========================
+   PAY NOW BUTTON
+======================== */
+.btn-dark.w-100 {
+    background: #0b1e3f !important;
+    height: 52px;
+    border-radius: 14px !important;
+    font-size: 16px;
+}
+
+/* ========================
+   IMAGE BLOCK (PRODUCT)
+======================== */
+.product-summary-image {
+    border-radius: 16px;
+    overflow: hidden;
+}
+
+/* ========================
+   SPACING
+======================== */
+.mb-4 {
+    margin-bottom: 28px !important;
 }
