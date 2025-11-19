@@ -9,16 +9,20 @@ class getDetail extends Controller
 {
     public function __invoke($slug)
     {
-        // get produk 
+        // get produk lengkap dengan variants, images, sizes, categories
         $product = MerchProduct::select('id', 'name', 'slug', 'description', 'price', 'discount', 'stock')
             ->with([
-                'images:id,merch_product_id,image_path',
-                'categories:id,name'
+                'categories:id,name',
+                'variants' => function($q) {
+                    $q->select('id', 'merch_product_id', 'name', 'code', 'is_default');
+                },
+                'variants.images:id,merch_product_variant_id,image_path,label',
+                'variants.sizes:id,merch_product_variant_id,size,stock,price,discount'
             ])
             ->where('slug', $slug)
             ->firstOrFail();
 
-        // get related products
+        // get related products (boleh tetap simple)
         $relatedProducts = MerchProduct::select('id', 'slug', 'name', 'price', 'discount')
             ->with(['images:id,merch_product_id,image_path'])
             ->whereHas('categories', function($q) use ($product) {

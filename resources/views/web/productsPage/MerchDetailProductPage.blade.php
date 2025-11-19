@@ -6,17 +6,34 @@
 @endsection
 
 @section('content')
+@php
+    $mainVariant = $product->variants->where('is_default', 1)->first() ?? $product->variants->first();
+    $mainImage = $mainVariant && $mainVariant->images->count()
+        ? asset($mainVariant->images->first()->image_path)
+        : 'https://placehold.co/500x400?text=No+Image';
+@endphp
+
 <div class="merch-product-detail container py-5">
     <div class="row">
         <!-- Gambar utama & thumbnail -->
         <div class="col-lg-6">
             <div class="main-image mb-3">
-                <img src="{{ $product->images->first() ? asset($product->images->first()->image_path) : 'https://placehold.co/500x400?text=No+Image' }}" alt="{{ $product->name }}" class="img-fluid rounded">
+                <img src="{{ $mainImage }}" alt="{{ $product->name }}" class="img-fluid rounded">
             </div>
             <div class="thumb-images d-flex gap-2">
-                @foreach($product->images->skip(1) as $img)
-                    <img src="{{ asset($img->image_path) }}" class="img-thumbnail" alt="thumb">
-                @endforeach
+                @php
+                    $allImages = collect();
+                    foreach ($product->variants as $variant) {
+                        if ($variant->images && $variant->images->count()) {
+                            $allImages = $allImages->merge($variant->images);
+                        }
+                    }
+                @endphp
+                @if($allImages->count())
+                    @foreach($allImages as $img)
+                        <img src="{{ asset($img->image_path) }}" class="img-thumbnail" alt="thumb">
+                    @endforeach
+                @endif
             </div>
         </div>
         <!-- Detail produk -->
@@ -59,7 +76,14 @@
         <div class="col-12 col-md-4">
             <a href="{{ route('merch.products.detail', $related->slug) }}" style="text-decoration:none; color:inherit;">
                 <div class="card related-product-card h-100">
-                    <img src="{{ $related->images->first() ? asset($related->images->first()->image_path) : 'https://placehold.co/300x140?text=No+Image' }}" class="card-img-top" alt="{{ $related->name }}">
+                    @php
+                        // Ambil gambar dari variant default atau variant pertama
+                        $relMainVariant = $related->variants->where('is_default', 1)->first() ?? $related->variants->first();
+                        $relMainImage = $relMainVariant && $relMainVariant->images->count()
+                            ? asset($relMainVariant->images->first()->image_path)
+                            : 'https://placehold.co/300x140?text=No+Image';
+                    @endphp
+                    <img src="{{ $relMainImage }}" class="card-img-top" alt="{{ $related->name }}">
                     <div class="card-body text-center">
                         <div class="related-product-title mb-1 fw-semibold">{{ $related->name }}</div>
                         @if($related->discount)
@@ -79,6 +103,70 @@
         </div>
         @endforeach
     </div>
+</div>
+
+<div class="mb-3">
+    <strong>Varian Produk:</strong>
+    @if($product->variants && $product->variants->count())
+        <div class="accordion" id="variantAccordion">
+            @foreach($product->variants as $variant)
+                <div class="accordion-item mb-2">
+                    <h2 class="accordion-header" id="heading-{{ $variant->id }}">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-{{ $variant->id }}" aria-expanded="false" aria-controls="collapse-{{ $variant->id }}">
+                            {{ $variant->name }} @if($variant->is_default) <span class="badge bg-primary ms-2">Default</span> @endif
+                        </button>
+                    </h2>
+                    <div id="collapse-{{ $variant->id }}" class="accordion-collapse collapse" aria-labelledby="heading-{{ $variant->id }}" data-bs-parent="#variantAccordion">
+                        <div class="accordion-body">
+                            {{-- Gambar varian --}}
+                            @if($variant->images && $variant->images->count())
+                                <div class="d-flex gap-2 mb-2">
+                                    @foreach($variant->images as $vimg)
+                                        <img src="{{ asset($vimg->image_path) }}" alt="varian-img" style="width:60px; height:60px; object-fit:cover; border-radius:6px;">
+                                    @endforeach
+                                </div>
+                            @endif
+                            {{-- Size dan harga --}}
+                            @if($variant->sizes && $variant->sizes->count())
+                                <table class="table table-sm align-middle mb-0">
+                                    <thead>
+                                        <tr>
+                                            <th>Ukuran</th>
+                                            <th>Stok</th>
+                                            <th>Harga</th>
+                                            <th>Diskon</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach($variant->sizes as $size)
+                                            <tr>
+                                                <td>{{ $size->size }}</td>
+                                                <td>{{ $size->stock }}</td>
+                                                <td>
+                                                    Rp. {{ number_format($size->price, 0, ',', '.') }}
+                                                </td>
+                                                <td>
+                                                    @if($size->discount)
+                                                        <span class="badge bg-danger">-{{ $size->discount }}%</span>
+                                                    @else
+                                                        -
+                                                    @endif
+                                                </td>
+                                            </tr>
+                                        @endforeach
+                                    </tbody>
+                                </table>
+                            @else
+                                <div class="text-muted">Tidak ada data ukuran.</div>
+                            @endif
+                        </div>
+                    </div>
+                </div>
+            @endforeach
+        </div>
+    @else
+        <div class="text-muted">Tidak ada varian.</div>
+    @endif
 </div>
 @endsection
 
