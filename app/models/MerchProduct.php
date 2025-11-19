@@ -22,4 +22,9 @@ class MerchProduct extends Model
     {
         return $this->belongsToMany(MerchCategory::class, 'merch_category_product', 'merch_product_id', 'merch_category_id');
     }
+
+    public function defaultVariant()
+    {
+        return $this->hasOne(\App\models\MerchProductVariant::class, 'merch_product_id')->where('is_default', 1);
+    }
 }

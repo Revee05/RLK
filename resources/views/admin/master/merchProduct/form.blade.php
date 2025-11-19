@@ -12,16 +12,6 @@
         <label for="name" class="form-label">Product Name</label>
         <input type="text" name="name" class="form-control" value="{{ old('name', $merchProduct->name ?? '') }}" required>
     </div>
-
-    <div class="mb-3">
-        <label for="price" class="form-label">Price</label>
-        <input type="number" name="price" class="form-control" value="{{ old('price', $merchProduct->price ?? '') }}" required>
-    </div>
-    <div class="mb-3">
-        <label for="stock" class="form-label">Stock (Total)</label>
-        <input type="number" name="stock" class="form-control" value="{{ old('stock', $merchProduct->stock ?? 0) }}" required>
-        <small class="text-muted">Stock total, detail per variant/size diatur di bawah.</small>
-    </div>
     <div class="mb-3">
         <label for="deskripsi" class="form-label">Deskripsi Produk</label>
         <textarea name="description" id="deskripsi" class="form-control" required>{{ old('description', $merchProduct->description ?? '') }}</textarea>
@@ -57,18 +47,19 @@
             $oldVariants = old('variants', isset($merchProduct) ? $merchProduct->variants->toArray() : []);
         @endphp
         @foreach($oldVariants as $vIdx => $variant)
-        <div class="card mb-3 variant-item">
+        <div class="card mb-3 variant-item" data-index="{{ $vIdx }}">
             <div class="card-body">
                 <div class="d-flex justify-content-between align-items-center mb-2">
                     <strong>Variant #{{ $vIdx+1 }}</strong>
                     {{-- Radio untuk pilih default --}}
                     <div>
-                        <input type="radio" name="default_variant" value="{{ $vIdx }}"
+                        <input type="radio" name="default_variant" value="{{ $variant['id'] ?? 'new_' . $vIdx }}"
                             {{ (isset($variant['is_default']) && $variant['is_default']) || (!isset($variant['is_default']) && $vIdx == 0) ? 'checked' : '' }}>
                         <small class="text-primary">Default</small>
                     </div>
                     <button type="button" class="btn btn-danger btn-sm remove-variant">Remove</button>
                 </div>
+                <input type="hidden" name="variants[{{ $vIdx }}][id]" value="{{ $variant['id'] ?? '' }}">
                 <div class="mb-2">
                     <label>Variant Name</label>
                     <input type="text" name="variants[{{ $vIdx }}][name]" class="form-control" value="{{ $variant['name'] ?? '' }}" required>
@@ -88,6 +79,7 @@
                         @endphp
                         @foreach($images as $iIdx => $img)
                         <div class="input-group mb-1 variant-image-item">
+                            <input type="hidden" name="variants[{{ $vIdx }}][images][{{ $iIdx }}][id]" value="{{ $img['id'] ?? '' }}">
                             <input type="file" name="variants[{{ $vIdx }}][images][{{ $iIdx }}][image_path]" class="form-control variant-image-input" {{ isset($img['image_path']) ? '' : 'required' }}>
                             <input type="text" name="variants[{{ $vIdx }}][images][{{ $iIdx }}][label]" class="form-control" placeholder="Label" value="{{ $img['label'] ?? '' }}">
                             <button type="button" class="btn btn-outline-danger remove-variant-image">Remove</button>
@@ -110,8 +102,9 @@
                         @endphp
                         @foreach($sizes as $sIdx => $sz)
                         <div class="row mb-1 variant-size-item">
+                            <input type="hidden" name="variants[{{ $vIdx }}][sizes][{{ $sIdx }}][id]" value="{{ $sz['id'] ?? '' }}">
                             <div class="col">
-                                <input type="text" name="variants[{{ $vIdx }}][sizes][{{ $sIdx }}][size]" class="form-control" placeholder="Size (e.g. S, M, L)" value="{{ $sz['size'] ?? '' }}" required>
+                                <input type="text" name="variants[{{ $vIdx }}][sizes][{{ $sIdx }}][size]" class="form-control" placeholder="(cnth:. Default, S, M, L, dll)" value="{{ $sz['size'] ?? '' }}" required>
                             </div>
                             <div class="col">
                                 <input type="number" name="variants[{{ $vIdx }}][sizes][{{ $sIdx }}][stock]" class="form-control" placeholder="Stock" value="{{ $sz['stock'] ?? 0 }}">
@@ -156,13 +149,13 @@
                 <strong>Variant #IDX#</strong>
                 <div>
                     <input type="radio" name="default_variant" value="#IDX#">
-                    <small class="text-primary">Default</small>
+                    <small class="text-primary">Default - Jadikan product utama/default sebagai display</small>
                 </div>
                 <button type="button" class="btn btn-danger btn-sm remove-variant">Remove</button>
             </div>
             <div class="mb-2">
                 <label>Variant Name</label>
-                <input type="text" name="variants[#IDX#][name]" class="form-control" required>
+                <input type="text" name="variants[#IDX#][name]" class="form-control" placeholder="Variant Name" required>
             </div>
             <div class="mb-2">
                 <label>Variant Code</label>
@@ -195,10 +188,10 @@
 <template id="variant-size-template">
     <div class="row mb-1 variant-size-item">
         <div class="col">
-            <input type="text" name="variants[#VIDX#][sizes][#SIDX#][size]" class="form-control" placeholder="Size (e.g. S, M, L)" required>
+            <input type="text" name="variants[#VIDX#][sizes][#SIDX#][size]" class="form-control" placeholder="Size (e.g., S, M, L)" required>
         </div>
         <div class="col">
-            <input type="number" name="variants[#VIDX#][sizes][#SIDX#][stock]" class="form-control" placeholder="Stock" value="">
+            <input type="number" name="variants[#VIDX#][sizes][#SIDX#][stock]" class="form-control" placeholder="Stock">
         </div>
         <div class="col">
             <input type="number" name="variants[#VIDX#][sizes][#SIDX#][price]" class="form-control" placeholder="Price">
@@ -230,6 +223,7 @@ document.addEventListener('DOMContentLoaded', function() {
         let template = document.getElementById('variant-template').innerHTML.replace(/#IDX#/g, variantIdx);
         let div = document.createElement('div');
         div.innerHTML = template;
+        div.firstElementChild.setAttribute('data-index', variantIdx); // Tambahkan data-index
         document.getElementById('variants-container').appendChild(div.firstElementChild);
         variantIdx++;
         updateVariantEvents();
@@ -299,5 +293,21 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     updateVariantEvents();
+
+    document.querySelector('form').addEventListener('submit', function(e) {
+        let defaultVariantSelected = document.querySelector('input[name="default_variant"]:checked');
+        if (!defaultVariantSelected) {
+            e.preventDefault();
+            alert('Please select a default variant.');
+        }
+    });
 });
 </script>
+
+@if ($errors->has('name'))
+    <div class="text-danger">{{ $errors->first('name') }}</div>
+@endif
+
+@if ($errors->has('variants.*.name'))
+    <div class="text-danger">{{ $errors->first('variants.*.name') }}</div>
+@endif

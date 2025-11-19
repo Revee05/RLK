@@ -9,10 +9,6 @@ use App\models\MerchCategory;
 
 class GetMerchProduct extends Controller
 {
-    protected function getCategories()
-    {
-        return MerchCategory::select('id', 'name', 'slug')->orderBy('name')->get();
-    }
 
     public function __invoke(Request $request)
     {
@@ -40,14 +36,16 @@ class GetMerchProduct extends Controller
         }
         $perPage = 21;
 
-        // Featured products
+        // Featured products (ambil hanya defaultVariant)
         $featuredQuery = MerchProduct::with([
-            'variants.images' => function($q) {
-                $q->select('id', 'merch_product_variant_id', 'image_path', 'label');
+            'defaultVariant.images' => function($q) {
+                $q->select('id', 'merch_product_variant_id', 'image_path', 'label')->limit(1);
             },
-            'variants.sizes'
+            'defaultVariant.sizes' => function($q) {
+                $q->orderBy('id'); // atau tambahkan where('is_default', 1) jika ada flag default
+            }
         ])
-            ->select(['id', 'name', 'slug', 'price', 'stock', 'status', 'discount', 'type'])
+            ->select(['id', 'name', 'slug', 'type', 'status'])
             ->where('status', 'active')
             ->where('type', 'featured');
 
@@ -62,20 +60,22 @@ class GetMerchProduct extends Controller
         // Sorting
         if ($sort == 'newest') $featuredQuery->orderByDesc('created_at');
         elseif ($sort == 'oldest') $featuredQuery->orderBy('created_at');
-        elseif ($sort == 'cheapest') $featuredQuery->orderBy('price');
-        elseif ($sort == 'priciest') $featuredQuery->orderByDesc('price');
+        elseif ($sort == 'cheapest') $featuredQuery->orderBy('id'); // Sorting by id as price is now in variant
+        elseif ($sort == 'priciest') $featuredQuery->orderByDesc('id');
         else $featuredQuery->orderByDesc('created_at');
 
         $featured = $featuredQuery->simplePaginate(3, ['*'], 'featured_page', $batch);
 
-        // Normal products
+        // Normal products (ambil hanya defaultVariant)
         $normalQuery = MerchProduct::with([
-            'variants.images' => function($q) {
-                $q->select('id', 'merch_product_variant_id', 'image_path', 'label');
+            'defaultVariant.images' => function($q) {
+                $q->select('id', 'merch_product_variant_id', 'image_path', 'label')->limit(1);
             },
-            'variants.sizes'
+            'defaultVariant.sizes' => function($q) {
+                $q->orderBy('id'); // atau tambahkan where('is_default', 1) jika ada flag default
+            }
         ])
-            ->select(['id', 'name', 'slug', 'price', 'stock', 'status', 'discount', 'type'])
+            ->select(['id', 'name', 'slug', 'type', 'status'])
             ->where('status', 'active')
             ->where('type', 'normal');
 
@@ -90,8 +90,8 @@ class GetMerchProduct extends Controller
         // Sorting
         if ($sort == 'newest') $normalQuery->orderByDesc('created_at');
         elseif ($sort == 'oldest') $normalQuery->orderBy('created_at');
-        elseif ($sort == 'cheapest') $normalQuery->orderBy('price');
-        elseif ($sort == 'priciest') $normalQuery->orderByDesc('price');
+        elseif ($sort == 'cheapest') $normalQuery->orderBy('id');
+        elseif ($sort == 'priciest') $normalQuery->orderByDesc('id');
         else $normalQuery->orderByDesc('created_at');
 
         $normal = $normalQuery->simplePaginate(18, ['*'], 'normal_page', $batch);
@@ -119,17 +119,19 @@ class GetMerchProduct extends Controller
             ]);
         }
 
-        $categories = $this->getCategories();
-        $categories_version = MerchCategory::max('updated_at') ?: now();
-
-        return response()->json([
+        $response = [
             'batch' => $batch,
             'count' => count(array_filter($result)),
             'products' => array_values($result),
-            'categories' => $categories,
-            'categories_version' => $categories_version,
             'has_more_featured' => $featured->hasMorePages(),
             'has_more_normal' => $normal->hasMorePages(),
-        ]);
+        ];
+
+        // Log seluruh response jika env local/development
+        if (app()->environment(['local', 'development', 'dev'])) {
+            \Log::info('Fetch merch products API response', $response);
+        }
+
+        return response()->json($response);
     }
 }
