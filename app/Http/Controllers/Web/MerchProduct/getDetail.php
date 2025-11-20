@@ -24,7 +24,12 @@ class getDetail extends Controller
 
         // get related products (boleh tetap simple)
         $relatedProducts = MerchProduct::select('id', 'slug', 'name', 'price', 'discount')
-            ->with(['images:id,merch_product_id,image_path'])
+            ->with([
+                'variants' => function($q) {
+                    $q->select('id', 'merch_product_id', 'name', 'code', 'is_default');
+                },
+                'variants.images:id,merch_product_variant_id,image_path,label'
+            ])
             ->whereHas('categories', function($q) use ($product) {
                 return $q->whereIn('merch_categories.id', $product->categories->pluck('id'));
             })

@@ -77,13 +77,23 @@
             <a href="{{ route('merch.products.detail', $related->slug) }}" style="text-decoration:none; color:inherit;">
                 <div class="card related-product-card h-100">
                     @php
-                        // Ambil gambar dari variant default atau variant pertama
-                        $relMainVariant = $related->variants->where('is_default', 1)->first() ?? $related->variants->first();
-                        $relMainImage = $relMainVariant && $relMainVariant->images->count()
-                            ? asset($relMainVariant->images->first()->image_path)
+                        // Gabungkan semua gambar dari semua varian
+                        $relAllImages = collect();
+                        foreach ($related->variants as $variant) {
+                            if ($variant->images && $variant->images->count()) {
+                                $relAllImages = $relAllImages->merge($variant->images);
+                            }
+                        }
+                        $relMainImage = $relAllImages->count()
+                            ? asset($relAllImages->first()->image_path)
                             : 'https://placehold.co/300x140?text=No+Image';
                     @endphp
                     <img src="{{ $relMainImage }}" class="card-img-top" alt="{{ $related->name }}">
+                    <div class="d-flex gap-1 justify-content-center mt-2 mb-1">
+                        @foreach($relAllImages as $img)
+                            <img src="{{ asset($img->image_path) }}" style="width:40px;height:40px;object-fit:cover;border-radius:6px;" alt="thumb">
+                        @endforeach
+                    </div>
                     <div class="card-body text-center">
                         <div class="related-product-title mb-1 fw-semibold">{{ $related->name }}</div>
                         @if($related->discount)
