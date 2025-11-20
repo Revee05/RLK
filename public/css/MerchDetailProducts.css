@@ -86,6 +86,8 @@
     transition: border 0.2s, box-shadow 0.2s;
     min-width: 90px;
     font-size: 1rem;
+    transition: background 0.15s, color 0.15s;
+    will-change: background, color, border;
 }
 .variant-btn img {
     width: 32px;
