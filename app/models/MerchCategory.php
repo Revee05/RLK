@@ -15,4 +15,16 @@ class MerchCategory extends Model
     {
         return $this->belongsToMany(MerchProduct::class, 'merch_category_product', 'merch_category_id', 'merch_product_id');
     }
+
+    protected static function booted()
+    {
+        static::saved(function () {
+            \Cache::forget('merch_categories_list');
+            \Cache::forget('merch_categories_version');
+        });
+        static::deleted(function () {
+            \Cache::forget('merch_categories_list');
+            \Cache::forget('merch_categories_version');
+        });
+    }
 }
