@@ -24,6 +24,7 @@
     $variantsArray = $product->variants->map(function($v) {
         return [
             'id' => $v->id,
+            'display_stock' => $v->display_stock,
             'sizes' => $v->sizes->map(function($s) {
                 return [
                     'id' => $s->id,
@@ -33,6 +34,16 @@
             })->toArray(),
         ];
     })->values()->toArray();
+
+    // Hitung total stock semua variant (termasuk size jika ada)
+    $totalStock = 0;
+    foreach ($product->variants as $variant) {
+        if ($variant->sizes && $variant->sizes->count()) {
+            $totalStock += $variant->sizes->sum('stock');
+        } else {
+            $totalStock += $variant->display_stock ?? 0;
+        }
+    }
 @endphp
 
 <div class="merch-product-detail container py-5">
@@ -62,11 +73,8 @@
                     <span class="text-muted">-</span>
                 @endif
             </div>
-            <p class="product-desc mb-3">
-                {!! $product->description !!}
-            </p>
             <div class="mb-3">
-                <strong>Stok:</strong> {{ $mainVariant ? $mainVariant->display_stock : '-' }}
+                <strong>Total Stok:</strong> {{ $totalStock }}
             </div>
             <div class="mb-3">
                 <label class="form-label fw-bold">Variant</label>
@@ -94,13 +102,7 @@
                         @foreach($mainVariant->sizes as $size)
                             <label class="size-btn">
                                 <input type="radio" name="size_id" value="{{ $size->id }}" class="d-none" autocomplete="off">
-                                <span>{{ $size->size }} 
-                                    @if($size->stock > 0)
-                                        <small class="text-muted">({{ $size->stock }} stok)</small>
-                                    @else
-                                        <small class="text-danger">(Habis)</small>
-                                    @endif
-                                </span>
+                                <span>{{ $size->size }}</span>
                             </label>
                         @endforeach
                     @else
@@ -110,13 +112,28 @@
             </div>
             <form action="{{ route('cart.addMerch', $product->id) }}" method="POST">
                 @csrf
-                <input type="number" name="quantity" value="1" min="1">
-                <button class="btn btn-primary btn-lg w-100 mb-3">Tambahkan ke keranjang</button>
+                <input type="hidden" name="selected_variant_id" id="selected_variant_id" value="{{ $mainVariant->id }}">
+                <input type="hidden" name="selected_size_id" id="selected_size_id" value="{{ $mainVariant->sizes->first()->id ?? '' }}">
+                <div class="d-flex align-items-center mb-3">
+                    <input type="number" id="qty-input" name="quantity" value="1" min="1" style="width:70px; margin-right:10px;">
+                    <span id="stock-info" class="text-muted">
+                        Tersedia {{ $mainVariant->sizes->count() ? ($mainVariant->sizes->first()->stock ?? 0) : ($mainVariant->display_stock ?? 0) }}
+                    </span>
+                </div>
+                <button type="submit" class="btn btn-primary btn-lg w-100 mb-3">Tambahkan ke keranjang</button>
             </form>
             <div class="product-shipping-info">
                 <strong>Pengiriman:</strong> Pengiriman dilakukan setiap hari kerja.
             </div>
         </div>
+    </div>
+</div>
+
+{{-- Deskripsi produk di luar box utama, di atas related products --}}
+<div class="container pb-3">
+    <h4 class="mb-2">Deskripsi Produk</h4>
+    <div class="product-desc mb-4">
+        {!! $product->description !!}
     </div>
 </div>
 
@@ -130,38 +147,114 @@
 @section('js')
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Ambil data variant dan size dari blade ke JS
     const variants = @json($variantsArray);
 
-    // Saat variant dipilih, update size-grid
+    // Highlight active variant
     document.querySelectorAll('.variant-btn input[type="radio"]').forEach((input, idx) => {
         input.addEventListener('change', function() {
+            document.querySelectorAll('.variant-btn').forEach(l => l.classList.remove('active'));
+            input.closest('.variant-btn').classList.add('active');
+
             const variant = variants[idx];
             const sizeGrid = document.querySelector('.size-grid');
             if (variant.sizes.length > 0) {
                 sizeGrid.innerHTML = '';
-                variant.sizes.forEach(sz => {
+                variant.sizes.forEach((sz, sidx) => {
                     sizeGrid.innerHTML += `
                         <label class="size-btn">
-                            <input type="radio" name="size_id" value="${sz.id}" class="d-none" autocomplete="off">
-                            <span>${sz.size} 
-                                ${sz.stock > 0 ? `<small class="text-muted">(${sz.stock} stok)</small>` : `<small class="text-danger">(Habis)</small>`}
-                            </span>
+                            <input type="radio" name="size_id" value="${sz.id}" class="d-none" autocomplete="off" ${sidx === 0 ? 'checked' : ''}>
+                            <span>${sz.size}</span>
                         </label>
                     `;
                 });
             } else {
                 sizeGrid.innerHTML = '<span class="text-muted">Tidak ada ukuran.</span>';
             }
+
+            // Set active pada size pertama (jika ada)
+            const sizeLabels = document.querySelectorAll('.size-grid .size-btn');
+            if (sizeLabels.length > 0) {
+                sizeLabels[0].classList.add('active');
+                sizeLabels[0].querySelector('input').checked = true;
+            }
+
+            updateStockInfo();
         });
     });
 
-    // Thumbnail tetap
+    // Highlight active size
+    document.addEventListener('change', function(e) {
+        if (e.target.name === 'size_id') {
+            document.querySelectorAll('.size-btn').forEach(l => l.classList.remove('active'));
+            e.target.closest('.size-btn').classList.add('active');
+            updateStockInfo();
+        }
+    });
+
+    // Thumbnail click
     document.querySelectorAll('.thumb-images img').forEach(function(img) {
         img.addEventListener('click', function() {
             document.querySelector('.main-image img').src = img.src;
         });
     });
+
+    // Inisialisasi: set active pada variant dan size yang terpilih saat load
+    const checkedVariant = document.querySelector('.variant-btn input[type="radio"]:checked');
+    if (checkedVariant) checkedVariant.closest('.variant-btn').classList.add('active');
+    const checkedSize = document.querySelector('.size-btn input[type="radio"]:checked');
+    if (checkedSize) checkedSize.closest('.size-btn').classList.add('active');
+
+    // Update stok info sesuai pilihan
+    function updateStockInfo() {
+        const checkedVariant = document.querySelector('.variant-btn input[type="radio"]:checked');
+        const checkedSize = document.querySelector('.size-btn input[type="radio"]:checked');
+        let stock = 0;
+
+        if (checkedVariant) {
+            const variantIdx = Array.from(document.querySelectorAll('.variant-btn input[type="radio"]')).indexOf(checkedVariant);
+            const variant = variants[variantIdx];
+
+            if (checkedSize && variant.sizes.length > 0) {
+                const sizeIdx = Array.from(document.querySelectorAll('.size-btn input[type="radio"]')).indexOf(checkedSize);
+                stock = variant.sizes[sizeIdx]?.stock ?? 0;
+            } else {
+                stock = variant.display_stock ?? 0;
+            }
+        }
+
+        const stockInfo = document.getElementById('stock-info');
+        if (stock < 1) {
+            stockInfo.innerHTML = `<span class="text-danger">Habis</span>`;
+        } else {
+            stockInfo.textContent = `Tersedia ${stock}`;
+        }
+        const qtyInput = document.getElementById('qty-input');
+        const submitBtn = document.querySelector('button[type="submit"]');
+        if (qtyInput) qtyInput.disabled = stock < 1;
+        if (qtyInput) qtyInput.max = stock;
+        if (submitBtn) submitBtn.disabled = stock < 1;
+    }
+
+    function updateHiddenInputs() {
+        // Set variant
+        const checkedVariant = document.querySelector('.variant-btn input[type="radio"]:checked');
+        if (checkedVariant) {
+            document.getElementById('selected_variant_id').value = checkedVariant.value;
+        }
+        // Set size
+        const checkedSize = document.querySelector('.size-btn input[type="radio"]:checked');
+        document.getElementById('selected_size_id').value = checkedSize ? checkedSize.value : '';
+    }
+
+    // Panggil setelah setiap update pilihan
+    document.addEventListener('change', function(e) {
+        if (e.target.name === 'size_id' || e.target.name === 'variant_id') {
+            updateStockInfo();
+            updateHiddenInputs();
+        }
+    });
+    updateStockInfo();
+    updateHiddenInputs();
 });
 </script>
 @endsection
