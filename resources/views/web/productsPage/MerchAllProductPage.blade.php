@@ -105,10 +105,9 @@ function renderProduct(product, idx) {
     let priceHtml = '';
     if (price !== null && price !== undefined) {
         if (discount && discount > 0) {
-            let discountedPrice = Math.round(price * (1 - discount / 100));
             priceHtml = `
-                <span class="product-price">Rp ${discountedPrice.toLocaleString('id-ID')}</span>
-                <span class="product-price-original">Rp ${Number(price).toLocaleString('id-ID')}</span>
+                <span class="badge bg-danger me-2">-${discount}%</span>
+                <span class="product-price">Rp ${Number(price).toLocaleString('id-ID')}</span>
             `;
         } else {
             priceHtml = `<span class="product-price">Rp ${Number(price).toLocaleString('id-ID')}</span>`;
