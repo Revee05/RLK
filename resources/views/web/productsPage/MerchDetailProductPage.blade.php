@@ -33,6 +33,16 @@
             })->toArray(),
         ];
     })->values()->toArray();
+
+    // Hitung total stock semua variant (termasuk size jika ada)
+    $totalStock = 0;
+    foreach ($product->variants as $variant) {
+        if ($variant->sizes && $variant->sizes->count()) {
+            $totalStock += $variant->sizes->sum('stock');
+        } else {
+            $totalStock += $variant->display_stock ?? 0;
+        }
+    }
 @endphp
 
 <div class="merch-product-detail container py-5">
@@ -62,11 +72,8 @@
                     <span class="text-muted">-</span>
                 @endif
             </div>
-            <p class="product-desc mb-3">
-                {!! $product->description !!}
-            </p>
             <div class="mb-3">
-                <strong>Stok:</strong> {{ $mainVariant ? $mainVariant->display_stock : '-' }}
+                <strong>Total Stok:</strong> {{ $totalStock }}
             </div>
             <div class="mb-3">
                 <label class="form-label fw-bold">Variant</label>
@@ -117,6 +124,14 @@
                 <strong>Pengiriman:</strong> Pengiriman dilakukan setiap hari kerja.
             </div>
         </div>
+    </div>
+</div>
+
+{{-- Deskripsi produk di luar box utama, di atas related products --}}
+<div class="container pb-3">
+    <h4 class="mb-2">Deskripsi Produk</h4>
+    <div class="product-desc mb-4">
+        {!! $product->description !!}
     </div>
 </div>
 
