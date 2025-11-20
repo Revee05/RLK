@@ -56,7 +56,56 @@
             <div class="mb-3">
                 <strong>Stok:</strong> {{ $product->stock }}
             </div>
-            
+
+            {{-- Pilihan Variant (Warna) --}}
+            <div class="mb-3">
+                <label class="form-label fw-bold">Variant</label>
+                <div class="variant-grid">
+                    @foreach($product->variants as $variant)
+                        <label class="variant-btn">
+                            @php
+                                $img = $variant->images->first();
+                            @endphp
+                            @if($img)
+                                <img src="{{ asset($img->image_path) }}" alt="{{ $variant->name }}">
+                            @else
+                                <img src="https://placehold.co/40x40?text=?" alt="no-img">
+                            @endif
+                            <input type="radio" name="variant_id" value="{{ $variant->id }}" class="d-none" autocomplete="off">
+                            <span>{{ $variant->name }}</span>
+                        </label>
+                    @endforeach
+                </div>
+            </div>
+
+            {{-- Pilihan Size --}}
+            <div class="mb-3">
+                <label class="form-label fw-bold">Sizes</label>
+                <div class="size-grid">
+                    {{-- Default: tampilkan size dari variant pertama --}}
+                    @php
+                        $firstVariant = $product->variants->first();
+                    @endphp
+                    @if($firstVariant && $firstVariant->sizes->count())
+                        @foreach($firstVariant->sizes as $size)
+                            <label class="size-btn">
+                                <input type="radio" name="size_id" value="{{ $size->id }}" class="d-none" autocomplete="off">
+                                <span>{{ $size->size }} 
+                                    @if($size->stock > 0)
+                                        <small class="text-muted">({{ $size->stock }} stok)</small>
+                                    @else
+                                        <small class="text-danger">(Habis)</small>
+                                    @endif
+                                </span>
+                            </label>
+                        @endforeach
+                    @else
+                        <span class="text-muted">Tidak ada ukuran.</span>
+                    @endif
+                </div>
+            </div>
+
+            {{-- ...form keranjang dan lain-lain... --}}
             <form action="{{ route('cart.addMerch', $product->id) }}" method="POST">
                 @csrf
                 <input type="number" name="quantity" value="1" min="1">
