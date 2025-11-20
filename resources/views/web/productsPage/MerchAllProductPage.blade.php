@@ -44,7 +44,9 @@
         </div>
     </div>
     <div id="products-grid" class="products-grid-parent">
-        <!-- Produk akan dimunculkan di sini -->
+
+         {{-- Produk akan dimunculkan di sini --}}
+
     </div>
     <div class="text-center mt-4">
         <button id="load-more" class="btn btn-primary">Load More</button>
@@ -73,6 +75,7 @@ function scrollToGrid() {
 }
 
 function populateCategories(categories) {
+    console.log('populateCategories', categories);
     if (!categories || categories.length === 0) return;
     categoriesCached = categories;
     const dropdown = document.getElementById('category-dropdown');
@@ -87,25 +90,37 @@ function renderProduct(product, idx) {
     let batchIdx = idx % 21;
     let cellClass = "cell";
     if (batchIdx === 0 || batchIdx === 8 || batchIdx === 16) cellClass += " span-2";
-    let imageUrl = (product.images && product.images.length > 0 && product.images[0].image_path) ?
-        `/${product.images[0].image_path}` :
-        `https://placehold.co/300x250?text=${encodeURIComponent(product.name)}`;
+
+    // Ambil gambar dari defaultVariant jika ada
+    let variant = product.default_variant || product.defaultVariant;
+    let imageUrl = `https://placehold.co/300x250?text=${encodeURIComponent(product.name)}`;
+    if (variant && variant.images && variant.images.length > 0 && variant.images[0].image_path) {
+        imageUrl = `/${variant.images[0].image_path}`;
+    }
+
+    // Ambil harga, diskon dari display_price dan display_discount
+    let price = product.display_price;
+    let discount = product.display_discount;
 
     let priceHtml = '';
-    if (product.discount && product.discount > 0) {
-        let discountedPrice = Math.round(product.price * (1 - product.discount / 100));
-        priceHtml = `
-            <span class="product-price">Rp ${discountedPrice.toLocaleString('id-ID')}</span>
-            <span class="product-price-original">Rp ${Number(product.price).toLocaleString('id-ID')}</span>
-        `;
+    if (price !== null && price !== undefined) {
+        if (discount && discount > 0) {
+            let discountedPrice = Math.round(price * (1 - discount / 100));
+            priceHtml = `
+                <span class="product-price">Rp ${discountedPrice.toLocaleString('id-ID')}</span>
+                <span class="product-price-original">Rp ${Number(price).toLocaleString('id-ID')}</span>
+            `;
+        } else {
+            priceHtml = `<span class="product-price">Rp ${Number(price).toLocaleString('id-ID')}</span>`;
+        }
     } else {
-        priceHtml = `<span class="product-price">Rp ${Number(product.price).toLocaleString('id-ID')}</span>`;
+        priceHtml = `<span class="product-price">-</span>`;
     }
 
     return `
     <a href="/merch/${product.slug}" class="${cellClass}" style="text-decoration:none; color:inherit;">
         <div class="card product-card h-100">
-            ${product.discount ? `<div class="discount-badge">-${product.discount}%</div>` : ''}
+            ${discount && discount > 0 ? `<div class="discount-badge">-${discount}%</div>` : ''}
             <img src="${imageUrl}" class="card-img-top" alt="${product.name}">
             <div class="card-body text-left p-2">
                 <div class="product-title">${product.name}</div>
@@ -126,19 +141,7 @@ function fetchProducts(batch = 1, search = "", category = "", sort = "") {
     fetch(url)
         .then(res => res.json())
         .then(data => {
-            // Cek versi kategori
-            if (data.categories_version) {
-                const localVersion = localStorage.getItem('merch_categories_version');
-                if (localVersion !== data.categories_version) {
-                    // Versi berubah, update cache & render ulang
-                    if (data.categories && data.categories.length) {
-                        localStorage.setItem('merch_categories', JSON.stringify(data.categories));
-                        localStorage.setItem('merch_categories_version', data.categories_version);
-                        categoriesCached = data.categories;
-                        populateCategories(data.categories);
-                    }
-                }
-            }
+            console.log('Produk dari API:', data);
 
             const grid = document.getElementById('products-grid');
             if (batch === 1) {
@@ -150,7 +153,7 @@ function fetchProducts(batch = 1, search = "", category = "", sort = "") {
                     grid.insertAdjacentHTML('beforeend', renderProduct(product, idx));
                 }
             });
-            if (data.count < 21) {
+            if (!data.has_more_featured && !data.has_more_normal) {
                 document.getElementById('load-more').style.display = 'none';
             } else {
                 document.getElementById('load-more').style.display = '';
@@ -220,6 +223,20 @@ document.addEventListener('DOMContentLoaded', function() {
             fetchProducts(currentBatch, currentSearch, currentCategory, currentSort);
         }
     });
-});
+
+    // Ambil kategori dari server dan simpan ke localStorage jika ada perubahan
+    fetch('/merch/categories')
+        .then(res => res.json())
+        .then(data => {
+            console.log('Kategori dari API:', data);
+            if (data.categories && data.categories.length) {
+                localStorage.setItem('merch_categories', JSON.stringify(data.categories));
+                localStorage.setItem('merch_categories_version', data.categories_version);
+                categoriesCached = data.categories;
+                populateCategories(data.categories);
+            }
+        })
+        .catch(err => console.error('Fetch kategori error:', err));
+    });
 </script>
 @endsection

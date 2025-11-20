@@ -9,10 +9,6 @@ use App\models\MerchCategory;
 
 class GetMerchProduct extends Controller
 {
-    protected function getCategories()
-    {
-        return MerchCategory::select('id', 'name', 'slug')->orderBy('name')->get();
-    }
 
     public function __invoke(Request $request)
     {
@@ -35,16 +31,21 @@ class GetMerchProduct extends Controller
         }
 
         $search = $request->query('search');
-            if ($search && strlen($search) > 50) {
-                $search = substr($search, 0, 50);
+        if ($search && strlen($search) > 50) {
+            $search = substr($search, 0, 50);
         }
         $perPage = 21;
 
-        // Featured products
-        $featuredQuery = MerchProduct::with(['images' => function($q) {
-            $q->select('id', 'merch_product_id', 'image_path');
-        }])
-            ->select(['id', 'name', 'slug', 'price', 'stock', 'status', 'discount', 'type'])
+        // Featured products (ambil hanya defaultVariant)
+        $featuredQuery = MerchProduct::with([
+            'defaultVariant.images' => function($q) {
+                $q->select('id', 'merch_product_variant_id', 'image_path', 'label')->limit(18);
+            },
+            'defaultVariant.sizes' => function($q) {
+                $q->orderBy('id');
+            }
+        ])
+            ->select(['id', 'name', 'slug', 'type', 'status'])
             ->where('status', 'active')
             ->where('type', 'featured');
 
@@ -59,17 +60,22 @@ class GetMerchProduct extends Controller
         // Sorting
         if ($sort == 'newest') $featuredQuery->orderByDesc('created_at');
         elseif ($sort == 'oldest') $featuredQuery->orderBy('created_at');
-        elseif ($sort == 'cheapest') $featuredQuery->orderBy('price');
-        elseif ($sort == 'priciest') $featuredQuery->orderByDesc('price');
+        elseif ($sort == 'cheapest') $featuredQuery->orderBy('id');
+        elseif ($sort == 'priciest') $featuredQuery->orderByDesc('id');
         else $featuredQuery->orderByDesc('created_at');
 
         $featured = $featuredQuery->simplePaginate(3, ['*'], 'featured_page', $batch);
 
-        // Normal products
-        $normalQuery = MerchProduct::with(['images' => function($q) {
-            $q->select('id', 'merch_product_id', 'image_path');
-        }])
-            ->select(['id', 'name', 'slug', 'price', 'stock', 'status', 'discount', 'type'])
+        // Normal products (ambil hanya defaultVariant)
+        $normalQuery = MerchProduct::with([
+            'defaultVariant.images' => function($q) {
+                $q->select('id', 'merch_product_variant_id', 'image_path', 'label')->limit(3);
+            },
+            'defaultVariant.sizes' => function($q) {
+                $q->orderBy('id');
+            }
+        ])
+            ->select(['id', 'name', 'slug', 'type', 'status'])
             ->where('status', 'active')
             ->where('type', 'normal');
 
@@ -84,8 +90,8 @@ class GetMerchProduct extends Controller
         // Sorting
         if ($sort == 'newest') $normalQuery->orderByDesc('created_at');
         elseif ($sort == 'oldest') $normalQuery->orderBy('created_at');
-        elseif ($sort == 'cheapest') $normalQuery->orderBy('price');
-        elseif ($sort == 'priciest') $normalQuery->orderByDesc('price');
+        elseif ($sort == 'cheapest') $normalQuery->orderBy('id');
+        elseif ($sort == 'priciest') $normalQuery->orderByDesc('id');
         else $normalQuery->orderByDesc('created_at');
 
         $normal = $normalQuery->simplePaginate(18, ['*'], 'normal_page', $batch);
@@ -104,6 +110,30 @@ class GetMerchProduct extends Controller
             }
         }
 
+        // Tambahkan display_price, display_stock, display_discount ke setiap produk
+        foreach ($result as $key => $product) {
+            if (!$product) continue;
+            $variant = $product->defaultVariant;
+            if ($variant) {
+                if ($variant->sizes && $variant->sizes->count()) {
+                    $minPrice = $variant->sizes->min('price');
+                    $totalStock = $variant->sizes->sum('stock');
+                    $maxDiscount = $variant->sizes->max('discount');
+                } else {
+                    $minPrice = $variant->price;
+                    $totalStock = $variant->stock;
+                    $maxDiscount = $variant->discount;
+                }
+                $product->display_price = $minPrice;
+                $product->display_stock = $totalStock;
+                $product->display_discount = $maxDiscount;
+            } else {
+                $product->display_price = null;
+                $product->display_stock = null;
+                $product->display_discount = null;
+            }
+        }
+
         // Log hasil fetching hanya jika env local atau development
         if (app()->environment(['local', 'development', 'dev'])) {
             \Log::info('Fetch merch products batch', [
@@ -113,17 +143,19 @@ class GetMerchProduct extends Controller
             ]);
         }
 
-        $categories = $this->getCategories();
-        $categories_version = MerchCategory::max('updated_at') ?: now();
-
-        return response()->json([
+        $response = [
             'batch' => $batch,
             'count' => count(array_filter($result)),
             'products' => array_values($result),
-            'categories' => $categories,
-            'categories_version' => $categories_version,
             'has_more_featured' => $featured->hasMorePages(),
             'has_more_normal' => $normal->hasMorePages(),
-        ]);
+        ];
+
+        // Log seluruh response jika env local/development
+        if (app()->environment(['local', 'development', 'dev'])) {
+            \Log::info('Fetch merch products API response', $response);
+        }
+
+        return response()->json($response);
     }
 }

@@ -72,7 +72,7 @@ Route::post('/cart/add-merch/{merchProductId}', 'Web\CartController@addMerchToCa
 Route::post('/cart/update/{cartItem}', 'Web\CartController@updateQuantity')->name('cart.update')->middleware('auth');
 
 // merch product route
-Route::get('/merch-products/batch', 'Web\MerchProduct\GetMerchProduct')->name('merch.products.batch');
+Route::get('/merch/categories', 'Web\MerchProduct\GetMerchCategory')->name('merch.categories');
 Route::get('/merch/{slug}', 'Web\MerchProduct\getDetail')->name('merch.products.detail');
 
 //midtrans-callback
