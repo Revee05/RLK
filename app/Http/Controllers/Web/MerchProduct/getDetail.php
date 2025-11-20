@@ -9,12 +9,12 @@ class getDetail extends Controller
 {
     public function __invoke($slug)
     {
-        // get produk lengkap dengan variants, images, sizes, categories
-        $product = MerchProduct::select('id', 'name', 'slug', 'description', 'price', 'discount', 'stock')
+        // Ambil produk lengkap dengan relasi yang diperlukan
+        $product = MerchProduct::select('id', 'name', 'slug', 'description', 'status', 'type')
             ->with([
                 'categories:id,name',
                 'variants' => function($q) {
-                    $q->select('id', 'merch_product_id', 'name', 'code', 'is_default');
+                    $q->select('id', 'merch_product_id', 'name', 'code', 'is_default', 'stock', 'price', 'discount');
                 },
                 'variants.images:id,merch_product_variant_id,image_path,label',
                 'variants.sizes:id,merch_product_variant_id,size,stock,price,discount'
@@ -22,11 +22,24 @@ class getDetail extends Controller
             ->where('slug', $slug)
             ->firstOrFail();
 
-        // get related products (boleh tetap simple)
-        $relatedProducts = MerchProduct::select('id', 'slug', 'name', 'price', 'discount')
+        // Hitung display_price, display_stock, display_discount untuk setiap variant
+        foreach ($product->variants as $variant) {
+            if ($variant->sizes && $variant->sizes->count()) {
+                $variant->display_price = $variant->sizes->min('price');
+                $variant->display_stock = $variant->sizes->sum('stock');
+                $variant->display_discount = $variant->sizes->max('discount');
+            } else {
+                $variant->display_price = $variant->price;
+                $variant->display_stock = $variant->stock;
+                $variant->display_discount = $variant->discount;
+            }
+        }
+
+        // Produk terkait (related products)
+        $relatedProducts = MerchProduct::select('id', 'slug', 'name', 'type', 'status')
             ->with([
                 'variants' => function($q) {
-                    $q->select('id', 'merch_product_id', 'name', 'code', 'is_default');
+                    $q->select('id', 'merch_product_id', 'name', 'code', 'is_default', 'stock', 'price', 'discount');
                 },
                 'variants.images:id,merch_product_variant_id,image_path,label'
             ])
@@ -36,6 +49,23 @@ class getDetail extends Controller
             ->where('id', '!=', $product->id)
             ->limit(6)
             ->get();
+
+        // Hitung display_price, display_discount untuk related products
+        foreach ($relatedProducts as $rel) {
+            $defaultVariant = $rel->variants->where('is_default', 1)->first() ?: $rel->variants->first();
+            if ($defaultVariant) {
+                if ($defaultVariant->sizes && $defaultVariant->sizes->count()) {
+                    $rel->display_price = $defaultVariant->sizes->min('price');
+                    $rel->display_discount = $defaultVariant->sizes->max('discount');
+                } else {
+                    $rel->display_price = $defaultVariant->price;
+                    $rel->display_discount = $defaultVariant->discount;
+                }
+            } else {
+                $rel->display_price = null;
+                $rel->display_discount = null;
+            }
+        }
 
         // Log hasil fetching hanya jika environment local atau development
         if (app()->environment(['local', 'development', 'dev'])) {

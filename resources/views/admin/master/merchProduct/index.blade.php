@@ -70,11 +70,19 @@
                 {{-- Harga Dasar (bisa harga minimum dari semua size) --}}
                 <td>
                     @php
-                        $minPrice = $merchProduct->variants->flatMap(function($variant) {
-                            return $variant->sizes;
-                        })->min('price');
+                        $prices = [];
+                        foreach ($merchProduct->variants as $variant) {
+                            if ($variant->sizes->count()) {
+                                foreach ($variant->sizes as $size) {
+                                    if (!is_null($size->price)) $prices[] = $size->price;
+                                }
+                            } else {
+                                if (!is_null($variant->price)) $prices[] = $variant->price;
+                            }
+                        }
+                        $minPrice = count($prices) ? min($prices) : null;
                     @endphp
-                    {{ $minPrice ?? $merchProduct->price }}
+                    {{ $minPrice !== null ? number_format($minPrice, 0, ',', '.') : '-' }}
                 </td>
                 {{-- Diskon (bisa diskon terbesar dari semua size) --}}
                 <td>

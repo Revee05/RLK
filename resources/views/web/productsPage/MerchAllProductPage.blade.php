@@ -91,26 +91,19 @@ function renderProduct(product, idx) {
     let cellClass = "cell";
     if (batchIdx === 0 || batchIdx === 8 || batchIdx === 16) cellClass += " span-2";
 
-    // Ambil data dari defaultVariant
+    // Ambil gambar dari defaultVariant jika ada
     let variant = product.default_variant || product.defaultVariant;
-    let price = null;
-    if (variant && variant.sizes && variant.sizes.length > 0) {
-        // Jika ada flag is_default, ambil yang itu, jika tidak ambil pertama
-        let size = variant.sizes.find(s => s.is_default) || variant.sizes[0];
-        price = size.price;
-    }
-    let discount = null;
     let imageUrl = `https://placehold.co/300x250?text=${encodeURIComponent(product.name)}`;
-
-    if (variant) {
-        // Ambil gambar dari variant
-        if (variant.images && variant.images.length > 0 && variant.images[0].image_path) {
-            imageUrl = `/${variant.images[0].image_path}`;
-        }
+    if (variant && variant.images && variant.images.length > 0 && variant.images[0].image_path) {
+        imageUrl = `/${variant.images[0].image_path}`;
     }
+
+    // Ambil harga, diskon dari display_price dan display_discount
+    let price = product.display_price;
+    let discount = product.display_discount;
 
     let priceHtml = '';
-    if (price !== null) {
+    if (price !== null && price !== undefined) {
         if (discount && discount > 0) {
             let discountedPrice = Math.round(price * (1 - discount / 100));
             priceHtml = `
@@ -127,7 +120,7 @@ function renderProduct(product, idx) {
     return `
     <a href="/merch/${product.slug}" class="${cellClass}" style="text-decoration:none; color:inherit;">
         <div class="card product-card h-100">
-            ${discount ? `<div class="discount-badge">-${discount}%</div>` : ''}
+            ${discount && discount > 0 ? `<div class="discount-badge">-${discount}%</div>` : ''}
             <img src="${imageUrl}" class="card-img-top" alt="${product.name}">
             <div class="card-body text-left p-2">
                 <div class="product-title">${product.name}</div>

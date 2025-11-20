@@ -51,7 +51,6 @@
             <div class="card-body">
                 <div class="d-flex justify-content-between align-items-center mb-2">
                     <strong>Variant #{{ $vIdx+1 }}</strong>
-                    {{-- Radio untuk pilih default --}}
                     <div>
                         <input type="radio" name="default_variant" value="{{ $variant['id'] ?? 'new_' . $vIdx }}"
                             {{ (isset($variant['is_default']) && $variant['is_default']) || (!isset($variant['is_default']) && $vIdx == 0) ? 'checked' : '' }}>
@@ -94,6 +93,28 @@
                     </div>
                     <button type="button" class="btn btn-outline-primary btn-sm add-variant-image">Add Image</button>
                 </div>
+
+                {{-- ========== Tambahan: Stock, Price, Discount di level variant ========== --}}
+                <div class="mb-2 variant-stock-fields" @if(!empty($variant['sizes'])) style="display:none" @endif>
+                    <label>Stock (tanpa size)</label>
+                    <input type="number" name="variants[{{ $vIdx }}][stock]" class="form-control" placeholder="Stock" value="{{ $variant['stock'] ?? 0 }}">
+                </div>
+                <div class="mb-2 variant-price-fields" @if(!empty($variant['sizes'])) style="display:none" @endif>
+                    <label>Price (tanpa size)</label>
+                    <input type="number" name="variants[{{ $vIdx }}][price]" class="form-control" placeholder="Price" value="{{ $variant['price'] ?? '' }}">
+                </div>
+                <div class="mb-2 variant-discount-fields" @if(!empty($variant['sizes'])) style="display:none" @endif>
+                    <label>Discount (tanpa size)</label>
+                    <input type="number" name="variants[{{ $vIdx }}][discount]" class="form-control" placeholder="Discount" value="{{ $variant['discount'] ?? 0 }}">
+                </div>
+                <div class="mb-2">
+                    <small class="text-muted">
+                        Jika variant tidak memiliki size, isi Stock/Price/Discount di atas.<br>
+                        Jika variant memiliki size, isi Stock/Price/Discount di setiap size di bawah.
+                    </small>
+                </div>
+                {{-- ========== END Tambahan ========== --}}
+
                 <div class="mb-2">
                     <label>Sizes</label>
                     <div class="variant-sizes-container">
@@ -120,7 +141,7 @@
                             </div>
                         </div>
                         @endforeach
-                    </div>
+                    </div> 
                     <button type="button" class="btn btn-outline-primary btn-sm add-variant-size">Add Size</button>
                 </div>
             </div>
@@ -169,6 +190,26 @@
                 <div class="variant-images-container"></div>
                 <button type="button" class="btn btn-outline-primary btn-sm add-variant-image">Add Image</button>
             </div>
+            {{-- ========== Tambahan: Stock, Price, Discount di level variant ========== --}}
+            <div class="mb-2 variant-stock-fields">
+                <label>Stock (tanpa size)</label>
+                <input type="number" name="variants[#IDX#][stock]" class="form-control" placeholder="Stock">
+            </div>
+            <div class="mb-2 variant-price-fields">
+                <label>Price (tanpa size)</label>
+                <input type="number" name="variants[#IDX#][price]" class="form-control" placeholder="Price">
+            </div>
+            <div class="mb-2 variant-discount-fields">
+                <label>Discount (tanpa size)</label>
+                <input type="number" name="variants[#IDX#][discount]" class="form-control" placeholder="Discount">
+            </div>
+            <div class="mb-2">
+                <small class="text-muted">
+                    Jika variant tidak memiliki size, isi Stock/Price/Discount di atas.<br>
+                    Jika variant memiliki size, isi Stock/Price/Discount di setiap size di bawah.
+                </small>
+            </div>
+            {{-- ========== END Tambahan ========== --}}
             <div class="mb-2">
                 <label>Sizes</label>
                 <div class="variant-sizes-container"></div>
@@ -223,7 +264,7 @@ document.addEventListener('DOMContentLoaded', function() {
         let template = document.getElementById('variant-template').innerHTML.replace(/#IDX#/g, variantIdx);
         let div = document.createElement('div');
         div.innerHTML = template;
-        div.firstElementChild.setAttribute('data-index', variantIdx); // Tambahkan data-index
+        div.firstElementChild.setAttribute('data-index', variantIdx);
         document.getElementById('variants-container').appendChild(div.firstElementChild);
         variantIdx++;
         updateVariantEvents();
@@ -267,12 +308,17 @@ document.addEventListener('DOMContentLoaded', function() {
                 div.innerHTML = template;
                 sizesContainer.appendChild(div.firstElementChild);
                 updateVariantEvents();
+                // Sembunyikan stock/price/discount di variant jika ada size
+                toggleVariantStockFields(btn.closest('.variant-item'));
             }
         });
 
         document.querySelectorAll('.remove-variant-size').forEach(btn => {
             btn.onclick = function() {
+                let variantCard = btn.closest('.variant-item');
                 btn.closest('.variant-size-item').remove();
+                // Tampilkan stock/price/discount di variant jika semua size dihapus
+                toggleVariantStockFields(variantCard);
             }
         });
 
@@ -290,6 +336,28 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             }
         });
+
+        // Sembunyikan/tampilkan stock/price/discount di variant jika ada size
+        document.querySelectorAll('.variant-item').forEach(variantCard => {
+            toggleVariantStockFields(variantCard);
+        });
+    }
+
+    // Fungsi untuk toggle stock/price/discount di variant
+    function toggleVariantStockFields(variantCard) {
+        let sizes = variantCard.querySelectorAll('.variant-size-item');
+        let stockField = variantCard.querySelector('.variant-stock-fields');
+        let priceField = variantCard.querySelector('.variant-price-fields');
+        let discountField = variantCard.querySelector('.variant-discount-fields');
+        if (sizes.length > 0) {
+            if (stockField) stockField.style.display = 'none';
+            if (priceField) priceField.style.display = 'none';
+            if (discountField) discountField.style.display = 'none';
+        } else {
+            if (stockField) stockField.style.display = '';
+            if (priceField) priceField.style.display = '';
+            if (discountField) discountField.style.display = '';
+        }
     }
 
     updateVariantEvents();

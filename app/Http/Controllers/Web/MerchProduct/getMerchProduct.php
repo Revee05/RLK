@@ -42,7 +42,7 @@ class GetMerchProduct extends Controller
                 $q->select('id', 'merch_product_variant_id', 'image_path', 'label')->limit(18);
             },
             'defaultVariant.sizes' => function($q) {
-                $q->orderBy('id'); // atau tambahkan where('is_default', 1) jika ada flag default
+                $q->orderBy('id');
             }
         ])
             ->select(['id', 'name', 'slug', 'type', 'status'])
@@ -60,7 +60,7 @@ class GetMerchProduct extends Controller
         // Sorting
         if ($sort == 'newest') $featuredQuery->orderByDesc('created_at');
         elseif ($sort == 'oldest') $featuredQuery->orderBy('created_at');
-        elseif ($sort == 'cheapest') $featuredQuery->orderBy('id'); // Sorting by id as price is now in variant
+        elseif ($sort == 'cheapest') $featuredQuery->orderBy('id');
         elseif ($sort == 'priciest') $featuredQuery->orderByDesc('id');
         else $featuredQuery->orderByDesc('created_at');
 
@@ -72,7 +72,7 @@ class GetMerchProduct extends Controller
                 $q->select('id', 'merch_product_variant_id', 'image_path', 'label')->limit(3);
             },
             'defaultVariant.sizes' => function($q) {
-                $q->orderBy('id'); // atau tambahkan where('is_default', 1) jika ada flag default
+                $q->orderBy('id');
             }
         ])
             ->select(['id', 'name', 'slug', 'type', 'status'])
@@ -107,6 +107,30 @@ class GetMerchProduct extends Controller
                 $result[] = isset($featured[$featuredIdx]) ? $featured[$featuredIdx++] : null;
             } else {
                 $result[] = isset($normal[$normalIdx]) ? $normal[$normalIdx++] : null;
+            }
+        }
+
+        // Tambahkan display_price, display_stock, display_discount ke setiap produk
+        foreach ($result as $key => $product) {
+            if (!$product) continue;
+            $variant = $product->defaultVariant;
+            if ($variant) {
+                if ($variant->sizes && $variant->sizes->count()) {
+                    $minPrice = $variant->sizes->min('price');
+                    $totalStock = $variant->sizes->sum('stock');
+                    $maxDiscount = $variant->sizes->max('discount');
+                } else {
+                    $minPrice = $variant->price;
+                    $totalStock = $variant->stock;
+                    $maxDiscount = $variant->discount;
+                }
+                $product->display_price = $minPrice;
+                $product->display_stock = $totalStock;
+                $product->display_discount = $maxDiscount;
+            } else {
+                $product->display_price = null;
+                $product->display_stock = null;
+                $product->display_discount = null;
             }
         }
 

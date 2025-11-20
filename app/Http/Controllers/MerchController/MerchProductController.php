@@ -45,10 +45,13 @@ class MerchProductController extends Controller
                 'variants.*.images' => 'nullable|array',
                 'variants.*.images.*.image_path' => 'nullable|file|image|max:2048',
                 'variants.*.sizes' => 'nullable|array',
-                'variants.*.sizes.*.size' => 'required|string|max:50',
+                'variants.*.sizes.*.size' => 'required_with:variants.*.sizes|string|max:50',
                 'variants.*.sizes.*.stock' => 'nullable|integer|min:0',
                 'variants.*.sizes.*.price' => 'nullable|numeric|min:0',
                 'variants.*.sizes.*.discount' => 'nullable|numeric|min:0|max:100',
+                'variants.*.stock' => 'nullable|integer|min:0',
+                'variants.*.price' => 'nullable|numeric|min:0',
+                'variants.*.discount' => 'nullable|numeric|min:0|max:100',
             ]);
 
             $data = $request->only(['name', 'description', 'status', 'type']);
@@ -64,10 +67,16 @@ class MerchProductController extends Controller
             foreach ($request->variants as $variantIdx => $variantData) {
                 $isDefault = $this->isDefaultSelection($defaultVariantRaw, null, $variantIdx) ? 1 : 0;
 
+                // Cek apakah variant punya sizes
+                $hasSizes = !empty($variantData['sizes']);
+
                 $variant = $merchProduct->variants()->create([
                     'name' => $variantData['name'],
                     'code' => $variantData['code'] ?? null,
                     'is_default' => $isDefault,
+                    'stock' => $hasSizes ? null : ($variantData['stock'] ?? 0),
+                    'price' => $hasSizes ? null : ($variantData['price'] ?? null),
+                    'discount' => $hasSizes ? null : ($variantData['discount'] ?? 0),
                 ]);
 
                 $this->syncImages($variant, $variantData['images'] ?? []);
@@ -78,7 +87,6 @@ class MerchProductController extends Controller
                 'product' => $merchProduct->load(['categories', 'variants.images', 'variants.sizes'])
             ]);
 
-            // Recompute aggregates for product display
             $this->recomputeAndPersistAggregates($merchProduct->fresh(['variants.images', 'variants.sizes']));
         });
 
@@ -103,7 +111,6 @@ class MerchProductController extends Controller
         \DB::transaction(function () use ($request, $id) {
             $merchProduct = MerchProduct::findOrFail($id);
 
-            // Validasi data
             $request->validate([
                 'name' => 'required|string|max:255|unique:merch_products,name,' . $merchProduct->id,
                 'status' => 'required|in:active,inactive',
@@ -119,32 +126,31 @@ class MerchProductController extends Controller
                 'variants.*.images.*.image_path' => 'nullable|file|image|max:2048',
                 'variants.*.sizes' => 'nullable|array',
                 'variants.*.sizes.*.id' => 'nullable|exists:merch_product_variant_sizes,id',
-                'variants.*.sizes.*.size' => 'required|string|max:50',
+                'variants.*.sizes.*.size' => 'required_with:variants.*.sizes|string|max:50',
                 'variants.*.sizes.*.stock' => 'nullable|integer|min:0',
                 'variants.*.sizes.*.price' => 'nullable|numeric|min:0',
                 'variants.*.sizes.*.discount' => 'nullable|numeric|min:0|max:100',
+                'variants.*.stock' => 'nullable|integer|min:0',
+                'variants.*.price' => 'nullable|numeric|min:0',
+                'variants.*.discount' => 'nullable|numeric|min:0|max:100',
             ]);
 
-            // Update data produk
             $data = $request->only(['name', 'description', 'status', 'type']);
             $data['slug'] = $this->generateUniqueSlug($request->name, $merchProduct->id);
 
             $merchProduct->update($data);
 
-            // Sinkronisasi kategori
             if ($request->has('categories')) {
                 $merchProduct->categories()->sync($request->categories);
             }
 
-            // Reset semua variant menjadi non-default
             $merchProduct->variants()->update(['is_default' => 0]);
-
-            // Ambil value default variant dari form (bisa id atau new_#idx)
             $defaultVariantRaw = $request->input('default_variant');
 
             $keptVariantIds = [];
             foreach ($request->variants as $variantIdx => $variantData) {
                 $isDefault = $this->isDefaultSelection($defaultVariantRaw, $variantData['id'] ?? null, $variantIdx) ? 1 : 0;
+                $hasSizes = !empty($variantData['sizes']);
 
                 if (!empty($variantData['id'])) {
                     $variant = $merchProduct->variants()->where('id', $variantData['id'])->firstOrFail();
@@ -152,12 +158,18 @@ class MerchProductController extends Controller
                         'name' => $variantData['name'],
                         'code' => $variantData['code'] ?? null,
                         'is_default' => $isDefault,
+                        'stock' => $hasSizes ? null : ($variantData['stock'] ?? 0),
+                        'price' => $hasSizes ? null : ($variantData['price'] ?? null),
+                        'discount' => $hasSizes ? null : ($variantData['discount'] ?? 0),
                     ]);
                 } else {
                     $variant = $merchProduct->variants()->create([
                         'name' => $variantData['name'],
                         'code' => $variantData['code'] ?? null,
                         'is_default' => $isDefault,
+                        'stock' => $hasSizes ? null : ($variantData['stock'] ?? 0),
+                        'price' => $hasSizes ? null : ($variantData['price'] ?? null),
+                        'discount' => $hasSizes ? null : ($variantData['discount'] ?? 0),
                     ]);
                 }
 
@@ -167,10 +179,8 @@ class MerchProductController extends Controller
                 $this->syncSizes($variant, $variantData['sizes'] ?? []);
             }
 
-            // Hapus variant yang tidak ada di form
             $merchProduct->variants()->whereNotIn('id', $keptVariantIds)->delete();
 
-            // Pastikan selalu ada satu default; jika belum ada, set yang pertama dari kept
             if (!$merchProduct->variants()->where('is_default', 1)->exists()) {
                 $firstId = $merchProduct->variants()->whereIn('id', $keptVariantIds)->value('id');
                 if ($firstId) {
@@ -182,7 +192,6 @@ class MerchProductController extends Controller
                 'product' => $merchProduct->load(['categories', 'variants.images', 'variants.sizes'])
             ]);
 
-            // Recompute aggregates for product display
             $this->recomputeAndPersistAggregates($merchProduct->fresh(['variants.images', 'variants.sizes']));
         });
 
@@ -262,31 +271,35 @@ class MerchProductController extends Controller
         $variant->images()->whereNotIn('id', $keptImageIds)->delete();
     }
 
-    private function syncSizes($variant, $sizes)
+    private function syncSizes($variant, $sizes) 
     {
         $keptSizeIds = [];
-        foreach ($sizes as $sz) {
-            if (!empty($sz['id'])) {
-                $size = $variant->sizes()->where('id', $sz['id'])->firstOrFail();
-                $size->update([
-                    'size' => $sz['size'],
-                    'stock' => $sz['stock'] ?? 0,
-                    'price' => $sz['price'] ?? null,
-                    'discount' => $sz['discount'] ?? 0,
-                ]);
-                $keptSizeIds[] = $size->id;
-            } else {
-                $newSize = $variant->sizes()->create([
-                    'size' => $sz['size'],
-                    'stock' => $sz['stock'] ?? 0,
-                    'price' => $sz['price'] ?? null,
-                    'discount' => $sz['discount'] ?? 0,
-                ]);
-                $keptSizeIds[] = $newSize->id;
+        if (!empty($sizes)) {
+            foreach ($sizes as $sz) {
+                if (!empty($sz['id'])) {
+                    $size = $variant->sizes()->where('id', $sz['id'])->firstOrFail();
+                    $size->update([
+                        'size' => $sz['size'],
+                        'stock' => $sz['stock'] ?? 0,
+                        'price' => $sz['price'] ?? null,
+                        'discount' => $sz['discount'] ?? 0,
+                    ]);
+                    $keptSizeIds[] = $size->id;
+                } else {
+                    $newSize = $variant->sizes()->create([
+                        'size' => $sz['size'],
+                        'stock' => $sz['stock'] ?? 0,
+                        'price' => $sz['price'] ?? null,
+                        'discount' => $sz['discount'] ?? 0,
+                    ]);
+                    $keptSizeIds[] = $newSize->id;
+                }
             }
+            $variant->sizes()->whereNotIn('id', $keptSizeIds)->delete();
+        } else {
+            // Jika tidak ada sizes, hapus semua sizes milik variant ini
+            $variant->sizes()->delete();
         }
-
-        $variant->sizes()->whereNotIn('id', $keptSizeIds)->delete();
     }
 
     /**

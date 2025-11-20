@@ -9,7 +9,13 @@ class MerchProductVariant extends Model
     protected $table = 'merch_product_variants';
 
     protected $fillable = [
-        'merch_product_id', 'name', 'code', 'is_default'
+        'merch_product_id',
+        'name',
+        'code',
+        'is_default',
+        'stock',
+        'price',
+        'discount',
     ];
 
     public function product()
@@ -25,5 +31,11 @@ class MerchProductVariant extends Model
     public function sizes()
     {
         return $this->hasMany(MerchProductVariantSize::class, 'merch_product_variant_id');
+    }
+
+    // helper untuk cek apakah variant punya size
+    public function hasSizes()
+    {
+        return $this->sizes()->count() > 0;
     }
 }
