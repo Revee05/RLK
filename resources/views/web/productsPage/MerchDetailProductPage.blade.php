@@ -112,13 +112,15 @@
             </div>
             <form action="{{ route('cart.addMerch', $product->id) }}" method="POST">
                 @csrf
+                <input type="hidden" name="selected_variant_id" id="selected_variant_id" value="{{ $mainVariant->id }}">
+                <input type="hidden" name="selected_size_id" id="selected_size_id" value="{{ $mainVariant->sizes->first()->id ?? '' }}">
                 <div class="d-flex align-items-center mb-3">
                     <input type="number" id="qty-input" name="quantity" value="1" min="1" style="width:70px; margin-right:10px;">
                     <span id="stock-info" class="text-muted">
                         Tersedia {{ $mainVariant->sizes->count() ? ($mainVariant->sizes->first()->stock ?? 0) : ($mainVariant->display_stock ?? 0) }}
                     </span>
                 </div>
-                <button class="btn btn-primary btn-lg w-100 mb-3">Tambahkan ke keranjang</button>
+                <button type="submit" class="btn btn-primary btn-lg w-100 mb-3">Tambahkan ke keranjang</button>
             </form>
             <div class="product-shipping-info">
                 <strong>Pengiriman:</strong> Pengiriman dilakukan setiap hari kerja.
@@ -226,12 +228,33 @@ document.addEventListener('DOMContentLoaded', function() {
         } else {
             stockInfo.textContent = `Tersedia ${stock}`;
         }
-        document.getElementById('qty-input').max = stock;
-        document.getElementById('qty-input').disabled = stock < 1;
-        document.querySelector('button[type="submit"]').disabled = stock < 1;
+        const qtyInput = document.getElementById('qty-input');
+        const submitBtn = document.querySelector('button[type="submit"]');
+        if (qtyInput) qtyInput.disabled = stock < 1;
+        if (qtyInput) qtyInput.max = stock;
+        if (submitBtn) submitBtn.disabled = stock < 1;
     }
 
+    function updateHiddenInputs() {
+        // Set variant
+        const checkedVariant = document.querySelector('.variant-btn input[type="radio"]:checked');
+        if (checkedVariant) {
+            document.getElementById('selected_variant_id').value = checkedVariant.value;
+        }
+        // Set size
+        const checkedSize = document.querySelector('.size-btn input[type="radio"]:checked');
+        document.getElementById('selected_size_id').value = checkedSize ? checkedSize.value : '';
+    }
+
+    // Panggil setelah setiap update pilihan
+    document.addEventListener('change', function(e) {
+        if (e.target.name === 'size_id' || e.target.name === 'variant_id') {
+            updateStockInfo();
+            updateHiddenInputs();
+        }
+    });
     updateStockInfo();
+    updateHiddenInputs();
 });
 </script>
 @endsection
