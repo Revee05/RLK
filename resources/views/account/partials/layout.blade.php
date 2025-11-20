@@ -14,9 +14,8 @@
         <link rel="preconnect" href="https://fonts.googleapis.com">
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400&display=swap" rel="stylesheet">
-        <link href="{{asset('css/app.css')}}" rel="stylesheet" />
         <link href="{{asset('theme/css/styles.css')}}" rel="stylesheet" />
-        <link href="{{asset('theme/css/omahkoding.css')}}" rel="stylesheet" />
+        <link href="{{asset('css/account/account_styles.css')}}" rel="stylesheet" />
         <!-- Custom fonts for this template-->
         <link href="{{asset('assets/vendor/fontawesome-free/css/all.min.css')}}" rel="stylesheet" type="text/css">
         {{-- <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/1.0.18/vue.min.js"></script> --}}
@@ -38,7 +37,7 @@
     <body>
             <!-- Header-->
             @include('web.partials.header')
-            
+
             <!-- Navigation-->
             {{-- @include('web.partials.nav') --}}
 
@@ -51,7 +50,7 @@
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
         <!-- Core theme JS-->
         <script src="{{asset('theme/js/scripts.js')}}"></script>
-        
+
          <script type="text/javascript" src='//ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js'></script>
         @yield('js')
        {{--  <script type="text/javascript">

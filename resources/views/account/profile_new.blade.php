@@ -8,51 +8,26 @@
 @section('content')
     <div class="container" style="max-width:1200px; margin-top:40px; margin-bottom:80px;">
         <div class="row">
-            <!-- Left sidebar -->
-            <div class="col-md-3">
-                <div class="text-center mb-4">
-                    <img src="https://www.figma.com/api/mcp/asset/1bcfd75e-90c9-43bf-8586-79d92d395def" alt="avatar"
-                        class="rounded-circle img-fluid" style="width:200px; height:200px; object-fit:cover;">
-                </div>
-
-                <div class="list-group mb-4">
-                    <a href="#" class="list-group-item list-group-item-action active" aria-current="true"
-                        style="background:#051a36; border-color:#051a36; color:#fff;">
-                        Akun
-                    </a>
-                    <a href="#" class="list-group-item list-group-item-action">Ubah Password</a>
-                    <a href="#" class="list-group-item list-group-item-action">Alamat</a>
-                    <a href="#" class="list-group-item list-group-item-action">Favorit</a>
-                    <a href="#" class="list-group-item list-group-item-action">Riwayat Lelang</a>
-                    <a href="#" class="list-group-item list-group-item-action">Riwayat Pembelian</a>
-                    <a href="#" class="list-group-item list-group-item-action">Pengaturan Notifikasi</a>
-                    <a href="#" class="list-group-item list-group-item-action">Logout</a>
-                </div>
-
-                <div class="d-grid">
-                    <button class="btn" style="background:#58bcc2; color:#fff;">Save</button>
-                </div>
-            </div>
+            @include('account.partials.nav_new')
 
             <!-- Right content: form -->
             <div class="col-md-9">
-                <div class="card" style="border-radius:8px;">
-                    <div class="card-header" style="background:#fff; border-bottom:0;">
-                        <h3 class="mb-0" style="font-weight:700;">Akun</h3>
+                <div class="card content-border">
+                    <div class="card-head border-bottom border-darkblue align-baseline ps-4">
+                        <h3 class="mb-0 fw-bolder align-bottom">Akun</h3>
                     </div>
-                    <div class="card-body">
-                        <form method="POST" action="#">
+                    <div class="card-body ps-4">
+                        {{-- <form method="POST" action="#">
                             @csrf
                             <div class="mb-3">
-                                <label class="form-label">First Name</label>
-                                <input type="text" name="first_name" class="form-control"
-                                    value="{{ old('first_name', '') }}">
+                                <label class="form-label">Nama Lengkap</label>
+                                <input type="text" name="name" class="form-control" value="{{ old('name', '') }}">
                             </div>
 
                             <div class="mb-3">
-                                <label class="form-label">Last Name</label>
-                                <input type="text" name="last_name" class="form-control"
-                                    value="{{ old('last_name', '') }}">
+                                <label class="form-label">username</label>
+                                <input type="text" name="username" class="form-control"
+                                    value="{{ old('username', '') }}">
                             </div>
 
                             <div class="mb-3">
@@ -83,7 +58,33 @@
                                 <button class="btn" style="background:#58bcc2; color:#fff;">Save</button>
                                 <a href="#" class="btn btn-secondary ms-2">Cancel</a>
                             </div>
-                        </form>
+                        </form> --}}
+                        {{ Form::model($user, ['route' => ['update.profil'], 'method' => 'POST']) }}
+                        <div class="form-group mb-3">
+                            {{ Form::label('name', 'Nama Lengkap') }}
+                            {{ Form::text('name', $user->name ?? '', ['class' => 'form-control', 'placeholder' => 'Nama']) }}
+                        </div>
+
+                        <div class="form-group mb-3">
+                            {{ Form::label('name', 'Username') }}
+                            {{ Form::text('username', $user->username ?? '', ['class' => 'form-control', 'placeholder' => 'Username', 'disabled']) }}
+                        </div>
+
+                        <div class="form-group mb-3">
+                            {{ Form::label('name', 'Email') }}
+                            {{ Form::text('email', $user->email ?? '', ['class' => 'form-control', 'placeholder' => 'Email']) }}
+                        </div>
+
+                        <div class="form-group mb-3">
+                            {{ Form::label('name', 'Jenis Kelamin') }}
+                            {{ Form::select('jenis_kelamin', ['perempuan' => 'Perempuan', 'laki_laki' => 'Laki laki'], $user->jenis_kelamin, ['class' => 'form-control', 'placeholder' => 'Pilih Jenis Kelamin']) }}
+                        </div>
+
+                        <input type="hidden" name="id" value="{{ Auth::user()->id }}">
+                        <br>
+
+                        {{ Form::submit('Simpan', ['class' => 'btn btn-danger btn-sm rounded-0']) }}
+                        {{ Form::close() }}
                     </div>
                 </div>
             </div>

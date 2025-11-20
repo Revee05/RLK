@@ -1,0 +1,32 @@
+<!-- Left sidebar -->
+<div class="col-md-3">
+    <div class="text-center mb-4">
+        <img src="https://www.figma.com/api/mcp/asset/1bcfd75e-90c9-43bf-8586-79d92d395def" alt="avatar"
+            class="rounded-circle img-fluid mb-3" style="width:200px; height:200px; object-fit:cover;">
+        <h1 class="profile-name mb-0">{{ Auth::user()->name }}</h1>
+        <a href="">Lihat Profil</a>
+    </div>
+
+
+    <div class="list-group mb-4 text-center">
+        <a href="#" class="list-group-item list-group-item-action border-nav-top py-2 active" aria-current="true">
+            Akun
+        </a>
+        <a href="#" class="list-group-item list-group-item-action border-nav-middle  py-2">Ubah Password</a>
+        <a href="#" class="list-group-item list-group-item-action border-nav-middle  py-2">Alamat</a>
+        <a href="#" class="list-group-item list-group-item-action border-nav-middle  py-2">Favorit</a>
+        <a href="#" class="list-group-item list-group-item-action border-nav-middle  py-2">Riwayat Lelang</a>
+        <a href="#" class="list-group-item list-group-item-action border-nav-middle  py-2">Riwayat
+            Pembelian</a>
+        <a href="#" class="list-group-item list-group-item-action border-nav-middle  py-2">Pengaturan
+            Notifikasi</a>
+        <a class="list-group-item list-group-item-action border-nav-bottom text-danger py-2"
+            href="{{ route('logout') }}"
+            onclick="event.preventDefault();
+    document.getElementById('logout-form').submit();">
+            Logout</a>
+        <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
+            @csrf
+        </form>
+    </div>
+</div>
