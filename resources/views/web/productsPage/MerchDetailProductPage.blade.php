@@ -151,6 +151,9 @@ document.addEventListener('DOMContentLoaded', function() {
     // Saat variant dipilih, update size-grid
     document.querySelectorAll('.variant-btn input[type="radio"]').forEach((input, idx) => {
         input.addEventListener('change', function() {
+            document.querySelectorAll('.variant-btn').forEach(l => l.classList.remove('active'));
+            input.closest('.variant-btn').classList.add('active');
+
             const variant = variants[idx];
             const sizeGrid = document.querySelector('.size-grid');
             if (variant.sizes.length > 0) {
@@ -168,6 +171,13 @@ document.addEventListener('DOMContentLoaded', function() {
             } else {
                 sizeGrid.innerHTML = '<span class="text-muted">Tidak ada ukuran.</span>';
             }
+
+            // Setelah update size, set active pada size pertama (jika ada)
+            const sizeLabels = document.querySelectorAll('.size-grid .size-btn');
+            if (sizeLabels.length > 0) {
+                sizeLabels[0].classList.add('active');
+                sizeLabels[0].querySelector('input').checked = true;
+            }
         });
     });
 
@@ -177,6 +187,22 @@ document.addEventListener('DOMContentLoaded', function() {
             document.querySelector('.main-image img').src = img.src;
         });
     });
+});
+
+// Highlight active size
+document.addEventListener('change', function(e) {
+    if (e.target.name === 'size_id') {
+        document.querySelectorAll('.size-btn').forEach(l => l.classList.remove('active'));
+        e.target.closest('.size-btn').classList.add('active');
+    }
+});
+
+// Inisialisasi: set active pada variant dan size yang terpilih saat load
+document.addEventListener('DOMContentLoaded', function() {
+    const checkedVariant = document.querySelector('.variant-btn input[type="radio"]:checked');
+    if (checkedVariant) checkedVariant.closest('.variant-btn').classList.add('active');
+    const checkedSize = document.querySelector('.size-btn input[type="radio"]:checked');
+    if (checkedSize) checkedSize.closest('.size-btn').classList.add('active');
 });
 </script>
 @endsection
