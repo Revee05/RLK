@@ -24,6 +24,7 @@
     $variantsArray = $product->variants->map(function($v) {
         return [
             'id' => $v->id,
+            'display_stock' => $v->display_stock,
             'sizes' => $v->sizes->map(function($s) {
                 return [
                     'id' => $s->id,
@@ -101,13 +102,7 @@
                         @foreach($mainVariant->sizes as $size)
                             <label class="size-btn">
                                 <input type="radio" name="size_id" value="{{ $size->id }}" class="d-none" autocomplete="off">
-                                <span>{{ $size->size }} 
-                                    @if($size->stock > 0)
-                                        <small class="text-muted">({{ $size->stock }} stok)</small>
-                                    @else
-                                        <small class="text-danger">(Habis)</small>
-                                    @endif
-                                </span>
+                                <span>{{ $size->size }}</span>
                             </label>
                         @endforeach
                     @else
@@ -117,7 +112,12 @@
             </div>
             <form action="{{ route('cart.addMerch', $product->id) }}" method="POST">
                 @csrf
-                <input type="number" name="quantity" value="1" min="1">
+                <div class="d-flex align-items-center mb-3">
+                    <input type="number" id="qty-input" name="quantity" value="1" min="1" style="width:70px; margin-right:10px;">
+                    <span id="stock-info" class="text-muted">
+                        Tersedia {{ $mainVariant->sizes->count() ? ($mainVariant->sizes->first()->stock ?? 0) : ($mainVariant->display_stock ?? 0) }}
+                    </span>
+                </div>
                 <button class="btn btn-primary btn-lg w-100 mb-3">Tambahkan ke keranjang</button>
             </form>
             <div class="product-shipping-info">
@@ -145,10 +145,9 @@
 @section('js')
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Ambil data variant dan size dari blade ke JS
     const variants = @json($variantsArray);
 
-    // Saat variant dipilih, update size-grid
+    // Highlight active variant
     document.querySelectorAll('.variant-btn input[type="radio"]').forEach((input, idx) => {
         input.addEventListener('change', function() {
             document.querySelectorAll('.variant-btn').forEach(l => l.classList.remove('active'));
@@ -158,13 +157,11 @@ document.addEventListener('DOMContentLoaded', function() {
             const sizeGrid = document.querySelector('.size-grid');
             if (variant.sizes.length > 0) {
                 sizeGrid.innerHTML = '';
-                variant.sizes.forEach(sz => {
+                variant.sizes.forEach((sz, sidx) => {
                     sizeGrid.innerHTML += `
                         <label class="size-btn">
-                            <input type="radio" name="size_id" value="${sz.id}" class="d-none" autocomplete="off">
-                            <span>${sz.size} 
-                                ${sz.stock > 0 ? `<small class="text-muted">(${sz.stock} stok)</small>` : `<small class="text-danger">(Habis)</small>`}
-                            </span>
+                            <input type="radio" name="size_id" value="${sz.id}" class="d-none" autocomplete="off" ${sidx === 0 ? 'checked' : ''}>
+                            <span>${sz.size}</span>
                         </label>
                     `;
                 });
@@ -172,37 +169,69 @@ document.addEventListener('DOMContentLoaded', function() {
                 sizeGrid.innerHTML = '<span class="text-muted">Tidak ada ukuran.</span>';
             }
 
-            // Setelah update size, set active pada size pertama (jika ada)
+            // Set active pada size pertama (jika ada)
             const sizeLabels = document.querySelectorAll('.size-grid .size-btn');
             if (sizeLabels.length > 0) {
                 sizeLabels[0].classList.add('active');
                 sizeLabels[0].querySelector('input').checked = true;
             }
+
+            updateStockInfo();
         });
     });
 
-    // Thumbnail tetap
+    // Highlight active size
+    document.addEventListener('change', function(e) {
+        if (e.target.name === 'size_id') {
+            document.querySelectorAll('.size-btn').forEach(l => l.classList.remove('active'));
+            e.target.closest('.size-btn').classList.add('active');
+            updateStockInfo();
+        }
+    });
+
+    // Thumbnail click
     document.querySelectorAll('.thumb-images img').forEach(function(img) {
         img.addEventListener('click', function() {
             document.querySelector('.main-image img').src = img.src;
         });
     });
-});
 
-// Highlight active size
-document.addEventListener('change', function(e) {
-    if (e.target.name === 'size_id') {
-        document.querySelectorAll('.size-btn').forEach(l => l.classList.remove('active'));
-        e.target.closest('.size-btn').classList.add('active');
-    }
-});
-
-// Inisialisasi: set active pada variant dan size yang terpilih saat load
-document.addEventListener('DOMContentLoaded', function() {
+    // Inisialisasi: set active pada variant dan size yang terpilih saat load
     const checkedVariant = document.querySelector('.variant-btn input[type="radio"]:checked');
     if (checkedVariant) checkedVariant.closest('.variant-btn').classList.add('active');
     const checkedSize = document.querySelector('.size-btn input[type="radio"]:checked');
     if (checkedSize) checkedSize.closest('.size-btn').classList.add('active');
+
+    // Update stok info sesuai pilihan
+    function updateStockInfo() {
+        const checkedVariant = document.querySelector('.variant-btn input[type="radio"]:checked');
+        const checkedSize = document.querySelector('.size-btn input[type="radio"]:checked');
+        let stock = 0;
+
+        if (checkedVariant) {
+            const variantIdx = Array.from(document.querySelectorAll('.variant-btn input[type="radio"]')).indexOf(checkedVariant);
+            const variant = variants[variantIdx];
+
+            if (checkedSize && variant.sizes.length > 0) {
+                const sizeIdx = Array.from(document.querySelectorAll('.size-btn input[type="radio"]')).indexOf(checkedSize);
+                stock = variant.sizes[sizeIdx]?.stock ?? 0;
+            } else {
+                stock = variant.display_stock ?? 0;
+            }
+        }
+
+        const stockInfo = document.getElementById('stock-info');
+        if (stock < 1) {
+            stockInfo.innerHTML = `<span class="text-danger">Habis</span>`;
+        } else {
+            stockInfo.textContent = `Tersedia ${stock}`;
+        }
+        document.getElementById('qty-input').max = stock;
+        document.getElementById('qty-input').disabled = stock < 1;
+        document.querySelector('button[type="submit"]').disabled = stock < 1;
+    }
+
+    updateStockInfo();
 });
 </script>
 @endsection
