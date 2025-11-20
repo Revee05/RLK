@@ -225,6 +225,10 @@ class MerchProductController extends Controller
             if (!empty($img['id'])) {
                 $image = $variant->images()->where('id', $img['id'])->firstOrFail();
                 if (isset($img['image_path']) && $img['image_path'] instanceof \Illuminate\Http\UploadedFile) {
+                    // Hapus file lama jika ada
+                    if ($image->image_path && file_exists(public_path($image->image_path))) {
+                        @unlink(public_path($image->image_path));
+                    }
                     $uploader = new Uploads();
                     $path = $uploader->handleUpload($img['image_path']);
                     $image->update([
@@ -248,6 +252,13 @@ class MerchProductController extends Controller
             }
         }
 
+        // Hapus file fisik untuk image yang dihapus dari database
+        $deletedImages = $variant->images()->whereNotIn('id', $keptImageIds)->get();
+        foreach ($deletedImages as $deletedImage) {
+            if ($deletedImage->image_path && file_exists(public_path($deletedImage->image_path))) {
+                @unlink(public_path($deletedImage->image_path));
+            }
+        }
         $variant->images()->whereNotIn('id', $keptImageIds)->delete();
     }
 
