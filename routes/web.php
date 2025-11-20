@@ -74,6 +74,7 @@ Route::post('/cart/update/{cartItem}', 'Web\CartController@updateQuantity')->nam
 // merch product route
 Route::get('/merch/categories', 'Web\MerchProduct\GetMerchCategory')->name('merch.categories');
 Route::get('/merch/{slug}', 'Web\MerchProduct\getDetail')->name('merch.products.detail');
+Route::get('/merch-products/json', 'Web\MerchProduct\GetMerchProduct')->name('merch.products.json');
 
 //midtrans-callback
 Route::post('/payments/midtrans-notification','Account\PaymentCallbackController@receive');
