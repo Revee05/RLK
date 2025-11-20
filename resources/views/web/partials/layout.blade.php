@@ -52,5 +52,6 @@
         @yield('js')
 
         @stack('scripts')
+        @stack('js')
     </body>
 </html>

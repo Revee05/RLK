@@ -9,6 +9,9 @@ use App\Shipper;
 use App\OrderMerch;
 use Illuminate\Support\Str;
 use App\Provinsi;
+use App\Kabupaten;
+use App\Kecamatan;
+
 
 class CheckoutMerchController extends Controller
 {
@@ -83,6 +86,51 @@ class CheckoutMerchController extends Controller
 
         return redirect()->route('checkout.success', $order->invoice);
     }
+
+    public function setAddress(Request $request)
+    {
+        $address = UserAddress::with(['provinsi','kabupaten'])
+                    ->find($request->address_id);
+
+        if(!$address){
+            return response()->json(['status'=>'error']);
+        }
+
+        session(['checkout_address' => $address]);
+
+        return response()->json([
+            'status' => 'success',
+            'address' => [
+                'label_address' => $address->label_address,
+                'name' => $address->name,
+                'phone' => $address->phone,
+                'address' => $address->address,
+                'kecamatan' => $address->kecamatan->nama_kecamatan ?? '',
+                'kabupaten' => $address->kabupaten->nama_kabupaten ?? '',
+                'provinsi' => $address->provinsi->nama_provinsi ?? '',
+            ]
+        ]);
+    }
+
+    public function calculateShipping(Request $request)
+    {
+        // Ambil semua kurir dari tabel shippers
+        $shippers = Shipper::select('id', 'name')->get();
+
+        $result = [];
+
+        foreach ($shippers as $ship) {
+            $result[] = [
+                'id'    => $ship->id,
+                'name'  => $ship->name,
+                'price' => 0,       // flat 0
+                'eta'   => '-',     // default
+            ];
+        }
+
+        return response()->json($result);
+    }
+
 
     public function success($invoice)
     {

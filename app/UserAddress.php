@@ -19,6 +19,7 @@ class UserAddress extends Model
         'kodepos',
         'label_address',
     ];
+    
     public function user(){
         return $this->belongsTo('App\User','user_id');
     }
