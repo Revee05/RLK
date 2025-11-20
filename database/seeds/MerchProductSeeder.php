@@ -1,17 +1,13 @@
 <?php
 
-namespace Database\Seeds;
-
-use Illuminate\Database\Seeds;
-use App\models\MerchProduct;
+use Illuminate\Database\Seeder;
+use App\Models\MerchProduct;
 
 class MerchProductSeeder extends Seeder
 {
     public function run()
     {
-        // $this->call(\Database\Seeders\MerchProductSeeder::class);
-
-        for ($i = 1; $i <= 21; $i++) {
+        for ($i = 1; $i <= 100; $i++) {
             MerchProduct::create([
                 'name'        => "Sample Product $i",
                 'slug'        => "sample-product-$i",
