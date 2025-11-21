@@ -11,6 +11,7 @@
 |
 */
 use App\Http\Controllers\Web\CheckoutMerchController;
+use Illuminate\Support\Facades\Route;
 
 require_once  __DIR__ . "/admin.php";
 require_once  __DIR__ . "/account.php";
@@ -66,11 +67,21 @@ Route::get('/category/{slug}','Web\HomeController@category')->name('products.cat
 Route::get('/seniman/{slug}','Web\HomeController@seniman')->name('products.seniman');
 
 // Route bagian cart
-Route::get('/cart', 'Web\CartController@index')->name('cart.index')->middleware('auth');
-Route::post('/cart/add/{productId}', 'Web\CartController@addToCart')->name('cart.add')->middleware('auth');
-Route::delete('/cart/{cartItem}', 'Web\CartController@destroy')->name('cart.destroy')->middleware('auth');
-Route::post('/cart/add-merch/{merchProductId}', 'Web\CartController@addMerchToCart')->name('cart.addMerch')->middleware('auth');
-Route::post('/cart/update/{cartItem}', 'Web\CartController@updateQuantity')->name('cart.update')->middleware('auth');
+Route::group(['middleware' => ['auth']], function () {
+    // Halaman List Keranjang
+    Route::get('/cart', 'Web\CartController@index')->name('cart.index');
+
+    // Tambah ke Keranjang (Merch)
+    // NOTE: Parameter {id} dihapus karena data dikirim via form (Request body)
+    Route::post('/cart/add-merch', 'Web\CartController@addMerchToCart')->name('cart.addMerch');
+
+    // Update Quantity (AJAX)
+    // Menggunakan Model Binding {cartItem} sesuai controller
+    Route::post('/cart/update/{cartItem}', 'Web\CartController@updateQuantity')->name('cart.update');
+
+    // Hapus Item
+    Route::delete('/cart/{cartItem}', 'Web\CartController@destroy')->name('cart.destroy');
+});
 
 // merch product route
 Route::get('/merch/categories', 'Web\MerchProduct\GetMerchCategory')->name('merch.categories');
@@ -85,12 +96,13 @@ Route::post('/checkout/process', 'Web\CheckoutMerchController@process')->name('c
 Route::get('/checkout/success/{invoice}', 'Web\CheckoutMerchController@success')->name('checkout.success');
 Route::post('/checkout/set-address', 'Web\CheckoutMerchController@setAddress')->name('checkout.set-address');
 
-Route::match(['get', 'post'], '/checkout', [CheckoutMerchController::class, 'index'])->name('checkout.index');
-
 // API untuk fetch lokasi (dipakai AJAX di form)
 Route::get('/get-kabupaten/{id}', function($id){
     return \App\Kabupaten::where('provinsi_id', $id)->get();
 });
+
+// List semua provinsi
+Route::get('/lokasi/provinsi', 'ProvinsiController@getAll')->name('lokasi.provinsi');
 
 // List kabupaten berdasarkan provinsi
 Route::get('/lokasi/kabupaten/{provinsi_id}', 'KabupatenController@getByProvinsi')->name('lokasi.kabupaten');

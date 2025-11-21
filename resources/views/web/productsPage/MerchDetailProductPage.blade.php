@@ -110,18 +110,26 @@
                     @endif
                 </div>
             </div>
-            <form action="{{ route('cart.addMerch', $product->id) }}" method="POST">
+            <form action="{{ route('cart.addMerch') }}" method="POST">
                 @csrf
-                <input type="hidden" name="selected_variant_id" id="selected_variant_id" value="{{ $mainVariant->id }}">
-                <input type="hidden" name="selected_size_id" id="selected_size_id" value="{{ $mainVariant->sizes->first()->id ?? '' }}">
+                
+                {{-- 1. WAJIB ADA: ID Produk Utama --}}
+                <input type="hidden" name="product_id" value="{{ $product->id }}">
+
+                {{-- 2. ID Variant & Size (Nama disesuaikan agar Controller paham) --}}
+                <input type="hidden" name="variant_id" id="selected_variant_id" value="{{ $mainVariant->id }}">
+                <input type="hidden" name="size_id" id="selected_size_id" value="{{ $mainVariant->sizes->first()->id ?? '' }}">
+
                 <div class="d-flex align-items-center mb-3">
                     <input type="number" id="qty-input" name="quantity" value="1" min="1" style="width:70px; margin-right:10px;">
                     <span id="stock-info" class="text-muted">
                         Tersedia {{ $mainVariant->sizes->count() ? ($mainVariant->sizes->first()->stock ?? 0) : ($mainVariant->display_stock ?? 0) }}
                     </span>
                 </div>
+                
                 <button type="submit" class="btn btn-primary btn-lg w-100 mb-3">Tambahkan ke keranjang</button>
             </form>
+            
             <div class="product-shipping-info">
                 <strong>Pengiriman:</strong> Pengiriman dilakukan setiap hari kerja.
             </div>
