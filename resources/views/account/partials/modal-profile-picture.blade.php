@@ -28,7 +28,7 @@
                         data-bs-toggle="dropdown" aria-expanded="false" title="Pilih Foto">
                         <i class="bi bi-camera" aria-hidden="true"></i>
                     </button>
-                    <ul class="dropdown-menu text-center align-center" aria-labelledby="pp-camera-btn">
+                    <ul class="pp dropdown-menu text-center align-center" aria-labelledby="pp-camera-btn">
                         <li class="py-1"><button class="dropdown-item" id="pp-menu-gallery" type="button">Dari
                                 Galeri</button></li>
                         <li class="py-1"><button class="dropdown-item" id="pp-menu-camera" type="button">Buka
