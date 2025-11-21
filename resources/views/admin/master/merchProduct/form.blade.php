@@ -1,4 +1,4 @@
-{{-- filepath: resources/views/admin/master/merchProduct/form.blade.php --}}
+{{-- ========================= FORM UTAMA ========================= --}}
 <form
     action="{{ isset($mode) && $mode == 'edit' ? route('master.merchProduct.update', $merchProduct->id) : route('master.merchProduct.store') }}"
     method="POST" enctype="multipart/form-data">
@@ -7,38 +7,20 @@
     @method('PUT')
     @endif
 
+    {{-- ====== DATA PRODUK UTAMA ====== --}}
     <div class="mb-3">
         <label for="name" class="form-label">Product Name</label>
-        <input type="text" name="name" class="form-control" value="{{ old('name', $merchProduct->name ?? '') }}"
-            required>
-    </div>
-    <div class="mb-3">
-        <label for="price" class="form-label">Price</label>
-        <input type="number" name="price" class="form-control" value="{{ old('price', $merchProduct->price ?? '') }}"
-            required>
-    </div>
-    <div class="mb-3">
-        <label for="discount" class="form-label">Discount</label>
-        <input type="number" name="discount" class="form-control"
-            value="{{ old('discount', $merchProduct->discount ?? 0) }}">
-    </div>
-    <div class="mb-3">
-        <label for="stock" class="form-label">Stock</label>
-        <input type="number" name="stock" class="form-control" value="{{ old('stock', $merchProduct->stock ?? 0) }}"
-            required>
+        <input type="text" name="name" class="form-control" value="{{ old('name', $merchProduct->name ?? '') }}" required>
     </div>
     <div class="mb-3">
         <label for="deskripsi" class="form-label">Deskripsi Produk</label>
-        <textarea name="description" id="deskripsi" class="form-control" required>
-            {{ old('description', $merchProduct->description ?? '') }}
-        </textarea>
+        <textarea name="description" id="deskripsi" class="form-control" required>{{ old('description', $merchProduct->description ?? '') }}</textarea>
     </div>
     <div class="mb-3">
         <label for="categories" class="form-label">Categories</label>
         <select name="categories[]" class="form-control" multiple>
             @foreach($categories as $cat)
-            <option value="{{ $cat->id }}" @if(isset($merchProduct) && $merchProduct->categories->contains($cat->id))
-                selected @endif>
+            <option value="{{ $cat->id }}" @if(isset($merchProduct) && $merchProduct->categories->contains($cat->id)) selected @endif>
                 {{ $cat->name }}
             </option>
             @endforeach
@@ -49,72 +31,130 @@
     <div class="form-group">
         <label for="type">Tipe Produk</label>
         <select name="type" id="type" class="form-control" required>
-            <option value="normal" {{ old('type', $merchProduct->type ?? '') == 'normal' ? 'selected' : '' }}>Normal
-            </option>
-            <option value="featured" {{ old('type', $merchProduct->type ?? '') == 'featured' ? 'selected' : '' }}>
-                Featured</option>
+            <option value="normal" {{ old('type', $merchProduct->type ?? '') == 'normal' ? 'selected' : '' }}>Normal</option>
+            <option value="featured" {{ old('type', $merchProduct->type ?? '') == 'featured' ? 'selected' : '' }}>Featured</option>
         </select>
         <small class="form-text text-muted">
             <b>Normal:</b> Produk tampil di cell biasa.<br>
             <b>Featured:</b> Produk tampil di cell besar (span 2 kolom).
         </small>
-        <div style="margin-top:8px;">
-            <div style="display:grid;grid-template-columns:repeat(4,20px);gap:8px;align-items:center;">
-                <div style="background:#007bff;height:20px;grid-column:span 2;border-radius:3px;" title="Featured">
-                </div>
-                <div style="background:#6c757d;height:20px;border-radius:3px;" title="Normal"></div>
-                <div style="background:#6c757d;height:20px;border-radius:3px;" title="Normal"></div>
-            </div>
-            <div style="font-size:11px;color:#888;margin-top:2px;">
-                <span style="display:inline-block;width:40px;text-align:center;color:#007bff;">Featured</span>
-                <span
-                    style="display:inline-block;width:40px;text-align:center;margin-left:16px;color:#6c757d;">Normal</span>
-            </div>
-        </div>
-    </div>
-    <div class="mb-3">
-        <label for="images" class="form-label">Product Images - bisa upload lebih dari satu - max 2MB/img</label>
-        <small class="text-muted d-block mb-1">
-            <b>Syarat ukuran gambar dengan type:</b>
-            <br>
-            <span style="color:#007bff;">Normal:</span> <b>400 x 300 (px)</b> &nbsp;|&nbsp;
-            <span style="color:#ff9800;">Featured:</span> <b>800 x 300 (px)</b>
-        </small>
-        <input type="file" name="images[]" class="form-control" multiple onchange="previewImages(event)">
-        <div class="row mt-2 g-3" id="preview-container"></div>
-        @if(isset($merchProduct) && $merchProduct->images)
-        <div class="row mt-3 g-3">
-            @foreach($merchProduct->images as $img)
-            <div class="col-auto">
-                <div class="card shadow-sm" style="width: 120px;">
-                    <img src="{{ asset($img->image_path) }}" alt="Image" class="card-img-top mt-2"
-                        style="height: 90px; object-fit: cover;">
-                    <div class="card-body p-2">
-                        <input type="text" name="existing_image_labels[{{ $img->id }}]"
-                            class="form-control form-control-sm mb-1" placeholder="Label img"
-                            value="{{ old('existing_image_labels.'.$img->id, $img->label) }}">
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" name="delete_images[]"
-                                value="{{ $img->id }}" id="delimg{{ $img->id }}">
-                            <label class="form-check-label small" for="delimg{{ $img->id }}">Hapus</label>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            @endforeach
-        </div>
-        @endif
     </div>
 
+    <hr>
+    <h5>Variants</h5>
+    <div id="variants-container">
+        @php
+            $oldVariants = old('variants', isset($merchProduct) ? $merchProduct->variants->toArray() : []);
+        @endphp
+        @foreach($oldVariants as $vIdx => $variant)
+        <div class="card mb-3 variant-item" data-index="{{ $vIdx }}">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <strong>Variant #{{ $vIdx+1 }}</strong>
+                    <div>
+                        <input type="radio" name="default_variant" value="{{ $variant['id'] ?? 'new_' . $vIdx }}"
+                            {{ (isset($variant['is_default']) && $variant['is_default']) || (!isset($variant['is_default']) && $vIdx == 0) ? 'checked' : '' }}>
+                        <small class="text-primary">Default</small>
+                    </div>
+                    <button type="button" class="btn btn-danger btn-sm remove-variant">Remove</button>
+                </div>
+                <input type="hidden" name="variants[{{ $vIdx }}][id]" value="{{ $variant['id'] ?? '' }}">
+                <div class="mb-2">
+                    <label>Variant Name</label>
+                    <input type="text" name="variants[{{ $vIdx }}][name]" class="form-control" value="{{ $variant['name'] ?? '' }}" required>
+                </div>
+                <div class="mb-2">
+                    <label>Variant Code</label>
+                    <input type="text" name="variants[{{ $vIdx }}][code]" class="form-control" value="{{ $variant['code'] ?? '' }}">
+                </div>
+                <div class="mb-2">
+                    <label>
+                        Images
+                        <small class="text-muted ms-2">maximal 2MB/img format WEBP</small>
+                    </label>
+                    <div class="variant-images-container">
+                        @php
+                            $images = $variant['images'] ?? [];
+                        @endphp
+                        @foreach($images as $iIdx => $img)
+                        <div class="input-group mb-1 variant-image-item">
+                            <input type="hidden" name="variants[{{ $vIdx }}][images][{{ $iIdx }}][id]" value="{{ $img['id'] ?? '' }}">
+                            <input type="file" name="variants[{{ $vIdx }}][images][{{ $iIdx }}][image_path]" class="form-control variant-image-input" {{ isset($img['image_path']) ? '' : 'required' }}>
+                            <input type="text" name="variants[{{ $vIdx }}][images][{{ $iIdx }}][label]" class="form-control" placeholder="Label" value="{{ $img['label'] ?? '' }}">
+                            <button type="button" class="btn btn-outline-danger remove-variant-image">Remove</button>
+                            <div class="mt-1 image-preview">
+                                @if(isset($img['image_path']))
+                                    <img src="{{ asset($img['image_path']) }}" alt="Current Image" width="60">
+                                    <small class="text-muted">Current image</small>
+                                @endif
+                            </div>
+                        </div>
+                        @endforeach
+                    </div>
+                    <button type="button" class="btn btn-outline-primary btn-sm add-variant-image">Add Image</button>
+                </div>
+
+                {{-- ========== Tambahan: Stock, Price, Discount di level variant ========== --}}
+                <div class="mb-2 variant-stock-fields" @if(!empty($variant['sizes'])) style="display:none" @endif>
+                    <label>Stock (tanpa size)</label>
+                    <input type="number" name="variants[{{ $vIdx }}][stock]" class="form-control" placeholder="Stock" value="{{ $variant['stock'] ?? 0 }}">
+                </div>
+                <div class="mb-2 variant-price-fields" @if(!empty($variant['sizes'])) style="display:none" @endif>
+                    <label>Price (tanpa size)</label>
+                    <input type="number" name="variants[{{ $vIdx }}][price]" class="form-control" placeholder="Price" value="{{ $variant['price'] ?? '' }}">
+                </div>
+                <div class="mb-2 variant-discount-fields" @if(!empty($variant['sizes'])) style="display:none" @endif>
+                    <label>Discount (tanpa size)</label>
+                    <input type="number" name="variants[{{ $vIdx }}][discount]" class="form-control" placeholder="Discount" value="{{ $variant['discount'] ?? 0 }}">
+                </div>
+                <div class="mb-2">
+                    <small class="text-muted">
+                        Jika variant tidak memiliki size, isi Stock/Price/Discount di atas.<br>
+                        Jika variant memiliki size, isi Stock/Price/Discount di setiap size di bawah.
+                    </small>
+                </div>
+                {{-- ========== END Tambahan ========== --}}
+
+                <div class="mb-2">
+                    <label>Sizes</label>
+                    <div class="variant-sizes-container">
+                        @php
+                            $sizes = $variant['sizes'] ?? [];
+                        @endphp
+                        @foreach($sizes as $sIdx => $sz)
+                        <div class="row mb-1 variant-size-item">
+                            <input type="hidden" name="variants[{{ $vIdx }}][sizes][{{ $sIdx }}][id]" value="{{ $sz['id'] ?? '' }}">
+                            <div class="col">
+                                <input type="text" name="variants[{{ $vIdx }}][sizes][{{ $sIdx }}][size]" class="form-control" placeholder="(cnth:. Default, S, M, L, dll)" value="{{ $sz['size'] ?? '' }}" required>
+                            </div>
+                            <div class="col">
+                                <input type="number" name="variants[{{ $vIdx }}][sizes][{{ $sIdx }}][stock]" class="form-control" placeholder="Stock" value="{{ $sz['stock'] ?? 0 }}">
+                            </div>
+                            <div class="col">
+                                <input type="number" name="variants[{{ $vIdx }}][sizes][{{ $sIdx }}][price]" class="form-control" placeholder="Price" value="{{ $sz['price'] ?? '' }}">
+                            </div>
+                            <div class="col">
+                                <input type="number" name="variants[{{ $vIdx }}][sizes][{{ $sIdx }}][discount]" class="form-control" placeholder="Discount" value="{{ $sz['discount'] ?? 0 }}">
+                            </div>
+                            <div class="col-auto">
+                                <button type="button" class="btn btn-outline-danger remove-variant-size">Remove</button>
+                            </div>
+                        </div>
+                        @endforeach
+                    </div> 
+                    <button type="button" class="btn btn-outline-primary btn-sm add-variant-size">Add Size</button>
+                </div>
+            </div>
+        </div>
+        @endforeach
+    </div>
+    <button type="button" class="btn btn-success mb-3" id="add-variant-btn">Add Variant</button>
+    <hr>
     <div class="mb-3">
         <label for="status" class="form-label">Status</label>
         <select name="status" class="form-control">
-            <option value="active"
-                {{ (old('status', $merchProduct->status ?? 'inactive') == 'active') ? 'selected' : '' }}>Publish
-            </option>
-            <option value="inactive"
-                {{ (old('status', $merchProduct->status ?? 'inactive') == 'inactive') ? 'selected' : '' }}>Draft
-            </option>
+            <option value="active" {{ (old('status', $merchProduct->status ?? 'inactive') == 'active') ? 'selected' : '' }}>Publish</option>
+            <option value="inactive" {{ (old('status', $merchProduct->status ?? 'inactive') == 'inactive') ? 'selected' : '' }}>Draft</option>
         </select>
     </div>
     <button type="submit" class="btn btn-primary">
@@ -122,41 +162,220 @@
     </button>
 </form>
 
+{{-- ========================= TEMPLATE UNTUK JS (DINAMIS) ========================= --}}
+<template id="variant-template">
+    <div class="card mb-3 variant-item">
+        <div class="card-body">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <strong>Variant #IDX#</strong>
+                <div>
+                    <input type="radio" name="default_variant" value="#IDX#">
+                    <small class="text-primary">Default - Jadikan product utama/default sebagai display</small>
+                </div>
+                <button type="button" class="btn btn-danger btn-sm remove-variant">Remove</button>
+            </div>
+            <div class="mb-2">
+                <label>Variant Name</label>
+                <input type="text" name="variants[#IDX#][name]" class="form-control" placeholder="Variant Name" required>
+            </div>
+            <div class="mb-2">
+                <label>Variant Code</label>
+                <input type="text" name="variants[#IDX#][code]" class="form-control">
+            </div>
+            <div class="mb-2">
+                <label>
+                    Images
+                    <small class="text-muted ms-2">maximal 2MB/img format WEBP</small>
+                </label>
+                <div class="variant-images-container"></div>
+                <button type="button" class="btn btn-outline-primary btn-sm add-variant-image">Add Image</button>
+            </div>
+            {{-- ========== Tambahan: Stock, Price, Discount di level variant ========== --}}
+            <div class="mb-2 variant-stock-fields">
+                <label>Stock (tanpa size)</label>
+                <input type="number" name="variants[#IDX#][stock]" class="form-control" placeholder="Stock">
+            </div>
+            <div class="mb-2 variant-price-fields">
+                <label>Price (tanpa size)</label>
+                <input type="number" name="variants[#IDX#][price]" class="form-control" placeholder="Price">
+            </div>
+            <div class="mb-2 variant-discount-fields">
+                <label>Discount (tanpa size)</label>
+                <input type="number" name="variants[#IDX#][discount]" class="form-control" placeholder="Discount">
+            </div>
+            <div class="mb-2">
+                <small class="text-muted">
+                    Jika variant tidak memiliki size, isi Stock/Price/Discount di atas.<br>
+                    Jika variant memiliki size, isi Stock/Price/Discount di setiap size di bawah.
+                </small>
+            </div>
+            {{-- ========== END Tambahan ========== --}}
+            <div class="mb-2">
+                <label>Sizes</label>
+                <div class="variant-sizes-container"></div>
+                <button type="button" class="btn btn-outline-primary btn-sm add-variant-size">Add Size</button>
+            </div>
+        </div>
+    </div>
+</template>
+<template id="variant-image-template">
+    <div class="input-group mb-1 variant-image-item">
+        <input type="file" name="variants[#VIDX#][images][#IIDX#][image_path]" class="form-control variant-image-input" required>
+        <input type="text" name="variants[#VIDX#][images][#IIDX#][label]" class="form-control" placeholder="Label">
+        <button type="button" class="btn btn-outline-danger remove-variant-image">Remove</button>
+        <div class="mt-1 image-preview"></div>
+    </div>
+</template>
+<template id="variant-size-template">
+    <div class="row mb-1 variant-size-item">
+        <div class="col">
+            <input type="text" name="variants[#VIDX#][sizes][#SIDX#][size]" class="form-control" placeholder="Size (e.g., S, M, L)" required>
+        </div>
+        <div class="col">
+            <input type="number" name="variants[#VIDX#][sizes][#SIDX#][stock]" class="form-control" placeholder="Stock">
+        </div>
+        <div class="col">
+            <input type="number" name="variants[#VIDX#][sizes][#SIDX#][price]" class="form-control" placeholder="Price">
+        </div>
+        <div class="col">
+            <input type="number" name="variants[#VIDX#][sizes][#SIDX#][discount]" class="form-control" placeholder="Discount" value="">
+        </div>
+        <div class="col-auto">
+            <button type="button" class="btn btn-outline-danger remove-variant-size">Remove</button>
+        </div>
+    </div>
+</template>
 
+{{-- ========================= SCRIPT DINAMIS (TAMBAH/HAPUS VARIANT, IMAGE, SIZE) ========================= --}}
 <script>
-function previewImages(event) {
-    const files = event.target.files;
-    const preview = document.getElementById('preview-container');
-    preview.innerHTML = '';
-    if (files) {
-        Array.from(files).forEach((file, idx) => {
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                const col = document.createElement('div');
-                col.className = 'col-auto';
-                const card = document.createElement('div');
-                card.className = 'card shadow-sm';
-                card.style.width = '120px';
-                const img = document.createElement('img');
-                img.src = e.target.result;
-                img.className = 'card-img-top';
-                img.style.height = '90px';
-                img.style.objectFit = 'cover';
-                const body = document.createElement('div');
-                body.className = 'card-body p-2';
-                const input = document.createElement('input');
-                input.type = 'text';
-                input.name = 'image_labels[' + idx + ']';
-                input.placeholder = 'Label';
-                input.className = 'form-control form-control-sm mb-1';
-                body.appendChild(input);
-                card.appendChild(img);
-                card.appendChild(body);
-                col.appendChild(card);
-                preview.appendChild(col);
-            };
-            reader.readAsDataURL(file);
+/*
+    Bagian ini untuk:
+    - Menambah/menghapus variant, image, dan size secara dinamis
+    - Menampilkan preview gambar setelah upload
+*/
+document.addEventListener('DOMContentLoaded', function() {
+    let variantIdx = document.querySelectorAll('.variant-item').length || 0;
+
+    document.getElementById('add-variant-btn').addEventListener('click', function() {
+        addVariant();
+    });
+
+    function addVariant() {
+        let template = document.getElementById('variant-template').innerHTML.replace(/#IDX#/g, variantIdx);
+        let div = document.createElement('div');
+        div.innerHTML = template;
+        div.firstElementChild.setAttribute('data-index', variantIdx);
+        document.getElementById('variants-container').appendChild(div.firstElementChild);
+        variantIdx++;
+        updateVariantEvents();
+    }
+
+    function updateVariantEvents() {
+        document.querySelectorAll('.remove-variant').forEach(btn => {
+            btn.onclick = function() {
+                btn.closest('.variant-item').remove();
+            }
+        });
+
+        document.querySelectorAll('.add-variant-image').forEach((btn, vIdx) => {
+            btn.onclick = function() {
+                let imagesContainer = btn.closest('.variant-item').querySelector('.variant-images-container');
+                let iIdx = imagesContainer.querySelectorAll('.variant-image-item').length;
+                let template = document.getElementById('variant-image-template').innerHTML
+                    .replace(/#VIDX#/g, vIdx)
+                    .replace(/#IIDX#/g, iIdx);
+                let div = document.createElement('div');
+                div.innerHTML = template;
+                imagesContainer.appendChild(div.firstElementChild);
+                updateVariantEvents();
+            }
+        });
+
+        document.querySelectorAll('.remove-variant-image').forEach(btn => {
+            btn.onclick = function() {
+                btn.closest('.variant-image-item').remove();
+            }
+        });
+
+        document.querySelectorAll('.add-variant-size').forEach((btn, vIdx) => {
+            btn.onclick = function() {
+                let sizesContainer = btn.closest('.variant-item').querySelector('.variant-sizes-container');
+                let sIdx = sizesContainer.querySelectorAll('.variant-size-item').length;
+                let template = document.getElementById('variant-size-template').innerHTML
+                    .replace(/#VIDX#/g, vIdx)
+                    .replace(/#SIDX#/g, sIdx);
+                let div = document.createElement('div');
+                div.innerHTML = template;
+                sizesContainer.appendChild(div.firstElementChild);
+                updateVariantEvents();
+                // Sembunyikan stock/price/discount di variant jika ada size
+                toggleVariantStockFields(btn.closest('.variant-item'));
+            }
+        });
+
+        document.querySelectorAll('.remove-variant-size').forEach(btn => {
+            btn.onclick = function() {
+                let variantCard = btn.closest('.variant-item');
+                btn.closest('.variant-size-item').remove();
+                // Tampilkan stock/price/discount di variant jika semua size dihapus
+                toggleVariantStockFields(variantCard);
+            }
+        });
+
+        // Preview image after upload
+        document.querySelectorAll('.variant-image-input').forEach(input => {
+            input.onchange = function(e) {
+                const previewDiv = input.closest('.variant-image-item').querySelector('.image-preview');
+                previewDiv.innerHTML = '';
+                if (input.files && input.files[0]) {
+                    const reader = new FileReader();
+                    reader.onload = function(ev) {
+                        previewDiv.innerHTML = '<img src="' + ev.target.result + '" alt="Preview" width="60">';
+                    }
+                    reader.readAsDataURL(input.files[0]);
+                }
+            }
+        });
+
+        // Sembunyikan/tampilkan stock/price/discount di variant jika ada size
+        document.querySelectorAll('.variant-item').forEach(variantCard => {
+            toggleVariantStockFields(variantCard);
         });
     }
-}
+
+    // Fungsi untuk toggle stock/price/discount di variant
+    function toggleVariantStockFields(variantCard) {
+        let sizes = variantCard.querySelectorAll('.variant-size-item');
+        let stockField = variantCard.querySelector('.variant-stock-fields');
+        let priceField = variantCard.querySelector('.variant-price-fields');
+        let discountField = variantCard.querySelector('.variant-discount-fields');
+        if (sizes.length > 0) {
+            if (stockField) stockField.style.display = 'none';
+            if (priceField) priceField.style.display = 'none';
+            if (discountField) discountField.style.display = 'none';
+        } else {
+            if (stockField) stockField.style.display = '';
+            if (priceField) priceField.style.display = '';
+            if (discountField) discountField.style.display = '';
+        }
+    }
+
+    updateVariantEvents();
+
+    document.querySelector('form').addEventListener('submit', function(e) {
+        let defaultVariantSelected = document.querySelector('input[name="default_variant"]:checked');
+        if (!defaultVariantSelected) {
+            e.preventDefault();
+            alert('Please select a default variant.');
+        }
+    });
+});
 </script>
+
+@if ($errors->has('name'))
+    <div class="text-danger">{{ $errors->first('name') }}</div>
+@endif
+
+@if ($errors->has('variants.*.name'))
+    <div class="text-danger">{{ $errors->first('variants.*.name') }}</div>
+@endif

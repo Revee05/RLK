@@ -16,16 +16,37 @@ require_once  __DIR__ . "/admin.php";
 require_once  __DIR__ . "/account.php";
 
 Auth::routes();
-// sample routes dev 
+// sample routes
 Route::get('/cart', function () {
     return view('web.cart');
 });
 
+Route::get('/test-add-cart', function() {
+    session()->put('cart', [
+        [
+            'product_id' => 1,
+            'name' => 'Merch Hoodie',
+            'price' => 150000,
+            'quantity' => 2,
+        ],
+        [
+            'product_id' => 2,
+            'name' => 'Sticker Set',
+            'price' => 25000,
+            'quantity' => 1,
+        ]
+    ]);
+
+    return 'Cart ditambahkan!';
+}); 
+
 // route untuk view
 Route::get('/all-other-product', function () {
     return view('web.productsPage.MerchAllProductPage');
-})->name('all-other-product'); // untuk return view halaman produk merch
-
+})->name('all-other-product');
+Route::get('/detail-products', function () {
+    return view('web.productsPage.MerchDetailProductPage');
+})->name('detail-products');
 
 // prod routes
 
@@ -52,6 +73,7 @@ Route::post('/cart/add-merch/{merchProductId}', 'Web\CartController@addMerchToCa
 Route::post('/cart/update/{cartItem}', 'Web\CartController@updateQuantity')->name('cart.update')->middleware('auth');
 
 // merch product route
+Route::get('/merch/categories', 'Web\MerchProduct\GetMerchCategory')->name('merch.categories');
 Route::get('/merch/{slug}', 'Web\MerchProduct\getDetail')->name('merch.products.detail');
 Route::get('/merch-products/json', 'Web\MerchProduct\GetMerchProduct')->name('merch.products.json');
 
@@ -61,7 +83,7 @@ Route::post('/payments/midtrans-notification','Account\PaymentCallbackController
 //Checkout
 Route::post('/checkout/process', 'Web\CheckoutMerchController@process')->name('checkout.process');
 Route::get('/checkout/success/{invoice}', 'Web\CheckoutMerchController@success')->name('checkout.success');
-Route::post('/address/store', [AddressController::class, 'store'])->name('address.store');
+Route::post('/checkout/set-address', 'Web\CheckoutMerchController@setAddress')->name('checkout.set-address');
 
 Route::match(['get', 'post'], '/checkout', [CheckoutMerchController::class, 'index'])->name('checkout.index');
 
@@ -70,10 +92,13 @@ Route::get('/get-kabupaten/{id}', function($id){
     return \App\Kabupaten::where('provinsi_id', $id)->get();
 });
 
-Route::get('/get-kecamatan/{id}', function($id){
-    return \App\Kecamatan::where('kabupaten_id', $id)->get();
-});
+// List kabupaten berdasarkan provinsi
+Route::get('/lokasi/kabupaten/{provinsi_id}', 'KabupatenController@getByProvinsi')->name('lokasi.kabupaten');
 
-Route::get('/get-desa/{id}', function($id){
-    return \App\Desa::where('kecamatan_id', $id)->get();
-});
+// List kecamatan berdasarkan kabupaten
+Route::get('/lokasi/kecamatan/{kabupaten_id}', 'KecamatanController@getByKabupaten')->name('lokasi.kecamatan');
+
+Route::post('/alamat/store', 'UserAddressController@store')->name('alamat.store');
+Route::get('/alamat/refresh', 'UserAddressController@refreshList')->name('alamat.refresh');
+Route::post('/checkout/shipping-cost', 'Web\CheckoutMerchController@calculateShipping')->name('checkout.shipping-cost');
+

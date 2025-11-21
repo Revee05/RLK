@@ -40,6 +40,7 @@
                 <th>Discount</th>
                 <th>Stock</th>
                 <th>Status</th>
+                <th>Variants</th>
                 <th>Images</th>
                 <th>Action</th>
             </tr>
@@ -48,7 +49,9 @@
             @forelse($merchProducts as $merchProduct)
             <tr>
                 <td>{{ $loop->iteration }}</td>
+                {{-- Nama Produk --}}
                 <td><span class="shrinkable-name" title="{{ $merchProduct->name }}">{{ $merchProduct->name }}</span></td>
+                {{-- Kategori --}}
                 <td>
                     <span class="shrinkable-category" title="{{ $merchProduct->categories->pluck('name')->join(', ') }}">
                         @foreach($merchProduct->categories as $cat)
@@ -56,6 +59,7 @@
                         @endforeach
                     </span>
                 </td>
+                {{-- Tipe Produk --}}
                 <td>
                     @if($merchProduct->type === 'featured')
                         <span class="badge bg-primary text-white">Featured</span>
@@ -63,9 +67,41 @@
                         <span class="badge bg-secondary text-white">Normal</span>
                     @endif
                 </td>
-                <td>{{ $merchProduct->price }}</td>
-                <td>{{ $merchProduct->discount }}</td>
-                <td>{{ $merchProduct->stock }}</td>
+                {{-- Harga Dasar (bisa harga minimum dari semua size) --}}
+                <td>
+                    @php
+                        $prices = [];
+                        foreach ($merchProduct->variants as $variant) {
+                            if ($variant->sizes->count()) {
+                                foreach ($variant->sizes as $size) {
+                                    if (!is_null($size->price)) $prices[] = $size->price;
+                                }
+                            } else {
+                                if (!is_null($variant->price)) $prices[] = $variant->price;
+                            }
+                        }
+                        $minPrice = count($prices) ? min($prices) : null;
+                    @endphp
+                    {{ $minPrice !== null ? number_format($minPrice, 0, ',', '.') : '-' }}
+                </td>
+                {{-- Diskon (bisa diskon terbesar dari semua size) --}}
+                <td>
+                    @php
+                        $maxDiscount = $merchProduct->variants->flatMap(function($variant) {
+                            return $variant->sizes;
+                        })->max('discount');
+                    @endphp
+                    {{ $maxDiscount ?? $merchProduct->discount }}
+                </td>
+                {{-- Total Stock --}}
+                <td>
+                    {{
+                        $merchProduct->variants->flatMap(function($variant) {
+                            return $variant->sizes;
+                        })->sum('stock')
+                    }}
+                </td>
+                {{-- Status --}}
                 <td>
                     @if($merchProduct->status === 'active')
                         <span class="badge bg-success text-white">Publish</span>
@@ -75,16 +111,27 @@
                         <span class="badge bg-light text-dark">{{ ucfirst($merchProduct->status) }}</span>
                     @endif
                 </td>
+                {{-- Daftar Variant --}}
                 <td>
-                    @foreach($merchProduct->images as $img)
-                        <div class="d-inline-block text-center me-1">
-                            <img src="{{ asset($img->image_path) }}" alt="Image" width="40" class="mb-1">
-                            @if($img->label)
-                                <div class="small">{{ $img->label }}</div>
-                            @endif
-                        </div>
+                    @foreach($merchProduct->variants as $variant)
+                        <span class="badge bg-light text-dark mb-1">{{ $variant->name }}</span>
                     @endforeach
                 </td>
+                {{-- Gambar utama per variant --}}
+                <td>
+                    @foreach($merchProduct->variants as $variant)
+                        @if($variant->images->first())
+                            <div class="d-inline-block text-center me-1">
+                                <img src="{{ asset($variant->images->first()->image_path) }}" alt="Image" width="40" class="mb-1">
+                                @if($variant->images->first()->label)
+                                    <div class="small">{{ $variant->images->first()->label }}</div>
+                                @endif
+                                <div class="small text-muted">{{ $variant->name }}</div>
+                            </div>
+                        @endif
+                    @endforeach
+                </td>
+                {{-- Action --}}
                 <td>
                     <a href="{{ route('master.merchProduct.edit', $merchProduct->id) }}" class="btn btn-warning btn-sm">Edit</a>
                     <form action="{{ route('master.merchProduct.destroy', $merchProduct->id) }}" method="POST" style="display:inline;">
@@ -96,7 +143,7 @@
             </tr>
             @empty
             <tr>
-                <td colspan="10" class="text-center">No merchandise products found.</td>
+                <td colspan="11" class="text-center">No merchandise products found.</td>
             </tr>
             @endforelse
         </tbody>
@@ -111,7 +158,7 @@
 $(document).ready(function() {
     var table = $('#merchProductTable').DataTable({
         "columnDefs": [
-            { "orderable": false, "targets": [2,7,8] } // Disable sort for Categories, Images, Action
+            { "orderable": false, "targets": [2,8,9,10] } // Disable sort for Categories, Variants, Images, Action
         ]
     });
 
