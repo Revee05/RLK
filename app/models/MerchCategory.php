@@ -2,6 +2,7 @@
 namespace App\models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Cache;
 
 class MerchCategory extends Model
 {
@@ -16,15 +17,17 @@ class MerchCategory extends Model
         return $this->belongsToMany(MerchProduct::class, 'merch_category_product', 'merch_category_id', 'merch_product_id');
     }
 
-    protected static function booted()
+    protected static function boot()
     {
-        static::saved(function () {
-            \Cache::forget('merch_categories_list');
-            \Cache::forget('merch_categories_version');
-        });
-        static::deleted(function () {
-            \Cache::forget('merch_categories_list');
-            \Cache::forget('merch_categories_version');
-        });
+        parent::boot();
+
+        $forget = function () {
+            Cache::forget('merch_categories_list');
+            Cache::forget('merch_categories_version');
+        };
+
+        static::created($forget);
+        static::updated($forget);
+        static::deleted($forget);
     }
 }
