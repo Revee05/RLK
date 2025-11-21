@@ -62,28 +62,28 @@
                         {{ Form::model($user, ['route' => ['update.profil'], 'method' => 'POST']) }}
                         <div class="form-group mb-3">
                             {{ Form::label('name', 'Nama Lengkap') }}
-                            {{ Form::text('name', $user->name ?? '', ['class' => 'form-control', 'placeholder' => 'Nama']) }}
+                            {{ Form::text('name', $user->name ?? '', ['class' => 'form-control input-field input-cyan', 'placeholder' => 'Nama']) }}
                         </div>
 
                         <div class="form-group mb-3">
                             {{ Form::label('name', 'Username') }}
-                            {{ Form::text('username', $user->username ?? '', ['class' => 'form-control', 'placeholder' => 'Username', 'disabled']) }}
+                            {{ Form::text('username', $user->username ?? '', ['class' => 'form-control input-field input-cyan', 'placeholder' => 'Username', 'disabled']) }}
                         </div>
 
                         <div class="form-group mb-3">
                             {{ Form::label('name', 'Email') }}
-                            {{ Form::text('email', $user->email ?? '', ['class' => 'form-control', 'placeholder' => 'Email']) }}
+                            {{ Form::text('email', $user->email ?? '', ['class' => 'form-control input-field input-cyan', 'placeholder' => 'Email']) }}
                         </div>
 
                         <div class="form-group mb-3">
                             {{ Form::label('name', 'Jenis Kelamin') }}
-                            {{ Form::select('jenis_kelamin', ['perempuan' => 'Perempuan', 'laki_laki' => 'Laki laki'], $user->jenis_kelamin, ['class' => 'form-control', 'placeholder' => 'Pilih Jenis Kelamin']) }}
+                            {{ Form::select('jenis_kelamin', ['perempuan' => 'Perempuan', 'laki_laki' => 'Laki laki'], $user->jenis_kelamin, ['class' => 'form-control input-field input-cyan', 'placeholder' => 'Pilih Jenis Kelamin']) }}
                         </div>
 
                         <input type="hidden" name="id" value="{{ Auth::user()->id }}">
                         <br>
 
-                        {{ Form::submit('Simpan', ['class' => 'btn btn-danger btn-sm rounded-0']) }}
+                        {{ Form::submit('Simpan', ['class' => 'btn btn-cyan rounded-3 text-dark mb-3']) }}
                         {{ Form::close() }}
                     </div>
                 </div>
