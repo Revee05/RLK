@@ -105,21 +105,21 @@
     color: #fff;
 }
 
-.dropdown-menu {
+.pp.dropdown-menu {
     border: 1px solid #15bcc5 !important;
     box-shadow: none !important;
     padding: 0 !important;
 }
 
-.dropdown-menu > li {
+.pp.dropdown-menu > li {
     border-bottom: 1px solid #15bcc5 !important;
 }
 
-.dropdown-menu > li:last-child {
+.pp.dropdown-menu > li:last-child {
     border-bottom: none !important;
 }
 
-.dropdown-menu .dropdown-item {
+.pp.dropdown-menu .dropdown-item {
     color: #051a36;
 }
 
