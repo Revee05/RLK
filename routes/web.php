@@ -10,6 +10,7 @@
 | contains the "web" middleware group. Now create something great!
 |
 */
+use App\Http\Controllers\Web\CheckoutMerchController;
 
 require_once  __DIR__ . "/admin.php";
 require_once  __DIR__ . "/account.php";
@@ -61,6 +62,8 @@ Route::post('/payments/midtrans-notification','Account\PaymentCallbackController
 Route::post('/checkout/process', 'Web\CheckoutMerchController@process')->name('checkout.process');
 Route::get('/checkout/success/{invoice}', 'Web\CheckoutMerchController@success')->name('checkout.success');
 Route::post('/address/store', [AddressController::class, 'store'])->name('address.store');
+
+Route::match(['get', 'post'], '/checkout', [CheckoutMerchController::class, 'index'])->name('checkout.index');
 
 // API untuk fetch lokasi (dipakai AJAX di form)
 Route::get('/get-kabupaten/{id}', function($id){
