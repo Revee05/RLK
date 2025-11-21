@@ -57,6 +57,6 @@ class MemberController extends Controller
     {
 
         $user = User::findOrFail(Auth::user()->id);
-        return view('account.password.katasandi', compact('user'));
+        return view('account.password.password_new', compact('user'));
     }
 }

@@ -9,14 +9,18 @@
 
 
     <div class="list-group mb-4 text-center">
-        <a href="#" class="list-group-item list-group-item-action border-nav-top py-2 active" aria-current="true">
+        <a href="{{ route('account.dashboard') }}"
+            class="list-group-item list-group-item-action border-nav-top py-2 {{ request()->routeIs('account.dashboard') ? 'active' : '' }}"
+            aria-current="true">
             Akun
         </a>
-        <a href="#" class="list-group-item list-group-item-action border-nav-middle  py-2">Ubah Password</a>
-        <a href="#" class="list-group-item list-group-item-action border-nav-middle  py-2">Alamat</a>
-        <a href="#" class="list-group-item list-group-item-action border-nav-middle  py-2">Favorit</a>
-        <a href="#" class="list-group-item list-group-item-action border-nav-middle  py-2">Riwayat Lelang</a>
-        <a href="#" class="list-group-item list-group-item-action border-nav-middle  py-2">Riwayat
+        <a href="{{ route('account.katasandi') }}"
+            class="list-group-item list-group-item-action border-nav-middle py-2 {{ request()->routeIs('account.katasandi') ? 'active' : '' }}">Ubah
+            Password</a>
+        <a href="#" class="list-group-item list-group-item-action border-nav-middle py-2">Alamat</a>
+        <a href="#" class="list-group-item list-group-item-action border-nav-middle py-2">Favorit</a>
+        <a href="#" class="list-group-item list-group-item-action border-nav-middle py-2">Riwayat Lelang</a>
+        <a href="#" class="list-group-item list-group-item-action border-nav-middle py-2">Riwayat
             Pembelian</a>
         <a href="#" class="list-group-item list-group-item-action border-nav-middle  py-2">Pengaturan
             Notifikasi</a>
