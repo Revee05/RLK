@@ -95,3 +95,83 @@
     border-color: #0b6a6d;
     box-shadow: 0 0 0 0.2rem rgb(20, 47, 82, 0.2);
 }
+
+.btn-cyan .bi,
+.btn-cyan i {
+    color: #fff !important;
+}
+
+.btn-cyan.dropdown-toggle::after {
+    color: #fff;
+}
+
+.dropdown-menu {
+    border: 1px solid #15bcc5 !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+}
+
+.dropdown-menu > li {
+    border-bottom: 1px solid #15bcc5 !important;
+}
+
+.dropdown-menu > li:last-child {
+    border-bottom: none !important;
+}
+
+.dropdown-menu .dropdown-item {
+    color: #051a36;
+}
+
+/* Profile picture modal styles */
+#pp-current {
+    width: 300px;
+    height: 300px;
+    object-fit: cover;
+    border-radius: 8px;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.pp-preview-wrap {
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+#pp-preview {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: none;
+}
+
+#pp-preview-placeholder {
+    color: #6c757d;
+}
+
+#pp-thumb-64,
+#pp-thumb-120 {
+    object-fit: cover;
+    display: none;
+}
+
+#pp-thumb-64 {
+    width: 64px;
+    height: 64px;
+}
+
+#pp-thumb-120 {
+    width: 120px;
+    height: 120px;
+}
+
+.pp-thumb-wrap.pp-thumb-64 {
+    width: 64px;
+    height: 64px;
+}
+
+.pp-thumb-wrap.pp-thumb-120 {
+    width: 120px;
+    height: 120px;
+}

@@ -4,7 +4,7 @@
         <img src="https://www.figma.com/api/mcp/asset/1bcfd75e-90c9-43bf-8586-79d92d395def" alt="avatar"
             class="rounded-circle img-fluid mb-3" style="width:200px; height:200px; object-fit:cover;">
         <h1 class="profile-name mb-0">{{ Auth::user()->name }}</h1>
-        <a href="">Lihat Profil</a>
+        <a href="#" data-bs-toggle="modal" data-bs-target="#modalProfilePicture">Lihat Profil</a>
     </div>
 
 
