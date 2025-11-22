@@ -3,13 +3,12 @@
 namespace App\Http\Controllers\Web\MerchProduct;
 
 use App\Http\Controllers\Controller;
-use App\Models\MerchProduct; // perbaikan namespace Models
-use App\Models\MerchCategory; // perbaikan namespace Models
+use App\Models\MerchProduct;
+use App\Models\MerchCategory;
 use Illuminate\Http\Request;
 
 class GetMerchProduct extends Controller
 {
-    // Konstanta layout & pagination
     private const PER_PAGE = 21;
     private const FEATURED_PAGE_SIZE = 3;
     private const NORMAL_PAGE_SIZE = 18;
@@ -27,12 +26,54 @@ class GetMerchProduct extends Controller
             ->simplePaginate(self::NORMAL_PAGE_SIZE, ['*'], 'normal_page', $batch);
 
         $result = $this->composeGrid($featured, $normal);
-        $this->augmentMetrics($result);
+
+        // Transform data: hanya ambil field penting
+        $products = array_map(function ($p) {
+            if (!$p) return null;
+
+            $variant = $p->defaultVariant;
+
+            // Jika tidak ada default variant sama sekali
+            if (!$variant) {
+                return [
+                    'id' => $p->id,
+                    'name' => $p->name,
+                    'slug' => $p->slug,
+                    'image' => null,
+                    'price' => null,
+                    'discount' => null,
+                ];
+            }
+
+            $image = $variant->images && $variant->images->count()
+                ? $variant->images->first()->image_path
+                : null;
+
+            // Ambil harga & diskon dari sizes jika ada, jika tidak pakai kolom variant
+            $price = null;
+            $discount = null;
+            if ($variant->sizes && $variant->sizes->count() > 0) {
+                $price = $variant->sizes->min('price');      // harga minimum
+                $discount = $variant->sizes->max('discount'); // diskon maksimum
+            } else {
+                $price = $variant->price;
+                $discount = $variant->discount;
+            }
+
+            return [
+                'id' => $p->id,
+                'name' => $p->name,
+                'slug' => $p->slug,
+                'image' => $image,
+                'price' => $price,
+                'discount' => $discount,
+            ];
+        }, $result);
 
         $response = [
             'batch' => $batch,
-            'count' => count(array_filter($result)),
-            'products' => array_values($result),
+            'count' => count(array_filter($products)),
+            'products' => array_values($products),
             'has_more_featured' => $featured->hasMorePages(),
             'has_more_normal' => $normal->hasMorePages(),
         ];
@@ -40,36 +81,30 @@ class GetMerchProduct extends Controller
         $this->logFetch('Fetch merch products batch', [
             'batch' => $batch,
             'count' => $response['count'],
-            'product_ids' => collect($result)->filter()->pluck('id')->toArray(),
+            'product_ids' => collect($products)->filter()->pluck('id')->toArray(),
         ]);
         $this->logFetch('Fetch merch products API response', $response);
 
         return response()->json($response);
     }
 
-    /* ------------------------------- Param Handling ------------------------------ */
     private function validatedParams(Request $request): array
     {
         $batch = max(1, (int)$request->query('batch', 1));
-
         $sort = $request->query('sort', '');
         if (!in_array($sort, self::ALLOWED_SORT, true)) $sort = '';
-
         $category = $request->query('category');
         if ($category && !MerchCategory::where('slug', $category)->exists()) $category = null;
-
         $search = $request->query('search');
         if ($search && strlen($search) > self::MAX_SEARCH_LEN) $search = substr($search, 0, self::MAX_SEARCH_LEN);
-
         return [$batch, $sort, $category, $search];
     }
 
-    /* -------------------------------- Build Query -------------------------------- */
     private function buildQuery(string $type, ?string $search, ?string $category, string $sort)
     {
         $query = MerchProduct::with([
-            'defaultVariant.images' => fn($q) => $q->select('id', 'merch_product_variant_id', 'image_path', 'label')->orderBy('id'),
-            'defaultVariant.sizes' => fn($q) => $q->orderBy('id'),
+            'defaultVariant.images' => fn($q) => $q->select('id', 'merch_product_variant_id', 'image_path')->orderBy('id'),
+            'defaultVariant.sizes' => fn($q) => $q->select('id', 'merch_product_variant_id', 'price', 'discount')->orderBy('price'),
         ])
             ->select(['id', 'name', 'slug', 'type', 'status'])
             ->where('status', 'active')
@@ -89,7 +124,7 @@ class GetMerchProduct extends Controller
         } elseif ($sort === 'oldest') {
             $query->orderBy('created_at');
         } elseif ($sort === 'cheapest') {
-            $query->orderBy('id'); // placeholder: adjust if product price column exists
+            $query->orderBy('id'); // Ganti dengan kolom harga jika ada
         } elseif ($sort === 'priciest') {
             $query->orderByDesc('id');
         } else {
@@ -97,7 +132,6 @@ class GetMerchProduct extends Controller
         }
     }
 
-    /* --------------------------------- Grid Build -------------------------------- */
     private function composeGrid($featured, $normal): array
     {
         $grid = [];
@@ -112,29 +146,6 @@ class GetMerchProduct extends Controller
         return $grid;
     }
 
-    /* ------------------------------- Metrics Augment ----------------------------- */
-    private function augmentMetrics(array &$products): void
-    {
-        foreach ($products as $p) {
-            if (!$p) continue;
-            $variant = $p->defaultVariant;
-            if (!$variant) {
-                $p->display_price = $p->display_stock = $p->display_discount = null;
-                continue;
-            }
-            if ($variant->sizes && $variant->sizes->count()) {
-                $p->display_price = $variant->sizes->min('price');
-                $p->display_stock = $variant->sizes->sum('stock');
-                $p->display_discount = $variant->sizes->max('discount');
-            } else {
-                $p->display_price = $variant->price;
-                $p->display_stock = $variant->stock;
-                $p->display_discount = $variant->discount;
-            }
-        }
-    }
-
-    /* ---------------------------------- Logging ---------------------------------- */
     private function logFetch(string $message, array $context): void
     {
         if (app()->environment(['local', 'development', 'dev'])) {
