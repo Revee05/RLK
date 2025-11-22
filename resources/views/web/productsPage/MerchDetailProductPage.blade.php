@@ -54,10 +54,23 @@ foreach ($product->variants as $variant) {
                 <div class="main-image">
                     <img src="{{ $mainImage }}" alt="{{ $product->name }}" class="img-fluid rounded" id="main-product-image">
                 </div>
-                <div class="thumb-images">
-                    @foreach($allImages as $img)
-                    <img src="{{ asset($img->image_path) }}" alt="thumb">
-                    @endforeach
+
+                {{-- Thumbnail Carousel --}}
+                <div class="thumb-carousel">
+                    <button type="button" class="thumb-nav prev" aria-label="Prev">
+                        <span>&lsaquo;</span>
+                    </button>
+                    <div class="thumb-track-wrapper">
+                        <div class="thumb-track" id="thumbTrack">
+                            @foreach($allImages as $img)
+                                <img src="{{ asset($img->image_path) }}" alt="thumb"
+                                     class="thumb-item{{ $loop->first ? ' active-thumb' : '' }}">
+                            @endforeach
+                        </div>
+                    </div>
+                    <button type="button" class="thumb-nav next" aria-label="Next">
+                        <span>&rsaquo;</span>
+                    </button>
                 </div>
             </div>
             <div class="col-lg-6">
@@ -330,6 +343,55 @@ document.addEventListener('DOMContentLoaded', function() {
     });
     updateStockInfo();
     updateHiddenInputs();
+
+    /* ---- Thumbnail Carousel Logic ---- */
+    const track = document.getElementById('thumbTrack');
+    const items = Array.from(document.querySelectorAll('.thumb-item'));
+    const prevBtn = document.querySelector('.thumb-nav.prev');
+    const nextBtn = document.querySelector('.thumb-nav.next');
+
+    let offset = 0;               // current translateX
+    const gap = 10;               // gap in CSS
+    const visibleCount = 5;       // berapa thumbnail tampak penuh
+    const itemWidth = 80;         // dari CSS
+    const step = itemWidth + gap; // geser satu thumbnail
+
+    function maxOffset() {
+        const totalWidth = items.length * (itemWidth + gap);
+        const wrapperWidth = visibleCount * (itemWidth + gap);
+        return Math.max(0, totalWidth - wrapperWidth);
+    }
+
+    function updateButtons() {
+        prevBtn.disabled = offset <= 0;
+        nextBtn.disabled = offset >= maxOffset();
+    }
+
+    function applyTransform() {
+        track.style.transform = `translateX(-${offset}px)`;
+        updateButtons();
+    }
+
+    prevBtn.addEventListener('click', () => {
+        offset = Math.max(0, offset - step);
+        applyTransform();
+    });
+
+    nextBtn.addEventListener('click', () => {
+        offset = Math.min(maxOffset(), offset + step);
+        applyTransform();
+    });
+
+    // Klik thumbnail: set aktif + ganti gambar utama
+    items.forEach(img => {
+        img.addEventListener('click', () => {
+            items.forEach(i => i.classList.remove('active-thumb'));
+            img.classList.add('active-thumb');
+            document.getElementById('main-product-image').src = img.src;
+        });
+    });
+
+    applyTransform();
 });
 </script>
 @endsection
