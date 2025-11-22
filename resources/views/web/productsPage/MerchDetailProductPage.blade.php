@@ -46,117 +46,147 @@ foreach ($product->variants as $variant) {
     }
 }
 @endphp
+<div class="main-container">
 
-<div class="merch-product-detail container py-5">
-    <div class="row">
-        <div class="col-lg-6">
-            <div class="main-image mb-3">
-                <img src="{{ $mainImage }}" alt="{{ $product->name }}" class="img-fluid rounded" id="main-product-image">
-            </div>
-            <div class="thumb-images d-flex gap-2">
-                @foreach($allImages as $img)
-                <img src="{{ asset($img->image_path) }}" class="img-thumbnail" alt="thumb"
-                    style="width:60px; height:60px; object-fit:cover; cursor:pointer;">
-                @endforeach
-            </div>
-        </div>
-        <div class="col-lg-6">
-            <h2 class="product-title mb-2">{{ $product->name }}</h2>
-            <div class="product-category mb-2">
-                {{ $product->categories->pluck('name')->join(', ') }}
-            </div>
-            <div class="product-price mb-3">
-                @if($mainVariant && $mainVariant->display_discount)
-                <span class="badge bg-danger me-2">-{{ $mainVariant->display_discount }}%</span>
-                Rp. {{ number_format($mainVariant->display_price, 0, ',', '.') }}
-                <span class="text-muted text-decoration-line-through ms-2" style="font-size: 15px;">
-                    Rp. {{ number_format($mainVariant->display_price, 0, ',', '.') }}</span>
-                @elseif($mainVariant)
-                Rp. {{ number_format($mainVariant->display_price, 0, ',', '.') }}
-                @else
-                <span class="text-muted">-</span>
-                @endif
-            </div>
-            <div class="mb-3">
-                <strong>Total Stok:</strong> {{ $totalStock }}
-            </div>
-            <div class="mb-3">
-                <label class="form-label fw-bold">Variant</label>
-                <div class="variant-grid">
-                    @foreach($product->variants as $variant)
-                    <label class="variant-btn"
-                        data-image="{{ $variant->images->first() ? asset($variant->images->first()->image_path) : 'https://placehold.co/500x400?text=No+Image' }}">
-                        @php
-                        $img = $variant->images->first();
-                        @endphp
-                        @if($img)
-                        <img src="{{ asset($img->image_path) }}" alt="{{ $variant->name }}">
-                        @else
-                        <img src="https://placehold.co/40x40?text=?" alt="no-img">
-                        @endif
-                        <input type="radio" name="variant_id" value="{{ $variant->id }}" class="d-none"
-                            autocomplete="off" {{ $variant->id == $mainVariant->id ? 'checked' : '' }}>
-                        <span>{{ $variant->name }}</span>
-                    </label>
+    <div class="merch-product-detail">
+        <div class="row">
+            <div class="col-lg-6">
+                <div class="main-image">
+                    <img src="{{ $mainImage }}" alt="{{ $product->name }}" class="img-fluid rounded" id="main-product-image">
+                </div>
+                <div class="thumb-images">
+                    @foreach($allImages as $img)
+                    <img src="{{ asset($img->image_path) }}" alt="thumb">
                     @endforeach
                 </div>
             </div>
-            <div class="mb-3">
-                <label class="form-label fw-bold">Sizes</label>
-                <div class="size-grid">
-                    @if($mainVariant && $mainVariant->sizes->count())
-                    @foreach($mainVariant->sizes as $size)
-                    <label class="size-btn">
-                        <input type="radio" name="size_id" value="{{ $size->id }}" class="d-none" autocomplete="off">
-                        <span>{{ $size->size }}</span>
-                    </label>
-                    @endforeach
+            <div class="col-lg-6">
+                <h2 class="product-title mb-2">{{ $product->name }}</h2>
+                <div class="product-category mb-2">
+                    {{ $product->categories->pluck('name')->join(', ') }}
+                </div>
+                <div class="product-price mb-3">
+                    @if($mainVariant && $mainVariant->display_discount)
+                    <span class="badge bg-danger me-2">-{{ $mainVariant->display_discount }}%</span>
+                    Rp. {{ number_format($mainVariant->display_price, 0, ',', '.') }}
+                    <span class="text-muted text-decoration-line-through ms-2 original-strike">
+                        Rp. {{ number_format($mainVariant->display_price, 0, ',', '.') }}</span>
+                    @elseif($mainVariant)
+                    Rp. {{ number_format($mainVariant->display_price, 0, ',', '.') }}
                     @else
-                    <span class="text-muted">Tidak ada ukuran.</span>
+                    <span class="text-muted">-</span>
                     @endif
                 </div>
-            </div>
-            <form action="{{ route('cart.addMerch', $product->id) }}" method="POST">
-                @csrf
-                <input type="hidden" name="selected_variant_id" id="selected_variant_id" value="{{ $mainVariant->id }}">
-                <input type="hidden" name="selected_size_id" id="selected_size_id"
-                    value="{{ $mainVariant->sizes->first()->id ?? '' }}">
-                <div class="d-flex align-items-center mb-3">
-                    <input type="number" id="qty-input" name="quantity" value="1" min="1"
-                        style="width:70px; margin-right:10px;">
-                    <span id="stock-info" class="text-muted">
-                        Tersedia
-                        {{ $mainVariant->sizes->count() ? ($mainVariant->sizes->first()->stock ?? 0) : ($mainVariant->display_stock ?? 0) }}
-                    </span>
+                <div class="mb-3">
+                    <strong>Total Stok:</strong> {{ $totalStock }}
                 </div>
-                <button type="submit" class="btn btn-primary btn-lg w-100 mb-3">Tambahkan ke keranjang</button>
-            </form>
-            <div class="product-shipping-info">
-                <strong>Pengiriman:</strong> Pengiriman dilakukan setiap hari kerja.
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Variant</label>
+                    <div class="variant-grid">
+                        @foreach($product->variants as $variant)
+                        <label class="variant-btn"
+                            data-image="{{ $variant->images->first() ? asset($variant->images->first()->image_path) : 'https://placehold.co/500x400?text=No+Image' }}">
+                            @php
+                            $img = $variant->images->first();
+                            @endphp
+                            @if($img)
+                            <img src="{{ asset($img->image_path) }}" alt="{{ $variant->name }}">
+                            @else
+                            <img src="https://placehold.co/40x40?text=?" alt="no-img">
+                            @endif
+                            <input type="radio" name="variant_id" value="{{ $variant->id }}" class="d-none"
+                                autocomplete="off" {{ $variant->id == $mainVariant->id ? 'checked' : '' }}>
+                            <span>{{ $variant->name }}</span>
+                        </label>
+                        @endforeach
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Sizes</label>
+                    <div class="size-grid">
+                        @if($mainVariant && $mainVariant->sizes->count())
+                        @foreach($mainVariant->sizes as $size)
+                        <label class="size-btn">
+                            <input type="radio" name="size_id" value="{{ $size->id }}" class="d-none" autocomplete="off">
+                            <span>{{ $size->size }}</span>
+                        </label>
+                        @endforeach
+                        @else
+                        <span class="text-muted">Tidak ada ukuran.</span>
+                        @endif
+                    </div>
+                </div>
+                <form action="{{ route('cart.addMerch', $product->id) }}" method="POST">
+                    @csrf
+                    <input type="hidden" name="selected_variant_id" id="selected_variant_id" value="{{ $mainVariant->id }}">
+                    <input type="hidden" name="selected_size_id" id="selected_size_id"
+                        value="{{ $mainVariant->sizes->first()->id ?? '' }}">
+                    <div class="d-flex align-items-center mb-3">
+                        <input type="number" id="qty-input" name="quantity" value="1" min="1" class="qty-input">
+                        <span id="stock-info" class="text-muted">
+                            Tersedia
+                            {{ $mainVariant->sizes->count() ? ($mainVariant->sizes->first()->stock ?? 0) : ($mainVariant->display_stock ?? 0) }}
+                        </span>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-lg w-100 mb-3">Tambahkan ke keranjang</button>
+                </form>
+                <div class="product-shipping-info">
+                    <strong>Pengiriman:</strong> Pengiriman dilakukan setiap hari kerja.
+                </div>
             </div>
         </div>
     </div>
-</div>
 
-{{-- Deskripsi produk di luar box utama, di atas related products --}}
-<div class="container pb-3">
-    <h4 class="mb-2">Deskripsi Produk</h4>
-    <div class="product-desc mb-4">
-        {!! $product->description !!}
+    {{-- Deskripsi produk--}}
+    <div class="container pb-3">
+        <h4 class="mb-2">Deskripsi Produk</h4>
+        <div class="product-desc mb-4">
+            {!! $product->description !!}
+        </div>
     </div>
-</div>
 
-<div class="related-products-section container pb-5">
-    <h4 class="mb-4">Related products</h4>
-    <!-- Related products code here -->
-</div>
+    {{-- related products --}}
+    <div class="related-products-section container pb-5">
+        <h4 class="mb-4">Related products</h4>
+        <div class="row g-3">
+            @forelse($relatedProducts as $rel)
+                @php
+                    $variant = $rel->variants->where('is_default', 1)->first() ?: $rel->variants->first();
+                    $img = $variant && $variant->images->count() ? asset($variant->images->first()->image_path) : 'https://placehold.co/300x250?text=No+Image';
+                @endphp
+                <div class="col-6 col-md-4 col-lg-2">
+                    <div class="card h-100 shadow-sm border-0">
+                        <a href="{{ route('merch.products.detail', $rel->slug) }}" class="text-decoration-none text-dark">
+                            <img src="{{ $img }}" class="card-img-top related-img" alt="{{ $rel->name }}">
+                            <div class="card-body p-2">
+                                <div class="fw-bold mb-1 related-title">{{ $rel->name }}</div>
+                                @if($rel->display_discount)
+                                    <span class="badge bg-danger mb-1">-{{ $rel->display_discount }}%</span>
+                                @endif
+                                <div class="related-price">
+                                    Rp. {{ number_format($rel->display_price, 0, ',', '.') }}
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+            @empty
+                <div class="col-12 text-muted">Tidak ada produk terkait.</div>
+            @endforelse
+        </div>
+    </div>
 
+</div>
 @endsection
 
 @section('js')
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const variants = @json($variantsArray);
+    console.log('VARIANTS ARRAY:', variants);
+
+    // Jika ingin lihat data produk utama juga:
+    console.log('PRODUCT DATA:', @json($product));
 
     // Highlight active variant
     document.querySelectorAll('.variant-btn input[type="radio"]').forEach((input, idx) => {
