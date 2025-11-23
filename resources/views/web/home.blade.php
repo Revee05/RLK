@@ -77,13 +77,18 @@
 <section class="section-padding auction-section">
     <div class="container">
         <div class="row">
-            <div class="col-lg-12">
-                <h2 class="section-title">General Auction</h2>
+            <div class="col-lg-12 d-flex justify-content-between align-items-center">
+                <h2 class="section-title mb-0">General Auction</h2>
+                <div class="owl-custom-nav-auction">
+                    <span class="custom-next" id="auction-next">
+                        <i class="fa fa-arrow-right"></i>
+                    </span>
+                </div>
             </div>
         </div>
 
         <div class="main-content">
-            <div class="owl-carousel owl-theme">
+            <div id="auction-carousel" class="owl-carousel owl-theme">
                 
                 @if($products->isNotEmpty())
                     @foreach($products as $produk) 
@@ -100,21 +105,22 @@
                         </div>
                     </div> @endforeach
                 @endif
-
+                
                 <div class="item">
                     <a href="{{ route('lelang') }}" class="card-see-more-link">
                         <div class="card-auction card-see-more">
                             <div class="card-body">
-                                <span class="see-more-icon">&rarr;</span>
-                                <h5>Lihat Semua Lelang</h5>
+                                <h5>See for More</h5>
+                                <small class="see-more-caption">Click here</small>
                             </div>
                         </div>
                     </a>
                 </div>
 
-            </div> <div class="owl-theme">
+            </div> 
+            <div class="owl-theme">
                 <div class="owl-controls">
-                    </div>
+                </div>
             </div>
         </div> 
     </div>
@@ -123,9 +129,16 @@
 @if(isset($blogs) && $blogs->isNotEmpty())
 <section class="section-padding blog-section">
     <div class="container">
-        <div class="row align-items-center mb-4">
-            <h2 class="section-title">Online Blog</h2>
+        <div class="row align-items-center mb-2">
+            <div class="col-lg-12 d-flex justify-content-between align-items-center">
+                <h2 class="section-title mb-0">Online Blog</h2>
+                <div class="owl-custom-nav-blog">
+                    <span class="custom-next" id="blog-next">
+                        <i class="fa fa-arrow-right"></i>
+                    </span>
+                </div>
             </div>
+        </div>
         
         <div class="blog-slider owl-carousel owl-theme">
 
@@ -135,26 +148,30 @@
                     <img src="{{asset('uploads/blogs/'.$blog->image)}}" alt="{{$blog->title}}">
                     <div class="card-body">
                         <h5>{{ $blog->title }}</h5>
+                        
                         <p>{!! Str::limit(strip_tags($blog->body), 150) !!}</p>
-                        <a href="{{route('web.blog.detail',$blog->slug)}}" class="btn btn-outline-custom">Lihat lebih banyak</a>
+                        
+                        <a href="{{route('web.blog.detail',$blog->slug)}}" class="btn-blog-responsive">
+                            <span class="text-desktop">Lihat lebih banyak</span>
+                            
+                            <span class="text-mobile">Read more . . .</span>
+                        </a>
                     </div>
                 </div>
             </div>
             @endforeach
             <div class="item d-flex">
-                
-                <a href="{{ route('blogs') }}" class="card-see-more-link">
-                    
-                    <div class="card-auction card-see-more">
+                <a href="{{ route('blogs') }}" class="card-blog-link">
+                    <div class="card-blog card-see-more-blog">
                         <div class="card-body">
-                            <span class="see-more-icon">→</span> 
-                            <h5>Lihat Semua Blog</h5>
+                            <h5>See for More</h5>
+                            <small class="see-more-caption">Click here</small>
                         </div>
                     </div>
                 </a>
-
             </div>
-            </div> </div>
+        </div> 
+    </div>
 </section>
 @endif
 
@@ -171,51 +188,85 @@
     
     <script type="text/javascript">
     $(document).ready(function(){
-        
-        // Script Carousel (Bootstrap)
+    
+        // --- 1. BOOTSTRAP CAROUSEL (Hero Slider) ---
+        // Assuming 'myCarousel' is the Bootstrap component in the hero section
         $('#myCarousel').carousel({
-            interval: 2000
+            interval: 2000 // Sets auto-slide interval
         });
 
-        // Script Inisialisasi Owl Carousel (Menggunakan Dots)
-        $('.main-content .owl-carousel').owlCarousel({
-            loop: true,
-            margin: 10, // Jarak antar kartu
-            
-            nav: false, // Panah mati
-            dots: true,  // Dots aktif
+        // --- 2. AUCTION CAROUSEL (Owl Carousel) ---
+        var auctionCarousel = $('.main-content .owl-carousel');
+
+        auctionCarousel.owlCarousel({
+            // HAPUS "loop: true" dari sini (Global settings)
+            margin: 15, 
+            nav: false, 
+            dots: true, 
             
             responsive:{
-                0:{
-                    items: 1 // 2 item di mobile (bisa di-swipe)
+                // === TAMPILAN MOBILE / TABLET (<= 991px) ===
+                0:{ 
+                    items: 1, 
+                    loop: true,       // <--- LOOP NYALA HANYA DI SINI (MOBILE)
+                    mouseDrag: true, 
+                    touchDrag: true, 
+                    
+                    // Opsional: stagePadding membuat user melihat potongan slide kiri/kanan
+                    // Hapus baris stagePadding di bawah jika ingin slide penuh satu kotak
+                    stagePadding: 40, 
+                    margin: 10 
                 },
-                600:{
-                    items: 3 // 3 item di tablet
-                },
-                1000:{
-                    items: 3 // 3 item di desktop
+                
+                // === TAMPILAN DESKTOP (>= 992px) ===
+                992:{ 
+                    items: 3,
+                    loop: false,      // <--- LOOP MATI DI SINI (DESKTOP)
+                    mouseDrag: true, 
+                    touchDrag: true,
+                    stagePadding: 0   // Pastikan 0 agar rapi di desktop
                 }
             }
         });
-        $('.blog-slider').owlCarousel({
-            loop: false,     // Jangan berputar jika item kurang dari yang ditampilkan
-            margin: 30,      // Jarak antar kartu (ini PENTING, samakan dgn gutter Bootstrap)
-            nav: false,      // Sembunyikan tombol Next/Prev
-            dots: true,      // Tampilkan navigasi titik (dots)
+
+        // Connect Custom Auction Button (Only Next/Right is active)
+        $('#auction-next').click(function() {
+            auctionCarousel.trigger('next.owl.carousel');
+        });
+
+        // --- 3. BLOG CAROUSEL (Owl Carousel) ---
+        var blogCarousel = $('.blog-slider'); 
+
+        blogCarousel.owlCarousel({
+            loop: false, 
+            margin: 30, 
+            nav: false, 
+            dots: true, 
+            
             responsive:{
+                // MOBILE (<= 767px)
                 0:{
-                    items: 1,      // Di mobile, tampilkan 1 item
-                    margin: 15     // Jarak di mobile
+                    items: 1, 
+                    margin: 15,
+                    // ENSURE DRAG IS ACTIVE FOR MOBILE/TOUCH
+                    mouseDrag: true, 
+                    touchDrag: true
                 },
+                // TABLET (>= 768px)
                 768:{
-                    items: 2       // Di tablet, tampilkan 2 item
+                    items: 2 
                 },
+                // DESKTOP (>= 992px)
                 992:{
-                    items: 2       // Di desktop, tampilkan 2 item
+                    items: 2 
                 }
             }
         });
-        
+
+        // Connect Custom Blog Button (Only Next/Right is active)
+        $('#blog-next').click(function() {
+            blogCarousel.trigger('next.owl.carousel');
+        });
     });
     </script>
 @endsection
