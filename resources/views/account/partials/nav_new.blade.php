@@ -18,7 +18,8 @@
         <a href="{{ route('account.katasandi') }}"
             class="list-group-item list-group-item-action border-nav-middle py-2 {{ request()->routeIs('account.katasandi') ? 'active' : '' }}">Ubah
             Password</a>
-        <a href="#" class="list-group-item list-group-item-action border-nav-middle py-2">Alamat</a>
+        <a href="{{ route('account.address.index') }}"
+            class="list-group-item list-group-item-action border-nav-middle py-2 {{ request()->routeIs('account.address.*') ? 'active' : '' }}">Alamat</a>
         <a href="#" class="list-group-item list-group-item-action border-nav-middle py-2">Favorit</a>
         <a href="#" class="list-group-item list-group-item-action border-nav-middle py-2">Riwayat Lelang</a>
         <a href="#" class="list-group-item list-group-item-action border-nav-middle py-2">Riwayat
