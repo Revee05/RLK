@@ -18,7 +18,7 @@
         </div>
     @endif
 
-    <form action="/checkout" method="POST">
+    <form action="{{ route('checkout.index') }}" method="GET">
         @csrf 
 
         {{-- HEADER TABEL --}}

@@ -11,6 +11,7 @@
 |
 */
 use App\Http\Controllers\Web\CheckoutMerchController;
+use App\Http\Controllers\Web\CartController;
 use Illuminate\Support\Facades\Route;
 
 require_once  __DIR__ . "/admin.php";
@@ -90,6 +91,16 @@ Route::get('/merch-products/json', 'Web\MerchProduct\GetMerchProduct')->name('me
 
 //midtrans-callback
 Route::post('/payments/midtrans-notification','Account\PaymentCallbackController@receive');
+
+
+Route::middleware(['auth'])->group(function () {
+    Route::get('/cart', [CartController::class, 'index'])->name('cart.index');
+    // ... route cart lainnya
+    
+    Route::get('/checkout', [CheckoutMerchController::class, 'index'])->name('checkout.index');
+    Route::post('/checkout/process', [CheckoutMerchController::class, 'process'])->name('checkout.process');
+    // ... route checkout lainnya
+});
 
 //Checkout
 Route::post('/checkout/process', 'Web\CheckoutMerchController@process')->name('checkout.process');

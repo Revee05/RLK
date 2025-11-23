@@ -6,6 +6,11 @@ use Illuminate\Support\Facades\Schema;
 
 class AddVariantColumnsToCartItemsTable extends Migration
 {
+    /**
+     * Run the migrations.
+     *
+     * @return void
+     */
     public function up()
     {
         Schema::table('cart_items', function (Blueprint $table) {
