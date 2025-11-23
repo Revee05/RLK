@@ -175,3 +175,16 @@
     width: 120px;
     height: 120px;
 }
+
+/* Profile view link in sidebar */
+.profile-view-link {
+    color: #15bcc5 !important;
+    text-decoration: none !important;
+    font-weight: 600;
+    display: inline-block;
+}
+.profile-view-link:hover,
+.profile-view-link:focus {
+    color: #0b6a6d !important;
+    text-decoration: none !important;
+}

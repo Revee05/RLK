@@ -10,13 +10,14 @@
             </div>
             <div class="modal-body text-center">
                 <img id="pp-current"
-                    src="{{ Auth::user()->avatar ?? 'https://www.figma.com/api/mcp/asset/1bcfd75e-90c9-43bf-8586-79d92d395def' }}"
+                    src="{{ asset(Auth::user()->foto) ?? 'https://www.figma.com/api/mcp/asset/1bcfd75e-90c9-43bf-8586-79d92d395def' }}"
                     alt="avatar" class="mb-1">
 
                 <div class="text-center">
-                    <form id="pp-upload-form" action="#" method="POST" enctype="multipart/form-data"
-                        class="d-none">
+                    <form id="pp-upload-form" action="{{ route('account.avatar.upload') }}" method="POST"
+                        enctype="multipart/form-data" class="d-none">
                         @csrf
+                        <input type="hidden" name="id" value="{{ Auth::user()->id }}">
                         <input type="file" name="avatar" id="pp-file-input" accept="image/*">
                     </form>
                 </div>
@@ -202,9 +203,12 @@
                     thumb120.src = url;
                     thumb120.style.display = 'block';
                 }
-                var uploadModal = new bootstrap.Modal(document.getElementById(
-                    'modalProfilePictureUpload'));
-                uploadModal.show();
+
+                // Directly update the current profile image without showing preview modal
+                const ppCurrent = document.getElementById('pp-current');
+                if (ppCurrent) {
+                    ppCurrent.src = url;
+                }
             });
         }
 
@@ -221,17 +225,11 @@
             });
         }
 
-        // save button: forward to save handler in upload modal if present
+        // save button: submit upload form to server (will update avatar)
         if (saveMainBtn) {
             saveMainBtn.addEventListener('click', function() {
-                // If upload modal has a save button wired, trigger it; otherwise close modal
-                const uploadSave = document.getElementById('pp-save-upload');
-                if (uploadSave) uploadSave.click();
-                else {
-                    const parent = bootstrap.Modal.getInstance(document.getElementById(
-                        'modalProfilePicture'));
-                    if (parent) parent.hide();
-                }
+                const form = document.getElementById('pp-upload-form');
+                if (form) form.submit();
             });
         }
 
