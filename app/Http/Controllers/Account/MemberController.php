@@ -12,6 +12,8 @@ use App\Desa;
 use App\UserAddress;
 use Auth;
 use Illuminate\Support\Facades\Hash;
+use App\Product\Uploads;
+use Illuminate\Support\Facades\Log;
 
 class MemberController extends Controller
 {
@@ -53,10 +55,51 @@ class MemberController extends Controller
             Log::error("User save error " . $e->getMessage());
         }
     }
+    
     public function kataSandi()
     {
 
         $user = User::findOrFail(Auth::user()->id);
         return view('account.password.password_new', compact('user'));
+    }
+
+    /**
+     * Upload profile avatar separately (AJAX or normal POST)
+     */
+    public function uploadAvatar(Request $request)
+    {
+        $this->validate($request, [
+            'avatar' => 'required|image|max:4096',
+        ], [
+            'avatar.required' => 'Silakan pilih gambar',
+            'avatar.image' => 'File harus berupa gambar',
+            'avatar.max' => 'Ukuran gambar maksimal 4MB',
+        ]);
+
+        try {
+            $user = Auth::user();
+            if (! $user) {
+                return redirect()->route('login');
+            }
+
+            $uploads = new Uploads();
+            $path = $uploads->handleUpload($request->file('avatar'));
+
+            // Save directly to model to avoid fillable issues
+            $user->foto = $path;
+            $user->save();
+
+            if ($request->ajax()) {
+                return response()->json(['success' => true, 'path' => $path]);
+            }
+
+            return redirect()->back()->with('message', 'Foto profil berhasil diperbarui');
+        } catch (\Exception $e) {
+            Log::error('Avatar upload error: ' . $e->getMessage());
+            if ($request->ajax()) {
+                return response()->json(['success' => false, 'message' => 'Gagal mengunggah gambar'], 500);
+            }
+            return redirect()->back()->with('error', 'Gagal mengunggah gambar');
+        }
     }
 }
