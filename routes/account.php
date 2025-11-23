@@ -14,11 +14,10 @@ Auth::routes(['verify' => true]);
 Route::get('email/verify', 'Auth\VerificationController@show')->name('verification.notice');
 
 Route::group(['prefix' => '/account', 'middleware' => ['auth', 'verified', 'IsMember']], function () {
-    Route::get('/avatar', function () {
-        return view('account.partials.modal-profile-picture');
-    });
     Route::get('/profile', 'Account\MemberController@profile')->name('account.dashboard');
     Route::post('/profile', 'Account\MemberController@updateProfile')->name('update.profil');
+    // upload avatar separately
+    Route::post('/profile/avatar', 'Account\MemberController@uploadAvatar')->name('account.avatar.upload');
     Route::resource('/address', 'Account\AddressController', ['as' => 'account']);
     Route::post('/checkout/get/ongkir', 'Account\CheckoutController@getOngkir')->name('checkout.get.ongkir');
     Route::get('/checkout/{slug}', 'Account\CheckoutController@cart')->name('checkout.cart');
