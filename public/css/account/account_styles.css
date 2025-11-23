@@ -188,3 +188,29 @@
     color: #0b6a6d !important;
     text-decoration: none !important;
 }
+
+/* Address list styles (Figma-inspired) */
+.address-item {
+    border: 1px solid #e9ecef;
+    border-radius: 0.75rem;
+    background: #fff;
+}
+
+.address-badge {
+    font-size: 0.8rem;
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.5rem;
+    background: #f8f9fa;
+    border: 1px solid #e9ecef;
+    color: #051a36;
+}
+
+.address-actions .btn {
+    min-width: 82px;
+}
+
+.address-empty {
+    color: #6c757d;
+    background: #f8f9fa;
+    border-radius: 0.5rem;
+}
