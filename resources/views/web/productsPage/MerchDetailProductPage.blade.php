@@ -1,312 +1,466 @@
 @extends('web.partials.layout')
 @section('sampleproduct','aktiv')
 
+{{-- =========================
+    1. PAGE CSS
+========================= --}}
 @section('css')
 <link href="{{ asset('css/MerchDetailProducts.css') }}" rel="stylesheet">
 @endsection
 
 @section('content')
 
+{{-- =========================
+    2. PREPROCESS DATA
+========================= --}}
 @php
-$mainVariant = $product->variants->where('is_default', 1)->first() ?? $product->variants->first();
-$mainImage = ($mainVariant && $mainVariant->images->count())
-    ? asset($mainVariant->images->first()->image_path)
-    : 'https://placehold.co/500x400?text=No+Image';
+    // 2.1 Main Variant
+    $mainVariant = $product->variants->firstWhere('is_default', 1) ?? $product->variants->first();
 
-// Gabungan semua gambar dari semua variant
-$allImages = collect();
-foreach ($product->variants as $variant) {
-    if ($variant->images && $variant->images->count()) {
-        $allImages = $allImages->merge($variant->images);
-    }
-}
+    // 2.2 Main Image
+    $mainImage = ($mainVariant && $mainVariant->images->count())
+        ? asset($mainVariant->images->first()->image_path)
+        : 'https://placehold.co/500x400?text=No+Image';
 
-$variantsArray = $product->variants->map(function($v) {
-    return [
-        'id' => $v->id,
-        'display_stock' => $v->display_stock,
-        'sizes' => $v->sizes->map(function($s) {
-            return [
+    // 2.3 All Images
+    $allImages = $product->variants->flatMap(fn($v) => ($v->images && $v->images->count()) ? $v->images : collect());
+
+    // 2.4 Variant Data for JS
+    $variantsArray = $product->variants->map(function($v) {
+        return [
+            'id' => $v->id,
+            'display_stock' => $v->display_stock,
+            'sizes' => $v->sizes->map(fn($s) => [
                 'id' => $s->id,
                 'size' => $s->size,
                 'stock' => $s->stock,
-            ];
-        })->toArray(),
-        'image' => $v->images->first() ? asset($v->images->first()->image_path) : 'https://placehold.co/500x400?text=No+Image',
-    ];
-})->values()->toArray();
+            ])->toArray(),
+            'image' => $v->images->first() ? asset($v->images->first()->image_path) : 'https://placehold.co/500x400?text=No+Image',
+        ];
+    })->values()->toArray();
 
-// Hitung total stock semua variant (termasuk size jika ada)
-$totalStock = 0;
-foreach ($product->variants as $variant) {
-    if ($variant->sizes && $variant->sizes->count()) {
-        $totalStock += $variant->sizes->sum('stock');
-    } else {
-        $totalStock += $variant->display_stock ?? 0;
-    }
-}
+    // 2.5 Total Stock
+    $totalStock = $product->variants->sum(fn($variant) => ($variant->sizes && $variant->sizes->count())
+        ? $variant->sizes->sum('stock')
+        : ($variant->display_stock ?? 0));
 @endphp
 
-<div class="merch-product-detail container py-5">
-    <div class="row">
-        <div class="col-lg-6">
-            <div class="main-image mb-3">
-                <img src="{{ $mainImage }}" alt="{{ $product->name }}" class="img-fluid rounded" id="main-product-image">
-            </div>
-            <div class="thumb-images d-flex gap-2">
-                @foreach($allImages as $img)
-                <img src="{{ asset($img->image_path) }}" class="img-thumbnail" alt="thumb"
-                    style="width:60px; height:60px; object-fit:cover; cursor:pointer;">
-                @endforeach
-            </div>
-        </div>
-        <div class="col-lg-6">
-            <h2 class="product-title mb-2">{{ $product->name }}</h2>
-            <div class="product-category mb-2">
-                {{ $product->categories->pluck('name')->join(', ') }}
-            </div>
-            <div class="product-price mb-3">
-                @if($mainVariant && $mainVariant->display_discount)
-                <span class="badge bg-danger me-2">-{{ $mainVariant->display_discount }}%</span>
-                Rp. {{ number_format($mainVariant->display_price, 0, ',', '.') }}
-                <span class="text-muted text-decoration-line-through ms-2" style="font-size: 15px;">
-                    Rp. {{ number_format($mainVariant->display_price, 0, ',', '.') }}</span>
-                @elseif($mainVariant)
-                Rp. {{ number_format($mainVariant->display_price, 0, ',', '.') }}
-                @else
-                <span class="text-muted">-</span>
-                @endif
-            </div>
-            <div class="mb-3">
-                <strong>Total Stok:</strong> {{ $totalStock }}
-            </div>
-            <div class="mb-3">
-                <label class="form-label fw-bold">Variant</label>
-                <div class="variant-grid">
-                    @foreach($product->variants as $variant)
-                    <label class="variant-btn"
-                        data-image="{{ $variant->images->first() ? asset($variant->images->first()->image_path) : 'https://placehold.co/500x400?text=No+Image' }}">
-                        @php
-                        $img = $variant->images->first();
-                        @endphp
-                        @if($img)
-                        <img src="{{ asset($img->image_path) }}" alt="{{ $variant->name }}">
-                        @else
-                        <img src="https://placehold.co/40x40?text=?" alt="no-img">
-                        @endif
-                        <input type="radio" name="variant_id" value="{{ $variant->id }}" class="d-none"
-                            autocomplete="off" {{ $variant->id == $mainVariant->id ? 'checked' : '' }}>
-                        <span>{{ $variant->name }}</span>
-                    </label>
-                    @endforeach
+
+{{-- =========================
+    3. PAGE MAIN CONTAINER
+========================= --}}
+<div class="main-container">
+
+    {{-- =========================
+        4. PRODUCT DETAIL SECTION
+    ========================= --}}
+    <div class="merch-product-detail">
+        <div class="row">
+
+            {{-- =========================
+                4A. PRODUCT IMAGE LEFT SIDE
+            ========================= --}}
+            <div class="col-lg-6">
+
+                {{-- 4A.1 Main Image --}}
+                <div class="main-image">
+                    <img src="{{ $mainImage }}" alt="{{ $product->name }}" class="img-fluid rounded" id="main-product-image">
+                </div>
+
+                {{-- 4A.2 Thumbnail Carousel --}}
+                <div class="thumb-carousel">
+                    <button type="button" class="thumb-nav prev" aria-label="Prev">
+                        <span>&lsaquo;</span>
+                    </button>
+
+                    <div class="thumb-track-wrapper">
+                        <div class="thumb-track" id="thumbTrack">
+                            @foreach($allImages as $img)
+                                <img src="{{ asset($img->image_path) }}" 
+                                     alt="thumb"
+                                     class="thumb-item{{ $loop->first ? ' active-thumb' : '' }}">
+                            @endforeach
+                        </div>
+                    </div>
+
+                    <button type="button" class="thumb-nav next" aria-label="Next">
+                        <span>&rsaquo;</span>
+                    </button>
                 </div>
             </div>
-            <div class="mb-3">
-                <label class="form-label fw-bold">Sizes</label>
-                <div class="size-grid">
-                    @if($mainVariant && $mainVariant->sizes->count())
-                    @foreach($mainVariant->sizes as $size)
-                    <label class="size-btn">
-                        <input type="radio" name="size_id" value="{{ $size->id }}" class="d-none" autocomplete="off">
-                        <span>{{ $size->size }}</span>
-                    </label>
-                    @endforeach
+
+            {{-- =========================
+                4B. PRODUCT INFO RIGHT SIDE
+            ========================= --}}
+            <div class="col-lg-6">
+
+                {{-- 4B.1 Title --}}
+                <h2 class="product-title mb-2">{{ $product->name }}</h2>
+
+                {{-- 4B.2 Categories --}}
+                <div class="product-category mb-2">
+                    {{ $product->categories->pluck('name')->join(', ') }}
+                </div>
+
+                {{-- 4B.3 Price --}}
+                <div class="product-price mb-3">
+                    @if($mainVariant && $mainVariant->display_discount)
+                        <span class="badge bg-danger me-2">-{{ $mainVariant->display_discount }}%</span>
+                        Rp. {{ number_format($mainVariant->display_price, 0, ',', '.') }}
+                        <span class="text-muted text-decoration-line-through ms-2 original-strike">
+                            Rp. {{ number_format($mainVariant->display_price, 0, ',', '.') }}
+                        </span>
+                    @elseif($mainVariant)
+                        Rp. {{ number_format($mainVariant->display_price, 0, ',', '.') }}
                     @else
-                    <span class="text-muted">Tidak ada ukuran.</span>
+                        <span class="text-muted">-</span>
                     @endif
                 </div>
-            </div>
-            <form action="{{ route('cart.addMerch') }}" method="POST">
-                @csrf
-                
-                {{-- 1. WAJIB ADA: ID Produk Utama --}}
-                <input type="hidden" name="product_id" value="{{ $product->id }}">
 
-                {{-- 2. ID Variant & Size (Nama disesuaikan agar Controller paham) --}}
-                <input type="hidden" name="variant_id" id="selected_variant_id" value="{{ $mainVariant->id }}">
-                <input type="hidden" name="size_id" id="selected_size_id" value="{{ $mainVariant->sizes->first()->id ?? '' }}">
-
-                <div class="d-flex align-items-center mb-3">
-                    <input type="number" id="qty-input" name="quantity" value="1" min="1"
-                        style="width:70px; margin-right:10px;">
-                    <span id="stock-info" class="text-muted">
-                        Tersedia
-                        {{ $mainVariant->sizes->count() ? ($mainVariant->sizes->first()->stock ?? 0) : ($mainVariant->display_stock ?? 0) }}
-                    </span>
+                {{-- 4B.4 Total Stock --}}
+                <div class="mb-3">
+                    <strong>Total Stok:</strong> {{ $totalStock }}
                 </div>
-                
-                <button type="submit" class="btn btn-primary btn-lg w-100 mb-3">Tambahkan ke keranjang</button>
-            </form>
-            
-            <div class="product-shipping-info">
-                <strong>Pengiriman:</strong> Pengiriman dilakukan setiap hari kerja.
+
+                {{-- =========================
+                    4B.5 Variant Selector
+                ========================= --}}
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Variant</label>
+                    <div class="variant-grid">
+                        @foreach($product->variants as $variant)
+                        <label class="variant-btn"
+                            data-image="{{ $variant->images->first() ? asset($variant->images->first()->image_path) : 'https://placehold.co/500x400?text=No+Image' }}">
+                            
+                            @php $img = $variant->images->first(); @endphp
+                            
+                            @if($img)
+                                <img src="{{ asset($img->image_path) }}" alt="{{ $variant->name }}">
+                            @else
+                                <img src="https://placehold.co/40x40?text=?" alt="no-img">
+                            @endif
+
+                            <input type="radio" name="variant_id" value="{{ $variant->id }}"
+                                class="d-none"
+                                autocomplete="off"
+                                {{ $variant->id == $mainVariant->id ? 'checked' : '' }}>
+                            <span>{{ $variant->name }}</span>
+                        </label>
+                        @endforeach
+                    </div>
+                </div>
+
+                {{-- =========================
+                    4B.6 Size Selector
+                ========================= --}}
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Sizes</label>
+                    <div class="size-grid">
+                        @if($mainVariant && $mainVariant->sizes->count())
+                            @foreach($mainVariant->sizes as $size)
+                            <label class="size-btn">
+                                <input type="radio" name="size_id" value="{{ $size->id }}" class="d-none" autocomplete="off">
+                                <span>{{ $size->size }}</span>
+                            </label>
+                            @endforeach
+                        @else
+                            <span class="text-muted">Tidak ada ukuran.</span>
+                        @endif
+                    </div>
+                </div>
+
+                {{-- =========================
+                    4B.7 Add To Cart Form
+                ========================= --}}
+                <form action="{{ route('cart.addMerch', $product->id) }}" method="POST">
+                    @csrf
+
+                    {{-- Hidden Inputs --}}
+                    <input type="hidden" name="selected_variant_id" id="selected_variant_id" value="{{ $mainVariant->id }}">
+                    <input type="hidden" name="selected_size_id" id="selected_size_id" value="{{ $mainVariant->sizes->first()->id ?? '' }}">
+
+                    {{-- Quantity --}}
+                    <div class="d-flex align-items-center mb-3">
+                        <input type="number" id="qty-input" name="quantity" value="1" min="1" class="qty-input">
+                        <span id="stock-info" class="text-muted">
+                            Tersedia {{ $mainVariant->sizes->count() ? ($mainVariant->sizes->first()->stock ?? 0) : ($mainVariant->display_stock ?? 0) }}
+                        </span>
+                    </div>
+
+                    {{-- Submit --}}
+                    <button type="submit" class="btn btn-primary btn-lg w-100 mb-3">
+                        Tambahkan ke keranjang
+                    </button>
+                </form>
+
+                {{-- 4B.8 Shipping Info --}}
+                <div class="product-shipping-info">
+                    <strong>Pengiriman:</strong> Pengiriman dilakukan setiap hari kerja.
+                </div>
             </div>
         </div>
     </div>
-</div>
 
-{{-- Deskripsi produk di luar box utama, di atas related products --}}
-<div class="container pb-3">
-    <h4 class="mb-2">Deskripsi Produk</h4>
-    <div class="product-desc mb-4">
-        {!! $product->description !!}
+
+    {{-- =========================
+        5. PRODUCT DESCRIPTION
+    ========================= --}}
+    <div class="container pb-3">
+        <h4 class="mb-2">Deskripsi Produk</h4>
+        <div class="product-desc mb-4">
+            {!! $product->description !!}
+        </div>
     </div>
-</div>
 
-<div class="related-products-section container pb-5">
-    <h4 class="mb-4">Related products</h4>
-    <!-- Related products code here -->
-</div>
 
+    {{-- =========================
+        6. RELATED PRODUCTS
+    ========================= --}}
+    <div class="related-products-section container pb-5">
+        <h4 class="mb-4">Related products</h4>
+        <div class="row g-3">
+
+            @forelse($relatedProducts as $rel)
+
+                {{-- 6.1 Related Product Preprocess --}}
+                @php
+                    $variant = $rel->variants->where('is_default', 1)->first() ?: $rel->variants->first();
+                    $img = ($variant && $variant->images->count())
+                        ? asset($variant->images->first()->image_path)
+                        : 'https://placehold.co/300x250?text=No+Image';
+                @endphp
+
+                {{-- 6.2 Related Product Card --}}
+                <div class="col-6 col-md-4 col-lg-2">
+                    <div class="card h-100 shadow-sm border-0">
+                        <a href="{{ route('merch.products.detail', $rel->slug) }}"
+                           class="text-decoration-none text-dark">
+
+                            <img src="{{ $img }}" class="card-img-top related-img" alt="{{ $rel->name }}">
+
+                            <div class="card-body p-2">
+                                <div class="fw-bold mb-1 related-title">{{ $rel->name }}</div>
+
+                                @if($rel->display_discount)
+                                    <span class="badge bg-danger mb-1">-{{ $rel->display_discount }}%</span>
+                                @endif
+
+                                <div class="related-price">
+                                    Rp. {{ number_format($rel->display_price, 0, ',', '.') }}
+                                </div>
+                            </div>
+
+                        </a>
+                    </div>
+                </div>
+
+            @empty
+
+                {{-- 6.3 No Related Product --}}
+                <div class="col-12 text-muted">Tidak ada produk terkait.</div>
+
+            @endforelse
+
+        </div>
+    </div>
+
+</div>
 @endsection
 
+
+
+{{-- =========================
+    7. JAVASCRIPT INTERACTIONS
+========================= --}}
 @section('js')
 <script>
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', () => {
+
+    // 7.1 Data & Element References
     const variants = @json($variantsArray);
+    const variantInputs = Array.from(document.querySelectorAll('.variant-btn input[type="radio"]'));
+    const sizeGrid = document.querySelector('.size-grid');
+    const mainImageEl = document.getElementById('main-product-image');
+    const stockInfoEl = document.getElementById('stock-info');
+    const qtyInputEl = document.getElementById('qty-input');
+    const submitBtnEl = document.querySelector('button[type="submit"]');
+    const hiddenVariantEl = document.getElementById('selected_variant_id');
+    const hiddenSizeEl = document.getElementById('selected_size_id');
 
-    // Highlight active variant
-    document.querySelectorAll('.variant-btn input[type="radio"]').forEach((input, idx) => {
-        input.addEventListener('change', function() {
-            document.querySelectorAll('.variant-btn').forEach(l => l.classList.remove('active'));
-            input.closest('.variant-btn').classList.add('active');
+    // 7.2 Helper: Get Variant By Input
+    function getVariantByInput(input) {
+        const idx = variantInputs.indexOf(input);
+        return variants[idx];
+    }
 
-            const variant = variants[idx];
-            const sizeGrid = document.querySelector('.size-grid');
-            if (variant.sizes.length > 0) {
-                sizeGrid.innerHTML = '';
-                variant.sizes.forEach((sz, sidx) => {
-                    sizeGrid.innerHTML += `
-                        <label class="size-btn">
-                            <input type="radio" name="size_id" value="${sz.id}" class="d-none" autocomplete="off" ${sidx === 0 ? 'checked' : ''}>
-                            <span>${sz.size}</span>
-                        </label>
-                    `;
-                });
-            } else {
-                sizeGrid.innerHTML = '<span class="text-muted">Tidak ada ukuran.</span>';
-            }
+    // 7.3 Render Sizes for Variant
+    function renderSizes(variant) {
+        if (!variant || variant.sizes.length === 0) {
+            sizeGrid.innerHTML = '<span class="text-muted">Tidak ada ukuran.</span>';
+            return;
+        }
 
-            // Set active pada size pertama (jika ada)
-            const sizeLabels = document.querySelectorAll('.size-grid .size-btn');
-            if (sizeLabels.length > 0) {
-                sizeLabels[0].classList.add('active');
-                sizeLabels[0].querySelector('input').checked = true;
-            }
+        sizeGrid.innerHTML = variant.sizes.map((sz, i) => `
+            <label class="size-btn${i === 0 ? ' active' : ''}">
+                <input type="radio" name="size_id" value="${sz.id}" class="d-none"
+                    autocomplete="off" ${i === 0 ? 'checked' : ''}>
+                <span>${sz.size}</span>
+            </label>
+        `).join('');
+    }
 
-            updateStockInfo();
+    // 7.4 Get Current Variant
+    function currentVariant() {
+        const checked = document.querySelector('.variant-btn input[type="radio"]:checked');
+        return checked ? getVariantByInput(checked) : null;
+    }
+
+    // 7.5 Compute Stock
+    function currentSizeIndex(variant) {
+        if (!variant || variant.sizes.length === 0) return -1;
+        const checkedSize = document.querySelector('.size-btn input[type="radio"]:checked');
+        if (!checkedSize) return -1;
+        const sizeInputs = Array.from(document.querySelectorAll('.size-btn input[type="radio"]'));
+        return sizeInputs.indexOf(checkedSize);
+    }
+
+    function computeStock(variant, sizeIdx) {
+        if (!variant) return 0;
+        if (variant.sizes.length > 0) {
+            return sizeIdx >= 0 ? (variant.sizes[sizeIdx]?.stock ?? 0) : 0;
+        }
+        return variant.display_stock ?? 0;
+    }
+
+    // 7.6 Update Stock UI
+    function updateStockInfo() {
+        const variant = currentVariant();
+        const sizeIdx = currentSizeIndex(variant);
+        const stock = computeStock(variant, sizeIdx);
+
+        stockInfoEl.innerHTML = stock < 1
+            ? '<span class="text-danger">Habis</span>'
+            : `Tersedia ${stock}`;
+
+        if (qtyInputEl) {
+            qtyInputEl.disabled = stock < 1;
+            qtyInputEl.max = stock;
+        }
+
+        if (submitBtnEl) submitBtnEl.disabled = stock < 1;
+    }
+
+    // 7.7 Update Hidden Inputs
+    function updateHiddenInputs() {
+        const v = currentVariant();
+        hiddenVariantEl.value = v ? v.id : '';
+
+        const checkedSize = document.querySelector('.size-btn input[type="radio"]:checked');
+        hiddenSizeEl.value = checkedSize ? checkedSize.value : '';
+    }
+
+    // 7.8 Set Active Variant
+    function setActiveVariant(input) {
+        document.querySelectorAll('.variant-btn').forEach(l => l.classList.remove('active'));
+        input.closest('.variant-btn').classList.add('active');
+
+        const variant = getVariantByInput(input);
+
+        renderSizes(variant);
+        updateStockInfo();
+        updateHiddenInputs();
+    }
+
+    // 7.9 Variant Events
+    variantInputs.forEach(input => {
+        input.addEventListener('change', () => setActiveVariant(input));
+
+        const label = input.closest('.variant-btn');
+
+        // Hover Effect
+        label.addEventListener('mouseenter', () => {
+            const variant = getVariantByInput(input);
+            mainImageEl.src = label.getAttribute('data-image');
+
+            const tempStock = computeStock(variant, variant.sizes.length ? 0 : -1);
+            stockInfoEl.innerHTML = tempStock < 1 ? '<span class="text-danger">Habis</span>' : `Tersedia ${tempStock}`;
         });
 
-        // --- Hover effect: change main image and stock on hover ---
-        input.closest('.variant-btn').addEventListener('mouseenter', function() {
-            // Ganti gambar utama
-            const imgUrl = this.getAttribute('data-image');
-            document.getElementById('main-product-image').src = imgUrl;
-
-            // Update stock info sesuai variant yang dihover
-            const variant = variants[idx];
-            let stock = 0;
-            if (variant.sizes.length > 0) {
-                stock = variant.sizes[0]?.stock ?? 0;
-            } else {
-                stock = variant.display_stock ?? 0;
-            }
-            const stockInfo = document.getElementById('stock-info');
-            if (stock < 1) {
-                stockInfo.innerHTML = `<span class="text-danger">Habis</span>`;
-            } else {
-                stockInfo.textContent = `Tersedia ${stock}`;
-            }
-        });
-
-        input.closest('.variant-btn').addEventListener('mouseleave', function() {
-            // Kembalikan gambar & stok ke variant terpilih saat mouse keluar
+        label.addEventListener('mouseleave', () => {
             const checkedVariant = document.querySelector('.variant-btn input[type="radio"]:checked');
             if (checkedVariant) {
-                const checkedLabel = checkedVariant.closest('.variant-btn');
-                const imgUrl = checkedLabel.getAttribute('data-image');
-                document.getElementById('main-product-image').src = imgUrl;
+                mainImageEl.src = checkedVariant.closest('.variant-btn').getAttribute('data-image');
             }
             updateStockInfo();
         });
-        // --- End hover effect ---
     });
 
-    // Highlight active size
-    document.addEventListener('change', function(e) {
+    // 7.10 Size Change Event
+    document.addEventListener('change', e => {
         if (e.target.name === 'size_id') {
             document.querySelectorAll('.size-btn').forEach(l => l.classList.remove('active'));
             e.target.closest('.size-btn').classList.add('active');
-            updateStockInfo();
-        }
-    });
 
-    // Thumbnail click
-    document.querySelectorAll('.thumb-images img').forEach(function(img) {
-        img.addEventListener('click', function() {
-            document.getElementById('main-product-image').src = img.src;
-        });
-    });
-
-    // Inisialisasi: set active pada variant dan size yang terpilih saat load
-    const checkedVariant = document.querySelector('.variant-btn input[type="radio"]:checked');
-    if (checkedVariant) checkedVariant.closest('.variant-btn').classList.add('active');
-    const checkedSize = document.querySelector('.size-btn input[type="radio"]:checked');
-    if (checkedSize) checkedSize.closest('.size-btn').classList.add('active');
-
-    // Update stok info sesuai pilihan
-    window.updateStockInfo = function() {
-        const checkedVariant = document.querySelector('.variant-btn input[type="radio"]:checked');
-        const checkedSize = document.querySelector('.size-btn input[type="radio"]:checked');
-        let stock = 0;
-
-        if (checkedVariant) {
-            const variantIdx = Array.from(document.querySelectorAll('.variant-btn input[type="radio"]'))
-                .indexOf(checkedVariant);
-            const variant = variants[variantIdx];
-
-            if (checkedSize && variant.sizes.length > 0) {
-                const sizeIdx = Array.from(document.querySelectorAll('.size-btn input[type="radio"]')).indexOf(
-                    checkedSize);
-                stock = variant.sizes[sizeIdx]?.stock ?? 0;
-            } else {
-                stock = variant.display_stock ?? 0;
-            }
-        }
-
-        const stockInfo = document.getElementById('stock-info');
-        if (stock < 1) {
-            stockInfo.innerHTML = `<span class="text-danger">Habis</span>`;
-        } else {
-            stockInfo.textContent = `Tersedia ${stock}`;
-        }
-        const qtyInput = document.getElementById('qty-input');
-        const submitBtn = document.querySelector('button[type="submit"]');
-        if (qtyInput) qtyInput.disabled = stock < 1;
-        if (qtyInput) qtyInput.max = stock;
-        if (submitBtn) submitBtn.disabled = stock < 1;
-    }
-
-    function updateHiddenInputs() {
-        // Set variant
-        const checkedVariant = document.querySelector('.variant-btn input[type="radio"]:checked');
-        if (checkedVariant) {
-            document.getElementById('selected_variant_id').value = checkedVariant.value;
-        }
-        // Set size
-        const checkedSize = document.querySelector('.size-btn input[type="radio"]:checked');
-        document.getElementById('selected_size_id').value = checkedSize ? checkedSize.value : '';
-    }
-
-    // Panggil setelah setiap update pilihan
-    document.addEventListener('change', function(e) {
-        if (e.target.name === 'size_id' || e.target.name === 'variant_id') {
             updateStockInfo();
             updateHiddenInputs();
         }
     });
-    updateStockInfo();
-    updateHiddenInputs();
+
+    // 7.11 Init State
+    const initVariant = document.querySelector('.variant-btn input[type="radio"]:checked');
+    if (initVariant) setActiveVariant(initVariant);
+    else updateStockInfo();
+
+
+    // =========================
+    // 7.12 Thumbnail Carousel
+    // =========================
+    const track = document.getElementById('thumbTrack');
+    const items = Array.from(document.querySelectorAll('.thumb-item'));
+    const prevBtn = document.querySelector('.thumb-nav.prev');
+    const nextBtn = document.querySelector('.thumb-nav.next');
+
+    let offset = 0;
+    const gap = 10;
+    const visibleCount = 5;
+    const itemWidth = 80;
+    const step = itemWidth + gap;
+
+    function maxOffset() {
+        const totalWidth = items.length * (itemWidth + gap);
+        const wrapperWidth = visibleCount * (itemWidth + gap);
+        return Math.max(0, totalWidth - wrapperWidth);
+    }
+
+    function updateButtons() {
+        prevBtn.disabled = offset <= 0;
+        nextBtn.disabled = offset >= maxOffset();
+    }
+
+    function applyTransform() {
+        track.style.transform = `translateX(-${offset}px)`;
+        updateButtons();
+    }
+
+    prevBtn.addEventListener('click', () => {
+        offset = Math.max(0, offset - step);
+        applyTransform();
+    });
+
+    nextBtn.addEventListener('click', () => {
+        offset = Math.min(maxOffset(), offset + step);
+        applyTransform();
+    });
+
+    items.forEach(img => {
+        img.addEventListener('click', () => {
+            items.forEach(i => i.classList.remove('active-thumb'));
+            img.classList.add('active-thumb');
+            mainImageEl.src = img.src;
+        });
+    });
+
+    applyTransform();
 });
 </script>
 @endsection
