@@ -31,7 +31,7 @@
         <div class="row">
             <div class="col-12 my-5 text-center py-5 bg-light rounded-3">
                 <h4 class="text-muted mb-3">Keranjang belanja Anda kosong.</h4>
-                <a href="/" class="btn btn-dark px-4">Mulai Belanja</a>
+                <a href="/all-other-product" class="btn btn-dark px-4">Mulai Belanja</a>
             </div>
         </div>
     </div>
@@ -219,6 +219,22 @@
         
         // Init awal
         updateSubtotal();
+
+        // --- TAMBAHAN: CEGAH CHECKOUT JIKA TIDAK ADA YANG DICENTANG ---
+        const checkoutForm = document.getElementById('checkout-form');
+        
+        if(checkoutForm) {
+            checkoutForm.addEventListener('submit', function(e) {
+                // Cari checkbox item yang sedang dicentang
+                const checkedItems = document.querySelectorAll('.item-checkbox:checked');
+                
+                // Jika jumlahnya 0, stop proses submit & beri peringatan
+                if (checkedItems.length === 0) {
+                    e.preventDefault(); // Mencegah pindah halaman
+                    alert('Harap pilih minimal satu produk untuk checkout!');
+                }
+            });
+        }
 
 
         // --- 2. Logic Update Quantity (AJAX) ---
