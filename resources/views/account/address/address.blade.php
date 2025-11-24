@@ -9,7 +9,6 @@
                     <div
                         class="card-head border-bottom border-darkblue ps-4 d-flex align-items-center justify-content-between">
                         <h3 class="mb-0 fw-bolder">Daftar Alamat</h3>
-                        <a href="{{ route('account.address.create') }}" class="btn btn-danger btn-sm">+ Tambah Alamat</a>
                     </div>
                     <div class="card-body">
                         @if ($userAddress->isEmpty())
@@ -18,29 +17,37 @@
                             <div class="row g-3">
                                 @foreach ($userAddress as $ua)
                                     <div class="col-12">
-                                        <div class="address-item p-3">
-                                            <div class="d-flex justify-content-between align-items-start">
+                                        <div class="address-item p-3 content-border">
+                                            <div class="d-flex justify-content-between align-items-center">
                                                 <div>
-                                                    <div class="d-flex align-items-center mb-2">
-                                                        <strong class="me-2">{{ $ua->name }}</strong>
+                                                    <div class="mb-1">
                                                         <span
-                                                            class="address-badge badge bg-light border text-dark">{{ ucwords($ua->label_address) }}</span>
+                                                            class="address-badge mb-1">{{ ucwords($ua->label_address) }}</span>
+                                                        <div class="d-flex align-items-center">
+                                                            <strong class="me-2 mb-0">{{ $ua->name }}</strong>
+                                                            <span class="address-divider text-muted">|</span>
+                                                            <span class="text-muted small ms-2">{{ $ua->phone }}</span>
+                                                        </div>
                                                     </div>
-                                                    <div class="text-muted small">{{ $ua->phone }}</div>
-                                                    <div class="mt-2">{{ $ua->address }},
+                                                    <div class="address-street text-muted">{{ $ua->address }}</div>
+                                                    <div class="address-location text-muted small">
                                                         {{ $ua->provinsi->nama_provinsi }},
                                                         {{ $ua->kabupaten->nama_kabupaten }},
                                                         {{ $ua->kecamatan->nama_kecamatan }}</div>
                                                 </div>
-                                                <div class="address-actions text-end">
+                                                <div class="address-actions d-flex align-items-center">
                                                     <a href="{{ route('account.address.edit', $ua->id) }}"
-                                                        class="btn btn-outline-primary btn-sm mb-2">Ubah</a>
+                                                        class="btn-icon icon-edit" aria-label="Ubah alamat">
+                                                        <i class="bi bi-pencil-square"></i>
+                                                    </a>
                                                     <form action="{{ route('account.address.destroy', [$ua->id]) }}"
-                                                        method="post" class="d-inline-block">
+                                                        method="post" class="d-inline-block ms-2">
                                                         @method('delete')
                                                         @csrf
                                                         <button onclick="return confirm('Hapus alamat ini?')" type="submit"
-                                                            class="btn btn-outline-danger btn-sm">Hapus</button>
+                                                            class="btn-icon icon-delete" aria-label="Hapus alamat">
+                                                            <i class="bi bi-trash"></i>
+                                                        </button>
                                                     </form>
                                                 </div>
                                             </div>
@@ -49,6 +56,13 @@
                                 @endforeach
                             </div>
                         @endif
+
+                        <div class="mt-3 text-start ps-0">
+                            <a href="{{ route('account.address.create') }}" class="btn btn-cyan btn-add-address">
+                                <span class="btn-add-icon"><i class="bi bi-plus-circle"></i></span>
+                                Tambah Alamat
+                            </a>
+                        </div>
                     </div>
                 </div>
             </div>
