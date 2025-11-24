@@ -29,4 +29,7 @@ Route::group(['prefix' => '/account','middleware' => ['auth','verified','IsMembe
 	Route::get('invoice/payment/expired', 'Account\OrderController@expired')->name('account.invoice.expired');
 	Route::get('invoice/{invoice}', 'Account\OrderController@invoice')->name('account.invoice');
 
+	Route::get('/check-winner', 'Account\NotificationController@checkWinner')
+        ->name('check.winner');
+
 });

@@ -22,3 +22,7 @@ Broadcast::channel('chat', function ($user) {
 Broadcast::channel('bid', function ($user) {
   return Auth::check();
 });
+
+Broadcast::channel('auction-result.{userId}', function ($user, $userId) {
+    return (int) $user->id === (int) $userId;
+});
