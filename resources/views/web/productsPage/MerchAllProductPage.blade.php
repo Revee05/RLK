@@ -91,26 +91,21 @@ function renderProduct(product, idx) {
     let cellClass = "cell";
     if (batchIdx === 0 || batchIdx === 8 || batchIdx === 16) cellClass += " span-2";
 
-    // Ambil gambar dari defaultVariant jika ada
-    let variant = product.default_variant || product.defaultVariant;
-    let imageUrl = `https://placehold.co/300x250?text=${encodeURIComponent(product.name)}`;
-    if (variant && variant.images && variant.images.length > 0 && variant.images[0].image_path) {
-        imageUrl = `/${variant.images[0].image_path}`;
-    }
+    // Gambar utama
+    let imageUrl = product.image
+        ? `/${product.image}`
+        : `https://placehold.co/300x250?text=${encodeURIComponent(product.name)}`;
 
-    // Ambil harga, diskon dari display_price dan display_discount
-    let price = product.display_price;
-    let discount = product.display_discount;
-
+    // Harga & diskon
     let priceHtml = '';
-    if (price !== null && price !== undefined) {
-        if (discount && discount > 0) {
+    if (product.price !== null && product.price !== undefined) {
+        if (product.discount && product.discount > 0) {
             priceHtml = `
-                <span class="badge bg-danger me-2">-${discount}%</span>
-                <span class="product-price">Rp ${Number(price).toLocaleString('id-ID')}</span>
+                <span class="badge bg-danger me-2">-${product.discount}%</span>
+                <span class="product-price">Rp ${Number(product.price).toLocaleString('id-ID')}</span>
             `;
         } else {
-            priceHtml = `<span class="product-price">Rp ${Number(price).toLocaleString('id-ID')}</span>`;
+            priceHtml = `<span class="product-price">Rp ${Number(product.price).toLocaleString('id-ID')}</span>`;
         }
     } else {
         priceHtml = `<span class="product-price">-</span>`;
@@ -119,7 +114,7 @@ function renderProduct(product, idx) {
     return `
     <a href="/merch/${product.slug}" class="${cellClass}" style="text-decoration:none; color:inherit;">
         <div class="card product-card h-100">
-            ${discount && discount > 0 ? `<div class="discount-badge">-${discount}%</div>` : ''}
+            ${product.discount && product.discount > 0 ? `<div class="discount-badge">-${product.discount}%</div>` : ''}
             <img src="${imageUrl}" class="card-img-top" alt="${product.name}">
             <div class="card-body text-left p-2">
                 <div class="product-title">${product.name}</div>
