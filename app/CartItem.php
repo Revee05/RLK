@@ -6,6 +6,8 @@ use Illuminate\Database\Eloquent\Model;
 
 class CartItem extends Model
 {
+    // $guarded = [] berarti semua kolom boleh diisi (selama ada di database).
+    // Ini aman, tidak perlu diubah meski kolom product_id sudah hilang.
     protected $guarded = [];
 
     // 1. Relasi ke User
@@ -14,34 +16,26 @@ class CartItem extends Model
         return $this->belongsTo('App\User'); 
     }
 
-    // 2. Relasi ke Produk Lelang/Lama (Legacy)
-    public function product()
-    {
-        return $this->belongsTo('App\Products', 'product_id'); 
-    }
-
     // ==========================================
-    // BAGIAN MERCHANDISE (DIPERBAIKI)
+    // BAGIAN MERCHANDISE
     // ==========================================
 
-    // 3. Relasi ke Induk Merch (Baju Keren)
+    // 2. Relasi ke Induk Merch (Baju Keren)
     public function merchProduct()
     {
+        // Pastikan path model sesuai (App\models atau App\Models)
         return $this->belongsTo('App\models\MerchProduct', 'merch_product_id');
     }
 
-    // 4. [BARU] Relasi ke Varian Spesifik (Warna: Merah)
-    // Pastikan kolom 'merch_product_variant_id' ada di tabel cart_items
+    // 3. Relasi ke Varian Spesifik (Warna: Merah)
     public function merchVariant()
     {
         return $this->belongsTo('App\models\MerchProductVariant', 'merch_product_variant_id');
     }
 
-    // 5. [BARU] Relasi ke Ukuran Spesifik (Size: XL)
-    // Pastikan kolom 'merch_product_variant_size_id' ada di tabel cart_items
+    // 4. Relasi ke Ukuran Spesifik (Size: XL)
     public function merchSize()
     {
         return $this->belongsTo('App\models\MerchProductVariantSize', 'merch_product_variant_size_id');
     }
 }
-
