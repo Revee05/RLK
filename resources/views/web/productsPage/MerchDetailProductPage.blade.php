@@ -221,44 +221,30 @@
         <div class="row g-3">
 
             @forelse($relatedProducts as $rel)
-
-                {{-- 6.1 Related Product Preprocess --}}
-                @php
-                    $variant = $rel->variants->where('is_default', 1)->first() ?: $rel->variants->first();
-                    $img = ($variant && $variant->images->count())
-                        ? asset($variant->images->first()->image_path)
-                        : 'https://placehold.co/300x250?text=No+Image';
-                @endphp
-
-                {{-- 6.2 Related Product Card --}}
                 <div class="col-6 col-md-4 col-lg-2">
                     <div class="card h-100 shadow-sm border-0">
-                        <a href="{{ route('merch.products.detail', $rel->slug) }}"
+                        <a href="{{ route('merch.products.detail', $rel['slug']) }}"
                            class="text-decoration-none text-dark">
 
-                            <img src="{{ $img }}" class="card-img-top related-img" alt="{{ $rel->name }}">
+                            <img src="{{ $rel['image'] }}" class="card-img-top related-img" alt="{{ $rel['name'] }}">
 
                             <div class="card-body p-2">
-                                <div class="fw-bold mb-1 related-title">{{ $rel->name }}</div>
+                                <div class="fw-bold mb-1 related-title">{{ $rel['name'] }}</div>
 
-                                @if($rel->display_discount)
-                                    <span class="badge bg-danger mb-1">-{{ $rel->display_discount }}%</span>
+                                @if($rel['display_discount'])
+                                    <span class="badge bg-danger mb-1">-{{ $rel['display_discount'] }}%</span>
                                 @endif
 
                                 <div class="related-price">
-                                    Rp. {{ number_format($rel->display_price, 0, ',', '.') }}
+                                    Rp. {{ number_format($rel['display_price'], 0, ',', '.') }}
                                 </div>
                             </div>
 
                         </a>
                     </div>
                 </div>
-
             @empty
-
-                {{-- 6.3 No Related Product --}}
                 <div class="col-12 text-muted">Tidak ada produk terkait.</div>
-
             @endforelse
 
         </div>
@@ -276,6 +262,9 @@
 <script>
 document.addEventListener('DOMContentLoaded', () => {
 
+    console.log('Product:', @json($product));
+    console.log('Related Products:', @json($relatedProducts));
+    
     // 7.1 Data & Element References
     const variants = @json($variantsArray);
     const variantInputs = Array.from(document.querySelectorAll('.variant-btn input[type="radio"]'));
