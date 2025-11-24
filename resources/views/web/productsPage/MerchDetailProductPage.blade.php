@@ -172,24 +172,30 @@
                 {{-- =========================
                     4B.7 Add To Cart Form
                 ========================= --}}
-                <form action="{{ route('cart.addMerch', $product->id) }}" method="POST">
+                <div id="form-messages" class="mb-2"></div> {{-- Tambahan: Wadah pesan error/sukses --}}
+
+                <form action="{{ route('cart.addMerch') }}" method="POST" id="add-to-cart-form"> {{-- Tambahan: id="add-to-cart-form" --}}
                     @csrf
 
-                    {{-- Hidden Inputs --}}
+                    {{-- PERUBAHAN 1: Ganti name="product_id" jadi "merch_product_id" --}}
+                    <input type="hidden" name="merch_product_id" value="{{ $product->id }}">
+
+                    {{-- Input hidden variant & size biarkan tetap sama --}}
                     <input type="hidden" name="selected_variant_id" id="selected_variant_id" value="{{ $mainVariant->id }}">
                     <input type="hidden" name="selected_size_id" id="selected_size_id" value="{{ $mainVariant->sizes->first()->id ?? '' }}">
 
-                    {{-- Quantity --}}
+                    {{-- Bagian Quantity biarkan tetap sama --}}
                     <div class="d-flex align-items-center mb-3">
                         <input type="number" id="qty-input" name="quantity" value="1" min="1" class="qty-input">
-                        <span id="stock-info" class="text-muted">
+                        <span id="stock-info" class="text-muted ms-3">
                             Tersedia {{ $mainVariant->sizes->count() ? ($mainVariant->sizes->first()->stock ?? 0) : ($mainVariant->display_stock ?? 0) }}
                         </span>
                     </div>
 
-                    {{-- Submit --}}
-                    <button type="submit" class="btn btn-primary btn-lg w-100 mb-3">
-                        Tambahkan ke keranjang
+                    {{-- PERUBAHAN 2: Tambahkan ID pada tombol dan Spinner loading --}}
+                    <button type="submit" class="btn btn-primary btn-lg w-100 mb-3" id="btn-submit">
+                        <span id="btn-text">Tambahkan ke keranjang</span>
+                        <span id="btn-spinner" class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
                     </button>
                 </form>
 
@@ -461,6 +467,54 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     applyTransform();
+
+
+
+    const addToCartForm = document.getElementById('add-to-cart-form');
+    const submitBtn = document.getElementById('btn-submit');
+    const btnText = document.getElementById('btn-text');
+    const btnSpinner = document.getElementById('btn-spinner');
+    const msgContainer = document.getElementById('form-messages');
+
+    if(addToCartForm) {
+        addToCartForm.addEventListener('submit', function(e) {
+            e.preventDefault(); // Mencegah reload halaman
+
+            // Efek Loading
+            submitBtn.disabled = true;
+            btnText.innerText = 'Menambahkan...';
+            btnSpinner.classList.remove('d-none');
+            msgContainer.innerHTML = '';
+
+            const formData = new FormData(this);
+
+            fetch(this.action, {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                    'Accept': 'application/json' // Minta respon JSON
+                },
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    msgContainer.innerHTML = `<div class="alert alert-success py-2">${data.message}</div>`;
+                } else {
+                    msgContainer.innerHTML = `<div class="alert alert-danger py-2">${data.message}</div>`;
+                }
+            })
+            .catch(err => {
+                msgContainer.innerHTML = `<div class="alert alert-danger py-2">Terjadi kesalahan sistem.</div>`;
+            })
+            .finally(() => {
+                // Kembalikan tombol seperti semula
+                submitBtn.disabled = false;
+                btnText.innerText = 'Tambahkan ke keranjang';
+                btnSpinner.classList.add('d-none');
+            });
+        });
+    }
 });
 </script>
 @endsection
