@@ -14,6 +14,12 @@
     <form action="{{ route('checkout.process') }}" method="POST">
         @csrf
 
+        {{-- 1. Mengirim ID barang mana saja yang dicentang user --}}
+        <input type="hidden" name="selected_item_ids" value="{{ json_encode($selectedItemIds) }}">
+        
+        {{-- 2. Mengirim status apakah user memilih bungkus kado --}}
+        <input type="hidden" name="is_gift_wrap" value="{{ $isGiftWrap ? '1' : '0' }}">
+
         <div class="row">
 
             <!-- LEFT SIDE -->
@@ -87,7 +93,13 @@
                                     Pilih Kurir
                                 </button>
 
-                                <div id="selected-shipper" class="mt-2 fw-bold text-primary small" style="display:none;"></div>
+                                <div id="selected-shipper" class="mt-2 fw-bold text-primary small" style="display:none;">
+                                    {{-- Input Hidden untuk menyimpan ID Kurir yang dipilih --}}
+                                    <input type="hidden" name="selected_shipper_id" id="selected_shipper_id">
+                                    {{-- Input Hidden untuk menyimpan harga ongkir (agar bisa ditangkap request) --}}
+                                    <input type="hidden" name="total_ongkir" id="input_total_ongkir" value="0">
+                                    <input type="hidden" name="jenis_ongkir" id="input_jenis_ongkir" value="Reguler">
+                                </div>
                             </div>
 
                             <input type="radio" name="shipping_method" value="delivery" class="shipper-radio" id="radioDelivery">
@@ -296,15 +308,27 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // Fungsi global untuk modal shipper
     window.selectShipper = function(name, price, id){
+        const selectedShipperDiv = document.getElementById('selected-shipper');
+        
         selectedShipperDiv.innerHTML = `${name} – Rp ${price.toLocaleString('id-ID')}`;
         selectedShipperDiv.style.display = 'block';
 
-        radioDelivery.checked = true;
+        document.getElementById('radioDelivery').checked = true;
 
-        let input = document.getElementById('selected_shipper_id');
-        if(input){
-            input.value = id;
-        }
+        // UPDATE CODE: Isi input hidden
+        let inputId = document.getElementById('selected_shipper_id');
+        if(inputId) inputId.value = id;
+
+        let inputOngkir = document.getElementById('input_total_ongkir');
+        if(inputOngkir) inputOngkir.value = price;
+
+        // Update tampilan total harga
+        const subtotal = {{ $subtotal }};
+        const shippingPriceEl = document.getElementById('shipping_price');
+        const totalPriceEl = document.getElementById('total_price');
+
+        shippingPriceEl.innerText = 'Rp ' + price.toLocaleString('id-ID');
+        totalPriceEl.innerText = 'Rp ' + (subtotal + price).toLocaleString('id-ID');
 
         const modalEl = document.getElementById('shipperModal');
         const modal = bootstrap.Modal.getInstance(modalEl);

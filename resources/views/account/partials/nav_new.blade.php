@@ -1,10 +1,11 @@
 <!-- Left sidebar -->
 <div class="col-md-3">
     <div class="text-center mb-4">
-        <img src="https://www.figma.com/api/mcp/asset/1bcfd75e-90c9-43bf-8586-79d92d395def" alt="avatar"
-            class="rounded-circle img-fluid mb-3" style="width:200px; height:200px; object-fit:cover;">
+        <img src="{{ asset(Auth::user()->foto) ?? 'https://www.figma.com/api/mcp/asset/1bcfd75e-90c9-43bf-8586-79d92d395def' }}"
+            alt="avatar" class="rounded-circle img-fluid mb-3" style="width:200px; height:200px; object-fit:cover;">
         <h1 class="profile-name mb-0">{{ Auth::user()->name }}</h1>
-        <a href="#" data-bs-toggle="modal" data-bs-target="#modalProfilePicture">Lihat Profil</a>
+        <a href="#" class="profile-view-link" data-bs-toggle="modal" data-bs-target="#modalProfilePicture">Lihat
+            Profil</a>
     </div>
 
 
@@ -17,7 +18,8 @@
         <a href="{{ route('account.katasandi') }}"
             class="list-group-item list-group-item-action border-nav-middle py-2 {{ request()->routeIs('account.katasandi') ? 'active' : '' }}">Ubah
             Password</a>
-        <a href="#" class="list-group-item list-group-item-action border-nav-middle py-2">Alamat</a>
+        <a href="{{ route('account.address.index') }}"
+            class="list-group-item list-group-item-action border-nav-middle py-2 {{ request()->routeIs('account.address.*') ? 'active' : '' }}">Alamat</a>
         <a href="#" class="list-group-item list-group-item-action border-nav-middle py-2">Favorit</a>
         <a href="#" class="list-group-item list-group-item-action border-nav-middle py-2">Riwayat Lelang</a>
         <a href="#" class="list-group-item list-group-item-action border-nav-middle py-2">Riwayat
