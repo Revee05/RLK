@@ -30,22 +30,20 @@ class CartController extends Controller
     public function addMerchToCart(Request $request)
     {
         // 1. Normalisasi Input
-        // Jaga-jaga jika view mengirim 'selected_variant_id' atau 'variant_id'
         $inputVariantId = $request->input('variant_id') ?? $request->input('selected_variant_id');
         $inputSizeId    = $request->input('size_id') ?? $request->input('selected_size_id');
         
-        // Merge kembali ke request agar validasi berjalan mulus
         $request->merge([
             'variant_id' => $inputVariantId,
             'size_id'    => $inputSizeId
         ]);
 
-        // 2. Validasi
+        // 2. Validasi (UPDATED: product_id diganti merch_product_id)
         $request->validate([
-            'product_id' => 'required|exists:merch_products,id',
-            'variant_id' => 'required|exists:merch_product_variants,id',
-            'size_id'    => 'nullable', // Boleh null
-            'quantity'   => 'required|integer|min:1'
+            'merch_product_id' => 'required|exists:merch_products,id', // <-- NAMA BARU
+            'variant_id'       => 'required|exists:merch_product_variants,id',
+            'size_id'          => 'nullable',
+            'quantity'         => 'required|integer|min:1'
         ]);
 
         $user = Auth::user();
@@ -54,7 +52,6 @@ class CartController extends Controller
         // 3. Ambil Data Harga & Stok
         $variant = MerchProductVariant::findOrFail($request->variant_id);
         
-        // Cek size valid jika ada ID-nya
         $size = null;
         if ($request->size_id) {
             $size = MerchProductVariantSize::find($request->size_id);
@@ -65,36 +62,54 @@ class CartController extends Controller
 
         // 4. Cek Stok Awal
         if ($qty > $availableStock) {
-            return back()->with('error', "Stok tidak mencukupi. Tersisa: {$availableStock}");
+            $msg = "Stok tidak mencukupi. Tersisa: {$availableStock}";
+            
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json(['success' => false, 'message' => $msg], 422);
+            }
+            return back()->with('error', $msg);
         }
 
         // 5. Cek Duplikasi Item
         $existingItem = CartItem::where('user_id', $user->id)
-            ->where('merch_product_id', $request->product_id)
+            ->where('merch_product_id', $request->merch_product_id) // <-- NAMA BARU
             ->where('merch_product_variant_id', $request->variant_id)
-            ->where('merch_product_variant_size_id', $request->size_id) // Bisa null
+            ->where('merch_product_variant_size_id', $request->size_id)
             ->first();
 
         if ($existingItem) {
             $newTotalQty = $existingItem->quantity + $qty;
             if ($newTotalQty > $availableStock) {
-                return back()->with('error', "Total pesanan melebihi stok ({$availableStock}).");
+                $msg = "Total pesanan melebihi stok ({$availableStock}).";
+                if ($request->ajax() || $request->wantsJson()) {
+                    return response()->json(['success' => false, 'message' => $msg], 422);
+                }
+                return back()->with('error', $msg);
             }
             $existingItem->quantity = $newTotalQty;
             $existingItem->price = $finalPrice;
             $existingItem->save();
         } else {
+            // 6. Simpan Item Baru
             CartItem::create([
                 'user_id' => $user->id,
-                'merch_product_id' => $request->product_id,
+                'merch_product_id' => $request->merch_product_id, // <-- NAMA BARU (Simpan ke kolom merch_product_id)
                 'merch_product_variant_id' => $request->variant_id,
-                'merch_product_variant_size_id' => $request->size_id, // Bisa null
+                'merch_product_variant_size_id' => $request->size_id,
                 'quantity' => $qty,
                 'price' => $finalPrice,
             ]);
         }
 
-        return redirect()->route('cart.index')->with('success', 'Produk berhasil ditambahkan ke keranjang.');
+        // RESPON SUKSES
+        if ($request->ajax() || $request->wantsJson()) {
+            return response()->json([
+                'success' => true, 
+                'message' => 'Produk berhasil ditambahkan ke keranjang.'
+            ]);
+        }
+
+        return back()->with('success', 'Produk berhasil ditambahkan ke keranjang.');
     }
 
     public function updateQuantity(Request $request, CartItem $cartItem)
@@ -106,7 +121,6 @@ class CartController extends Controller
         $newQuantity = (int)$request->input('quantity');
         if ($newQuantity < 1) $newQuantity = 1;
 
-        // Cek Stok Maksimal
         $maxStock = 0;
         if ($cartItem->merch_product_variant_size_id && $cartItem->merchSize) {
             $maxStock = $cartItem->merchSize->stock;
@@ -121,7 +135,7 @@ class CartController extends Controller
                 'success' => false,
                 'message' => "Stok maksimal hanya {$maxStock}",
                 'quantity' => $maxStock
-            ], 422);
+            ], 200); 
         }
 
         $cartItem->quantity = $newQuantity;
@@ -135,10 +149,22 @@ class CartController extends Controller
 
     public function destroy(CartItem $cartItem)
     {
-        if ($cartItem->user_id !== Auth::id()) abort(403);
+        if ($cartItem->user_id !== Auth::id()) {
+            if (request()->ajax() || request()->wantsJson()) {
+                return response()->json(['success' => false, 'message' => 'Unauthorized'], 403);
+            }
+            abort(403);
+        }
         
         $cartItem->delete();
         
-        return redirect()->route('cart.index')->with('success', 'Item dihapus.');
+        if (request()->ajax() || request()->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Item berhasil dihapus.'
+            ]);
+        }
+        
+        return back()->with('success', 'Item dihapus.');
     }
 }
