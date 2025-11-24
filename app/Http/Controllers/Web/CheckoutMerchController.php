@@ -21,32 +21,31 @@ class CheckoutMerchController extends Controller
     // ==================================================================
     public function index(Request $request)
     {
-        // 1. Query Item dari Database (Bukan Session)
-        $query = CartItem::with([
+        if (!$request->has('cart_item_ids') || empty($request->input('cart_item_ids'))) {
+            return redirect()->route('cart.index')
+                ->with('error', 'Silakan pilih minimal satu produk untuk checkout!');
+        }
+
+        $cartItems = CartItem::with([
                     'merchProduct', 
                     'merchVariant.images', 
                     'merchSize'
                 ])
-                ->where('user_id', auth()->id());
+                ->where('user_id', auth()->id())
+                ->whereIn('id', $request->input('cart_item_ids')) // <--- FIX: Wajib filter ID
+                ->get();
 
-        // 2. Filter: Hanya ambil item yang dicentang di halaman Cart
-        if ($request->has('cart_item_ids')) {
-            $query->whereIn('id', $request->cart_item_ids);
-        }
-
-        $cartItems = $query->get();
-
-        // Validasi jika kosong
+        // Validasi: Jika data tidak ditemukan di DB (misal ID dimanipulasi/dihapus)
         if ($cartItems->isEmpty()) {
             return redirect()->route('cart.index')
-                ->with('error', 'Belum ada item yang dipilih untuk checkout!');
+                ->with('error', 'Item yang dipilih tidak valid atau sudah tidak tersedia.');
         }
 
-        // 3. Logika Bungkus Kado
+        // Cek apakah user mencentang "Bungkus Kado"
         $isGiftWrap = $request->has('wrap_product'); 
         $giftWrapPrice = $isGiftWrap ? 10000 : 0; 
 
-        // 4. Mapping Data (Agar formatnya sama seperti struktur array teman Anda)
+        // Mapping Data untuk View
         $cart = $cartItems->map(function ($item) {
             // Logika Gambar
             $imagePath = '/img/default.png';
@@ -56,7 +55,7 @@ class CheckoutMerchController extends Controller
                 $imagePath = $item->merchProduct->images->first()->image_path;
             }
 
-            // Logika Nama
+            // Logika Nama Produk
             $productName = $item->merchProduct->name ?? 'Unknown Product';
             if($item->merchSize) {
                 $productName .= ' (' . $item->merchSize->size . ')';
@@ -68,14 +67,16 @@ class CheckoutMerchController extends Controller
                 'price'    => $item->price,
                 'quantity' => $item->quantity,
                 'image'    => $imagePath,
-                // Data ID Asli untuk proses di backend
+                // Data ID Asli untuk proses backend nanti
                 'product_id' => $item->merch_product_id,
                 'variant_id' => $item->merch_product_variant_id,
                 'size_id'    => $item->merch_product_variant_size_id,
             ];
         });
 
-        // 5. Hitung Total
+        // ==================================================================
+        // 4. HITUNG TOTAL
+        // ==================================================================
         $subtotalBarang = $cart->sum(function ($item) {
             return $item['price'] * $item['quantity'];
         });
@@ -86,12 +87,14 @@ class CheckoutMerchController extends Controller
         // Simpan ID item yang terpilih untuk dikirim ke view (Input Hidden)
         $selectedItemIds = $cartItems->pluck('id')->toArray();
 
-        // 6. Data Pendukung (Sama seperti code Teman Anda)
+        // ==================================================================
+        // 5. DATA PENDUKUNG (Alamat, Kurir, Provinsi)
+        // ==================================================================
         $addresses = UserAddress::where('user_id', auth()->id())->get();
         $shippers  = Shipper::all();
         $provinsi  = Provinsi::all();
 
-        // Ubah collection jadi array
+        // Ubah collection cart jadi array murni
         $cart = $cart->toArray();
 
         return view('web.checkout.index', compact(
@@ -103,7 +106,6 @@ class CheckoutMerchController extends Controller
             'addresses',
             'shippers',
             'provinsi',
-            // Kirim data ini untuk Input Hidden di view
             'selectedItemIds', 
             'isGiftWrap'
         ));
