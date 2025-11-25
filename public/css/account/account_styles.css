@@ -76,6 +76,35 @@
     background: #15bcc5 !important;
 }
 
+.btn-wide {
+    padding-left: 3rem;
+    padding-right: 3rem;
+}
+
+.btn-rounded {
+    border-radius: 0.5rem;
+}
+
+.btn-darkblue {
+    color: #fff;
+    background-color: #051a36;
+    border-color: #051a36;
+}
+
+.btn-darkblue:hover {
+    color: #fff;
+    background-color: #142f52;
+    border-color: #01142e;
+}
+
+.btn-darkblue:focus,
+.btn-darkblue.focus {
+    color: #fff;
+    background-color: #142f52;
+    border-color: #01142e;
+    box-shadow: 0 0 0 0.2rem rgb(20, 47, 82, 0.2);
+}
+
 .btn-cyan {
     color: #fff;
     background-color: #15bcc5;
@@ -238,8 +267,68 @@
     color: #15bcc5;
 }
 
+/* Ensure action icons align consistently inside address-actions */
+.address-actions {
+    display: flex;
+    align-items: center;
+}
+
+.address-actions form {
+    margin: 0; /* prevent form baseline/margin from shifting button */
+}
+
+.address-actions .btn-icon {
+    vertical-align: middle;
+    align-self: center;
+}
+
+.address-actions .btn-icon .bi {
+    display: inline-block;
+    vertical-align: middle;
+}
+
+/* Rounded inputs per Figma spec: apply to account area and add-address modal */
+#addAddressModal .form-control,
+.card.content-border .form-control,
+.input-field,
+.input-cyan,
+.address-item .form-control {
+    border-radius: 0.6rem !important;
+}
+
+#addAddressModal select.form-control,
+#addAddressModal textarea.form-control {
+    border-radius: 0.6rem !important;
+}
+
+/* Keep focus states consistent with rounded corners */
+.input-cyan:focus,
+#addAddressModal .form-control:focus {
+    border-radius: 0.6rem !important;
+}
+
 .address-empty {
     color: #6c757d;
     background: #f8f9fa;
     border-radius: 0.5rem;
+}
+
+/* Modal header: center title while keeping close button right-aligned */
+#addAddressModal .modal-header {
+    position: relative;
+    padding-top: 2rem;
+    padding-bottom: 2rem;
+}
+
+#addAddressModal .modal-header .modal-title {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    margin: 0;
+}
+
+/* Center footer buttons for add address modal */
+#addAddressModal .modal-footer {
+    justify-content: center !important;
 }

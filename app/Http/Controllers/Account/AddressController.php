@@ -9,9 +9,12 @@ use App\Kabupaten;
 use App\Kecamatan;
 use App\Desa;
 use App\UserAddress;
-use Auth; 
-use DB; 
+use Auth;
+use DB;
+use Exception;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Cache;
+
 class AddressController extends Controller
 {
     /**
@@ -22,8 +25,8 @@ class AddressController extends Controller
     public function index()
     {
         $user = Auth::user();
-        $userAddress = UserAddress::where('user_id',$user->id)->get();
-        return view('account.address.address',compact('userAddress'));
+        $userAddress = UserAddress::where('user_id', $user->id)->get();
+        return view('account.address.address', compact('userAddress'));
     }
 
     /**
@@ -35,7 +38,7 @@ class AddressController extends Controller
     {
         $user = Auth::user();
         $provinsis = Cache::remember('provinsis', 180, function () {
-            return Provinsi::pluck('nama_provinsi','id');
+            return Provinsi::pluck('nama_provinsi', 'id');
         });
         $kabupatens = Cache::remember('kabupatens', 180, function () {
             return Kabupaten::all();
@@ -43,9 +46,11 @@ class AddressController extends Controller
         $kecamatans = Cache::remember('kecamatans', 180, function () {
             return  Kecamatan::all();
         });
-    
-        return view('account.address.create',
-            compact('user','provinsis','kabupatens','kecamatans'));
+
+        return view(
+            'account.address.create',
+            compact('user', 'provinsis', 'kabupatens', 'kecamatans')
+        );
     }
 
     /**
@@ -58,44 +63,45 @@ class AddressController extends Controller
     {
         // dd($request->all());
         $this->validate($request, [
-            'name'=>'required',
-            'user_id'=>'required',
-            'phone'=>'required',
-            'address'=>'required',
-            'provinsi_id'=>'required',
-            'kabupaten_id'=>'required',
-            'kecamatan_id'=>'required',
+            'name' => 'required',
+            'user_id' => 'required',
+            'phone' => 'required',
+            'address' => 'required',
+            'provinsi_id' => 'required',
+            'kabupaten_id' => 'required',
+            'kecamatan_id' => 'required',
             // 'desa_id'=>'required',
-            'label_address'=>'required',
+            'label_address' => 'required',
             // 'kodepos'=>'',
-        ],[
-            'name.required'=>'Nama wajib di isi',
-            'user_id.required'=>'wajib di isi',
-            'phone.required'=>'Nomer hp wajib di isi',
-            'address.required'=>'Alamat wajib di isi',
-            'provinsi_id.required'=>'Provinsi wajib di isi',
-            'kabupaten_id.required'=>'Kabupaten wajib di isi',
-            'kecamatan_id.required'=>'Kecamtan wajib di isi',
+        ], [
+            'name.required' => 'Nama wajib di isi',
+            'user_id.required' => 'wajib di isi',
+            'phone.required' => 'Nomer hp wajib di isi',
+            'address.required' => 'Alamat wajib di isi',
+            'provinsi_id.required' => 'Provinsi wajib di isi',
+            'kabupaten_id.required' => 'Kabupaten wajib di isi',
+            'kecamatan_id.required' => 'Kecamtan wajib di isi',
             // 'desa_id.required'=>'Desa wajib di isi',
             // 'kodepos'=>'Kodepost wajib di isi',
-            'label_address'=>'Label alamat wajib di isi',
+            'label_address' => 'Label alamat wajib di isi',
         ]);
         try {
             $userAddress = UserAddress::create([
-                'name'=>$request->name,
-                'user_id'=>$request->user_id,
-                'phone'=>$request->phone,
-                'address'=>$request->address,
-                'provinsi_id'=>$request->provinsi_id,
-                'kabupaten_id'=>$request->kabupaten_id,
-                'kecamatan_id'=>$request->kecamatan_id,
+                'name' => $request->name,
+                'user_id' => $request->user_id,
+                'phone' => $request->phone,
+                'address' => $request->address,
+                'provinsi_id' => $request->provinsi_id,
+                'kabupaten_id' => $request->kabupaten_id,
+                'kecamatan_id' => $request->kecamatan_id,
                 // 'desa_id'=>$request->desa_id,
                 // 'kodepos'=>$request->kodepos,
-                'label_address'=>$request->label_address,
+                'label_address' => $request->label_address,
             ]);
-            return redirect()->route('account.address.index');
+            return redirect()->route('account.address.index')->with('success', 'Alamat berhasil ditambahkan!');
         } catch (Exception $e) {
-            
+            Log::error('AddressController@store failed: ' . $e->getMessage(), ['exception' => $e]);
+            return redirect()->back()->withInput()->with('error', 'Gagal menyimpan alamat. Silakan coba lagi.');
         }
     }
 
@@ -120,7 +126,7 @@ class AddressController extends Controller
     {
         $user_address = UserAddress::findOrFail($id);
         $provinsis = Cache::remember('provinsis', 180, function () {
-            return Provinsi::pluck('nama_provinsi','id');
+            return Provinsi::pluck('nama_provinsi', 'id');
         });
         $kabupatens = Cache::remember('kabupatens', 180, function () {
             return Kabupaten::all();
@@ -128,9 +134,11 @@ class AddressController extends Controller
         $kecamatans = Cache::remember('kecamatans', 180, function () {
             return  Kecamatan::all();
         });
-    
-        return view('account.address.edit',
-            compact('user_address','provinsis','kabupatens','kecamatans'));
+
+        return view(
+            'account.address.edit',
+            compact('user_address', 'provinsis', 'kabupatens', 'kecamatans')
+        );
     }
 
     /**
@@ -143,46 +151,45 @@ class AddressController extends Controller
     public function update(Request $request, $id)
     {
         // dd($request->all());
-         $this->validate($request, [
-            'name'=>'required',
-            'user_id'=>'required',
-            'phone'=>'required',
-            'address'=>'required',
-            'provinsi_id'=>'required',
-            'kabupaten_id'=>'required',
-            'kecamatan_id'=>'required',
-            'desa_id'=>'required',
-            'label_address'=>'required',
-            'kodepos'=>'',
-        ],[
-            'name.required'=>'Nama wajib di isi',
-            'user_id.required'=>'wajib di isi',
-            'phone.required'=>'Nomer hp wajib di isi',
-            'address.required'=>'Alamat wajib di isi',
-            'provinsi_id.required'=>'Provinsi wajib di isi',
-            'kabupaten_id.required'=>'Kabupaten wajib di isi',
-            'kecamatan_id.required'=>'Kecamtan wajib di isi',
-            'desa_id.required'=>'Desa wajib di isi',
-            'kodepos'=>'Kodepost wajib di isi',
-            'label_address'=>'Label alamat wajib di isi',
+        $this->validate($request, [
+            'name' => 'required',
+            'user_id' => 'required',
+            'phone' => 'required',
+            'address' => 'required',
+            'provinsi_id' => 'required',
+            'kabupaten_id' => 'required',
+            'kecamatan_id' => 'required',
+            'desa_id' => 'required',
+            'label_address' => 'required',
+            'kodepos' => '',
+        ], [
+            'name.required' => 'Nama wajib di isi',
+            'user_id.required' => 'wajib di isi',
+            'phone.required' => 'Nomer hp wajib di isi',
+            'address.required' => 'Alamat wajib di isi',
+            'provinsi_id.required' => 'Provinsi wajib di isi',
+            'kabupaten_id.required' => 'Kabupaten wajib di isi',
+            'kecamatan_id.required' => 'Kecamtan wajib di isi',
+            'desa_id.required' => 'Desa wajib di isi',
+            'kodepos' => 'Kodepost wajib di isi',
+            'label_address' => 'Label alamat wajib di isi',
         ]);
         try {
             $userAddress = UserAddress::findOrFail($id);
             $userAddress->update([
-                'name'=>$request->name,
-                'user_id'=>$request->user_id,
-                'phone'=>$request->phone,
-                'address'=>$request->address,
-                'provinsi_id'=>$request->provinsi_id,
-                'kabupaten_id'=>$request->kabupaten_id,
-                'kecamatan_id'=>$request->kecamatan_id,
-                'desa_id'=>$request->desa_id,
-                'kodepos'=>$request->kodepos,
-                'label_address'=>$request->label_address,
+                'name' => $request->name,
+                'user_id' => $request->user_id,
+                'phone' => $request->phone,
+                'address' => $request->address,
+                'provinsi_id' => $request->provinsi_id,
+                'kabupaten_id' => $request->kabupaten_id,
+                'kecamatan_id' => $request->kecamatan_id,
+                'desa_id' => $request->desa_id,
+                'kodepos' => $request->kodepos,
+                'label_address' => $request->label_address,
             ]);
             return redirect()->route('account.address.index');
         } catch (Exception $e) {
-            
         }
     }
 
@@ -199,31 +206,30 @@ class AddressController extends Controller
             $userAddress->delete();
             return back();
         } catch (Exception $e) {
-            
         }
     }
-    public function getDesa(Request $request,$id)
+    public function getDesa(Request $request, $id)
     {
         if ($request->ajax()) {
 
             $term = trim($request->term);
-            $posts = DB::table('desa')->select('id','nama_desa as text')
-                ->where('nama_desa', 'LIKE',  '%' . $term. '%')
-                ->where('kecamatan_id',$id)
+            $posts = DB::table('desa')->select('id', 'nama_desa as text')
+                ->where('nama_desa', 'LIKE',  '%' . $term . '%')
+                ->where('kecamatan_id', $id)
                 ->orderBy('nama_desa', 'asc')->simplePaginate(10);
-           
-            $morePages=true;
-            $pagination_obj= json_encode($posts);
-            if (empty($posts->nextPageUrl())){
-                $morePages=false;
+
+            $morePages = true;
+            $pagination_obj = json_encode($posts);
+            if (empty($posts->nextPageUrl())) {
+                $morePages = false;
             }
             $results = array(
-              "results" => $posts->items(),
-              "pagination" => array(
-                "more" => $morePages
-              )
+                "results" => $posts->items(),
+                "pagination" => array(
+                    "more" => $morePages
+                )
             );
-        
+
             return \Response::json($results);
         }
     }
