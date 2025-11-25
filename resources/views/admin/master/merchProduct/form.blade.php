@@ -50,8 +50,11 @@
         @foreach($oldVariants as $vIdx => $variant)
         <div class="card mb-3 variant-item" data-index="{{ $vIdx }}">
             <div class="card-body">
-                <div class="d-flex justify-content-between align-items-center mb-2">
-                    <strong>Variant #{{ $vIdx+1 }}</strong>
+                <div class="d-flex justify-content-between align-items-center mb-2 variant-header">
+                    <div class="d-flex align-items-center gap-2">
+                        <button type="button" class="btn btn-sm btn-outline-secondary variant-toggle" aria-expanded="false">Show</button>
+                        <strong>Variant #{{ $vIdx+1 }}</strong>
+                    </div>
                     <div>
                         <input type="radio" name="default_variant" value="{{ $variant['id'] ?? 'new_' . $vIdx }}"
                             {{ (isset($variant['is_default']) && $variant['is_default']) || (!isset($variant['is_default']) && $vIdx == 0) ? 'checked' : '' }}>
@@ -59,101 +62,105 @@
                     </div>
                     <button type="button" class="btn btn-danger btn-sm remove-variant">Remove</button>
                 </div>
-                <input type="hidden" name="variants[{{ $vIdx }}][id]" value="{{ $variant['id'] ?? '' }}">
-                <div class="mb-2">
-                    <label>Variant Name</label>
-                    <input type="text" name="variants[{{ $vIdx }}][name]" class="form-control" value="{{ $variant['name'] ?? '' }}" required>
-                </div>
-                <div class="mb-2">
-                    <label>Variant Code</label>
-                    <input type="text" name="variants[{{ $vIdx }}][code]" class="form-control" value="{{ $variant['code'] ?? '' }}">
-                </div>
-                <div class="mb-2">
-                    <label>
-                        Images
-                        <small class="text-muted ms-2">Maximal 2MB/img | Format: JPEG, JPG, atau WEBP</small>
-                    </label>
-                    <small class="d-block text-info mb-2">
-                        💡 Ukuran yang disarankan: <b>Normal (400x300px)</b> | <b>Featured (800x300px)</b>
-                    </small>
-                    <div class="variant-images-container">
-                        @php
-                            $images = $variant['images'] ?? [];
-                        @endphp
-                        @foreach($images as $iIdx => $img)
-                        <div class="input-group mb-1 variant-image-item">
-                            <input type="hidden" name="variants[{{ $vIdx }}][images][{{ $iIdx }}][id]" value="{{ $img['id'] ?? '' }}">
-                            <input type="file" name="variants[{{ $vIdx }}][images][{{ $iIdx }}][image_path]" class="form-control variant-image-input" {{ isset($img['image_path']) ? '' : 'required' }}>
-                            <input type="text" name="variants[{{ $vIdx }}][images][{{ $iIdx }}][label]" class="form-control" placeholder="Label" value="{{ $img['label'] ?? '' }}">
-                            <button type="button" class="btn btn-outline-danger remove-variant-image">Remove</button>
-                            <div class="mt-1 image-preview">
-                                @if(isset($img['image_path']))
-                                    <img src="{{ asset($img['image_path']) }}" alt="Current Image" width="60">
-                                    <small class="text-muted">Current image</small>
-                                @endif
-                            </div>
-                        </div>
-                        @endforeach
+
+                <div class="variant-details" style="display:none">
+                    <input type="hidden" name="variants[{{ $vIdx }}][id]" value="{{ $variant['id'] ?? '' }}">
+                    <div class="mb-2">
+                        <label>Variant Name</label>
+                        <input type="text" name="variants[{{ $vIdx }}][name]" class="form-control" value="{{ $variant['name'] ?? '' }}" required>
                     </div>
-                    <button type="button" class="btn btn-outline-primary btn-sm add-variant-image">Add Image</button>
-                </div>
-
-                {{-- ========== Tambahan: Stock, Price, Discount di level variant ========== --}}
-                <div class="mb-2 variant-stock-fields" @if(!empty($variant['sizes'])) style="display:none" @endif>
-                    <label>Stock</label>
-                    <input type="number" name="variants[{{ $vIdx }}][stock]" class="form-control" placeholder="Stock" value="{{ $variant['stock'] ?? 0 }}">
-                </div>
-                <div class="mb-2 variant-price-fields" @if(!empty($variant['sizes'])) style="display:none" @endif>
-                    <label>Price</label> 
-                    <input type="number" name="variants[{{ $vIdx }}][price]" class="form-control" placeholder="Price" value="{{ $variant['price'] ?? '' }}">
-                </div>
-                <div class="mb-2 variant-discount-fields" @if(!empty($variant['sizes'])) style="display:none" @endif>
-                    <label>Discount</label>
-                    <input type="number" name="variants[{{ $vIdx }}][discount]" class="form-control" placeholder="Discount" value="{{ $variant['discount'] ?? 0 }}">
-                </div>
-                
-                {{-- Berat selalu tampil, tidak di-hide --}}
-                <div class="mb-2">
-                    <label>Berat (gram)</label>
-                    <input type="number" name="variants[{{ $vIdx }}][weight]" class="form-control" placeholder="Berat (gram)" value="{{ $variant['weight'] ?? '' }}" required min="0" step="0.01">
-                </div>
-                
-                <div class="mb-2">
-                    <small class="text-muted">
-                        Jika variant tidak memiliki size, isi Stock/Price/Discount di atas.<br>
-                        Jika variant memiliki size, isi Stock/Price/Discount di setiap size di bawah.
-                    </small>
-                </div>
-                {{-- ========== END Tambahan ========== --}}
-
-                <div class="mb-2">
-                    <label>Sizes</label>
-                    <div class="variant-sizes-container">
-                        @php
-                            $sizes = $variant['sizes'] ?? [];
-                        @endphp
-                        @foreach($sizes as $sIdx => $sz)
-                        <div class="row mb-1 variant-size-item">
-                            <input type="hidden" name="variants[{{ $vIdx }}][sizes][{{ $sIdx }}][id]" value="{{ $sz['id'] ?? '' }}">
-                            <div class="col">
-                                <input type="text" name="variants[{{ $vIdx }}][sizes][{{ $sIdx }}][size]" class="form-control" placeholder="(cnth:. Default, S, M, L, dll)" value="{{ $sz['size'] ?? '' }}" required>
+                    <div class="mb-2">
+                        <label>Variant Code</label>
+                        <input type="text" name="variants[{{ $vIdx }}][code]" class="form-control" value="{{ $variant['code'] ?? '' }}">
+                    </div>
+                    <div class="mb-2">
+                        <label>
+                            Images
+                            <small class="text-muted ms-2">Maximal 2MB/img | Format: JPEG, JPG, atau WEBP</small>
+                        </label>
+                        <small class="d-block text-info mb-2">
+                            💡 Ukuran yang disarankan: <b>Normal (400x300px)</b> | <b>Featured (800x300px)</b>
+                        </small>
+                        <div class="variant-images-container d-flex flex-wrap gap-2">
+                            @php
+                                $images = $variant['images'] ?? [];
+                            @endphp
+                            @foreach($images as $iIdx => $img)
+                            <div class="variant-image-item border rounded p-2" style="width: 160px;">
+                                <div class="image-preview mb-2" style="height: 100px; display:flex; align-items:center; justify-content:center; background:#f8f9fa;">
+                                    @if(isset($img['image_path']))
+                                        <img src="{{ asset($img['image_path']) }}" alt="Current Image" style="max-width: 100%; max-height: 100%; object-fit: contain;">
+                                    @else
+                                        <small class="text-muted">No preview</small>
+                                    @endif
+                                </div>
+                                <input type="hidden" name="variants[{{ $vIdx }}][images][{{ $iIdx }}][id]" value="{{ $img['id'] ?? '' }}">
+                                <input type="file" name="variants[{{ $vIdx }}][images][{{ $iIdx }}][image_path]" class="form-control form-control-sm variant-image-input" {{ isset($img['image_path']) ? '' : 'required' }}>
+                                <input type="text" name="variants[{{ $vIdx }}][images][{{ $iIdx }}][label]" class="form-control form-control-sm mt-1" placeholder="Label" value="{{ $img['label'] ?? '' }}">
+                                <button type="button" class="btn btn-outline-danger btn-sm mt-2 remove-variant-image">Remove</button>
                             </div>
-                            <div class="col">
-                                <input type="number" name="variants[{{ $vIdx }}][sizes][{{ $sIdx }}][stock]" class="form-control" placeholder="Stock" value="{{ $sz['stock'] ?? 0 }}">
-                            </div>
-                            <div class="col">
-                                <input type="number" name="variants[{{ $vIdx }}][sizes][{{ $sIdx }}][price]" class="form-control" placeholder="Price" value="{{ $sz['price'] ?? '' }}">
-                            </div>
-                            <div class="col">
-                                <input type="number" name="variants[{{ $vIdx }}][sizes][{{ $sIdx }}][discount]" class="form-control" placeholder="Discount" value="{{ $sz['discount'] ?? 0 }}">
-                            </div>
-                            <div class="col-auto">
-                                <button type="button" class="btn btn-outline-danger remove-variant-size">Remove</button>
-                            </div>
+                            @endforeach
                         </div>
-                        @endforeach
-                    </div> 
-                    <button type="button" class="btn btn-outline-primary btn-sm add-variant-size">Add Size</button>
+                        <button type="button" class="btn btn-outline-primary btn-sm add-variant-image">Add Image</button>
+                    </div>
+
+                    {{-- ========== Tambahan: Stock, Price, Discount di level variant ========== --}}
+                    <div class="mb-2 variant-stock-fields" @if(!empty($variant['sizes'])) style="display:none" @endif>
+                        <label>Stock</label>
+                        <input type="number" name="variants[{{ $vIdx }}][stock]" class="form-control" placeholder="Stock" value="{{ $variant['stock'] ?? 0 }}">
+                    </div>
+                    <div class="mb-2 variant-price-fields" @if(!empty($variant['sizes'])) style="display:none" @endif>
+                        <label>Price</label> 
+                        <input type="number" name="variants[{{ $vIdx }}][price]" class="form-control" placeholder="Price" value="{{ $variant['price'] ?? '' }}">
+                    </div>
+                    <div class="mb-2 variant-discount-fields" @if(!empty($variant['sizes'])) style="display:none" @endif>
+                        <label>Discount</label>
+                        <input type="number" name="variants[{{ $vIdx }}][discount]" class="form-control" placeholder="Discount" value="{{ $variant['discount'] ?? 0 }}">
+                    </div>
+                    
+                    {{-- Berat selalu tampil, tidak di-hide --}}
+                    <div class="mb-2">
+                        <label>Berat (gram)</label>
+                        <input type="number" name="variants[{{ $vIdx }}][weight]" class="form-control" placeholder="Berat (gram)" value="{{ $variant['weight'] ?? '' }}" required min="0" step="0.01">
+                    </div>
+                    
+                    <div class="mb-2">
+                        <small class="text-muted">
+                            Jika variant tidak memiliki size, isi Stock/Price/Discount di atas.<br>
+                            Jika variant memiliki size, isi Stock/Price/Discount di setiap size di bawah.
+                        </small>
+                    </div>
+                    {{-- ========== END Tambahan ========== --}}
+
+                    <div class="mb-2">
+                        <label>Sizes</label>
+                        <div class="variant-sizes-container">
+                            @php
+                                $sizes = $variant['sizes'] ?? [];
+                            @endphp
+                            @foreach($sizes as $sIdx => $sz)
+                            <div class="row mb-1 variant-size-item">
+                                <input type="hidden" name="variants[{{ $vIdx }}][sizes][{{ $sIdx }}][id]" value="{{ $sz['id'] ?? '' }}">
+                                <div class="col">
+                                    <input type="text" name="variants[{{ $vIdx }}][sizes][{{ $sIdx }}][size]" class="form-control" placeholder="(cnth:. Default, S, M, L, dll)" value="{{ $sz['size'] ?? '' }}" required>
+                                </div>
+                                <div class="col">
+                                    <input type="number" name="variants[{{ $vIdx }}][sizes][{{ $sIdx }}][stock]" class="form-control" placeholder="Stock" value="{{ $sz['stock'] ?? 0 }}">
+                                </div>
+                                <div class="col">
+                                    <input type="number" name="variants[{{ $vIdx }}][sizes][{{ $sIdx }}][price]" class="form-control" placeholder="Price" value="{{ $sz['price'] ?? '' }}">
+                                </div>
+                                <div class="col">
+                                    <input type="number" name="variants[{{ $vIdx }}][sizes][{{ $sIdx }}][discount]" class="form-control" placeholder="Discount" value="{{ $sz['discount'] ?? 0 }}">
+                                </div>
+                                <div class="col-auto">
+                                    <button type="button" class="btn btn-outline-danger remove-variant-size">Remove</button>
+                                </div>
+                            </div>
+                            @endforeach
+                        </div> 
+                        <button type="button" class="btn btn-outline-primary btn-sm add-variant-size">Add Size</button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -177,74 +184,82 @@
 <template id="variant-template">
     <div class="card mb-3 variant-item">
         <div class="card-body">
-            <div class="d-flex justify-content-between align-items-center mb-2">
-                <strong>Variant #IDX#</strong>
+            <div class="d-flex justify-content-between align-items-center mb-2 variant-header">
+                <div class="d-flex align-items-center gap-2">
+                    <button type="button" class="btn btn-sm btn-outline-secondary variant-toggle" aria-expanded="false">Show</button>
+                    <strong>Variant #IDX#</strong>
+                </div>
                 <div>
                     <input type="radio" name="default_variant" value="#IDX#">
                     <small class="text-primary">Default - Jadikan product utama/default sebagai display</small>
                 </div>
                 <button type="button" class="btn btn-danger btn-sm remove-variant">Remove</button>
             </div>
-            <div class="mb-2">
-                <label>Variant Name</label>
-                <input type="text" name="variants[#IDX#][name]" class="form-control" placeholder="Variant Name" required>
-            </div>
-            <div class="mb-2">
-                <label>Variant Code</label>
-                <input type="text" name="variants[#IDX#][code]" class="form-control">
-            </div>
-            <div class="mb-2">
-                <label>
-                    Images
-                    <small class="text-muted ms-2">Maximal 2MB/img | Format: JPEG, JPG, atau WEBP</small>
-                </label>
-                <small class="d-block text-info mb-2">
-                    💡 Ukuran yang disarankan: <b>Normal (400x300px)</b> | <b>Featured (800x300px)</b>
-                </small>
-                <div class="variant-images-container"></div>
-                <button type="button" class="btn btn-outline-primary btn-sm add-variant-image">Add Image</button>
-            </div>
-            {{-- ========== Tambahan: Stock, Price, Discount di level variant ========== --}}
-            <div class="mb-2 variant-stock-fields">
-                <label>Stock</label>
-                <input type="number" name="variants[#IDX#][stock]" class="form-control" placeholder="Stock">
-            </div>
-            <div class="mb-2 variant-price-fields">
-                <label>Price</label>
-                <input type="number" name="variants[#IDX#][price]" class="form-control" placeholder="Price">
-            </div>
-            <div class="mb-2 variant-discount-fields">
-                <label>Discount</label>
-                <input type="number" name="variants[#IDX#][discount]" class="form-control" placeholder="Discount">
-            </div>
-            
-            {{-- Berat selalu tampil, tidak di-hide --}}
-            <div class="mb-2">
-                <label>Berat (gram)</label>
-                <input type="number" name="variants[#IDX#][weight]" class="form-control" placeholder="Berat (gram)" value="0" required min="0" step="0.01">
-            </div>
-            
-            <div class="mb-2">
-                <small class="text-muted">
-                    Jika variant tidak memiliki size, isi Stock/Price/Discount di atas.<br>
-                    Jika variant memiliki size, isi Stock/Price/Discount di setiap size di bawah.
-                </small>
-            </div>
-            {{-- ========== END Tambahan ========== --}}
-            <div class="mb-2">
-                <label>Sizes</label>
-                <div class="variant-sizes-container"></div>
-                <button type="button" class="btn btn-outline-primary btn-sm add-variant-size">Add Size</button>
+
+            <div class="variant-details" style="display:none">
+                <div class="mb-2">
+                    <label>Variant Name</label>
+                    <input type="text" name="variants[#IDX#][name]" class="form-control" placeholder="Variant Name" required>
+                </div>
+                <div class="mb-2">
+                    <label>Variant Code</label>
+                    <input type="text" name="variants[#IDX#][code]" class="form-control">
+                </div>
+                <div class="mb-2">
+                    <label>
+                        Images
+                        <small class="text-muted ms-2">Maximal 2MB/img | Format: JPEG, JPG, atau WEBP</small>
+                    </label>
+                    <small class="d-block text-info mb-2">
+                        💡 Ukuran yang disarankan: <b>Normal (400x300px)</b> | <b>Featured (800x300px)</b>
+                    </small>
+                    <div class="variant-images-container"></div>
+                    <button type="button" class="btn btn-outline-primary btn-sm add-variant-image">Add Image</button>
+                </div>
+                {{-- ========== Tambahan: Stock, Price, Discount di level variant ========== --}}
+                <div class="mb-2 variant-stock-fields">
+                    <label>Stock</label>
+                    <input type="number" name="variants[#IDX#][stock]" class="form-control" placeholder="Stock">
+                </div>
+                <div class="mb-2 variant-price-fields">
+                    <label>Price</label>
+                    <input type="number" name="variants[#IDX#][price]" class="form-control" placeholder="Price">
+                </div>
+                <div class="mb-2 variant-discount-fields">
+                    <label>Discount</label>
+                    <input type="number" name="variants[#IDX#][discount]" class="form-control" placeholder="Discount">
+                </div>
+                
+                {{-- Berat selalu tampil, tidak di-hide --}}
+                <div class="mb-2">
+                    <label>Berat (gram)</label>
+                    <input type="number" name="variants[#IDX#][weight]" class="form-control" placeholder="Berat (gram)" value="0" required min="0" step="0.01">
+                </div>
+                
+                <div class="mb-2">
+                    <small class="text-muted">
+                        Jika variant tidak memiliki size, isi Stock/Price/Discount di atas.<br>
+                        Jika variant memiliki size, isi Stock/Price/Discount di setiap size di bawah.
+                    </small>
+                </div>
+                {{-- ========== END Tambahan ========== --}}
+                <div class="mb-2">
+                    <label>Sizes</label>
+                    <div class="variant-sizes-container"></div>
+                    <button type="button" class="btn btn-outline-primary btn-sm add-variant-size">Add Size</button>
+                </div>
             </div>
         </div>
     </div>
 </template>
 <template id="variant-image-template">
-    <div class="input-group mb-1 variant-image-item">
-        <input type="file" name="variants[#VIDX#][images][#IIDX#][image_path]" class="form-control variant-image-input" required>
-        <input type="text" name="variants[#VIDX#][images][#IIDX#][label]" class="form-control" placeholder="Label">
-        <button type="button" class="btn btn-outline-danger remove-variant-image">Remove</button>
-        <div class="mt-1 image-preview"></div>
+    <div class="variant-image-item border rounded p-2" style="width: 160px;">
+        <div class="image-preview mb-2" style="height: 100px; display:flex; align-items:center; justify-content:center; background:#f8f9fa;">
+            <small class="text-muted">No preview</small>
+        </div>
+        <input type="file" name="variants[#VIDX#][images][#IIDX#][image_path]" class="form-control form-control-sm variant-image-input" required>
+        <input type="text" name="variants[#VIDX#][images][#IIDX#][label]" class="form-control form-control-sm mt-1" placeholder="Label">
+        <button type="button" class="btn btn-outline-danger btn-sm mt-2 remove-variant-image">Remove</button>
     </div>
 </template>
 <template id="variant-size-template">
@@ -267,138 +282,3 @@
     </div>
 </template>
 
-{{-- ========================= SCRIPT DINAMIS (TAMBAH/HAPUS VARIANT, IMAGE, SIZE) ========================= --}}
-<script>
-/*
-    Bagian ini untuk:
-    - Menambah/menghapus variant, image, dan size secara dinamis
-    - Menampilkan preview gambar setelah upload
-*/
-document.addEventListener('DOMContentLoaded', function() {
-    let variantIdx = document.querySelectorAll('.variant-item').length || 0;
-
-    document.getElementById('add-variant-btn').addEventListener('click', function() {
-        addVariant();
-    });
-
-    function addVariant() {
-        let template = document.getElementById('variant-template').innerHTML.replace(/#IDX#/g, variantIdx);
-        let div = document.createElement('div');
-        div.innerHTML = template;
-        div.firstElementChild.setAttribute('data-index', variantIdx);
-        document.getElementById('variants-container').appendChild(div.firstElementChild);
-        variantIdx++;
-        updateVariantEvents();
-    }
-
-    function updateVariantEvents() {
-        document.querySelectorAll('.remove-variant').forEach(btn => {
-            btn.onclick = function() {
-                btn.closest('.variant-item').remove();
-            }
-        });
-
-        document.querySelectorAll('.add-variant-image').forEach((btn, vIdx) => {
-            btn.onclick = function() {
-                let imagesContainer = btn.closest('.variant-item').querySelector('.variant-images-container');
-                let iIdx = imagesContainer.querySelectorAll('.variant-image-item').length;
-                let template = document.getElementById('variant-image-template').innerHTML
-                    .replace(/#VIDX#/g, vIdx)
-                    .replace(/#IIDX#/g, iIdx);
-                let div = document.createElement('div');
-                div.innerHTML = template;
-                imagesContainer.appendChild(div.firstElementChild);
-                updateVariantEvents();
-            }
-        });
-
-        document.querySelectorAll('.remove-variant-image').forEach(btn => {
-            btn.onclick = function() {
-                btn.closest('.variant-image-item').remove();
-            }
-        });
-
-        document.querySelectorAll('.add-variant-size').forEach((btn, vIdx) => {
-            btn.onclick = function() {
-                let sizesContainer = btn.closest('.variant-item').querySelector('.variant-sizes-container');
-                let sIdx = sizesContainer.querySelectorAll('.variant-size-item').length;
-                let template = document.getElementById('variant-size-template').innerHTML
-                    .replace(/#VIDX#/g, vIdx)
-                    .replace(/#SIDX#/g, sIdx);
-                let div = document.createElement('div');
-                div.innerHTML = template;
-                sizesContainer.appendChild(div.firstElementChild);
-                updateVariantEvents();
-                // Sembunyikan stock/price/discount di variant jika ada size
-                toggleVariantStockFields(btn.closest('.variant-item'));
-            }
-        });
-
-        document.querySelectorAll('.remove-variant-size').forEach(btn => {
-            btn.onclick = function() {
-                let variantCard = btn.closest('.variant-item');
-                btn.closest('.variant-size-item').remove();
-                // Tampilkan stock/price/discount di variant jika semua size dihapus
-                toggleVariantStockFields(variantCard);
-            }
-        });
-
-        // Preview image after upload
-        document.querySelectorAll('.variant-image-input').forEach(input => {
-            input.onchange = function(e) {
-                const previewDiv = input.closest('.variant-image-item').querySelector('.image-preview');
-                previewDiv.innerHTML = '';
-                if (input.files && input.files[0]) {
-                    const reader = new FileReader();
-                    reader.onload = function(ev) {
-                        previewDiv.innerHTML = '<img src="' + ev.target.result + '" alt="Preview" width="60">';
-                    }
-                    reader.readAsDataURL(input.files[0]);
-                }
-            }
-        });
-
-        // Sembunyikan/tampilkan stock/price/discount di variant jika ada size
-        document.querySelectorAll('.variant-item').forEach(variantCard => {
-            toggleVariantStockFields(variantCard);
-        });
-    }
-
-    // Fungsi untuk toggle stock/price/discount di variant
-    // Weight field tidak di-hide karena berat adalah atribut variant, bukan size
-    function toggleVariantStockFields(variantCard) {
-        let sizes = variantCard.querySelectorAll('.variant-size-item');
-        let stockField = variantCard.querySelector('.variant-stock-fields');
-        let priceField = variantCard.querySelector('.variant-price-fields');
-        let discountField = variantCard.querySelector('.variant-discount-fields');
-        
-        if (sizes.length > 0) {
-            if (stockField) stockField.style.display = 'none';
-            if (priceField) priceField.style.display = 'none';
-            if (discountField) discountField.style.display = 'none';
-        } else {
-            if (stockField) stockField.style.display = '';
-            if (priceField) priceField.style.display = '';
-            if (discountField) discountField.style.display = '';
-        }
-    }
-
-    updateVariantEvents();
-
-    document.querySelector('form').addEventListener('submit', function(e) {
-        let defaultVariantSelected = document.querySelector('input[name="default_variant"]:checked');
-        if (!defaultVariantSelected) {
-            e.preventDefault();
-            alert('Please select a default variant.');
-        }
-    });
-});
-</script>
-
-@if ($errors->has('name'))
-    <div class="text-danger">{{ $errors->first('name') }}</div>
-@endif
-
-@if ($errors->has('variants.*.name'))
-    <div class="text-danger">{{ $errors->first('variants.*.name') }}</div>
-@endif
