@@ -12,8 +12,11 @@
 
 @section('js')
 <link href="https://cdnjs.cloudflare.com/ajax/libs/summernote/0.8.20/summernote-lite.min.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css" />
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/summernote/0.8.20/summernote-lite.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/choices.js/public/assets/scripts/choices.min.js"></script>
+
 <script>
 $(document).ready(function() {
     $('#deskripsi').summernote({
@@ -27,6 +30,17 @@ $(document).ready(function() {
         ],
         height: 150
     });
+
+    // Initialize Choices.js for categories bubble
+    new Choices('#categories-bubble', {
+        removeItemButton: true,
+        placeholder: true,
+        placeholderValue: 'Pilih kategori...',
+        searchPlaceholderValue: 'Cari kategori...',
+        noResultsText: 'Kategori tidak ditemukan',
+        itemSelectText: '',
+        shouldSort: false
+    });
 });
 
 // ========================= SCRIPT DINAMIS VARIANT =========================
@@ -37,6 +51,32 @@ document.addEventListener('DOMContentLoaded', function() {
         addVariant();
     });
 
+    // Fungsi untuk re-index semua variant agar array tetap urut
+    function reindexVariants() {
+        document.querySelectorAll('.variant-item').forEach((card, idx) => {
+            card.setAttribute('data-index', idx);
+            // Update variant header label
+            let headerLabel = card.querySelector('.variant-header strong');
+            if (headerLabel) headerLabel.textContent = 'Variant #' + (idx + 1);
+            // Update all input name attributes inside this variant
+            card.querySelectorAll('[name]').forEach(input => {
+                input.name = input.name.replace(/variants\[\d+\]/, `variants[${idx}]`);
+            });
+            // Reindex images
+            card.querySelectorAll('.variant-image-item').forEach((imgCard, iIdx) => {
+                imgCard.querySelectorAll('[name]').forEach(input => {
+                    input.name = input.name.replace(/variants\[\d+\]\[images\]\[\d+\]/, `variants[${idx}][images][${iIdx}]`);
+                });
+            });
+            // Reindex sizes
+            card.querySelectorAll('.variant-size-item').forEach((szCard, sIdx) => {
+                szCard.querySelectorAll('[name]').forEach(input => {
+                    input.name = input.name.replace(/variants\[\d+\]\[sizes\]\[\d+\]/, `variants[${idx}][sizes][${sIdx}]`);
+                });
+            });
+        });
+    }
+
     function addVariant() {
         let template = document.getElementById('variant-template').innerHTML.replace(/#IDX#/g, variantIdx);
         let div = document.createElement('div');
@@ -46,6 +86,7 @@ document.addEventListener('DOMContentLoaded', function() {
         let details = card.querySelector('.variant-details');
         if (details) details.style.display = 'none';
         document.getElementById('variants-container').appendChild(card);
+        reindexVariants();
         updateVariantEvents();
         variantIdx++;
     }
@@ -66,14 +107,18 @@ document.addEventListener('DOMContentLoaded', function() {
                 e.stopPropagation();
                 if (confirm('Apakah Anda yakin ingin menghapus variant ini? Tindakan ini tidak dapat dibatalkan.')) {
                     btn.closest('.variant-item').remove();
+                    reindexVariants();
+                    updateVariantEvents();
                 }
             }
         });
 
         // Tambah/hapus gambar dan size (jika ada)
-        document.querySelectorAll('.add-variant-image').forEach((btn, vIdx) => {
+        document.querySelectorAll('.add-variant-image').forEach((btn) => {
             btn.onclick = function() {
-                let imagesContainer = btn.closest('.variant-item').querySelector('.variant-images-container');
+                let variantCard = btn.closest('.variant-item');
+                let vIdx = variantCard.getAttribute('data-index') || 0;
+                let imagesContainer = variantCard.querySelector('.variant-images-container');
                 let iIdx = imagesContainer.querySelectorAll('.variant-image-item').length;
                 let template = document.getElementById('variant-image-template').innerHTML
                     .replace(/#VIDX#/g, vIdx)
@@ -81,6 +126,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 let div = document.createElement('div');
                 div.innerHTML = template;
                 imagesContainer.appendChild(div.firstElementChild);
+                reindexVariants();
                 updateVariantEvents();
             }
         });
@@ -89,6 +135,8 @@ document.addEventListener('DOMContentLoaded', function() {
             btn.onclick = function() {
                 if (confirm('Apakah Anda yakin ingin menghapus gambar ini?')) {
                     btn.closest('.variant-image-item').remove();
+                    reindexVariants();
+                    updateVariantEvents();
                 }
             }
         });
@@ -137,9 +185,11 @@ document.addEventListener('DOMContentLoaded', function() {
             };
         });
 
-        document.querySelectorAll('.add-variant-size').forEach((btn, vIdx) => {
+        document.querySelectorAll('.add-variant-size').forEach((btn) => {
             btn.onclick = function() {
-                let sizesContainer = btn.closest('.variant-item').querySelector('.variant-sizes-container');
+                let variantCard = btn.closest('.variant-item');
+                let vIdx = variantCard.getAttribute('data-index') || 0;
+                let sizesContainer = variantCard.querySelector('.variant-sizes-container');
                 let sIdx = sizesContainer.querySelectorAll('.variant-size-item').length;
                 let template = document.getElementById('variant-size-template').innerHTML
                     .replace(/#VIDX#/g, vIdx)
@@ -147,8 +197,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 let div = document.createElement('div');
                 div.innerHTML = template;
                 sizesContainer.appendChild(div.firstElementChild);
+                reindexVariants();
                 updateVariantEvents();
-                toggleVariantStockFields(btn.closest('.variant-item'));
+                toggleVariantStockFields(variantCard);
             }
         });
 
@@ -157,7 +208,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (confirm('Apakah Anda yakin ingin menghapus size ini?')) {
                     let variantCard = btn.closest('.variant-item');
                     btn.closest('.variant-size-item').remove();
+                    reindexVariants();
                     toggleVariantStockFields(variantCard);
+                    updateVariantEvents();
                 }
             }
         });

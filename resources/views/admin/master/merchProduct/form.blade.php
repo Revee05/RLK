@@ -18,14 +18,14 @@
     </div>
     <div class="mb-3">
         <label for="categories" class="form-label">Categories</label>
-        <select name="categories[]" class="form-control" multiple>
+        <select name="categories[]" id="categories-bubble" multiple>
             @foreach($categories as $cat)
             <option value="{{ $cat->id }}" @if(isset($merchProduct) && $merchProduct->categories->contains($cat->id)) selected @endif>
                 {{ $cat->name }}
             </option>
             @endforeach
         </select>
-        <small class="text-muted">Hold CTRL/Command untuk memilih lebih dari satu kategori.</small>
+        <small class="text-muted">Pilih satu atau lebih kategori.</small>
     </div>
 
     <div class="form-group">
