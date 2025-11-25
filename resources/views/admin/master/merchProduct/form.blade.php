@@ -86,16 +86,20 @@
                                 $images = $variant['images'] ?? [];
                             @endphp
                             @foreach($images as $iIdx => $img)
-                            <div class="variant-image-item border rounded p-2" style="width: 160px;">
-                                <div class="image-preview mb-2" style="height: 100px; display:flex; align-items:center; justify-content:center; background:#f8f9fa;">
+                            <div class="variant-image-item border rounded p-2 shadow-sm" style="width: 180px;">
+                                <div class="image-preview mb-2" style="height: 110px; display:flex; align-items:center; justify-content:center; background:#f8f9fa; cursor:pointer;">
                                     @if(isset($img['image_path']))
                                         <img src="{{ asset($img['image_path']) }}" alt="Current Image" style="max-width: 100%; max-height: 100%; object-fit: contain;">
                                     @else
-                                        <small class="text-muted">No preview</small>
+                                        <small class="text-muted">Klik untuk upload</small>
                                     @endif
                                 </div>
                                 <input type="hidden" name="variants[{{ $vIdx }}][images][{{ $iIdx }}][id]" value="{{ $img['id'] ?? '' }}">
-                                <input type="file" name="variants[{{ $vIdx }}][images][{{ $iIdx }}][image_path]" class="form-control form-control-sm variant-image-input" {{ isset($img['image_path']) ? '' : 'required' }}>
+                                <input type="file" name="variants[{{ $vIdx }}][images][{{ $iIdx }}][image_path]" class="d-none variant-image-input" {{ isset($img['image_path']) ? '' : 'required' }}>
+                                <div class="d-grid gap-1">
+                                    <button type="button" class="btn btn-outline-secondary btn-sm upload-trigger">Pilih Gambar</button>
+                                    <small class="filename text-muted text-truncate"></small>
+                                </div>
                                 <input type="text" name="variants[{{ $vIdx }}][images][{{ $iIdx }}][label]" class="form-control form-control-sm mt-1" placeholder="Label" value="{{ $img['label'] ?? '' }}">
                                 <button type="button" class="btn btn-outline-danger btn-sm mt-2 remove-variant-image">Remove</button>
                             </div>
@@ -253,11 +257,11 @@
     </div>
 </template>
 <template id="variant-image-template">
-    <div class="variant-image-item border rounded p-2" style="width: 160px;">
-        <div class="image-preview mb-2" style="height: 100px; display:flex; align-items:center; justify-content:center; background:#f8f9fa;">
-            <small class="text-muted">No preview</small>
+    <div class="variant-image-item border rounded p-2 shadow-sm" style="width: 180px;">
+        <div class="image-preview mb-2" style="height: 110px; display:flex; align-items:center; justify-content:center; background:#f8f9fa; cursor:pointer;">
+            <small class="text-muted">Klik untuk upload</small>
         </div>
-        <input type="file" name="variants[#VIDX#][images][#IIDX#][image_path]" class="form-control form-control-sm variant-image-input" required>
+        <input type="file" name="variants[#VIDX#][images][#IIDX#][image_path]" class="d-none variant-image-input" required>
         <input type="text" name="variants[#VIDX#][images][#IIDX#][label]" class="form-control form-control-sm mt-1" placeholder="Label">
         <button type="button" class="btn btn-outline-danger btn-sm mt-2 remove-variant-image">Remove</button>
     </div>

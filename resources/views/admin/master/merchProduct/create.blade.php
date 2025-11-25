@@ -98,9 +98,11 @@ document.addEventListener('DOMContentLoaded', function() {
             input.onchange = function() {
                 const file = input.files && input.files[0];
                 const preview = input.closest('.variant-image-item')?.querySelector('.image-preview');
+                const nameEl = input.closest('.variant-image-item')?.querySelector('.filename');
                 if (!preview) return;
                 preview.innerHTML = '';
                 if (file) {
+                    if (nameEl) nameEl.textContent = file.name;
                     const reader = new FileReader();
                     reader.onload = function(evt) {
                         const img = document.createElement('img');
@@ -112,11 +114,26 @@ document.addEventListener('DOMContentLoaded', function() {
                     };
                     reader.readAsDataURL(file);
                 } else {
+                    if (nameEl) nameEl.textContent = '';
                     const small = document.createElement('small');
                     small.className = 'text-muted';
                     small.textContent = 'No preview';
                     preview.appendChild(small);
                 }
+            };
+        });
+
+        // Click preview or button to trigger file input
+        document.querySelectorAll('.variant-image-item .image-preview').forEach(preview => {
+            preview.onclick = function() {
+                const input = preview.closest('.variant-image-item')?.querySelector('.variant-image-input');
+                if (input) input.click();
+            };
+        });
+        document.querySelectorAll('.variant-image-item .upload-trigger').forEach(btn => {
+            btn.onclick = function() {
+                const input = btn.closest('.variant-image-item')?.querySelector('.variant-image-input');
+                if (input) input.click();
             };
         });
 
