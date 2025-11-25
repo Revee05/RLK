@@ -332,3 +332,28 @@
 #addAddressModal .modal-footer {
     justify-content: center !important;
 }
+
+/* Make update modal use the same styles as addAddressModal (visual parity) */
+#updateAddressModal .form-control,
+#updateAddressModal select.form-control,
+#updateAddressModal textarea.form-control {
+    border-radius: 0.6rem !important;
+}
+
+#updateAddressModal .modal-header {
+    position: relative;
+    padding-top: 2rem;
+    padding-bottom: 2rem;
+}
+
+#updateAddressModal .modal-header .modal-title {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    margin: 0;
+}
+
+#updateAddressModal .modal-footer {
+    justify-content: center !important;
+}
