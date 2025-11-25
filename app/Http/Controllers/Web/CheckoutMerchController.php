@@ -8,9 +8,10 @@ use App\UserAddress;
 use App\Shipper;
 use App\OrderMerch;
 use Illuminate\Support\Str;
-use App\Provinsi;
-use App\Kabupaten;
-use App\Kecamatan;
+use App\Province;
+use App\City;
+use App\District;
+use App\Services\RajaOngkirService;
 
 
 class CheckoutMerchController extends Controller
@@ -39,7 +40,7 @@ class CheckoutMerchController extends Controller
         $shippers = Shipper::all();
 
         // Ambil semua provinsi
-        $provinsi = Provinsi::all();
+        $province = Province::all();
 
         return view('web.checkout.index', compact(
             'cart',
@@ -47,7 +48,7 @@ class CheckoutMerchController extends Controller
             'totalQty',
             'addresses',
             'shippers',
-            'provinsi'
+            'province'
         ));
     }
 
@@ -89,7 +90,7 @@ class CheckoutMerchController extends Controller
 
     public function setAddress(Request $request)
     {
-        $address = UserAddress::with(['provinsi','kabupaten'])
+        $address = UserAddress::with(['province','city','district'])
                     ->find($request->address_id);
 
         if(!$address){
@@ -102,12 +103,12 @@ class CheckoutMerchController extends Controller
             'status' => 'success',
             'address' => [
                 'label_address' => $address->label_address,
-                'name' => $address->name,
-                'phone' => $address->phone,
-                'address' => $address->address,
-                'kecamatan' => $address->kecamatan->nama_kecamatan ?? '',
-                'kabupaten' => $address->kabupaten->nama_kabupaten ?? '',
-                'provinsi' => $address->provinsi->nama_provinsi ?? '',
+                'name'          => $address->name,
+                'phone'         => $address->phone,
+                'address'       => $address->address,
+                'district'      => $address->district->name ?? '',
+                'city'          => $address->city->name ?? '',
+                'province'      => $address->province->name ?? '',
             ]
         ]);
     }
@@ -123,13 +124,69 @@ class CheckoutMerchController extends Controller
             $result[] = [
                 'id'    => $ship->id,
                 'name'  => $ship->name,
-                'price' => 0,       // flat 0
+                'price' => 10000,       // flat 0
                 'eta'   => '-',     // default
             ];
         }
 
         return response()->json($result);
     }
+
+    public function getShippingCost(Request $request)
+    {
+        try {
+            $origin         = (int) $request->origin;
+            $destination    = (int) $request->destination;
+            $weight         = (int) $request->weight ?: 1000;
+
+            $couriers = ['jne', 'tiki', 'pos'];
+
+            \Log::info('PAYLOAD RAJAONGKIR:', [
+                'origin' => $origin,
+                'destination' => $destination,
+                'weight' => $weight,
+                'courier' => $couriers,
+                'price' => 'lowest'
+            ]);
+
+            $rajaOngkir = new RajaOngkirService();
+            $result = [];
+
+            foreach ($couriers as $courier) {
+
+                $response = $rajaOngkir->calculateCost(
+                    $origin,
+                    $destination,
+                    $weight,
+                    $courier,
+                    'lowest'
+                );
+
+                if (!empty($response['data'])) {
+
+                    foreach ($response['data'] as $service) {
+                        $result[] = [
+                            'id'    => $courier . '-' . $service['service'],
+                            'name'  => strtoupper($courier) . ' - ' . $service['service'],
+                            'price' => $service['cost'],
+                            'eta'   => $service['etd']
+                        ];
+                    }
+                }
+            }
+
+            usort($result, fn($a,$b) => $a['price'] <=> $b['price']);
+
+            return response()->json($result);
+
+        } catch (\Throwable $e) {
+            \Log::error('Shipping cost error: ' . $e->getMessage());
+            return response()->json([
+                'error' => 'Gagal mengambil data kurir.'
+            ], 500);
+        }
+    }
+
 
 
     public function success($invoice)

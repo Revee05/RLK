@@ -27,16 +27,16 @@
                            data-phone="{{ $address->phone }}"
                            data-label="{{ $address->label_address   }}"
                            data-address="{{ $address->address }}"
-                           data-provinsi="{{ $address->provinsi->nama_provinsi ?? '' }}"
-                           data-kabupaten="{{ $address->kabupaten->nama_kabupaten ?? '' }}">
+                           data-provinsi="{{ $address->province->name ?? '' }}"
+                           data-kabupaten="{{ $address->city->name ?? '' }}">
                         <div>
                             <h6 class="fw-bold mb-1">{{ $address->label_address }}</h6>
                             <div class="small text-muted">
                                 {{ $address->name }} <br>
                                 {{ $address->phone }} <br>
                                 {{ $address->address }},
-                                {{ $address->kabupaten->nama_kabupaten ?? '-' }},
-                                {{ $address->provinsi->nama_provinsi ?? '-' }}
+                                {{ $address->city->name ?? '-' }},
+                                {{ $address->province->name ?? '-' }}
                             </div>
                         </div>
                         <input type="radio" name="selected_address" class="form-check-input mt-1" @if($loop->first) checked @endif>
@@ -60,6 +60,8 @@
 @push('js')
 <script>
 document.addEventListener("DOMContentLoaded", function () {
+    const modalAdd = new bootstrap.Modal(document.getElementById("addAddressModal"));
+    
     const btnAddAddress = document.getElementById("btn-add-address");
     const addressList = document.getElementById("address-list");
 
@@ -90,7 +92,7 @@ document.addEventListener("DOMContentLoaded", function () {
                                     <div class="small text-muted">
                                         ${data.address.name} • ${data.address.phone} <br>
                                         ${data.address.address} <br>
-                                        ${data.address.kabupaten ?? '-'}, ${data.address.provinsi ?? '-'}
+                                        ${data.address.city ?? '-'}, ${data.address.province ?? '-'}
                                     </div>
                                 </div>
                             `;
@@ -127,62 +129,76 @@ document.addEventListener("DOMContentLoaded", function () {
 
     const modalList = new bootstrap.Modal(document.getElementById('addressModal'));
 
-    let prov = document.getElementById('provinsi');
-    let kab = document.getElementById('kabupaten');
-    let kec = document.getElementById('kecamatan');
+    let province = document.getElementById('province');
+    let city = document.getElementById('city');
+    let district = document.getElementById('district');
 
     // ==== LOAD PROVINSI SAAT MODAL 2 DIBUKA ====
     document.getElementById("addAddressModal").addEventListener("show.bs.modal", function () {
 
-        prov.innerHTML = '<option value="">Pilih Provinsi</option>';
-        kab.innerHTML = '<option value="">Pilih Kabupaten</option>';
-        kec.innerHTML = '<option value="">Pilih Kecamatan</option>';
-        kab.disabled = true;
-        kec.disabled = true;
+        province.innerHTML = '<option value="">Pilih Provinsi</option>';
+        city.innerHTML = '<option value="">Pilih Kabupaten/Kota</option>';
+        district.innerHTML = '<option value="">Pilih Kecamatan</option>';
+        
+        city.disabled = true;
+        district.disabled = true;
 
-        fetch("/lokasi/provinsi")
+        fetch("/lokasi/province")
             .then(res => res.json())
             .then(data => {
+
+                // URUTKAN A-Z
+                data.sort((a, b) => a.name.localeCompare(b.name));
+
                 data.forEach(p => {
-                    prov.innerHTML += `<option value="${p.id}">${p.nama_provinsi}</option>`;
+                    province.innerHTML += `<option value="${p.id}">${p.name}</option>`;
                 });
             });
     });
 
     // ==== PROVINSI -> KABUPATEN ====
-    prov.addEventListener("change", function () {
+    province.addEventListener("change", function () {
 
-        kab.innerHTML = '<option value="">Pilih Kabupaten</option>';
-        kec.innerHTML = '<option value="">Pilih Kecamatan</option>';
-        kab.disabled = true;
-        kec.disabled = true;
+        city.innerHTML = '<option value="">Pilih Kabupaten/Kota</option>';
+        district.innerHTML = '<option value="">Pilih Kecamatan</option>';
+        
+        city.disabled = true;
+        district.disabled = true;
 
         if (!this.value) return;
 
-        fetch("/lokasi/kabupaten/" + this.value)
+        fetch("/lokasi/city/" + this.value)
             .then(res => res.json())
             .then(data => {
-                kab.disabled = false;
+
+                // URUT A-Z
+                data.sort((a, b) => a.name.localeCompare(b.name));
+
+                city.disabled = false;
                 data.forEach(k => {
-                    kab.innerHTML += `<option value="${k.id}">${k.nama_kabupaten}</option>`;
+                    city.innerHTML += `<option value="${k.id}">${k.name}</option>`;
                 });
             });
     });
 
     // ==== KABUPATEN -> KECAMATAN ====
-    kab.addEventListener("change", function () {
+    city.addEventListener("change", function () {
 
-        kec.innerHTML = '<option value="">Pilih Kecamatan</option>';
-        kec.disabled = true;
+        district.innerHTML = '<option value="">Pilih Kecamatan</option>';
+        district.disabled = true;
 
         if (!this.value) return;
 
-        fetch("/lokasi/kecamatan/" + this.value)
+        fetch("/lokasi/district/" + this.value)
             .then(res => res.json())
             .then(data => {
-                kec.disabled = false;
+
+                // URUT A-Z
+                data.sort((a, b) => a.name.localeCompare(b.name));
+
+                district.disabled = false;
                 data.forEach(k => {
-                    kec.innerHTML += `<option value="${k.id}">${k.nama_kecamatan}</option>`;
+                    district.innerHTML += `<option value="${k.id}">${k.name}</option>`;
                 });
             });
     });

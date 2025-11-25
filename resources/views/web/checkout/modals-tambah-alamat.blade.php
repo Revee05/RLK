@@ -26,19 +26,19 @@
           </div>
 
           <div class="form-group mb-2">
-            <select class="form-control" id="provinsi" name="provinsi_id" required>
+            <select class="form-control" id="province" name="province_id" required>
               <option value="">Pilih Provinsi</option>
             </select>
           </div>
 
           <div class="form-group mb-2">
-            <select class="form-control" id="kabupaten" name="kabupaten_id" disabled required>
+            <select class="form-control" id="city" name="city_id" disabled required>
               <option value="">Pilih Kabupaten/Kota</option>
             </select>
           </div>
 
           <div class="form-group mb-2">
-            <select class="form-control" id="kecamatan" name="kecamatan_id" disabled required>
+            <select class="form-control" id="district" name="district_id" disabled required>
               <option value="">Pilih Kecamatan</option>
             </select>
           </div>
@@ -61,73 +61,78 @@
 </div>
 
 @push('js')
-<script> 
+<script>
 document.addEventListener("DOMContentLoaded", function () {
 
-    // Hanya modal add saja (modal list dihapus)
-    const modalAdd = new bootstrap.Modal(document.getElementById('addAddressModal'));
+    const modalAdd = new bootstrap.Modal(document.getElementById("addAddressModal"));
+    
+    let province = document.getElementById('province');
+    let city     = document.getElementById('city');
+    let district = document.getElementById('district');
 
-    let prov = document.getElementById('provinsi');
-    let kab = document.getElementById('kabupaten');
-    let kec = document.getElementById('kecamatan');
+    const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute("content");
 
-    // === Jika ada tombol open ===
-    if (document.getElementById("openAddAddress")) {
-        document.getElementById("openAddAddress").addEventListener("click", function () {
-            modalAdd.show();
-        });
-    }
-
-    // === Saat Modal Dibuka ===
+    // ==== LOAD PROVINSI SAAT MODAL 2 DIBUKA ====
     document.getElementById("addAddressModal").addEventListener("show.bs.modal", function () {
 
-        prov.innerHTML = '<option value="">Pilih Provinsi</option>';
-        kab.innerHTML = '<option value="">Pilih Kabupaten</option>';
-        kec.innerHTML = '<option value="">Pilih Kecamatan</option>';
-        kab.disabled = true;
-        kec.disabled = true;
+        province.innerHTML = '<option value="">Pilih Provinsi</option>';
+        city.innerHTML = '<option value="">Pilih Kabupaten/Kota</option>';
+        district.innerHTML = '<option value="">Pilih Kecamatan</option>';
 
-        fetch("{{ route('lokasi.provinsi') }}")
+        city.disabled = true;
+        district.disabled = true;
+
+        fetch("/lokasi/province")
             .then(res => res.json())
             .then(data => {
+
+                data.sort((a, b) => a.name.localeCompare(b.name));
+
                 data.forEach(p => {
-                    prov.innerHTML += `<option value="${p.id}">${p.nama_provinsi}</option>`;
+                    province.innerHTML += `<option value="${p.id}">${p.name}</option>`;
                 });
             });
     });
 
-    // === Provinsi → Kabupaten ===
-    prov.addEventListener("change", function () {
-        kab.innerHTML = '<option value="">Pilih Kabupaten</option>';
-        kec.innerHTML = '<option value="">Pilih Kecamatan</option>';
-        kab.disabled = true;
-        kec.disabled = true;
+    // ==== PROVINSI -> CITY ====
+    province.addEventListener("change", function () {
+        city.innerHTML = '<option value="">Pilih Kabupaten/Kota</option>';
+        district.innerHTML = '<option value="">Pilih Kecamatan</option>';
+
+        city.disabled = true;
+        district.disabled = true;
 
         if (!this.value) return;
 
-        fetch("/lokasi/kabupaten/" + this.value)
+        fetch("/lokasi/city/" + this.value)
             .then(res => res.json())
             .then(data => {
-                kab.disabled = false;
+
+                data.sort((a, b) => a.name.localeCompare(b.name));
+
+                city.disabled = false;
                 data.forEach(k => {
-                    kab.innerHTML += `<option value="${k.id}">${k.nama_kabupaten}</option>`;
+                    city.innerHTML += `<option value="${k.id}">${k.name}</option>`;
                 });
             });
     });
 
-    // === Kabupaten → Kecamatan ===
-    kab.addEventListener("change", function () {
-        kec.innerHTML = '<option value="">Pilih Kecamatan</option>';
-        kec.disabled = true;
+    // ==== CITY -> DISTRICT ====
+    city.addEventListener("change", function () {
+        district.innerHTML = '<option value="">Pilih Kecamatan</option>';
+        district.disabled = true;
 
         if (!this.value) return;
 
-        fetch("/lokasi/kecamatan/" + this.value)
+        fetch("/lokasi/district/" + this.value)
             .then(res => res.json())
             .then(data => {
-                kec.disabled = false;
+
+                data.sort((a, b) => a.name.localeCompare(b.name));
+
+                district.disabled = false;
                 data.forEach(k => {
-                    kec.innerHTML += `<option value="${k.id}">${k.nama_kecamatan}</option>`;
+                    district.innerHTML += `<option value="${k.id}">${k.name}</option>`;
                 });
             });
     });
@@ -185,4 +190,5 @@ document.addEventListener("DOMContentLoaded", function () {
   });
 });
 </script>
+
 @endpush

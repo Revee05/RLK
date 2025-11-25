@@ -26,6 +26,8 @@
                     <div id="checkout-selected-address">
                         @php
                             $selectedAddress = session('checkout_address') ?? ($addresses->first() ?? null);
+                            $destination = $selectedAddress ? ['district_id' => $selectedAddress->district_id] : null;
+                            $totalWeight = array_sum(array_map(fn($item) => ($item['weight'] ?? 1000) * $item['quantity'], $cart ?? []));
                         @endphp
 
                         @if($selectedAddress)
@@ -35,9 +37,9 @@
                                     {{ $selectedAddress->name }} <br>
                                     {{ $selectedAddress->phone }} <br>
                                     {{ $selectedAddress->address }},
-                                    {{ $selectedAddress->kecamatan->nama_kecamatan ?? '-' }}<br>
-                                    {{ $selectedAddress->kabupaten->nama_kabupaten ?? '-' }},
-                                    {{ $selectedAddress->provinsi->nama_provinsi ?? '-' }}
+                                    {{ $selectedAddress->district->name ?? '-' }}<br> 
+                                    {{ $selectedAddress->city->name ?? '-' }},
+                                    {{ $selectedAddress->province->name ?? '-' }}
                                 </div>
                             </div>
                         @else
@@ -118,6 +120,8 @@
                                     <div class="fw-bold">{{ $item['name'] }}</div>
                                     <div class="text-muted small">Merchandise</div>
                                     <div class="fw-bold mt-1">x{{ $item['quantity'] }}</div>
+                                    <div class="fw-bold mt-1">x{{ $item['price'] }}</div>
+                                    
                                 </div>
                             </div>
                         @endforeach
@@ -166,9 +170,9 @@
 </div>
 
 {{-- Include modal --}}
-@include('web.checkout.modals-alamat', ['addresses' => $addresses, 'provinsi' => $provinsi])
-@include('web.checkout.modals-tambah-alamat', ['provinsi' => $provinsi])
-@include('web.checkout.modals-shipper', ['selectedAddress' => $selectedAddress])
+@include('web.checkout.modals-alamat', ['addresses' => $addresses, 'province' => $province])
+@include('web.checkout.modals-tambah-alamat', ['province' => $province])
+@include('web.checkout.modals-shipper', ['selectedAddress' => $selectedAddress, 'cart' => $cart, 'subtotal' => $subtotal])
 
 @endsection
 
@@ -200,10 +204,12 @@ document.addEventListener("DOMContentLoaded", function () {
                         <div class="address-card border border-primary rounded p-3 mb-3">
                             <h6 class="fw-bold mb-1">${data.address.label_address}</h6>
                             <div class="small text-muted">
-                                ${data.address.name} • ${data.address.phone} <br>
-                                ${data.address.address} <br>
-                                ${data.address.kabupaten?.nama_kabupaten ?? '-'},
-                                ${data.address.provinsi?.nama_provinsi ?? '-'}
+                                ${data.address.name} <br>
+                                ${data.address.phone} <br>
+                                ${data.address.address},
+                                ${data.address.district?.name ?? '-'} <br> 
+                                ${data.address.city?.name ?? '-'},
+                                ${data.address.provinsi?.name ?? '-'}
                             </div>
                         </div>
                     `;
@@ -219,96 +225,65 @@ document.addEventListener("DOMContentLoaded", function () {
     const selectedShipperDiv = document.getElementById('selected-shipper');
     const shippingPriceEl = document.getElementById('shipping_price');
     const totalPriceEl = document.getElementById('total_price');
-    const subtotal = {{ $subtotal }};
 
-    // Ambil alamat tujuan
-    const destinationAddress = @json($selectedAddress ? [
-        'provinsi_id' => $selectedAddress->provinsi_id,
-        'kabupaten_id' => $selectedAddress->kabupaten_id,
-    ] : null);
+    const subtotal = {{ $subtotal }};
+    const destinationDistrictId = {{ $selectedAddress->district_id ?? 'null' }};
+    const totalWeight = {{ $totalWeight }};
 
     // Toggle Pickup / Delivery
-    if (radioPickup) {
-        radioPickup.addEventListener('change', function () {
-            pickupInfo.style.display = 'block';
-            btnPilihKurir.style.display = 'none';
-            selectedShipperDiv.style.display = 'none';
-            shippingPriceEl.innerText = 'Rp 0';
-            totalPriceEl.innerText = 'Rp ' + subtotal.toLocaleString('id-ID');
-        });
-    }
+    radioPickup?.addEventListener('change', function () {
+        pickupInfo.style.display = 'block';
+        btnPilihKurir.style.display = 'none';
+        selectedShipperDiv.style.display = 'none';
 
-    if (radioDelivery) {
-        radioDelivery.addEventListener('change', function () {
-            pickupInfo.style.display = 'none';
-            btnPilihKurir.style.display = 'inline-block';
-        });
-    }
+        shippingPriceEl.innerText = 'Rp 0';
+        totalPriceEl.innerText = 'Rp ' + subtotal.toLocaleString('id-ID');
+    });
+
+    radioDelivery?.addEventListener('change', function () {
+        pickupInfo.style.display = 'none';
+        btnPilihKurir.style.display = 'inline-block';
+    });
 
     // Tombol Pilih Kurir → fetch daftar kurir
-    btnPilihKurir.addEventListener('click', function() {
-        if(!destinationAddress){
-            alert('Pilih alamat tujuan dulu!');
+    btnPilihKurir?.addEventListener("click", function () {
+        if (!destinationDistrictId) {
+            alert("Pilih alamat tujuan dulu!");
             return;
         }
 
-        const origin = { provinsi_id: 10, kabupaten_id: 399 };
-        const destination = destinationAddress;
-
-        const shipperList = document.getElementById('shipper-list');
-        const shipperLoading = document.getElementById('shipper-loading');
-
-        shipperList.style.display = 'none';
-        shipperLoading.style.display = 'block';
-
-        fetch('{{ route("checkout.shipping-cost") }}', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': '{{ csrf_token() }}'
-            },
-            body: JSON.stringify({ origin, destination })
-        })
-        .then(res => res.json())
-        .then(data => {
-
-            shipperList.innerHTML = '';
-
-            if(data.length === 0){
-                shipperList.innerHTML = '<div class="text-center text-muted">Tidak ada kurir tersedia.</div>';
-            } else {
-                data.forEach(shipper => {
-                    const div = document.createElement('div');
-                    div.classList.add('border','rounded','p-3','mb-2','pointer');
-                    div.innerHTML = `<strong>${shipper.name}</strong><br>Rp ${shipper.price.toLocaleString('id-ID')} — Est: ${shipper.eta}`;
-                    div.onclick = function(){
-                        selectShipper(shipper.name, shipper.price, shipper.id);
-                    };
-                    shipperList.appendChild(div);
-                });
-            }
-
-            shipperLoading.style.display = 'none';
-            shipperList.style.display = 'block';
-        });
+        // Kirim data ke modal (window global)
+        window.SHIPPER_DATA = {
+            origin: 5592,
+            destination: destinationDistrictId,
+            weight: totalWeight
+        };
     });
 
+    // FUNGSI PILIH KURIR
+    window.selectShipper = function (name, price, id) {
 
-    // Fungsi global untuk modal shipper
-    window.selectShipper = function(name, price, id){
         selectedShipperDiv.innerHTML = `${name} – Rp ${price.toLocaleString('id-ID')}`;
-        selectedShipperDiv.style.display = 'block';
+        selectedShipperDiv.style.display = "block";
+
+        shippingPriceEl.innerText = 'Rp ' + price.toLocaleString('id-ID');
+        totalPriceEl.innerText = 'Rp ' + (subtotal + Number(price)).toLocaleString('id-ID');
 
         radioDelivery.checked = true;
 
-        let input = document.getElementById('selected_shipper_id');
-        if(input){
-            input.value = id;
+        let input = document.getElementById("selected_shipper_id");
+        if (!input) {
+            input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = 'shipper_id';
+            input.id = 'selected_shipper_id';
+            document.querySelector('form').appendChild(input);
         }
+        input.value = id;
 
         const modalEl = document.getElementById('shipperModal');
         const modal = bootstrap.Modal.getInstance(modalEl);
-        if(modal) modal.hide();
+        if (modal) modal.hide();
     }
 
 });

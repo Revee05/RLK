@@ -12,9 +12,9 @@ class UserAddress extends Model
         'name',
         'phone',
         'address',
-        'provinsi_id',
-        'kabupaten_id',
-        'kecamatan_id',
+        'province_id',
+        'city_id',
+        'district_id',
         'desa_id',
         'kodepos',
         'label_address',
@@ -23,14 +23,14 @@ class UserAddress extends Model
     public function user(){
         return $this->belongsTo('App\User','user_id');
     }
-    public function provinsi(){
-        return $this->belongsTo('App\Provinsi','provinsi_id');
+    public function province(){
+        return $this->belongsTo('App\Province','province_id');
     }
-    public function kabupaten(){
-        return $this->belongsTo('App\Kabupaten','kabupaten_id');
+    public function city(){
+        return $this->belongsTo('App\City','city_id');
     }
-    public function kecamatan(){
-        return $this->belongsTo('App\Kecamatan','kecamatan_id');
+    public function district(){
+        return $this->belongsTo('App\District','district_id');
     }
     // public function desa(){
     //     return $this->belongsTo('App\Desa','desa_id');

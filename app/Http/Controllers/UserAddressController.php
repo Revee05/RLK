@@ -35,9 +35,9 @@ class UserAddressController extends Controller
                 'name'          => 'required|string',
                 'phone'         => 'required|string',
                 'address'       => 'required|string',
-                'provinsi_id'   => 'required|integer',
-                'kabupaten_id'  => 'required|integer',
-                'kecamatan_id'  => 'required|integer',
+                'province_id'   => 'required|integer',
+                'city_id'       => 'required|integer',
+                'district_id'   => 'required|integer',
                 'label_address' => 'nullable|string',
             ]);
 
@@ -46,11 +46,10 @@ class UserAddressController extends Controller
                 'name'          => $validated['name'],
                 'phone'         => $validated['phone'],
                 'address'       => $validated['address'],
-                'provinsi_id'   => $validated['provinsi_id'],
-                'kabupaten_id'  => $validated['kabupaten_id'],
-                'kecamatan_id'  => $validated['kecamatan_id'],
+                'province_id'   => $validated['province_id'],
+                'city_id'       => $validated['city_id'],
+                'district_id'   => $validated['district_id'],
                 'label_address' => $validated['label_address'] ?? null,
-                'desa_id'       => null,
                 'kodepos'       => null,
             ];
 
@@ -80,7 +79,7 @@ class UserAddressController extends Controller
 
     public function refreshList()
     {
-        $addresses = UserAddress::where('user_id', auth()->id())->get();
+        $addresses = UserAddress::with(['province','city','district'])->where('user_id', auth()->id())->get();
 
         $html = "";
         foreach ($addresses as $addr) {
@@ -92,8 +91,8 @@ class UserAddressController extends Controller
                         <div class="small text-muted">
                             '.$addr->name.' • '.$addr->phone.' <br>
                             '.$addr->address.' <br>
-                            '.($addr->kabupaten->nama_kabupaten ?? '-').',
-                            '.($addr->provinsi->nama_provinsi ?? '-').'
+                            '.($addr->city->name ?? '-').',
+                            '.($addr->province->name ?? '-').'
                         </div>
                     </div>
                     <input type="radio" name="address_id">

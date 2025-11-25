@@ -82,17 +82,19 @@ Route::post('/payments/midtrans-notification','Account\PaymentCallbackController
 Route::post('/checkout/process', 'Web\CheckoutMerchController@process')->name('checkout.process');
 Route::get('/checkout/success/{invoice}', 'Web\CheckoutMerchController@success')->name('checkout.success');
 Route::post('/checkout/set-address', 'Web\CheckoutMerchController@setAddress')->name('checkout.set-address');
+Route::post('/checkout/shipping-cost', 'Web\CheckoutMerchController@getShippingCost')->name('checkout.shipping-cost');
+
 
 // List semua provinsi
-Route::get('/lokasi/provinsi', 'ProvinsiController@getAll')->name('lokasi.provinsi');
+Route::get('/lokasi/province', 'LocationController@province')->name('lokasi.province');
 
 // List kabupaten berdasarkan provinsi
-Route::get('/lokasi/kabupaten/{provinsi_id}', 'KabupatenController@getByProvinsi')->name('lokasi.kabupaten');
+Route::get('/lokasi/city/{province_id}', 'LocationController@city')->name('lokasi.city');
 
 // List kecamatan berdasarkan kabupaten
-Route::get('/lokasi/kecamatan/{kabupaten_id}', 'KecamatanController@getByKabupaten')->name('lokasi.kecamatan');
+Route::get('/lokasi/district/{city_id}', 'LocationController@district')->name('lokasi.district');
 
 Route::post('/alamat/store', 'UserAddressController@store')->name('alamat.store');
 Route::get('/alamat/refresh', 'UserAddressController@refreshList')->name('alamat.refresh');
-Route::post('/checkout/shipping-cost', 'Web\CheckoutMerchController@calculateShipping')->name('checkout.shipping-cost');
+//Route::post('/checkout/shipping-cost', 'Web\CheckoutMerchController@calculateShipping')->name('checkout.shipping-cost');
 
