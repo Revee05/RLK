@@ -42,15 +42,12 @@
                                                         data-id="{{ $ua->id }}">
                                                         <i class="bi bi-pencil-square"></i>
                                                     </a>
-                                                    <form action="{{ route('account.address.destroy', [$ua->id]) }}"
-                                                        method="post" class="d-inline-block ms-2">
-                                                        @method('delete')
-                                                        @csrf
-                                                        <button onclick="return confirm('Hapus alamat ini?')" type="submit"
-                                                            class="btn-icon icon-delete" aria-label="Hapus alamat">
-                                                            <i class="bi bi-trash"></i>
-                                                        </button>
-                                                    </form>
+                                                    <button type="button"
+                                                        class="btn-icon icon-delete open-delete-address ms-2"
+                                                        aria-label="Hapus alamat"
+                                                        data-url="{{ route('account.address.destroy', [$ua->id]) }}">
+                                                        <i class="bi bi-trash"></i>
+                                                    </button>
                                                 </div>
                                             </div>
                                         </div>
@@ -143,9 +140,25 @@
                     updModal.show();
                 });
             });
+
+            // Wire delete buttons to open confirmation modal
+            document.querySelectorAll('.open-delete-address').forEach(function(el) {
+                el.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const url = this.getAttribute('data-url');
+                    if (!url) return;
+
+                    const delModalEl = document.getElementById('deleteAddressModal');
+                    if (!delModalEl) return;
+                    delModalEl.dataset.deleteUrl = url;
+                    const delModal = new bootstrap.Modal(delModalEl);
+                    delModal.show();
+                });
+            });
         });
     </script>
 @endsection
 
 @include('account.address.modal-add-address')
 @include('account.address.modal-update-address')
+@include('account.address.modal-delete-address')
