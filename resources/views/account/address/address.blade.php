@@ -58,7 +58,8 @@
                         @endif
 
                         <div class="mt-3 text-start ps-0">
-                            <a href="{{ route('account.address.create') }}" class="btn btn-cyan btn-add-address">
+                            <a href="#" class="btn btn-cyan btn-add-address" data-bs-toggle="modal"
+                                data-bs-target="#addAddressModal" id="openAddAddress">
                                 <span class="btn-add-icon"><i class="bi bi-plus-circle"></i></span>
                                 Tambah Alamat
                             </a>
@@ -71,5 +72,54 @@
 @endsection
 
 @section('js')
-    <script type="text/javascript"></script>
+    <!-- Toasts for server-side flash messages -->
+    <div aria-live="polite" aria-atomic="true" class="position-relative">
+        <div id="accountToastContainer"
+            style="position: fixed; right: 1rem; top: 1rem; z-index: 10800;
+            display: flex; flex-direction: column; gap: .5rem;
+        ">
+        </div>
+    </div>
+
+    <script type="text/javascript">
+        document.addEventListener('DOMContentLoaded', function() {
+            const container = document.getElementById('accountToastContainer');
+
+            @if (session('success'))
+                const toastSuccess = document.createElement('div');
+                toastSuccess.className = 'toast align-items-center text-white bg-success border-0';
+                toastSuccess.setAttribute('role', 'alert');
+                toastSuccess.setAttribute('aria-live', 'assertive');
+                toastSuccess.setAttribute('aria-atomic', 'true');
+                toastSuccess.innerHTML = `
+                    <div class="d-flex">
+                        <div class="toast-body">{!! session('success') !!}</div>
+                        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                    </div>`;
+                container.appendChild(toastSuccess);
+                new bootstrap.Toast(toastSuccess, {
+                    delay: 4000
+                }).show();
+            @endif
+
+            @if (session('error'))
+                const toastError = document.createElement('div');
+                toastError.className = 'toast align-items-center text-white bg-danger border-0';
+                toastError.setAttribute('role', 'alert');
+                toastError.setAttribute('aria-live', 'assertive');
+                toastError.setAttribute('aria-atomic', 'true');
+                toastError.innerHTML = `
+                    <div class="d-flex">
+                        <div class="toast-body">{!! session('error') !!}</div>
+                        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                    </div>`;
+                container.appendChild(toastError);
+                new bootstrap.Toast(toastError, {
+                    delay: 4000
+                }).show();
+            @endif
+        });
+    </script>
 @endsection
+
+@include('account.address.modal-add-address')
