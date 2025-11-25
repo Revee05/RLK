@@ -124,12 +124,28 @@ class MerchProductController extends Controller
                 'variants.images',
                 'variants.sizes'
             ])->findOrFail($id);
+            
+            // Detach categories
             $product->categories()->detach();
+            
+            // Delete variants and their dependencies
             $product->variants->each(function ($variant) {
+                // Delete image files from storage and database
+                $variant->images->each(function ($image) {
+                    if ($image->image_path && file_exists(public_path($image->image_path))) {
+                        @unlink(public_path($image->image_path));
+                    }
+                });
                 $variant->images()->delete();
+                
+                // Delete sizes
                 $variant->sizes()->delete();
+                
+                // Delete variant
                 $variant->delete();
             });
+            
+            // Delete product
             $product->delete();
         });
 
