@@ -39,6 +39,9 @@ class MerchProductController extends Controller
         \DB::transaction(function () use ($request) {
             $request->validate($this->storeValidationRules());
 
+            // Debug: Log request variants data
+            // \Log::info('Store Request Variants Data', ['variants' => $request->variants]);
+
             $merchProduct = MerchProduct::create($this->buildProductPayload($request));
             $this->syncCategories($merchProduct, $request->get('categories', []), false);
 
@@ -75,6 +78,9 @@ class MerchProductController extends Controller
         \DB::transaction(function () use ($request, $id) {
             $merchProduct = MerchProduct::findOrFail($id);
             $request->validate($this->updateValidationRules($merchProduct->id));
+
+            // Debug: Log request variants data
+            // \Log::info('Update Request Variants Data', ['variants' => $request->variants]);
 
             $merchProduct->update($this->buildProductPayload($request, $merchProduct->id));
             $this->syncCategories($merchProduct, $request->get('categories', []), true);
@@ -142,7 +148,16 @@ class MerchProductController extends Controller
             'stock' => $hasSizes ? null : ($variantData['stock'] ?? 0),
             'price' => $hasSizes ? null : ($variantData['price'] ?? null),
             'discount' => $hasSizes ? null : ($variantData['discount'] ?? 0),
+            'weight' => $variantData['weight'] ?? null,
         ];
+
+        // Debug: Log variant data and payload
+        // \Log::info('Upsert Variant', [
+        //     'variantData' => $variantData,
+        //     'payload' => $payload,
+        //     'weight_exists' => isset($variantData['weight']),
+        //     'weight_value' => $variantData['weight'] ?? 'NOT SET'
+        // ]);
 
         $variant = !empty($variantData['id'])
             ? tap($product->variants()->where('id', $variantData['id'])->firstOrFail())->update($payload)
@@ -345,6 +360,7 @@ class MerchProductController extends Controller
             'variants.*.stock' => 'nullable|integer|min:0',
             'variants.*.price' => 'nullable|numeric|min:0',
             'variants.*.discount' => 'nullable|numeric|min:0|max:100',
+            'variants.*.weight' => 'required|numeric|min:0',
         ];
     }
 

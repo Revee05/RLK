@@ -60,7 +60,7 @@
             {{-- =========================
                 4A. PRODUCT IMAGE LEFT SIDE
             ========================= --}}
-            <div class="col-lg-6">
+            <div class="col-lg-5">
 
                 {{-- 4A.1 Main Image --}}
                 <div class="main-image">
@@ -92,7 +92,7 @@
             {{-- =========================
                 4B. PRODUCT INFO RIGHT SIDE
             ========================= --}}
-            <div class="col-lg-6">
+            <div class="col-lg-7">
 
                 {{-- 4B.1 Title --}}
                 <h2 class="product-title mb-2">{{ $product->name }}</h2>
@@ -185,8 +185,13 @@
                     <input type="hidden" name="selected_size_id" id="selected_size_id" value="{{ $mainVariant->sizes->first()->id ?? '' }}">
 
                     {{-- Bagian Quantity biarkan tetap sama --}}
+                    <label class="form-label fw-bold">Quantity</label>
                     <div class="d-flex align-items-center mb-3">
-                        <input type="number" id="qty-input" name="quantity" value="1" min="1" class="qty-input">
+                        <div class="qty-group">
+                            <button type="button" class="qty-btn minus" tabindex="-1">-</button>
+                            <input type="number" id="qty-input" name="quantity" value="1" min="1" class="qty-input" autocomplete="off">
+                            <button type="button" class="qty-btn plus" tabindex="-1">+</button>
+                        </div>
                         <span id="stock-info" class="text-muted ms-3">
                             Tersedia {{ $mainVariant->sizes->count() ? ($mainVariant->sizes->first()->stock ?? 0) : ($mainVariant->display_stock ?? 0) }}
                         </span>
@@ -212,8 +217,13 @@
         5. PRODUCT DESCRIPTION
     ========================= --}}
     <div class="container pb-3">
-        <h4 class="mb-2">Deskripsi Produk</h4>
-        <div class="product-desc mb-4">
+        <h4 class="mb-2">
+            Deskripsi Produk
+            <button id="toggle-desc-btn" class="btn btn-link btn-sm" type="button" style="text-decoration:none;">
+                <span id="toggle-desc-icon">▼</span> Tampilkan
+            </button>
+        </h4>
+        <div class="product-desc mb-4" id="product-desc-content" style="display:none;">
             {!! $product->description !!}
         </div>
     </div>
@@ -266,8 +276,7 @@
 ========================= --}}
 @section('js')
 <script>
-document.addEventListener('DOMContentLoaded', () => {
-
+document.addEventListener('DOMContentLoaded', function() {
     console.log('Product:', @json($product));
     console.log('Related Products:', @json($relatedProducts));
     
@@ -504,6 +513,35 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         });
     }
+
+    // Toggle deskripsi produk
+    const descBtn = document.getElementById('toggle-desc-btn');
+    const descContent = document.getElementById('product-desc-content');
+    const descIcon = document.getElementById('toggle-desc-icon');
+    let descVisible = false;
+
+    if(descBtn && descContent) {
+        descBtn.addEventListener('click', function() {
+            descVisible = !descVisible;
+            descContent.style.display = descVisible ? 'block' : 'none';
+            descBtn.innerHTML = `<span id="toggle-desc-icon">${descVisible ? '▲' : '▼'}</span> ${descVisible ? 'Sembunyikan' : 'Tampilkan'}`;
+        });
+    }
+});
+document.querySelectorAll('.qty-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+        const input = this.parentElement.querySelector('.qty-input');
+        let val = parseInt(input.value) || 1;
+        const min = parseInt(input.min) || 1;
+        const max = parseInt(input.max) || 9999;
+
+        if (this.classList.contains('minus')) {
+            if (val > min) input.value = val - 1;
+        } else {
+            if (val < max) input.value = val + 1;
+        }
+        input.dispatchEvent(new Event('input'));
+    });
 });
 </script>
 @endsection

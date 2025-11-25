@@ -35,8 +35,9 @@
             <option value="featured" {{ old('type', $merchProduct->type ?? '') == 'featured' ? 'selected' : '' }}>Featured</option>
         </select>
         <small class="form-text text-muted">
-            <b>Normal:</b> Produk tampil di cell biasa.<br>
-            <b>Featured:</b> Produk tampil di cell besar (span 2 kolom).
+            <b>Normal:</b> Produk tampil di cell biasa. <span class="text-info">Ukuran gambar yang disarankan: 400x300px</span><br>
+            <b>Featured:</b> Produk tampil di cell besar (span 2 kolom). <span class="text-info">Ukuran gambar yang disarankan: 800x300px</span><br>
+            <span class="text-warning">Format gambar: JPEG, JPG, atau WEBP</span>
         </small>
     </div>
 
@@ -70,8 +71,11 @@
                 <div class="mb-2">
                     <label>
                         Images
-                        <small class="text-muted ms-2">maximal 2MB/img format WEBP</small>
+                        <small class="text-muted ms-2">Maximal 2MB/img | Format: JPEG, JPG, atau WEBP</small>
                     </label>
+                    <small class="d-block text-info mb-2">
+                        💡 Ukuran yang disarankan: <b>Normal (400x300px)</b> | <b>Featured (800x300px)</b>
+                    </small>
                     <div class="variant-images-container">
                         @php
                             $images = $variant['images'] ?? [];
@@ -96,17 +100,24 @@
 
                 {{-- ========== Tambahan: Stock, Price, Discount di level variant ========== --}}
                 <div class="mb-2 variant-stock-fields" @if(!empty($variant['sizes'])) style="display:none" @endif>
-                    <label>Stock (tanpa size)</label>
+                    <label>Stock</label>
                     <input type="number" name="variants[{{ $vIdx }}][stock]" class="form-control" placeholder="Stock" value="{{ $variant['stock'] ?? 0 }}">
                 </div>
                 <div class="mb-2 variant-price-fields" @if(!empty($variant['sizes'])) style="display:none" @endif>
-                    <label>Price (tanpa size)</label>
+                    <label>Price</label> 
                     <input type="number" name="variants[{{ $vIdx }}][price]" class="form-control" placeholder="Price" value="{{ $variant['price'] ?? '' }}">
                 </div>
                 <div class="mb-2 variant-discount-fields" @if(!empty($variant['sizes'])) style="display:none" @endif>
-                    <label>Discount (tanpa size)</label>
+                    <label>Discount</label>
                     <input type="number" name="variants[{{ $vIdx }}][discount]" class="form-control" placeholder="Discount" value="{{ $variant['discount'] ?? 0 }}">
                 </div>
+                
+                {{-- Berat selalu tampil, tidak di-hide --}}
+                <div class="mb-2">
+                    <label>Berat (gram)</label>
+                    <input type="number" name="variants[{{ $vIdx }}][weight]" class="form-control" placeholder="Berat (gram)" value="{{ $variant['weight'] ?? '' }}" required min="0" step="0.01">
+                </div>
+                
                 <div class="mb-2">
                     <small class="text-muted">
                         Jika variant tidak memiliki size, isi Stock/Price/Discount di atas.<br>
@@ -185,24 +196,34 @@
             <div class="mb-2">
                 <label>
                     Images
-                    <small class="text-muted ms-2">maximal 2MB/img format WEBP</small>
+                    <small class="text-muted ms-2">Maximal 2MB/img | Format: JPEG, JPG, atau WEBP</small>
                 </label>
+                <small class="d-block text-info mb-2">
+                    💡 Ukuran yang disarankan: <b>Normal (400x300px)</b> | <b>Featured (800x300px)</b>
+                </small>
                 <div class="variant-images-container"></div>
                 <button type="button" class="btn btn-outline-primary btn-sm add-variant-image">Add Image</button>
             </div>
             {{-- ========== Tambahan: Stock, Price, Discount di level variant ========== --}}
             <div class="mb-2 variant-stock-fields">
-                <label>Stock (tanpa size)</label>
+                <label>Stock</label>
                 <input type="number" name="variants[#IDX#][stock]" class="form-control" placeholder="Stock">
             </div>
             <div class="mb-2 variant-price-fields">
-                <label>Price (tanpa size)</label>
+                <label>Price</label>
                 <input type="number" name="variants[#IDX#][price]" class="form-control" placeholder="Price">
             </div>
             <div class="mb-2 variant-discount-fields">
-                <label>Discount (tanpa size)</label>
+                <label>Discount</label>
                 <input type="number" name="variants[#IDX#][discount]" class="form-control" placeholder="Discount">
             </div>
+            
+            {{-- Berat selalu tampil, tidak di-hide --}}
+            <div class="mb-2">
+                <label>Berat (gram)</label>
+                <input type="number" name="variants[#IDX#][weight]" class="form-control" placeholder="Berat (gram)" value="0" required min="0" step="0.01">
+            </div>
+            
             <div class="mb-2">
                 <small class="text-muted">
                     Jika variant tidak memiliki size, isi Stock/Price/Discount di atas.<br>
@@ -344,11 +365,13 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Fungsi untuk toggle stock/price/discount di variant
+    // Weight field tidak di-hide karena berat adalah atribut variant, bukan size
     function toggleVariantStockFields(variantCard) {
         let sizes = variantCard.querySelectorAll('.variant-size-item');
         let stockField = variantCard.querySelector('.variant-stock-fields');
         let priceField = variantCard.querySelector('.variant-price-fields');
         let discountField = variantCard.querySelector('.variant-discount-fields');
+        
         if (sizes.length > 0) {
             if (stockField) stockField.style.display = 'none';
             if (priceField) priceField.style.display = 'none';

@@ -16,6 +16,7 @@ class MerchProductVariant extends Model
         'stock',
         'price',
         'discount',
+        'weight',
     ];
 
     public function product()
