@@ -30,10 +30,14 @@
         return [
             'id' => $v->id,
             'display_stock' => $v->display_stock,
+            'price' => $v->price,
+            'discount' => $v->discount,
             'sizes' => $v->sizes->map(fn($s) => [
                 'id' => $s->id,
                 'size' => $s->size,
                 'stock' => $s->stock,
+                'price' => $s->price,
+                'discount' => $s->discount,
             ])->toArray(),
             'image' => $v->images->first() ? asset($v->images->first()->image_path) : 'https://placehold.co/500x400?text=No+Image',
         ];
@@ -103,15 +107,12 @@
                 </div>
 
                 {{-- 4B.3 Price --}}
-                <div class="product-price mb-3">
+                <div class="product-price mb-3" id="price-display">
                     @if($mainVariant && $mainVariant->display_discount)
-                        <span class="badge bg-danger me-2">-{{ $mainVariant->display_discount }}%</span>
-                        Rp. {{ number_format($mainVariant->display_price, 0, ',', '.') }}
-                        <span class="text-muted text-decoration-line-through ms-2 original-strike">
-                            Rp. {{ number_format($mainVariant->display_price, 0, ',', '.') }}
-                        </span>
+                        <span class="badge bg-danger me-2" id="discount-badge">-{{ $mainVariant->display_discount }}%</span>
+                        <span id="current-price">Rp. {{ number_format($mainVariant->display_price, 0, ',', '.') }}</span>
                     @elseif($mainVariant)
-                        Rp. {{ number_format($mainVariant->display_price, 0, ',', '.') }}
+                        <span id="current-price">Rp. {{ number_format($mainVariant->display_price, 0, ',', '.') }}</span>
                     @else
                         <span class="text-muted">-</span>
                     @endif
@@ -354,6 +355,40 @@ document.addEventListener('DOMContentLoaded', function() {
         if (submitBtnEl) submitBtnEl.disabled = stock < 1;
     }
 
+    // 7.6b Update Price Display
+    function updatePriceDisplay() {
+        const variant = currentVariant();
+        if (!variant) return;
+
+        const sizeIdx = currentSizeIndex(variant);
+        let price, discount;
+
+        // Jika ada size dan size dipilih, ambil dari size
+        if (variant.sizes.length > 0 && sizeIdx >= 0) {
+            price = variant.sizes[sizeIdx].price;
+            discount = variant.sizes[sizeIdx].discount;
+        } else {
+            // Jika tidak ada size, ambil dari variant
+            price = variant.price;
+            discount = variant.discount;
+        }
+
+        const priceDisplay = document.getElementById('price-display');
+        if (!priceDisplay) return;
+
+        // Format harga
+        const formatPrice = (num) => 'Rp. ' + parseFloat(num).toLocaleString('id-ID');
+        
+        if (discount > 0) {
+            priceDisplay.innerHTML = `
+                <span class="badge bg-danger me-2" id="discount-badge">-${discount}%</span>
+                <span id="current-price">${formatPrice(price)}</span>
+            `;
+        } else {
+            priceDisplay.innerHTML = `<span id="current-price">${formatPrice(price)}</span>`;
+        }
+    }
+
     // 7.7 Update Hidden Inputs
     function updateHiddenInputs() {
         const v = currentVariant();
@@ -372,6 +407,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         renderSizes(variant);
         updateStockInfo();
+        updatePriceDisplay();
         updateHiddenInputs();
     }
 
@@ -406,6 +442,7 @@ document.addEventListener('DOMContentLoaded', function() {
             e.target.closest('.size-btn').classList.add('active');
 
             updateStockInfo();
+            updatePriceDisplay();
             updateHiddenInputs();
         }
     });
@@ -413,7 +450,10 @@ document.addEventListener('DOMContentLoaded', function() {
     // 7.11 Init State
     const initVariant = document.querySelector('.variant-btn input[type="radio"]:checked');
     if (initVariant) setActiveVariant(initVariant);
-    else updateStockInfo();
+    else {
+        updateStockInfo();
+        updatePriceDisplay();
+    }
 
 
     // =========================
