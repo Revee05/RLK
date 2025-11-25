@@ -1,6 +1,6 @@
 <!-- Modal: Tambah Alamat (reuse modal-tambah-address implementation) -->
 <!-- This modal is opened from the account address page 'Tambah Alamat' button -->
-<div class="modal fade" id="addAddressModal" tabindex="-1" aria-hidden="true">
+<div class="modal fade" id="addAddressModal" tabindex="-1" aria-hidden="true" style="display:none;" data-lazy="1">
     <div class="modal-dialog modal-dialog-centered modal-md">
         <div class="modal-content">
 
@@ -55,7 +55,8 @@
                 </div>
 
                 <div class="modal-footer">
-                    <button type="submit" class="btn btn-darkblue btn-wide btn-rounded" id="saveNewAddress">Simpan</button>
+                    <button type="submit" class="btn btn-darkblue btn-wide btn-rounded"
+                        id="saveNewAddress">Simpan</button>
                 </div>
 
             </form>

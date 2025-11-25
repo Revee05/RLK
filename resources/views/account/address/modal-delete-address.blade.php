@@ -1,5 +1,5 @@
 <!-- Modal: Delete Alamat -->
-<div class="modal fade" id="deleteAddressModal" tabindex="-1" aria-hidden="true">
+<div class="modal fade" id="deleteAddressModal" tabindex="-1" aria-hidden="true" style="display:none;" data-lazy="1">
     <div class="modal-dialog modal-dialog-centered modal-sm">
         <div class="modal-content">
 

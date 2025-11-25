@@ -1,6 +1,5 @@
 <!-- Modal: Update Alamat -->
-<div class="modal fade" id="updateAddressModal" tabindex="-1" aria-hidden="true"
-    data-update-base="{{ route('account.address.index') }}">
+<div class="modal fade" id="updateAddressModal" tabindex="-1" aria-hidden="true" style="display:none;" data-lazy="1">
     <div class="modal-dialog modal-dialog-centered modal-md">
         <div class="modal-content">
 
@@ -156,7 +155,7 @@
             fetch('/lokasi/kabupaten/' + this.value).then(r => r.json()).then(data => {
                 kab.disabled = false;
                 data.forEach(k => kab.innerHTML +=
-                    `<option value="${k.id}">${k.nama_kabupaten}</option>`);
+                    `<option value("${k.id}">${k.nama_kabupaten}</option>`);
             }).catch(() => {});
         });
         kab.addEventListener('change', function() {
