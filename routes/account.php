@@ -18,7 +18,7 @@ Route::group(['prefix' => '/account', 'middleware' => ['auth', 'verified', 'IsMe
     Route::post('/profile', 'Account\MemberController@updateProfile')->name('update.profil');
     // upload avatar separately
     Route::post('/profile/avatar', 'Account\MemberController@uploadAvatar')->name('account.avatar.upload');
-    Route::resource('/address', 'Account\AddressController', ['as' => 'account']);
+    Route::resource('/address', 'Account\AddressController', ['as' => 'account'])->except(['create']);
     Route::post('/checkout/get/ongkir', 'Account\CheckoutController@getOngkir')->name('checkout.get.ongkir');
     Route::get('/checkout/{slug}', 'Account\CheckoutController@cart')->name('checkout.cart');
     Route::resource('/checkout', 'Account\CheckoutController', ['as' => 'account']);
