@@ -57,7 +57,7 @@ class MerchProductController extends Controller
             $this->recomputeAndPersistAggregates($merchProduct->fresh(['variants.images', 'variants.sizes']));
         });
 
-        return redirect()->route('master.merchProduct.index')->with('success', 'Product created!');
+        return redirect()->route('master.merchProduct.index')->with('success', 'Produk merchandise berhasil ditambahkan!');
     }
 
     public function edit($id)
@@ -113,7 +113,7 @@ class MerchProductController extends Controller
             $this->recomputeAndPersistAggregates($merchProduct->fresh(['variants.images', 'variants.sizes']));
         });
 
-        return redirect()->route('master.merchProduct.index')->with('success', 'Product updated!');
+        return redirect()->route('master.merchProduct.index')->with('success', 'Produk merchandise berhasil diperbarui!');
     }
 
     public function destroy($id)
@@ -149,7 +149,7 @@ class MerchProductController extends Controller
             $product->delete();
         });
 
-        return redirect()->route('master.merchProduct.index')->with('success', 'Product deleted!');
+        return redirect()->route('master.merchProduct.index')->with('success', 'Produk merchandise berhasil dihapus!');
     }
     /* ------------------------------- Variants Ops ------------------------------ */
     private function upsertVariant(MerchProduct $product, array $variantData, int $idx, $defaultRaw)
