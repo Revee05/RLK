@@ -118,8 +118,8 @@
                         <input type="number" name="variants[{{ $vIdx }}][price]" class="form-control" placeholder="Price" value="{{ $variant['price'] ?? '' }}">
                     </div>
                     <div class="mb-2 variant-discount-fields" @if(!empty($variant['sizes'])) style="display:none" @endif>
-                        <label>Discount</label>
-                        <input type="number" name="variants[{{ $vIdx }}][discount]" class="form-control" placeholder="Discount" value="{{ $variant['discount'] ?? 0 }}">
+                        <label>Discount (%)</label>
+                        <input type="number" name="variants[{{ $vIdx }}][discount]" class="form-control" placeholder="Discount" value="{{ $variant['discount'] ?? 0 }}" step="any" min="0" max="100">
                     </div>
                     
                     {{-- Berat selalu tampil, tidak di-hide --}}
@@ -155,7 +155,7 @@
                                     <input type="number" name="variants[{{ $vIdx }}][sizes][{{ $sIdx }}][price]" class="form-control" placeholder="Price" value="{{ $sz['price'] ?? '' }}">
                                 </div>
                                 <div class="col">
-                                    <input type="number" name="variants[{{ $vIdx }}][sizes][{{ $sIdx }}][discount]" class="form-control" placeholder="Discount" value="{{ $sz['discount'] ?? 0 }}">
+                                    <input type="number" name="variants[{{ $vIdx }}][sizes][{{ $sIdx }}][discount]" class="form-control" placeholder="Discount (%)" value="{{ $sz['discount'] ?? 0 }}" step="any" min="0" max="100">
                                 </div>
                                 <div class="col-auto">
                                     <button type="button" class="btn btn-outline-danger remove-variant-size">Remove</button>
@@ -230,8 +230,8 @@
                     <input type="number" name="variants[#IDX#][price]" class="form-control" placeholder="Price">
                 </div>
                 <div class="mb-2 variant-discount-fields">
-                    <label>Discount</label>
-                    <input type="number" name="variants[#IDX#][discount]" class="form-control" placeholder="Discount">
+                    <label>Discount (%)</label>
+                    <input type="number" name="variants[#IDX#][discount]" class="form-control" placeholder="Discount" step="any" min="0" max="100">
                 </div>
                 
                 {{-- Berat selalu tampil, tidak di-hide --}}
@@ -278,7 +278,7 @@
             <input type="number" name="variants[#VIDX#][sizes][#SIDX#][price]" class="form-control" placeholder="Price">
         </div>
         <div class="col">
-            <input type="number" name="variants[#VIDX#][sizes][#SIDX#][discount]" class="form-control" placeholder="Discount" value="">
+            <input type="number" name="variants[#VIDX#][sizes][#SIDX#][discount]" class="form-control" placeholder="Discount (%)" value="" step="any" min="0" max="100">
         </div>
         <div class="col-auto">
             <button type="button" class="btn btn-outline-danger remove-variant-size">Remove</button>

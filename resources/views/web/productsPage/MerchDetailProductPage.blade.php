@@ -109,7 +109,7 @@
                 {{-- 4B.3 Price --}}
                 <div class="product-price mb-3" id="price-display">
                     @if($mainVariant && $mainVariant->display_discount)
-                        <span class="badge bg-danger me-2" id="discount-badge">-{{ $mainVariant->display_discount }}%</span>
+                        <span class="badge bg-danger me-2" id="discount-badge">-{{ rtrim(rtrim(number_format($mainVariant->display_discount, 2, '.', ''), '0'), '.') }}%</span>
                         <span id="current-price">Rp. {{ number_format($mainVariant->display_price, 0, ',', '.') }}</span>
                     @elseif($mainVariant)
                         <span id="current-price">Rp. {{ number_format($mainVariant->display_price, 0, ',', '.') }}</span>
@@ -379,9 +379,15 @@ document.addEventListener('DOMContentLoaded', function() {
         // Format harga
         const formatPrice = (num) => 'Rp. ' + parseFloat(num).toLocaleString('id-ID');
         
+        // Format discount: hilangkan trailing zero
+        const formatDiscount = (num) => {
+            const formatted = parseFloat(num).toString();
+            return formatted;
+        };
+        
         if (discount > 0) {
             priceDisplay.innerHTML = `
-                <span class="badge bg-danger me-2" id="discount-badge">-${discount}%</span>
+                <span class="badge bg-danger me-2" id="discount-badge">-${formatDiscount(discount)}%</span>
                 <span id="current-price">${formatPrice(price)}</span>
             `;
         } else {
