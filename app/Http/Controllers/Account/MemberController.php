@@ -10,55 +10,96 @@ use App\Kabupaten;
 use App\Kecamatan;
 use App\Desa;
 use App\UserAddress;
-use Auth; 
+use Auth;
 use Illuminate\Support\Facades\Hash;
+use App\Product\Uploads;
+use Illuminate\Support\Facades\Log;
 
 class MemberController extends Controller
 {
     public function profile()
-    {   
+    {
         $user = Auth::user();
-        return view('account.profile',compact('user'));
+        return view('account.profile_new', compact('user'));
     }
     public function updateProfile(Request $request)
-    {   
+    {
         $id = $request->id;
-         if($request->password=="" && $request->katasandi == FALSE){
+        if ($request->password == "" && $request->katasandi == FALSE) {
             $this->validate($request, [
-                'email'=>'required|email|unique:users,email,'.$id,
-            ],[
-                'email.required'=> 'Email wajib diisi'
+                'email' => 'required|email|unique:users,email,' . $id,
+            ], [
+                'email.required' => 'Email wajib diisi'
             ]);
-            $input = $request->only(['name','email','jenis_kelamin']);
-        }else{
+            $input = $request->only(['name', 'email', 'jenis_kelamin']);
+        } else {
             $this->validate($request, [
-                'password'=>'required|min:6|confirmed',
-            ],[
-                'password.required'=> 'Password harus diisi',
-                'password.confirmed'=> 'Konfirmasi Password harus diisi',
-                'password.min'=> 'Password minimal 6 karakter',
+                'password' => 'required|min:6|confirmed',
+            ], [
+                'password.required' => 'Password harus diisi',
+                'password.confirmed' => 'Konfirmasi Password harus diisi',
+                'password.min' => 'Password minimal 6 karakter',
             ]);
             $input['password'] = Hash::make($request->password);
         }
         try {
-            
+
             $user = User::findOrFail($id);
-            if($id == Auth::user()->id) {
+            if ($id == Auth::user()->id) {
                 $user->fill($input)->save();
                 return redirect()->back()->with('message', 'Data berhasil diupdate');
             }
             Auth::logout();
             return redirect('/login');
-            
         } catch (Exception $e) {
-            Log::error("User save error ".$e->getMessage());
+            Log::error("User save error " . $e->getMessage());
         }
     }
+    
     public function kataSandi()
     {
 
         $user = User::findOrFail(Auth::user()->id);
-        return view('account.password.katasandi',compact('user'));
+        return view('account.password.password_new', compact('user'));
     }
-    
+
+    /**
+     * Upload profile avatar separately (AJAX or normal POST)
+     */
+    public function uploadAvatar(Request $request)
+    {
+        $this->validate($request, [
+            'avatar' => 'required|image|max:4096',
+        ], [
+            'avatar.required' => 'Silakan pilih gambar',
+            'avatar.image' => 'File harus berupa gambar',
+            'avatar.max' => 'Ukuran gambar maksimal 4MB',
+        ]);
+
+        try {
+            $user = Auth::user();
+            if (! $user) {
+                return redirect()->route('login');
+            }
+
+            $uploads = new Uploads();
+            $path = $uploads->handleUpload($request->file('avatar'));
+
+            // Save directly to model to avoid fillable issues
+            $user->foto = $path;
+            $user->save();
+
+            if ($request->ajax()) {
+                return response()->json(['success' => true, 'path' => $path]);
+            }
+
+            return redirect()->back()->with('message', 'Foto profil berhasil diperbarui');
+        } catch (\Exception $e) {
+            Log::error('Avatar upload error: ' . $e->getMessage());
+            if ($request->ajax()) {
+                return response()->json(['success' => false, 'message' => 'Gagal mengunggah gambar'], 500);
+            }
+            return redirect()->back()->with('error', 'Gagal mengunggah gambar');
+        }
+    }
 }

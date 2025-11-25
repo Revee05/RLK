@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Log;
 use Exception;
+use Illuminate\Support\Facades\Cache;
 
 class MerchCategoryController extends Controller
 {
@@ -27,6 +28,8 @@ class MerchCategoryController extends Controller
                 });
                 Log::info('MerchCategoryController@index response', ['categories' => $logCategories]);
             }
+            Cache::forget('merch_categories_list');
+            Cache::forget('merch_categories_version');
             return $response;
         } catch (Exception $e) {
             if (app()->environment(['local', 'development'])) {
@@ -72,6 +75,8 @@ class MerchCategoryController extends Controller
             if (app()->environment(['local', 'development'])) {
                 Log::info('MerchCategoryController@store response', ['created' => $created]);
             }
+            Cache::forget('merch_categories_list');
+            Cache::forget('merch_categories_version');
             return $response;
         } catch (Exception $e) {
             if (app()->environment(['local', 'development'])) {
@@ -113,6 +118,8 @@ class MerchCategoryController extends Controller
             if (app()->environment(['local', 'development'])) {
                 Log::info('MerchCategoryController@update response', ['updated' => $category]);
             }
+            Cache::forget('merch_categories_list');
+            Cache::forget('merch_categories_version');
             return $response;
         } catch (Exception $e) {
             if (app()->environment(['local', 'development'])) {
@@ -131,6 +138,8 @@ class MerchCategoryController extends Controller
             if (app()->environment(['local', 'development'])) {
                 Log::info('MerchCategoryController@destroy response', ['deleted_id' => $id]);
             }
+            Cache::forget('merch_categories_list');
+            Cache::forget('merch_categories_version');
             return $response;
         } catch (Exception $e) {
             if (app()->environment(['local', 'development'])) {
