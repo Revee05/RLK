@@ -124,21 +124,27 @@ class AddressController extends Controller
      */
     public function edit($id)
     {
-        $user_address = UserAddress::findOrFail($id);
-        $provinsis = Cache::remember('provinsis', 180, function () {
-            return Provinsi::pluck('nama_provinsi', 'id');
-        });
-        $kabupatens = Cache::remember('kabupatens', 180, function () {
-            return Kabupaten::all();
-        });
-        $kecamatans = Cache::remember('kecamatans', 180, function () {
-            return  Kecamatan::all();
-        });
+        $user_address = UserAddress::with(['provinsi', 'kabupaten', 'kecamatan'])->findOrFail($id);
 
-        return view(
-            'account.address.edit',
-            compact('user_address', 'provinsis', 'kabupatens', 'kecamatans')
-        );
+        // If request expects JSON (AJAX), return the address as JSON for modal population
+        if (request()->ajax() || request()->wantsJson()) {
+            return response()->json($user_address);
+        }
+
+        // $provinsis = Cache::remember('provinsis', 180, function () {
+        //     return Provinsi::pluck('nama_provinsi', 'id');
+        // });
+        // $kabupatens = Cache::remember('kabupatens', 180, function () {
+        //     return Kabupaten::all();
+        // });
+        // $kecamatans = Cache::remember('kecamatans', 180, function () {
+        //     return  Kecamatan::all();
+        // });
+
+        // return view(
+        //     'account.address.edit',
+        //     compact('user_address', 'provinsis', 'kabupatens', 'kecamatans')
+        // );
     }
 
     /**
@@ -159,9 +165,9 @@ class AddressController extends Controller
             'provinsi_id' => 'required',
             'kabupaten_id' => 'required',
             'kecamatan_id' => 'required',
-            'desa_id' => 'required',
+            // 'desa_id' => 'required',
             'label_address' => 'required',
-            'kodepos' => '',
+            // 'kodepos' => '',
         ], [
             'name.required' => 'Nama wajib di isi',
             'user_id.required' => 'wajib di isi',
@@ -170,8 +176,8 @@ class AddressController extends Controller
             'provinsi_id.required' => 'Provinsi wajib di isi',
             'kabupaten_id.required' => 'Kabupaten wajib di isi',
             'kecamatan_id.required' => 'Kecamtan wajib di isi',
-            'desa_id.required' => 'Desa wajib di isi',
-            'kodepos' => 'Kodepost wajib di isi',
+            // 'desa_id.required' => 'Desa wajib di isi',
+            // 'kodepos' => 'Kodepost wajib di isi',
             'label_address' => 'Label alamat wajib di isi',
         ]);
         try {
@@ -184,12 +190,14 @@ class AddressController extends Controller
                 'provinsi_id' => $request->provinsi_id,
                 'kabupaten_id' => $request->kabupaten_id,
                 'kecamatan_id' => $request->kecamatan_id,
-                'desa_id' => $request->desa_id,
-                'kodepos' => $request->kodepos,
+                // 'desa_id' => $request->desa_id,
+                // 'kodepos' => $request->kodepos,
                 'label_address' => $request->label_address,
             ]);
-            return redirect()->route('account.address.index');
+            return redirect()->route('account.address.index')->with('success', 'Alamat berhasil diperbarui!');
         } catch (Exception $e) {
+            Log::error('AddressController@update failed: ' . $e->getMessage(), ['exception' => $e]);
+            return redirect()->back()->withInput()->with('error', 'Gagal memperbarui alamat. Silakan coba lagi.');
         }
     }
 
@@ -204,8 +212,10 @@ class AddressController extends Controller
         try {
             $userAddress = UserAddress::findOrFail($id);
             $userAddress->delete();
-            return back();
+            return back()->with('success', 'Alamat berhasil dihapus!');
         } catch (Exception $e) {
+            Log::error('AddressController@destroy failed: ' . $e->getMessage(), ['exception' => $e]);
+            return back()->with('error', 'Gagal menghapus alamat. Silakan coba lagi.');
         }
     }
     public function getDesa(Request $request, $id)
