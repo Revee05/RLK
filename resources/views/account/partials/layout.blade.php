@@ -29,6 +29,8 @@
             'pusherCluster' => config('broadcasting.connections.pusher.options.cluster'),
         ]) !!};
     </script>
+
+    <!-- custom style -->
     <link rel="stylesheet" href="{{ asset('css/account/purchase_history.css') }}">
     <link rel="stylesheet" href="{{ asset('css/account/merch_order_detail.css') }}">
     <style type="text/css">
