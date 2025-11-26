@@ -3,7 +3,7 @@
 @section('title', 'Riwayat Lelang')
 
 @section('css')
-    <link href="{{ asset('css/account/account_styles.css') }}" rel="stylesheet" />
+    <link href="{{ asset('css/account/auction_history_style.css') }}" rel="stylesheet" />
 @endsection
 
 @section('content')
@@ -13,23 +13,35 @@
 
         <div class="col-md-9">
             <div class="card content-border shadow-sm">
-                <div class="card-body p-4">
-                    <h4 class="fw-bold mb-4" style="color: #051a36;">Riwayat Lelang</h4>
+                <div
+                    class="card-head border-bottom border-darkblue ps-4 d-flex align-items-center justify-content-between">
+                    <h3 class="mb-0 fw-bolder">Riwayat Lelang</h3>
+                </div>
 
+                <div class="card-body p-4">
                     {{-- A. STATISTIK (Tambahkan ID pada angka agar bisa diupdate JS) --}}
                     <div class="row g-3 mb-4">
                         <div class="col-md-4">
                             <div class="card-stat">
                                 <span class="stat-title">Total Penawaran</span>
-                                {{-- Tambah ID: stat-total-bids --}}
-                                <h3 class="stat-value"><span id="stat-total-bids">{{ $totalBids }}</span> <span class="fs-6 text-muted">Bids</span></h3>
+                                <h3 class="stat-value">
+                                    <span id="stat-total-bids">{{ $totalBids }}</span> 
+                                    
+                                    {{-- HAPUS 'text-muted' agar warnanya ikut menjadi biru --}}
+                                    <span class="fs-5" style="color: #15bcc5;">Bids</span>
+                                </h3>
                             </div>
                         </div>
+
                         <div class="col-md-4">
                             <div class="card-stat">
                                 <span class="stat-title">Item Dimenangkan</span>
-                                {{-- Tambah ID: stat-items-won --}}
-                                <h3 class="stat-value"><span id="stat-items-won">{{ $itemsWon }}</span> <span class="fs-6 text-muted">Item</span></h3>
+                                <h3 class="stat-value">
+                                    <span id="stat-items-won">{{ $itemsWon }}</span> 
+                                    
+                                    {{-- HAPUS 'text-muted' agar warnanya ikut menjadi biru --}}
+                                    <span class="fs-5" style="color: #15bcc5;">Item</span>
+                                </h3>
                             </div>
                         </div>
                         <div class="col-md-4">
@@ -41,33 +53,25 @@
                         </div>
                     </div>
 
-                    <h4 class="fw-bold mb-4" style="color: #051a36;">Log Aktivitas Terbaru</h4>
+                    <h5 class="fw-bold mb-3" style="color: #051a36;">Log Aktivitas Terbaru</h4>
 
-                    <div style="height: 340px; overflow-y: auto; border: 2px solid #051a36; border-radius: 0.8rem; background: #fff;">
-                        <table class="table table-hover mb-0" style="width: 100%; table-layout: fixed;">
-                            
-                            {{-- MODIFIKASI DISINI: Tambahkan 'd-none d-md-table-header-group' --}}
-                            {{-- Artinya: Hilang di HP, Muncul sebagai Header Tabel di Laptop --}}
-                            <thead class="sticky-top" style="z-index: 2;">
-                                {{-- 
-                                KITA TARUH CLASS-NYA DI SINI (DI TAG TR) 
-                                1. d-none        : Hilang di HP
-                                2. d-md-table-row: Muncul sebagai 'Baris Tabel' di Laptop (MD ke atas)
-                                --}}
-                                <tr class="d-none d-md-table-row">
-                                    <th style="width: 20%; background-color: #051a36; color: white; padding: 0.8rem; border: none;">Item Lelang</th>
-                                    <th style="width: 20%; background-color: #051a36; color: white; padding: 0.8rem; border: none;">Penutupan</th>
-                                    <th style="width: 20%; background-color: #051a36; color: white; padding: 0.8rem; border: none;">Tawaran Saya</th>
-                                    <th style="width: 20%; background-color: #051a36; color: white; padding: 0.8rem; border: none;">Tawaran Tertinggi</th>
-                                    <th class="text-center" style="width: 15%; background-color: #051a36; color: white; padding: 0.8rem; border: none;">Status</th>
-                                </tr>
-                            </thead>
-                                                        
-                            <tbody id="auction-table-body">
-                                @include('account.auction._table_rows')
-                            </tbody>
-                        </table>
-                    </div>
+                    <table class="ea_table">
+                        <thead>
+                        <tr>
+                            <th style="width: 20%; background-color: #051a36; color: white; padding: 0.8rem; border: none;">Item Lelang</th>
+                            <th style="width: 20%; background-color: #051a36; color: white; padding: 0.8rem; border: none;">Penutupan</th>
+                            <th style="width: 20%; background-color: #051a36; color: white; padding: 0.8rem; border: none;">Tawaran Saya</th>
+                            <th style="width: 20%; background-color: #051a36; color: white; padding: 0.8rem; border: none;">Tawaran Tertinggi</th>
+                            <th class="text-center" style="width: 15%; background-color: #051a36; color: white; padding: 0.8rem; border: none;">Status</th>
+                        </tr>
+                        </thead>
+
+                        <tbody id="auction-table-body">
+                            @include('account.auction._table_rows')
+                        </tbody>
+                        
+                    </table>
+            
                 </div>
             </div>
         </div>
