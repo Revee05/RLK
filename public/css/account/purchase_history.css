@@ -1,0 +1,66 @@
+.purchase-history-container{max-width:1200px;margin:40px auto 10px;}
+
+.transaction-stats{display:flex;gap:8px;margin-bottom:10px;}
+.stat-box{flex:1;background:#fff;border:1px solid #e0e0e0;border-radius:8px;padding: 10px;box-shadow:0 2px 4px rgba(0,0,0,.08);transition:transform .3s ease,box-shadow .3s ease;}
+.stat-box:hover{transform:translateY(-2px);box-shadow:0 4px 8px rgba(0,0,0,.12);}
+.stat-label{font-size:18px;color:#666;margin-bottom:8px;font-weight:500; text-align: center;}
+.stat-value{font-size:25px;font-weight:700;color:#58bcc2; text-align: center;}
+
+.transaction-log-section{background:#fff;border:1px solid #e0e0e0;border-radius:12px;padding:30px;box-shadow:0 2px 8px rgba(0,0,0,.05);display:flex;flex-direction:column;max-height:calc(100vh - 400px);max-height:420px;}
+.section-title{font-size:18px;font-weight:700;color:#333;margin-bottom:25px;padding-bottom:15px;border-bottom:3px solid #58bcc2;position:relative;flex-shrink:0;}
+.section-title::before{content:'';position:absolute;bottom:-3px;left:0;width:60px;height:3px;background:#58bcc2;border-radius:2px;}
+.transaction-list-container{overflow-y:auto;flex:1;padding-right:10px;}
+.transaction-list-container::-webkit-scrollbar{width:8px;}
+.transaction-list-container::-webkit-scrollbar-track{background:#f1f1f1;border-radius:4px;}
+.transaction-list-container::-webkit-scrollbar-thumb{background:#58bcc2;border-radius:4px;}
+.transaction-list-container::-webkit-scrollbar-thumb:hover{background:#4aa9af;}
+.transaction-item{display:grid;grid-template-columns:2.5fr 1.2fr 1.5fr 1.8fr 1.5fr;align-items:center;gap:10px;padding:16px;border-bottom:1px solid #e0e0e0;background:#fafafa;margin-bottom:10px;border-radius:8px;}
+.transaction-item:last-child{border-bottom:1px solid #e0e0e0;}
+.transaction-left{flex:1;display:flex;flex-direction:column;gap:8px;}
+.transaction-info{display:flex;align-items:center;gap:15px;}
+.transaction-id{font-size:13px;font-weight:600;color:#333;}
+.transaction-status{text-align:center;}
+.transaction-date{font-size:12px;color:#666;}
+.transaction-amount{font-size:16px;font-weight:700;color:#333;min-width:120px;text-align:right;}
+.transaction-actions{display:flex;gap:8px;align-items:center;justify-content:flex-end;}
+.btn-action{padding:8px 16px;border-radius:4px;font-size:13px;font-weight:500;border:none;cursor:pointer;transition:all .3s ease;text-decoration:none;display:inline-block;text-align:center;min-width:100px;}
+.btn-bayar-sekarang{background-color:#58bcc2;color:#fff;}
+.btn-bayar-sekarang:hover{background-color:#4aa9af;color:#fff;}
+.btn-lihat-detail{background-color:#fff;color:#333;border:1px solid #d0d0d0;}
+.btn-lihat-detail:hover{background-color:#f5f5f5;color:#333;}
+.btn-paid{background-color:#28a745;color:#fff;}
+.btn-paid:hover{background-color:#218838;color:#fff;}
+.btn-shipped{background-color:#ffa726;color:#333;}
+.btn-shipped:hover{background-color:#fb8c00;color:#333;}
+.btn-selesai{background-color:#2fa3a8;color:#fff;}
+.btn-selesai:hover{background-color:#268b8f;color:#fff;}
+.btn-action:disabled{background-color:#a8d5d8;cursor:not-allowed;opacity:.7;}
+.badge-status{display:inline-flex;align-items:center;justify-content:center;min-width:110px;height:34px;font-size:13px;font-weight:600;border-radius:6px;padding:0 10px;text-align:center;vertical-align:middle;box-sizing:border-box;border:1px solid #e0e0e0;margin:0 auto;}
+.badge-menunggu{background:#fff3cd;color:#856404;border-color:#ffeeba;}
+.badge-proses{background:#cce5ff;color:#004085;border-color:#b8daff;}
+.badge-dikirim{background:#ffe7c2;color:#8a5200;border-color:#ffcf85;}
+.badge-selesai{background:#d4edda;color:#155724;border-color:#c3e6cb;}
+.badge-batal{background:#f8d7da;color:#721c24;border-color:#f5c6cb;}
+.empty-state{text-align:center;padding:60px 20px;color:#999;}
+.empty-state i{font-size:48px;margin-bottom:20px;}
+@media(max-width:992px){
+	.transaction-item{grid-template-columns:2fr 1fr 1fr 1fr 1.2fr;gap:8px;padding:14px;}
+	.transaction-amount{min-width:unset;font-size:15px;}
+	.btn-action{min-width:90px;padding:8px 12px;font-size:12px;}
+}
+@media(max-width:768px){
+	.transaction-item{grid-template-columns:1fr;grid-auto-rows:auto;}
+	.transaction-id{order:1;}
+	.transaction-status{order:2;}
+	.transaction-date{order:3;}
+	.transaction-amount{order:4;text-align:left;}
+	.transaction-actions{order:5;justify-content:flex-start;flex-wrap:wrap;gap:10px;}
+	.btn-action{min-width:unset;flex:1 1 48%;}
+	.badge-status{min-width:unset;width:auto;height:auto;padding:6px 10px;font-size:12px;}
+}
+@media(max-width:480px){
+	.transaction-stats{flex-direction:column;}
+	.stat-value{font-size:22px;}
+	.section-title{font-size:16px;}
+	.btn-action{flex:1 1 100%;}
+}
