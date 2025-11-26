@@ -163,4 +163,10 @@ class Products extends Model
         return $this->end_date ? $this->end_date->toIso8601String() : null;
     }
 
+    public function favorites()
+{
+    return $this->hasMany(Favorite::class);
+}
+
+
 }

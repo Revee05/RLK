@@ -125,3 +125,5 @@ Route::post('/alamat/store', 'UserAddressController@store')->name('alamat.store'
 Route::get('/alamat/refresh', 'UserAddressController@refreshList')->name('alamat.refresh');
 Route::post('/checkout/shipping-cost', 'Web\CheckoutMerchController@calculateShipping')->name('checkout.shipping-cost');
 
+Route::post('/favorite/toggle', [\App\Http\Controllers\Web\FavoriteController::class, 'toggle'])
+    ->name('favorite.toggle');

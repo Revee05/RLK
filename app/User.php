@@ -55,5 +55,9 @@ class User extends Authenticatable implements MustVerifyEmail
     {
         return $query->where('access','member');
     }
+    public function favorites()
+{
+    return $this->hasMany(Favorite::class);
+}
 
 }

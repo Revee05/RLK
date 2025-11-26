@@ -112,17 +112,32 @@ function renderProduct(product, idx) {
     }
 
     return `
-    <a href="/merch/${product.slug}" class="${cellClass}" style="text-decoration:none; color:inherit;">
-        <div class="card product-card h-100">
+
+
+    <div class="${cellClass}">
+        <div class="card product-card h-100 position-relative">
+
+            <div class="product-image-wrapper position-relative">
+    <img src="${imageUrl}" class="card-img-top" alt="${product.name}">
+
+    <img src="/icons/heart_outline.svg"
+         data-id="${product.id}"
+         class="favorite-icon favorite-off"
+         alt="Favorite">
+</div>
+
             ${product.discount && product.discount > 0 ? `<div class="discount-badge">-${product.discount}%</div>` : ''}
-            <img src="${imageUrl}" class="card-img-top" alt="${product.name}">
-            <div class="card-body text-left p-2">
-                <div class="product-title">${product.name}</div>
-                <div>${priceHtml}</div>
-            </div>
+
+            <a href="/merch/${product.slug}" style="text-decoration:none; color:inherit;">
+                <div class="card-body text-left p-2">
+                    <div class="product-title">${product.name}</div>
+                    <div>${priceHtml}</div>
+                </div>
+            </a>
         </div>
-    </a>
+    </div>
     `;
+
 }
 
 function fetchProducts(batch = 1, search = "", category = "", sort = "") {
@@ -232,5 +247,32 @@ document.addEventListener('DOMContentLoaded', function() {
         })
         .catch(err => console.error('Fetch kategori error:', err));
     });
+// Toggle favorit
+// Toggle favorite ketika klik icon
+document.addEventListener('click', function(e) {
+    if (e.target.classList.contains('favorite-icon')) {
+        const icon = e.target;
+        const productId = icon.getAttribute('data-id');
+
+        fetch("{{ route('favorite.toggle') }}", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRF-TOKEN": "{{ csrf_token() }}"
+            },
+            body: JSON.stringify({ product_id: productId })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.status === "added") {
+                icon.src = "/icons/heart_fill.svg";
+            } else if (data.status === "removed") {
+                icon.src = "/icons/heart_outline.svg";
+            }
+        });
+    }
+});
+
+
 </script>
 @endsection
