@@ -13,6 +13,7 @@
 use App\Http\Controllers\Web\CheckoutMerchController;
 use App\Http\Controllers\Web\CartController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Account\AuctionHistoryController;
 
 require_once  __DIR__ . "/admin.php";
 require_once  __DIR__ . "/account.php";
@@ -67,21 +68,17 @@ Route::get('/bid/messages/{slug}', 'Web\ChatsController@fetchMessages');
 Route::get('/category/{slug}','Web\HomeController@category')->name('products.category');
 Route::get('/seniman/{slug}','Web\HomeController@seniman')->name('products.seniman');
 
-// Route bagian cart
+
 Route::group(['middleware' => ['auth']], function () {
-    // Halaman List Keranjang
+    // cart
     Route::get('/cart', 'Web\CartController@index')->name('cart.index');
-
-    // Tambah ke Keranjang (Merch)
-    // NOTE: Parameter {id} dihapus karena data dikirim via form (Request body)
     Route::post('/cart/add-merch', 'Web\CartController@addMerchToCart')->name('cart.addMerch');
-
-    // Update Quantity (AJAX)
-    // Menggunakan Model Binding {cartItem} sesuai controller
     Route::post('/cart/update/{cartItem}', 'Web\CartController@updateQuantity')->name('cart.update');
-
-    // Hapus Item
     Route::delete('/cart/{cartItem}', 'Web\CartController@destroy')->name('cart.destroy');
+
+    // Auction History
+    Route::get('/account/auction', [AuctionHistoryController::class, 'index'])
+        ->name('account.auction_history');
 });
 
 // merch product route
