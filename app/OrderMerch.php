@@ -5,7 +5,7 @@ namespace App;
 use Illuminate\Database\Eloquent\Model;
 use Carbon\Carbon;
 
-class MerchOrder extends Model
+class OrderMerch extends Model
 {
     protected $table = 'orders_merch';
 
@@ -20,6 +20,7 @@ class MerchOrder extends Model
         'invoice',
         'status',
         'snap_token',
+        'note',
     ];
 
     protected $casts = [

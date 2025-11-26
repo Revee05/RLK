@@ -25,6 +25,8 @@ Route::group(['prefix' => '/account', 'middleware' => ['auth', 'verified', 'IsMe
     Route::get('/address/get/desa/{id}', 'Account\AddressController@getDesa')->name('address.get.desa');
     Route::get('/ubah/kata-sandi', 'Account\MemberController@kataSandi')->name('account.katasandi');
     Route::resource('orders', 'Account\OrderController', ['as' => 'account']);
+    Route::get('/riwayat-pembelian', 'Account\OrderController@purchaseHistory')->name('account.purchase.history');
+    Route::get('/riwayat-pembelian/merch-order/{id}', 'Account\OrderController@showMerchOrder')->name('account.merch.order.show');
     Route::get('invoice/payment/finish', 'Account\OrderController@finish')->name('account.invoice.finish');
     Route::get('invoice/payment/unfinish', 'Account\OrderController@unfinish')->name('account.invoice.unfinish');
     Route::get('invoice/payment/error', 'Account\OrderController@error')->name('account.invoice.error');

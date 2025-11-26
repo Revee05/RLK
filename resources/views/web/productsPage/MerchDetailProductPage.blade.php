@@ -30,10 +30,14 @@
         return [
             'id' => $v->id,
             'display_stock' => $v->display_stock,
+            'price' => $v->price,
+            'discount' => $v->discount,
             'sizes' => $v->sizes->map(fn($s) => [
                 'id' => $s->id,
                 'size' => $s->size,
                 'stock' => $s->stock,
+                'price' => $s->price,
+                'discount' => $s->discount,
             ])->toArray(),
             'image' => $v->images->first() ? asset($v->images->first()->image_path) : 'https://placehold.co/500x400?text=No+Image',
         ];
@@ -49,6 +53,15 @@
 {{-- =========================
     3. PAGE MAIN CONTAINER
 ========================= --}}
+
+<!-- Breadcrumb Navigation -->
+<nav aria-label="breadcrumb" class="mb-3 container pt-3">
+    <ol class="breadcrumb bg-transparent p-0 m-0">
+        <li class="breadcrumb-item"><a href="/">Home</a></li>
+        <li class="breadcrumb-item"><a href="/all-other-product">Merchandise</a></li>
+        <li class="breadcrumb-item active" aria-current="page">{{ $product->name }}</li>
+    </ol>
+</nav>
 <div class="main-container">
 
     {{-- =========================
@@ -60,7 +73,7 @@
             {{-- =========================
                 4A. PRODUCT IMAGE LEFT SIDE
             ========================= --}}
-            <div class="col-lg-6">
+            <div class="col-lg-5">
 
                 {{-- 4A.1 Main Image --}}
                 <div class="main-image">
@@ -92,7 +105,7 @@
             {{-- =========================
                 4B. PRODUCT INFO RIGHT SIDE
             ========================= --}}
-            <div class="col-lg-6">
+            <div class="col-lg-7">
 
                 {{-- 4B.1 Title --}}
                 <h2 class="product-title mb-2">{{ $product->name }}</h2>
@@ -103,15 +116,12 @@
                 </div>
 
                 {{-- 4B.3 Price --}}
-                <div class="product-price mb-3">
+                <div class="product-price mb-3" id="price-display">
                     @if($mainVariant && $mainVariant->display_discount)
-                        <span class="badge bg-danger me-2">-{{ $mainVariant->display_discount }}%</span>
-                        Rp. {{ number_format($mainVariant->display_price, 0, ',', '.') }}
-                        <span class="text-muted text-decoration-line-through ms-2 original-strike">
-                            Rp. {{ number_format($mainVariant->display_price, 0, ',', '.') }}
-                        </span>
+                        <span class="badge bg-danger me-2" id="discount-badge">-{{ rtrim(rtrim(number_format($mainVariant->display_discount, 2, '.', ''), '0'), '.') }}%</span>
+                        <span id="current-price">Rp. {{ number_format($mainVariant->display_price, 0, ',', '.') }}</span>
                     @elseif($mainVariant)
-                        Rp. {{ number_format($mainVariant->display_price, 0, ',', '.') }}
+                        <span id="current-price">Rp. {{ number_format($mainVariant->display_price, 0, ',', '.') }}</span>
                     @else
                         <span class="text-muted">-</span>
                     @endif
@@ -185,8 +195,13 @@
                     <input type="hidden" name="selected_size_id" id="selected_size_id" value="{{ $mainVariant->sizes->first()->id ?? '' }}">
 
                     {{-- Bagian Quantity biarkan tetap sama --}}
+                    <label class="form-label fw-bold">Quantity</label>
                     <div class="d-flex align-items-center mb-3">
-                        <input type="number" id="qty-input" name="quantity" value="1" min="1" class="qty-input">
+                        <div class="qty-group">
+                            <button type="button" class="qty-btn minus" tabindex="-1">-</button>
+                            <input type="number" id="qty-input" name="quantity" value="1" min="1" class="qty-input" autocomplete="off">
+                            <button type="button" class="qty-btn plus" tabindex="-1">+</button>
+                        </div>
                         <span id="stock-info" class="text-muted ms-3">
                             Tersedia {{ $mainVariant->sizes->count() ? ($mainVariant->sizes->first()->stock ?? 0) : ($mainVariant->display_stock ?? 0) }}
                         </span>
@@ -212,8 +227,13 @@
         5. PRODUCT DESCRIPTION
     ========================= --}}
     <div class="container pb-3">
-        <h4 class="mb-2">Deskripsi Produk</h4>
-        <div class="product-desc mb-4">
+        <h4 class="mb-2">
+            Deskripsi Produk
+            <button id="toggle-desc-btn" class="btn btn-link btn-sm" type="button" style="text-decoration:none;">
+                <span id="toggle-desc-icon">▼</span> Tampilkan
+            </button>
+        </h4>
+        <div class="product-desc mb-4" id="product-desc-content" style="display:none;">
             {!! $product->description !!}
         </div>
     </div>
@@ -227,44 +247,30 @@
         <div class="row g-3">
 
             @forelse($relatedProducts as $rel)
-
-                {{-- 6.1 Related Product Preprocess --}}
-                @php
-                    $variant = $rel->variants->where('is_default', 1)->first() ?: $rel->variants->first();
-                    $img = ($variant && $variant->images->count())
-                        ? asset($variant->images->first()->image_path)
-                        : 'https://placehold.co/300x250?text=No+Image';
-                @endphp
-
-                {{-- 6.2 Related Product Card --}}
                 <div class="col-6 col-md-4 col-lg-2">
                     <div class="card h-100 shadow-sm border-0">
-                        <a href="{{ route('merch.products.detail', $rel->slug) }}"
+                        <a href="{{ route('merch.products.detail', $rel['slug']) }}"
                            class="text-decoration-none text-dark">
 
-                            <img src="{{ $img }}" class="card-img-top related-img" alt="{{ $rel->name }}">
+                            <img src="{{ $rel['image'] }}" class="card-img-top related-img" alt="{{ $rel['name'] }}">
 
                             <div class="card-body p-2">
-                                <div class="fw-bold mb-1 related-title">{{ $rel->name }}</div>
+                                <div class="fw-bold mb-1 related-title">{{ $rel['name'] }}</div>
 
-                                @if($rel->display_discount)
-                                    <span class="badge bg-danger mb-1">-{{ $rel->display_discount }}%</span>
+                                @if($rel['display_discount'])
+                                    <span class="badge bg-danger mb-1">-{{ $rel['display_discount'] }}%</span>
                                 @endif
 
                                 <div class="related-price">
-                                    Rp. {{ number_format($rel->display_price, 0, ',', '.') }}
+                                    Rp. {{ number_format($rel['display_price'], 0, ',', '.') }}
                                 </div>
                             </div>
 
                         </a>
                     </div>
                 </div>
-
             @empty
-
-                {{-- 6.3 No Related Product --}}
                 <div class="col-12 text-muted">Tidak ada produk terkait.</div>
-
             @endforelse
 
         </div>
@@ -280,8 +286,10 @@
 ========================= --}}
 @section('js')
 <script>
-document.addEventListener('DOMContentLoaded', () => {
-
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('Product:', @json($product));
+    console.log('Related Products:', @json($relatedProducts));
+    
     // 7.1 Data & Element References
     const variants = @json($variantsArray);
     const variantInputs = Array.from(document.querySelectorAll('.variant-btn input[type="radio"]'));
@@ -356,6 +364,46 @@ document.addEventListener('DOMContentLoaded', () => {
         if (submitBtnEl) submitBtnEl.disabled = stock < 1;
     }
 
+    // 7.6b Update Price Display
+    function updatePriceDisplay() {
+        const variant = currentVariant();
+        if (!variant) return;
+
+        const sizeIdx = currentSizeIndex(variant);
+        let price, discount;
+
+        // Jika ada size dan size dipilih, ambil dari size
+        if (variant.sizes.length > 0 && sizeIdx >= 0) {
+            price = variant.sizes[sizeIdx].price;
+            discount = variant.sizes[sizeIdx].discount;
+        } else {
+            // Jika tidak ada size, ambil dari variant
+            price = variant.price;
+            discount = variant.discount;
+        }
+
+        const priceDisplay = document.getElementById('price-display');
+        if (!priceDisplay) return;
+
+        // Format harga
+        const formatPrice = (num) => 'Rp. ' + parseFloat(num).toLocaleString('id-ID');
+        
+        // Format discount: hilangkan trailing zero
+        const formatDiscount = (num) => {
+            const formatted = parseFloat(num).toString();
+            return formatted;
+        };
+        
+        if (discount > 0) {
+            priceDisplay.innerHTML = `
+                <span class="badge bg-danger me-2" id="discount-badge">-${formatDiscount(discount)}%</span>
+                <span id="current-price">${formatPrice(price)}</span>
+            `;
+        } else {
+            priceDisplay.innerHTML = `<span id="current-price">${formatPrice(price)}</span>`;
+        }
+    }
+
     // 7.7 Update Hidden Inputs
     function updateHiddenInputs() {
         const v = currentVariant();
@@ -374,6 +422,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         renderSizes(variant);
         updateStockInfo();
+        updatePriceDisplay();
         updateHiddenInputs();
     }
 
@@ -408,6 +457,7 @@ document.addEventListener('DOMContentLoaded', () => {
             e.target.closest('.size-btn').classList.add('active');
 
             updateStockInfo();
+            updatePriceDisplay();
             updateHiddenInputs();
         }
     });
@@ -415,7 +465,10 @@ document.addEventListener('DOMContentLoaded', () => {
     // 7.11 Init State
     const initVariant = document.querySelector('.variant-btn input[type="radio"]:checked');
     if (initVariant) setActiveVariant(initVariant);
-    else updateStockInfo();
+    else {
+        updateStockInfo();
+        updatePriceDisplay();
+    }
 
 
     // =========================
@@ -515,6 +568,35 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         });
     }
+
+    // Toggle deskripsi produk
+    const descBtn = document.getElementById('toggle-desc-btn');
+    const descContent = document.getElementById('product-desc-content');
+    const descIcon = document.getElementById('toggle-desc-icon');
+    let descVisible = false;
+
+    if(descBtn && descContent) {
+        descBtn.addEventListener('click', function() {
+            descVisible = !descVisible;
+            descContent.style.display = descVisible ? 'block' : 'none';
+            descBtn.innerHTML = `<span id="toggle-desc-icon">${descVisible ? '▲' : '▼'}</span> ${descVisible ? 'Sembunyikan' : 'Tampilkan'}`;
+        });
+    }
+});
+document.querySelectorAll('.qty-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+        const input = this.parentElement.querySelector('.qty-input');
+        let val = parseInt(input.value) || 1;
+        const min = parseInt(input.min) || 1;
+        const max = parseInt(input.max) || 9999;
+
+        if (this.classList.contains('minus')) {
+            if (val > min) input.value = val - 1;
+        } else {
+            if (val < max) input.value = val + 1;
+        }
+        input.dispatchEvent(new Event('input'));
+    });
 });
 </script>
 @endsection

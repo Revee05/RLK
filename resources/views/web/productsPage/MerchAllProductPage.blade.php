@@ -7,6 +7,13 @@
 
 @section('content')
 <div class="container py-4">
+    <!-- Breadcrumb Navigation -->
+    <nav aria-label="breadcrumb" class="mb-3">
+        <ol class="breadcrumb bg-transparent p-0 m-0">
+            <li class="breadcrumb-item"><a href="/">Home</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Merchandise</li>
+        </ol>
+    </nav>
     <h2 class="text-center fw-bold mb-4">Products Design</h2>
     <div class="products-grid-header mb-4 d-flex align-items-center gap-2 flex-wrap">
         <form id="search-form" class="position-relative flex-grow-1 d-flex" style="max-width:600px;">
@@ -96,12 +103,20 @@ function renderProduct(product, idx) {
         ? `/${product.image}`
         : `https://placehold.co/300x250?text=${encodeURIComponent(product.name)}`;
 
+    // Format discount: hilangkan trailing nol jika bulat
+    function formatDiscount(val) {
+        if (val === null || val === undefined) return '';
+        let num = parseFloat(val);
+        if (isNaN(num)) return '';
+        return num.toString();
+    }
+
     // Harga & diskon
     let priceHtml = '';
     if (product.price !== null && product.price !== undefined) {
         if (product.discount && product.discount > 0) {
             priceHtml = `
-                <span class="badge bg-danger me-2">-${product.discount}%</span>
+                <span class="badge bg-danger me-2">-${formatDiscount(product.discount)}%</span>
                 <span class="product-price">Rp ${Number(product.price).toLocaleString('id-ID')}</span>
             `;
         } else {
@@ -114,7 +129,7 @@ function renderProduct(product, idx) {
     return `
     <a href="/merch/${product.slug}" class="${cellClass}" style="text-decoration:none; color:inherit;">
         <div class="card product-card h-100">
-            ${product.discount && product.discount > 0 ? `<div class="discount-badge">-${product.discount}%</div>` : ''}
+            ${product.discount && product.discount > 0 ? `<div class="discount-badge">-${formatDiscount(product.discount)}%</div>` : ''}
             <img src="${imageUrl}" class="card-img-top" alt="${product.name}">
             <div class="card-body text-left p-2">
                 <div class="product-title">${product.name}</div>
