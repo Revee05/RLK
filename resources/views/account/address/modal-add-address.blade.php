@@ -1,0 +1,147 @@
+<!-- Modal: Tambah Alamat (reuse modal-tambah-address implementation) -->
+<!-- This modal is opened from the account address page 'Tambah Alamat' button -->
+<div class="modal fade" id="addAddressModal" tabindex="-1" aria-hidden="true" style="display:none;" data-lazy="1">
+    <div class="modal-dialog modal-dialog-centered modal-md">
+        <div class="modal-content">
+
+            <form id="formAddAddress" action="{{ route('account.address.store') }}" method="POST">
+                @csrf
+                <input type="hidden" name="user_id" value="{{ Auth::id() }}">
+
+                <div class="modal-header text-center">
+                    <h5 class="modal-title fw-bold text-center">Tambah Alamat Baru</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+
+                <div class="modal-body px-4">
+
+                    <div class="form-group mb-3">
+                        <input type="text" class="form-control input-cyan" name="name" placeholder="Nama Penerima"
+                            required>
+                    </div>
+
+                    <div class="form-group mb-3">
+                        <input type="text" class="form-control input-cyan" name="phone" placeholder="Nomor HP"
+                            required>
+                    </div>
+
+                    <div class="form-group mb-3">
+                        <input type="text" class="form-control input-cyan" name="label_address"
+                            placeholder="Label Alamat">
+                    </div>
+
+                    <div class="form-group mb-3">
+                        <select class="form-control input-cyan" id="provinsi" name="provinsi_id" required>
+                            <option value="">Pilih Provinsi</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group mb-3">
+                        <select class="form-control input-cyan" id="kabupaten" name="kabupaten_id" disabled required>
+                            <option value="">Pilih Kabupaten/Kota</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group mb-3">
+                        <select class="form-control input-cyan" id="kecamatan" name="kecamatan_id" disabled required>
+                            <option value="">Pilih Kecamatan</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group mb-3">
+                        <textarea class="form-control input-cyan" name="address" rows="2" placeholder="Alamat Lengkap" required></textarea>
+                    </div>
+
+                </div>
+
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-darkblue btn-wide btn-rounded"
+                        id="saveNewAddress">Simpan</button>
+                </div>
+
+            </form>
+
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        // Note: toast UI removed — form will submit via Laravel and controller should set flash messages.
+        const modalAdd = new bootstrap.Modal(document.getElementById('addAddressModal'));
+
+        let prov = document.getElementById('provinsi');
+        let kab = document.getElementById('kabupaten');
+        let kec = document.getElementById('kecamatan');
+
+        // === Saat Modal Dibuka ===
+        document.getElementById("addAddressModal").addEventListener("show.bs.modal", function() {
+
+            prov.innerHTML = '<option value="">Pilih Provinsi</option>';
+            kab.innerHTML = '<option value="">Pilih Kabupaten</option>';
+            kec.innerHTML = '<option value="">Pilih Kecamatan</option>';
+            kab.disabled = true;
+            kec.disabled = true;
+
+            // use absolute path fallback to ensure fetch works when route() isn't available
+            let provUrl = "{{ route('lokasi.provinsi') }}" || "/lokasi/provinsi";
+            fetch(provUrl)
+                .then(res => res.json())
+                .then(data => {
+                    data.forEach(p => {
+                        prov.innerHTML +=
+                            `<option value="${p.id}">${p.nama_provinsi}</option>`;
+                    });
+                })
+                .catch(err => {
+                    console.error('Error fetching provinsi:', err);
+                    // try fallback
+                    fetch('/lokasi/provinsi')
+                        .then(res => res.json())
+                        .then(data => {
+                            data.forEach(p => prov.innerHTML +=
+                                `<option value="${p.id}">${p.nama_provinsi}</option>`);
+                        })
+                        .catch(err2 => console.error('Fallback failed:', err2));
+                });
+        });
+
+        // === Provinsi → Kabupaten ===
+        prov.addEventListener("change", function() {
+            kab.innerHTML = '<option value="">Pilih Kabupaten</option>';
+            kec.innerHTML = '<option value="">Pilih Kecamatan</option>';
+            kab.disabled = true;
+            kec.disabled = true;
+
+            if (!this.value) return;
+
+            fetch("/lokasi/kabupaten/" + this.value)
+                .then(res => res.json())
+                .then(data => {
+                    kab.disabled = false;
+                    data.forEach(k => kab.innerHTML +=
+                        `<option value="${k.id}">${k.nama_kabupaten}</option>`);
+                })
+                .catch(err => console.error('Error fetching kabupaten:', err));
+        });
+
+        // === Kabupaten → Kecamatan ===
+        kab.addEventListener("change", function() {
+            kec.innerHTML = '<option value="">Pilih Kecamatan</option>';
+            kec.disabled = true;
+
+            if (!this.value) return;
+
+            fetch("/lokasi/kecamatan/" + this.value)
+                .then(res => res.json())
+                .then(data => {
+                    kec.disabled = false;
+                    data.forEach(k => kec.innerHTML +=
+                        `<option value="${k.id}">${k.nama_kecamatan}</option>`);
+                })
+                .catch(err => console.error('Error fetching kecamatan:', err));
+        });
+
+        // Submission will be handled by the server via normal form POST.
+    });
+</script>
