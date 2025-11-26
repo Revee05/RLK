@@ -1,7 +1,5 @@
 <?php
 
-namespace Database\Seeders;
-
 use Illuminate\Database\Seeder;
 use App\User; // Pastikan model User di-import
 use Illuminate\Support\Facades\Hash; // Import Hash
@@ -23,7 +21,7 @@ class AdminUserSeeder extends Seeder
                 'username' => 'admin2',
                 'password' => Hash::make('admin123123'), // Ganti ini!
                 'access' => 'admin',
-                'jenis_kelamin' => 'Laki-laki',
+                'jenis_kelamin' => 'laki_laki',
                 'email_verified_at' => now()
             ]
         );
