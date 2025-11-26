@@ -52,7 +52,6 @@ Route::get('/detail-products', function () {
 })->name('detail-products');
 
 // prod routes
-
 Route::get('/','Web\HomeController@index')->name('home');
 Route::get('/lelang','Web\HomeController@lelang')->name('lelang');
 Route::get('/blogs','Web\BlogController@index')->name('blogs');
