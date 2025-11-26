@@ -22,7 +22,8 @@
             class="list-group-item list-group-item-action border-nav-middle py-2 {{ request()->routeIs('account.address.*') ? 'active' : '' }}">Alamat</a>
         <a href="#" class="list-group-item list-group-item-action border-nav-middle py-2">Favorit</a>
         <a href="#" class="list-group-item list-group-item-action border-nav-middle py-2">Riwayat Lelang</a>
-        <a href="#" class="list-group-item list-group-item-action border-nav-middle py-2">Riwayat
+        <a href="{{ route('account.purchase.history') }}" 
+            class="list-group-item list-group-item-action border-nav-middle py-2 {{ request()->routeIs('account.purchase.history') ? 'active' : '' }}">Riwayat
             Pembelian</a>
         <a href="#" class="list-group-item list-group-item-action border-nav-middle  py-2">Pengaturan
             Notifikasi</a>

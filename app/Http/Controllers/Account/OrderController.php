@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Log;
 use Auth; 
 use Illuminate\Support\Str;
 use App\Bid;
+use App\OrderMerch;
 class OrderController extends Controller
 {
     /**
@@ -25,6 +26,39 @@ class OrderController extends Controller
             return view('account.orders.index', compact('orders'));
         }
         return abort(404);
+    }
+
+    /**
+     * Display purchase history page with statistics for merchandise orders
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function purchaseHistory()
+    {
+        if (Auth::check()) {
+            $orders = OrderMerch::where('user_id', Auth::user()->id)
+                          ->with(['address', 'shipper'])
+                          ->orderBy('created_at', 'desc')
+                          ->get();
+            return view('account.orders.purchase_history', compact('orders'));
+        }
+        return abort(404);
+    }
+
+    /**
+     * Show merchandise order detail
+     *
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function showMerchOrder($id)
+    {
+        $order = OrderMerch::with(['address.provinsi', 'address.kabupaten', 'address.kecamatan', 'shipper'])
+                          ->where('id', $id)
+                          ->where('user_id', Auth::user()->id)
+                          ->firstOrFail();
+        
+        return view('account.orders.show_merch', compact('order'));
     }
 
     /**
@@ -119,23 +153,12 @@ class OrderController extends Controller
      */
     public function show(Order $order)
     {
-        
-        $snapToken = $order->snap_token;
-        if (empty($snapToken)) {
-            // Jika snap token masih NULL, buat token snap dan simpan ke database
-            try {
-                
-                $midtrans = new CreateSnapTokenService($order);
-                $snapToken = $midtrans->getSnapToken(); 
-                $order->snap_token = $snapToken;
-                $order->save();
-            
-            } catch (Exception $e) {
-                Log::error("ONGKRI".$e->getMessage()); 
-            }
+        // Check if user owns this order
+        if ($order->user_id !== Auth::user()->id) {
+            return abort(403);
         }
- 
-        return view('account.checkout.order', compact('order', 'snapToken'));
+        
+        return view('account.orders.show', compact('order'));
     }
 
     /**

@@ -1,0 +1,44 @@
+/* Merchandise Order Detail Styles */
+.order-detail-container { max-width: 1200px; margin: 40px auto 80px; }
+.order-header { background:#fff; border:1px solid #e0e0e0; border-radius:8px; padding:30px; margin-bottom:20px; }
+.order-number { font-size:20px; font-weight:600; color:#333; margin-bottom:10px; }
+.order-date { font-size:14px; color:#666; }
+.order-status-badge { display:inline-block; padding:8px 16px; border-radius:20px; font-size:14px; font-weight:500; margin-top:10px; }
+.order-content { background:#fff; border:1px solid #e0e0e0; border-radius:8px; padding:30px; margin-bottom:20px; }
+.section-title { font-size:16px; font-weight:600; color:#333; margin-bottom:20px; padding-bottom:10px; border-bottom:2px solid #58bcc2; }
+.info-row { display:flex; justify-content:space-between; padding:12px 0; border-bottom:1px solid #f0f0f0; }
+.info-row:last-child { border-bottom:none; }
+.info-label { font-size:14px; color:#666; font-weight:500; }
+.info-value { font-size:14px; color:#333; text-align:right; }
+.product-item { display:flex; gap:20px; padding:20px; background:#f9f9f9; border-radius:8px; margin-bottom:15px; }
+.product-image { width:100px; height:100px; object-fit:cover; border-radius:8px; }
+.product-details { flex:1; }
+.product-name { font-size:16px; font-weight:600; color:#333; margin-bottom:8px; }
+.product-price { font-size:18px; font-weight:600; color:#58bcc2; }
+.product-qty { font-size:14px; color:#666; margin-top:5px; }
+.total-section { background:#f9f9f9; padding:20px; border-radius:8px; margin-top:20px; }
+.total-row { display:flex; justify-content:space-between; padding:8px 0; font-size:14px; }
+.total-final { display:flex; justify-content:space-between; padding:15px 0; border-top:2px solid #58bcc2; margin-top:10px; font-size:18px; font-weight:600; color:#333; }
+.btn-back { background-color:#58bcc2; color:#fff; padding:10px 30px; border-radius:5px; text-decoration:none; display:inline-block; margin-top:20px; transition:all .3s ease; }
+.btn-back:hover { background-color:#4aa9af; color:#fff; }
+/* Reuse badge colors from purchase history (expects existing classes) */
+.badge-menunggu { background-color:#fff3cd; color:#856404; border:1px solid #ffeaa7; }
+.badge-selesai { background-color:#d4edda; color:#155724; border:1px solid #c3e6cb; }
+.badge-proses { background-color:#cfe2ff; color:#084298; border:1px solid #b6d4fe; }
+/* Responsive */
+@media(max-width:992px){
+	.order-header,.order-content{padding:20px;}
+	.product-item{gap:14px;}
+}
+@media(max-width:768px){
+	.info-value{max-width:60%;}
+	.product-item{flex-direction:column;}
+	.product-image{width:100%;max-width:320px;height:auto;}
+	.total-row,.total-final{font-size:13px;}
+	.btn-back{width:100%;text-align:center;}
+}
+@media(max-width:480px){
+	.order-number{font-size:18px;}
+	.order-date{font-size:13px;}
+	.section-title{font-size:15px;}
+}
