@@ -2,7 +2,7 @@
 
 namespace Database\Seeders; // Pastikan namespace-nya benar, biasanya ini
 
-use Illuminate-Database\Seeder;
+use Illuminate\Database\Seeder;
 use App\Order;
 use Illuminate\Support\Facades\DB; // <--- TAMBAHKAN BARIS INI
 

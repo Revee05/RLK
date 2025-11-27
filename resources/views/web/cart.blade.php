@@ -1,13 +1,12 @@
 @extends('web.partials.layout')
 
 @section('content')
-<div class="container my-5">
-    <h2 class="fw-bold mb-5">Keranjang</h2> 
+<div class="container my-3 my-md-5">
+    <h2 class="fw-bold mb-4 mb-md-5">Keranjang</h2> 
 
-    {{-- Alert Section (Untuk Feedback AJAX) --}}
+    {{-- Alert Section --}}
     <div id="ajax-alert-container"></div>
 
-    {{-- Alert Session (Untuk Redirect biasa) --}}
     @if(session('success'))
         <div class="alert alert-success alert-dismissible fade show" role="alert">
             {{ session('success') }}
@@ -21,27 +20,26 @@
         </div>
     @endif
 
-    {{-- LOGIKA TAMPILAN KOSONG VS ISI --}}
     @php
         $hasItems = $cartItems && !$cartItems->isEmpty();
     @endphp
 
-    {{-- 1. TAMPILAN KERANJANG KOSONG (Hidden by default jika ada item) --}}
+    {{-- 1. TAMPILAN KERANJANG KOSONG --}}
     <div id="empty-cart-view" class="{{ $hasItems ? 'd-none' : '' }}">
         <div class="row">
-            <div class="col-12 my-5 text-center py-5 bg-light rounded-3">
+            <div class="col-12 my-3 my-md-5 text-center py-5 bg-light rounded-3">
                 <h4 class="text-muted mb-3">Keranjang belanja Anda kosong.</h4>
                 <a href="/all-other-product" class="btn btn-dark px-4">Mulai Belanja</a>
             </div>
         </div>
     </div>
 
-    {{-- 2. TAMPILAN LIST ITEM (Hidden jika kosong) --}}
+    {{-- 2. TAMPILAN LIST ITEM --}}
     <div id="cart-content-view" class="{{ $hasItems ? '' : 'd-none' }}">
         <form action="{{ route('checkout.index') }}" method="GET" id="checkout-form">
             @csrf 
 
-            {{-- HEADER TABEL --}}
+            {{-- HEADER TABEL (Hanya muncul di Desktop) --}}
             <div class="row g-3 text-muted mb-3 pb-2 border-bottom d-none d-md-flex">
                 <div class="col-1 text-center"></div>
                 <div class="col-md-4">Produk</div>
@@ -61,7 +59,6 @@
 
                         if (!$product) continue; 
 
-                        // Logika Gambar
                         $imgUrl = 'https://via.placeholder.com/100';
                         if ($variant && $variant->images && $variant->images->isNotEmpty()) {
                             $imgUrl = asset($variant->images->first()->image_path);
@@ -79,11 +76,11 @@
                         $kategori = $product->categories->first();
                     @endphp
 
-                    {{-- ITEM ROW (Tambahkan ID unik untuk manipulasi DOM) --}}
-                    <div class="row g-3 align-items-center my-3 py-2 border-bottom cart-item-row" id="item-row-{{ $item->id }}">
+                    {{-- ITEM ROW --}}
+                    <div class="row g-2 g-md-3 align-items-center my-2 my-md-3 py-2 border-bottom cart-item-row position-relative" id="item-row-{{ $item->id }}">
                         
-                        {{-- 1. Checkbox --}}
-                        <div class="col-1 d-flex justify-content-center">
+                        {{-- A. Checkbox (Mobile: Col 1, Desktop: Col 1) --}}
+                        <div class="col-1 d-flex align-items-center justify-content-center" style="height: 100%;">
                             <input class="form-check-input item-checkbox" 
                                    type="checkbox" 
                                    name="cart_item_ids[]" 
@@ -93,50 +90,68 @@
                                    style="transform: scale(1.2);">
                         </div>
 
-                        {{-- 2. Info Produk --}}
-                        <div class="col-md-4">
-                            <div class="d-flex align-items-center">
+                        {{-- B. Gambar (Mobile: Col 3, Desktop: Col-md-auto via grid structure dalam col-md-4) --}}
+                        {{-- Kita pecah struktur grid agar responsif --}}
+                        
+                        {{-- Wrapper Gambar & Info di Mobile digabung agar rapi --}}
+                        <div class="col-11 col-md-4 d-flex align-items-center">
+                            {{-- Gambar --}}
+                            <div class="flex-shrink-0 me-3">
                                 <img src="{{ $imgUrl }}" alt="{{ $nama_produk }}" 
-                                     style="width: 80px; height: 80px; object-fit: cover; border-radius: 8px; margin-right: 15px; border: 1px solid #f0f0f0;">
-                                
-                                <div>
-                                    <h6 class="mb-1 fw-bold text-dark">{{ $nama_produk }}</h6>
-                                    <div class="mb-2">
-                                        @if($variantName) <span class="badge bg-light text-dark border fw-normal me-1">{{ $variantName }}</span> @endif
-                                        @if($sizeName) <span class="badge bg-light text-dark border fw-normal">Size: {{ $sizeName }}</span> @endif
-                                    </div>
-                                    @if($kategori) <small class="text-muted d-block mb-1">{{ $kategori->name }}</small> @endif
-                                    
-                                    {{-- TOMBOL HAPUS AJAX (Type Button, bukan Submit) --}}
-                                    <button type="button" 
-                                            class="btn btn-link text-danger p-0 m-0 small text-decoration-none btn-delete-item" 
-                                            data-id="{{ $item->id }}"
-                                            data-url="{{ route('cart.destroy', $item->id) }}">
-                                        <i class="bi bi-trash"></i> Hapus
-                                    </button>
+                                     class="rounded"
+                                     style="width: 70px; height: 70px; object-fit: cover; border: 1px solid #f0f0f0;">
+                            </div>
+                            
+                            {{-- Info Produk --}}
+                            <div class="flex-grow-1 min-width-0">
+                                <h6 class="mb-1 fw-bold text-dark text-truncate" style="max-width: 100%;">{{ $nama_produk }}</h6>
+                                <div class="mb-1 small">
+                                    @if($variantName) <span class="badge bg-light text-dark border fw-normal me-1">{{ $variantName }}</span> @endif
+                                    @if($sizeName) <span class="badge bg-light text-dark border fw-normal">Size: {{ $sizeName }}</span> @endif
                                 </div>
+                                
+                                {{-- Harga Satuan (Muncul di Mobile, Hilang di Desktop) --}}
+                                <div class="d-block d-md-none text-muted small mb-1">
+                                    Rp{{ number_format($price, 0, ',', '.') }}
+                                </div>
+
+                                {{-- Kategori --}}
+                                @if($kategori) <small class="text-muted d-block d-md-none" style="font-size: 0.75rem;">{{ $kategori->name }}</small> @endif
+
+                                {{-- Tombol Hapus --}}
+                                <button type="button" 
+                                        class="btn btn-link text-danger p-0 m-0 small text-decoration-none btn-delete-item" 
+                                        data-id="{{ $item->id }}"
+                                        data-url="{{ route('cart.destroy', $item->id) }}"
+                                        style="font-size: 0.85rem;">
+                                    <i class="bi bi-trash"></i> <span class="d-none d-md-inline">Hapus</span>
+                                </button>
                             </div>
                         </div>
 
-                        {{-- 3. Harga --}}
-                        <div class="col-md-2">
+                        {{-- C. Harga Satuan (Hanya Desktop) --}}
+                        <div class="col-md-2 d-none d-md-block">
                             <span id="price-per-item-{{ $item->id }}" data-price="{{ $price }}" class="fw-semibold">
                                 Rp{{ number_format($price, 0, ',', '.') }}
                             </span>
                         </div>
 
-                        {{-- 4. Jumlah --}}
-                        <div class="col-md-3 d-flex justify-content-center">
-                            <div class="input-group input-group-sm" style="width: 110px;">
+                        {{-- D. Spacer Mobile (Agar baris berikutnya turun rapi) --}}
+                        <div class="w-100 d-md-none mt-0"></div>
+                        <div class="col-1 d-md-none"></div> {{-- Spacer untuk sejajar checkbox --}}
+
+                        {{-- E. Quantity (Mobile: Col 5, Desktop: Col 3) --}}
+                        <div class="col-5 col-md-3 d-flex justify-content-start justify-content-md-center mt-2 mt-md-0">
+                            <div class="input-group input-group-sm" style="width: 100px;">
                                 <button class="btn btn-outline-secondary btn-quantity" type="button" data-action="decrease" data-id="{{ $item->id }}">-</button>
                                 <input type="text" class="form-control text-center quantity-input bg-white" id="quantity-input-{{ $item->id }}" value="{{ $quantity }}" readonly>
                                 <button class="btn btn-outline-secondary btn-quantity" type="button" data-action="increase" data-id="{{ $item->id }}">+</button>
                             </div>
                         </div>
 
-                        {{-- 5. Total --}}
-                        <div class="col-md-2 text-end">
-                            <strong class="fs-6 text-primary" id="row-total-{{ $item->id }}">
+                        {{-- F. Total(Mobile: Col 6, Desktop: Col 2) --}}
+                        <div class="col-6 col-md-2 text-end mt-2 mt-md-0 d-flex flex-column justify-content-center align-items-end">
+                            <strong class="fs-6 text-primary mb-1" id="row-total-{{ $item->id }}">
                                 Rp{{ number_format($total, 0, ',', '.') }}
                             </strong>
                         </div>
@@ -146,25 +161,25 @@
             </div>
 
             {{-- SUMMARY SECTION --}}
-            <div class="row mt-5">
-                <div class="col-md-5 offset-md-7">
-                    <div class="card border-0 shadow-sm bg-white p-4 rounded-3">
+            <div class="row mt-4 mt-md-5 mb-5">
+                <div class="col-12 col-md-5 ms-auto">
+                    <div class="card border-0 shadow-sm bg-white p-3 p-md-4 rounded-3">
                         <div class="form-check mb-3 p-3 bg-light rounded">
                             <input class="form-check-input mt-1" type="checkbox" name="wrap_product" value="10000" id="wrapProductCheckbox">
-                            <label class="form-check-label ms-2" for="wrapProductCheckbox">
+                            <label class="form-check-label ms-2 lh-sm" for="wrapProductCheckbox">
                                 <span class="fw-bold d-block">For Rp. 10.000 please wrap the product</span>
                             </label>
                         </div>
 
-                        <hr class="my-4">
+                        <hr class="my-3 my-md-4">
 
                         <div class="d-flex justify-content-between align-items-center mb-4">
                             <span class="fw-bold text-secondary">Subtotal</span>
-                            <span class="fw-bold fs-5 text-dark" id="subtotalDisplay">Rp0</span>
+                            <span class="fw-bold fs-4 text-dark" id="subtotalDisplay">Rp0</span>
                         </div>
                         
                         <button type="submit" class="btn btn-dark w-100 py-3 fw-bold shadow-sm transition-btn">
-                            Checkout
+                            Checkout Sekarang
                         </button>
                     </div>
                 </div>

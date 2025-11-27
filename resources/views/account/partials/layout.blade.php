@@ -17,6 +17,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400&display=swap" rel="stylesheet">
     <link href="{{ asset('theme/css/styles.css') }}" rel="stylesheet" />
     <link href="{{ asset('css/account/account_styles.css') }}" rel="stylesheet" />
+    <link href="{{ asset('css/account/auction_history_style.css') }}" rel="stylesheet" />
     <!-- Custom fonts for this template-->
     <link href="{{ asset('assets/vendor/fontawesome-free/css/all.min.css') }}" rel="stylesheet" type="text/css">
     {{-- <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/1.0.18/vue.min.js"></script> --}}
@@ -29,6 +30,8 @@
             'pusherCluster' => config('broadcasting.connections.pusher.options.cluster'),
         ]) !!};
     </script>
+    <link rel="stylesheet" href="{{ asset('css/account/purchase_history.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/account/merch_order_detail.css') }}">
     <style type="text/css">
         .list-group-item {
             border: none;
