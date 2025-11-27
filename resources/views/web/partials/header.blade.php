@@ -31,7 +31,7 @@
                 </div>
             </div>
 
-            <a>Seniman</a>
+            <a href="{{ route('seniman.index') }}" class="@yield('seniman')">Seniman</a>
 
             <div class="dropdown-menu-nav">
                 <a href="#" class="dropdown-toggle" id="panduanDropdown">

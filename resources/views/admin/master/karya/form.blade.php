@@ -6,6 +6,12 @@
             {{ Form::text('name', null, array('class' => 'form-control form-control-sm ','placeholder' => 'Nama Seniman')) }}
         </div>
         <div class="form-group row">
+            {{ Form::label('name', 'Bio Singkat',['class'=>'col-sm-12 col-form-label']) }}
+            <div class="col-sm-12">
+                {{ Form::textarea('bio', null, array('class' => 'form-control form-control-sm ','id'=> 'bio-singkat')) }}
+            </div>
+        </div>        
+        <div class="form-group row">
             {{ Form::label('name', 'Biografi',['class'=>'col-sm-12 col-form-label']) }}
             <div class="col-sm-12">
                 {{ Form::textarea('description', null, array('class' => 'form-control form-control-sm ','id'=> 'biografi')) }}

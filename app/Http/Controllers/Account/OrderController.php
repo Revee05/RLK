@@ -29,39 +29,6 @@ class OrderController extends Controller
     }
 
     /**
-     * Display purchase history page with statistics for merchandise orders
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function purchaseHistory()
-    {
-        if (Auth::check()) {
-            $orders = OrderMerch::where('user_id', Auth::user()->id)
-                          ->with(['address', 'shipper'])
-                          ->orderBy('created_at', 'desc')
-                          ->get();
-            return view('account.orders.purchase_history', compact('orders'));
-        }
-        return abort(404);
-    }
-
-    /**
-     * Show merchandise order detail
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function showMerchOrder($id)
-    {
-        $order = OrderMerch::with(['address.provinsi', 'address.kabupaten', 'address.kecamatan', 'shipper'])
-                          ->where('id', $id)
-                          ->where('user_id', Auth::user()->id)
-                          ->firstOrFail();
-        
-        return view('account.orders.show_merch', compact('order'));
-    }
-
-    /**
      * Show the form for creating a new resource.
      *
      * @return \Illuminate\Http\Response
