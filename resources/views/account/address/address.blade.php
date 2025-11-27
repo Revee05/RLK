@@ -22,7 +22,10 @@
                                                 <div>
                                                     <div class="mb-1">
                                                         <span
-                                                            class="address-badge mb-1">{{ ucwords($ua->label_address) }}</span>
+                                                            class="small text-cyan fw-bold">{{ ucwords($ua->label_address) }}</span>
+                                                        @if (!empty($ua->is_primary) && $ua->is_primary)
+                                                            <span class="address-badge mb-1">Utama</span>
+                                                        @endif
                                                         <div class="d-flex align-items-center">
                                                             <strong class="me-2 mb-0">{{ $ua->name }}</strong>
                                                             <span class="address-divider text-muted">|</span>

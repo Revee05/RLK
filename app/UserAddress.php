@@ -18,8 +18,13 @@ class UserAddress extends Model
         'desa_id',
         'kodepos',
         'label_address',
+        'is_primary',
     ];
     
+    protected $casts = [
+        'is_primary' => 'boolean',
+    ];
+
     public function user(){
         return $this->belongsTo('App\User','user_id');
     }
@@ -35,6 +40,6 @@ class UserAddress extends Model
     // public function desa(){
     //     return $this->belongsTo('App\Desa','desa_id');
     // }
-        
-    
+
+
 }
