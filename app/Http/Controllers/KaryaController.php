@@ -43,6 +43,7 @@ class KaryaController extends Controller
         $request->validate([
             'name'=>'required',
             'description'=>'nullable',
+            'bio'=>'nullable',
             'social'=>'nullable',
         ],[
             'name.required' => 'Nama karya wajib di isi',
@@ -59,6 +60,7 @@ class KaryaController extends Controller
                 'name'=> $request->name,
                 'slug'=> Str::slug($request->name, '-'),
                 'description'=> $request->description,
+                'bio'=> $request->bio,
                 'social'=> $request->social,
                 'address'=> $request->address,
                 'image'=> $data['fotoseniman'] ?? '',
@@ -129,6 +131,7 @@ class KaryaController extends Controller
                 'name'=> $request->name,
                 'slug'=> Str::slug($request->name, '-'),
                 'description'=> $request->description,
+                'bio'=> $request->bio,
                 'address'=> $request->address,
                 'social'=> $request->social,
                 'image'=> $profile,

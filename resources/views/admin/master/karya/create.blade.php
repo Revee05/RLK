@@ -53,6 +53,16 @@
 @section('js')
     <script src="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote.min.js"></script>
     <script type="text/javascript">
+        $('#bio-singkat').summernote({
+            placeholder: 'Tulis bio singkat untuk display hooks...',
+            toolbar: [
+                ['style', ['bold', 'italic', 'underline', 'clear']],
+                ['font', ['strikethrough']],
+                ['para', ['ul', 'ol', 'paragraph']],
+            ],
+            height: 100
+        });
+                
         $('#biografi').summernote({
             placeholder: 'Tulis biografi...',
             toolbar: [
@@ -64,6 +74,7 @@
             ],
             height: 150
         });
+        
         function getVal() {
           const val = document.querySelector('#tiktok').value;
           console.log(val);

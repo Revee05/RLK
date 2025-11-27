@@ -60,6 +60,17 @@
             ],
             height: 150
         });
+        
+        $('#bio-singkat').summernote({
+            placeholder: 'Tulis bio singkat...',
+            toolbar: [
+                ['style', ['bold', 'italic', 'underline', 'clear']],
+                ['font', ['strikethrough']],
+                ['para', ['ul', 'ol', 'paragraph']],
+            ],
+            height: 100
+        });
+        
         function getVal() {
           const val = document.querySelector('#tiktok').value;
           console.log(val);
