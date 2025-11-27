@@ -14,6 +14,7 @@ use DB;
 use Exception;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Validation\ValidationException; // added
 
 class AddressController extends Controller
 {
@@ -61,31 +62,36 @@ class AddressController extends Controller
      */
     public function store(Request $request)
     {
-        // dd($request->all());
-        $this->validate($request, [
-            'name' => 'required',
-            'user_id' => 'required',
-            'phone' => 'required',
-            'address' => 'required',
-            'provinsi_id' => 'required',
-            'kabupaten_id' => 'required',
-            'kecamatan_id' => 'required',
-            // 'desa_id'=>'required',
-            'label_address' => 'required',
-            // 'kodepos'=>'',
-        ], [
-            'name.required' => 'Nama wajib di isi',
-            'user_id.required' => 'wajib di isi',
-            'phone.required' => 'Nomer hp wajib di isi',
-            'address.required' => 'Alamat wajib di isi',
-            'provinsi_id.required' => 'Provinsi wajib di isi',
-            'kabupaten_id.required' => 'Kabupaten wajib di isi',
-            'kecamatan_id.required' => 'Kecamtan wajib di isi',
-            // 'desa_id.required'=>'Desa wajib di isi',
-            // 'kodepos'=>'Kodepost wajib di isi',
-            'label_address' => 'Label alamat wajib di isi',
-        ]);
         try {
+            // validation moved inside try so ValidationException dapat ditangani di bawah
+            $this->validate($request, [
+                'name' => 'required',
+                'user_id' => 'required',
+                'phone' => 'required',
+                'address' => 'required',
+                'provinsi_id' => 'required',
+                'kabupaten_id' => 'required',
+                'kecamatan_id' => 'required',
+                // 'desa_id'=>'required',
+                'label_address' => 'required',
+                // 'kodepos'=>'',
+            ], [
+                'name.required' => 'Nama wajib di isi',
+                'user_id.required' => 'wajib di isi',
+                'phone.required' => 'Nomer hp wajib di isi',
+                'address.required' => 'Alamat wajib di isi',
+                'provinsi_id.required' => 'Provinsi wajib di isi',
+                'kabupaten_id.required' => 'Kabupaten wajib di isi',
+                'kecamatan_id.required' => 'Kecamtan wajib di isi',
+                // 'desa_id.required'=>'Desa wajib di isi',
+                // 'kodepos'=>'Kodepost wajib di isi',
+                'label_address' => 'Label alamat wajib di isi',
+            ]);
+
+            // If new address is marked primary, reset other addresses for this user
+            if ($request->has('is_primary') && $request->boolean('is_primary')) {
+                UserAddress::where('user_id', $request->user_id)->update(['is_primary' => false]);
+            }
             $userAddress = UserAddress::create([
                 'name' => $request->name,
                 'user_id' => $request->user_id,
@@ -97,8 +103,12 @@ class AddressController extends Controller
                 // 'desa_id'=>$request->desa_id,
                 // 'kodepos'=>$request->kodepos,
                 'label_address' => $request->label_address,
+                'is_primary' => $request->boolean('is_primary'),
             ]);
             return redirect()->route('account.address.index')->with('success', 'Alamat berhasil ditambahkan!');
+        } catch (ValidationException $e) {
+            // handle validation errors and return with validation messages
+            return redirect()->back()->withErrors($e->validator)->withInput();
         } catch (Exception $e) {
             Log::error('AddressController@store failed: ' . $e->getMessage(), ['exception' => $e]);
             return redirect()->back()->withInput()->with('error', 'Gagal menyimpan alamat. Silakan coba lagi.');
@@ -156,31 +166,36 @@ class AddressController extends Controller
      */
     public function update(Request $request, $id)
     {
-        // dd($request->all());
-        $this->validate($request, [
-            'name' => 'required',
-            'user_id' => 'required',
-            'phone' => 'required',
-            'address' => 'required',
-            'provinsi_id' => 'required',
-            'kabupaten_id' => 'required',
-            'kecamatan_id' => 'required',
-            // 'desa_id' => 'required',
-            'label_address' => 'required',
-            // 'kodepos' => '',
-        ], [
-            'name.required' => 'Nama wajib di isi',
-            'user_id.required' => 'wajib di isi',
-            'phone.required' => 'Nomer hp wajib di isi',
-            'address.required' => 'Alamat wajib di isi',
-            'provinsi_id.required' => 'Provinsi wajib di isi',
-            'kabupaten_id.required' => 'Kabupaten wajib di isi',
-            'kecamatan_id.required' => 'Kecamtan wajib di isi',
-            // 'desa_id.required' => 'Desa wajib di isi',
-            // 'kodepos' => 'Kodepost wajib di isi',
-            'label_address' => 'Label alamat wajib di isi',
-        ]);
         try {
+            $this->validate($request, [
+                'name' => 'required',
+                'user_id' => 'required',
+                'phone' => 'required',
+                'address' => 'required',
+                'provinsi_id' => 'required',
+                'kabupaten_id' => 'required',
+                'kecamatan_id' => 'required',
+                // 'desa_id' => 'required',
+                'label_address' => 'required',
+                // 'kodepos' => '',
+            ], [
+                'name.required' => 'Nama wajib di isi',
+                'user_id.required' => 'wajib di isi',
+                'phone.required' => 'Nomer hp wajib di isi',
+                'address.required' => 'Alamat wajib di isi',
+                'provinsi_id.required' => 'Provinsi wajib di isi',
+                'kabupaten_id.required' => 'Kabupaten wajib di isi',
+                'kecamatan_id.required' => 'Kecamtan wajib di isi',
+                // 'desa_id.required' => 'Desa wajib di isi',
+                // 'kodepos' => 'Kodepost wajib di isi',
+                'label_address' => 'Label alamat wajib di isi',
+            ]);
+
+            // If updated address is marked primary, reset other addresses for this user
+            if ($request->has('is_primary') && $request->boolean('is_primary')) {
+                UserAddress::where('user_id', $request->user_id)->where('id', '<>', $id)->update(['is_primary' => false]);
+            }
+
             $userAddress = UserAddress::findOrFail($id);
             $userAddress->update([
                 'name' => $request->name,
@@ -193,8 +208,11 @@ class AddressController extends Controller
                 // 'desa_id' => $request->desa_id,
                 // 'kodepos' => $request->kodepos,
                 'label_address' => $request->label_address,
+                'is_primary' => $request->boolean('is_primary'),
             ]);
             return redirect()->route('account.address.index')->with('success', 'Alamat berhasil diperbarui!');
+        } catch (ValidationException $e) {
+            return redirect()->back()->withErrors($e->validator)->withInput();
         } catch (Exception $e) {
             Log::error('AddressController@update failed: ' . $e->getMessage(), ['exception' => $e]);
             return redirect()->back()->withInput()->with('error', 'Gagal memperbarui alamat. Silakan coba lagi.');
