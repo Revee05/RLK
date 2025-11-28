@@ -36,7 +36,18 @@
                         <div id="preview-location" style="font-size: 0.9rem; font-style: italic; color: #444; margin-bottom: 8px;">
                             {{ $city }}
                         </div>
-                        <div id="preview-bio" style="color: #555; font-size: 0.85rem; line-height: 1.6; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; word-break: break-word;">
+                        <div id="preview-bio"
+                            style="
+                                color: #555;
+                                font-size: 0.85rem;
+                                line-height: 1.6;
+                                display: -webkit-box;
+                                -webkit-line-clamp: 5;
+                                -webkit-box-orient: vertical;
+                                overflow: hidden;
+                                word-break: break-word;
+                                max-height: calc(1.6em * 5);
+                            ">
                             {!! old('bio', isset($karya) ? $karya->bio : 'Bio singkat akan muncul di sini...') !!}
                         </div>
                     </div>
