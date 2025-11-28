@@ -107,7 +107,6 @@ class KaryaController extends Controller
      */
     public function update(Request $request, $id)
     {
-        // dd($request->all());
         $request->validate([
             'name'=>'required',
             'description'=>'nullable',
@@ -117,7 +116,7 @@ class KaryaController extends Controller
         ]);
         try {
             $karya = Karya::findOrFail($id);
-            
+
             // Handle image upload
             $imageName = $karya->image; // Keep old image by default
             if ($request->hasFile('fotoseniman')) {
@@ -125,9 +124,15 @@ class KaryaController extends Controller
                 $extension = strtolower($request->file('fotoseniman')->getClientOriginalExtension());
                 $fileName = uniqid() . '.' . $extension;
                 $request->file('fotoseniman')->move($dir, $fileName);
+
+                // Hapus gambar lama jika ada dan berbeda
+                if ($karya->image && file_exists(public_path($dir . $karya->image))) {
+                    @unlink(public_path($dir . $karya->image));
+                }
+
                 $imageName = $fileName; // Use new image
             }
-            
+
             $karya->update([
                 'name'=> $request->name,
                 'slug'=> Str::slug($request->name, '-'),
@@ -153,13 +158,35 @@ class KaryaController extends Controller
     {
         try {
             $karya = Karya::findOrFail($id);
-            if($karya->product->count() > 0){
-                return redirect()->route('master.karya.index')->with('message', 'Jangan dihapus, seniman ini masih mempunyai produk!');   
+
+            // Cek jika masih punya produk
+            if ($karya->product->count() > 0) {
+                return redirect()->route('master.karya.index')->with('message', 'Jangan dihapus, seniman ini masih mempunyai produk!');
             }
+
+            // Hapus file gambar jika ada
+            if ($karya->image && file_exists(public_path('uploads/senimans/' . $karya->image))) {
+                @unlink(public_path('uploads/senimans/' . $karya->image));
+            }
+
+            // Hapus relasi lain jika ada (contoh: hapus produk, gambar produk, dsb)
+            // Contoh jika ingin hapus produk juga:
+            // foreach ($karya->product as $product) {
+            //     // Hapus gambar produk jika ada
+            //     foreach ($product->images as $img) {
+            //         if ($img->path && file_exists(public_path($img->path))) {
+            //             @unlink(public_path($img->path));
+            //         }
+            //         $img->delete();
+            //     }
+            //     $product->delete();
+            // }
+
             $karya->delete();
-            return redirect()->route('master.karya.index')->with('message', 'Data berhasil dihapus');   
+
+            return redirect()->route('master.karya.index')->with('message', 'Data berhasil dihapus');
         } catch (Exception $e) {
-            Log::error("Karya delete error ".$e->getMessage());
+            Log::error("Karya delete error " . $e->getMessage());
         }
     }
 }
