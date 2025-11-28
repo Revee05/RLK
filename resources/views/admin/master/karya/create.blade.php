@@ -58,7 +58,10 @@
             toolbar: [
                 ['style', ['bold', 'italic', 'underline', 'clear']],
                 ['font', ['strikethrough']],
+                ['fontsize', ['fontsize']],
                 ['para', ['ul', 'ol', 'paragraph']],
+                ['height', ['height']],
+                
             ],
             height: 100
         });
