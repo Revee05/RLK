@@ -5,13 +5,18 @@
             {{ Form::label('name', 'Nama Seniman') }}
             {{ Form::text('name', null, array('class' => 'form-control form-control-sm ','placeholder' => 'Nama Seniman')) }}
         </div>
+
         <div class="form-group">
             {{ Form::label('name', 'Address') }}
-            <small style="margin-top:4px; color: #e3342f;">tulis nama kota di paling akhir alamat setelah koma ( , ) (contoh: isi alamat lengkap, nama kota) </small>
+            <small style="margin-left:4px; color: #e3342f;">Tulis nama kota di paling akhir alamat setelah koma ( , ) (contoh: isi alamat lengkap, nama kota) </small>
             {{ Form::text('address', null, array('class' => 'form-control form-control-sm ','placeholder' => '')) }}
-        </div>       
-        <div class="form-group row">
-            {{ Form::label('name', 'Bio Singkat',['class'=>'col-sm-12 col-form-label']) }}
+        </div>     
+
+        <div class="form-group row align-items-center">
+            <div class="col-sm-12 d-flex align-items-center" style="gap: 10px;">
+                {{ Form::label('name', 'Bio Singkat',['class'=>'col-form-label mb-0']) }}
+                <small style="color: #e3342f;">Efektif 4 baris (tergantung ukuran text), sesuaikan di preview card.</small>
+            </div>
             <div class="col-sm-12">
                 {{ Form::textarea('bio', null, array('class' => 'form-control form-control-sm ','id'=> 'bio-singkat')) }}
             </div>
@@ -22,7 +27,7 @@
         <div class="card mb-3 border" id="preview-card" style="border-radius: 16px; overflow: hidden;">
             <div class="card-body p-0">
                 <div style="display: flex; align-items: flex-start; padding: 15px;">
-                    <div style="width: 100px; min-width: 100px; height: 120px; border-radius: 12px; overflow: hidden; background-color: #f5f5f5; margin-right: 15px;">
+                    <div style="width: 100px; min-width: 100px; height: 165px; border-radius: 12px; overflow: hidden; background-color: #f5f5f5; margin-right: 15px;">
                         <img id="preview-image" src="{{ isset($karya) && $karya->image ? asset('uploads/senimans/'.$karya->image) : asset('assets/img/default.jpg') }}" style="width: 100%; height: 100%; object-fit: cover;">
                     </div>
                     <div style="flex: 1; display: flex; flex-direction: column; justify-content: center; padding-top: 5px;">
@@ -30,11 +35,11 @@
                             {{ old('name', isset($karya) ? $karya->name : 'Nama Seniman') }}
                         </h5>
                         @php
-                            $address = old('address', isset($karya) ? $karya->address : ' ');
-                            $city = trim(Str::afterLast($address, ',')) ?: $address;
+                            $address = old('address', isset($karya) ? $karya->address : '');
+                            $city = trim(Str::afterLast($address, ',')) ?: '';
                         @endphp
                         <div id="preview-location" style="font-size: 0.9rem; font-style: italic; color: #444; margin-bottom: 8px;">
-                            {{ $city }}
+                            {{ $city ? $city : 'Nama kota muncul di sini...' }}
                         </div>
                         <div id="preview-bio"
                             style="
@@ -56,7 +61,7 @@
         </div>
         
         <div class="form-group row">
-            {{ Form::label('name', 'Biografi',['class'=>'col-sm-12 col-form-label']) }}
+            {{ Form::label('name', 'Biografi - full',['class'=>'col-sm-12 col-form-label']) }}
             <div class="col-sm-12">
                 {{ Form::textarea('description', null, array('class' => 'form-control form-control-sm ','id'=> 'biografi')) }}
             </div>
@@ -94,6 +99,9 @@
                     <label for="input-foto-seniman" class="btn btn-sm btn-dark rounded-0 btn-block">
                         <i class="fa fa-folder-open"></i> Pilih Foto Seniman
                     </label>
+                    <small class="text-muted d-block mt-2" style="color:#2b6cb0!important;">
+                        Ukuran ideal: <b>400x500 (px)</b> &nbsp;|&nbsp; Format: <b>webp, jpg, jpeg</b>
+                    </small>
                     @error('fotoseniman')
                     <span class="invalid-feedback" role="alert">
                         <strong>{{ $message }}</strong>

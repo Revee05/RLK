@@ -133,7 +133,7 @@
 .seniman-image-wrapper {
     width: 140px;
     min-width: 140px;
-    height: 160px;
+    height: 165px;
     border-radius: 12px;
     overflow: hidden;
     margin: 15px;
@@ -185,8 +185,8 @@
 
 .bio-clamp {
     display: -webkit-box;
-    -webkit-line-clamp: 5;
-    line-clamp: 5;
+    -webkit-line-clamp: 4;
+    line-clamp: 4;
     -webkit-box-orient: vertical;
     overflow: hidden;
     text-overflow: ellipsis;

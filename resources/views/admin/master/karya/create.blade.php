@@ -117,7 +117,7 @@
         
         // Live preview untuk address
         $('input[name="address"]').on('input', function(){
-            $('#preview-location').text($(this).val() || '(kota asal)');
+            $('#preview-location').text($(this).val() || 'Kota Asal');
         });
         
         // Live preview untuk bio singkat (summernote)
