@@ -76,7 +76,7 @@
                                         <div class="seniman-location">
                                             {{ Str::contains($seniman->address, ',') ? trim(Str::afterLast($seniman->address, ',')) : $seniman->address }}
                                         </div>
-                                        <div class="seniman-bio">{{ $seniman->bio }}</div>
+                                        <div class="seniman-bio bio-clamp">{!! $seniman->bio !!}</div>
                                     </div>
                                 </div>
                             </a>

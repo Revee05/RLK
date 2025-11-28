@@ -68,31 +68,41 @@ class SenimanController extends Controller
     public function detail($slug)
     {
         $seniman = Karya::where('slug', $slug)->firstOrFail();
-        
-        // Ambil produk dari seniman ini
-        $products = $seniman->product()->paginate(12);
 
-        // Ambil hanya data penting untuk produk
-        $products->getCollection()->transform(function($item) {
-            return (object)[
-                'id' => $item->id,
-                'name' => $item->name,
-                'slug' => $item->slug,
-                'image' => $item->image,
-                'price' => $item->price,
+        // Ambil produk dari seniman ini dengan eager load imageUtama
+        $products = $seniman->product()->with('imageUtama')->paginate(12);
+
+        // Hitung statistik
+        $totalProducts = $seniman->product()->count();
+
+        // Data seniman yang lebih ringkas (tanpa created_at)
+        $senimanData = [
+            'id' => $seniman->id,
+            'name' => $seniman->name,
+            'slug' => $seniman->slug,
+            'address' => $seniman->address,
+            'bio' => $seniman->bio,
+            'description' => $seniman->description,
+            'social' => $seniman->social,
+            'image' => $seniman->image,
+            'total_products' => $totalProducts,
+        ];
+
+        // Slice data produk: hanya ambil field penting
+        $productsData = collect($products->items())->map(function($product) {
+            return [
+                'id' => $product->id,
+                'title' => $product->title,
+                'slug' => $product->slug,
+                'price' => $product->price,
+                'description' => $product->description,
+                'image_utama' => $product->imageUtama ? $product->imageUtama->path : null,
             ];
         });
 
         \Log::info('SenimanController@detail response', [
-            'seniman' => [
-                'id' => $seniman->id,
-                'name' => $seniman->name,
-                'slug' => $seniman->slug,
-                'address' => $seniman->address,
-                'bio' => $seniman->bio,
-                'image' => $seniman->image,
-            ],
-            'products' => $products->items(),
+            'seniman' => $senimanData,
+            'products' => $productsData,
             'pagination' => [
                 'current_page' => $products->currentPage(),
                 'last_page' => $products->lastPage(),
@@ -101,6 +111,11 @@ class SenimanController extends Controller
             ],
         ]);
 
-        return view('web.Seniman.seniman-detail', compact('seniman', 'products'));
+        // Kirim data ke view
+        return view('web.Seniman.seniman-detail', [
+            'seniman' => (object)$senimanData,
+            'products' => $products, // tetap kirim paginator untuk links()
+            'productsData' => $productsData,
+        ]);
     }
 }
