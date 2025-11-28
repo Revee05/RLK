@@ -68,14 +68,14 @@ class SenimanController extends Controller
     public function detail($slug)
     {
         $seniman = Karya::where('slug', $slug)->firstOrFail();
-        
+
         // Ambil produk dari seniman ini dengan eager load imageUtama
         $products = $seniman->product()->with('imageUtama')->paginate(12);
 
         // Hitung statistik
         $totalProducts = $seniman->product()->count();
-        
-        // Data seniman yang lebih lengkap
+
+        // Data seniman yang lebih ringkas (tanpa created_at)
         $senimanData = [
             'id' => $seniman->id,
             'name' => $seniman->name,
@@ -85,13 +85,24 @@ class SenimanController extends Controller
             'description' => $seniman->description,
             'social' => $seniman->social,
             'image' => $seniman->image,
-            'created_at' => $seniman->created_at,
             'total_products' => $totalProducts,
         ];
 
+        // Slice data produk: hanya ambil field penting
+        $productsData = collect($products->items())->map(function($product) {
+            return [
+                'id' => $product->id,
+                'title' => $product->title,
+                'slug' => $product->slug,
+                'price' => $product->price,
+                'description' => $product->description,
+                'image_utama' => $product->imageUtama ? $product->imageUtama->path : null,
+            ];
+        });
+
         \Log::info('SenimanController@detail response', [
             'seniman' => $senimanData,
-            'products' => $products->items(),
+            'products' => $productsData,
             'pagination' => [
                 'current_page' => $products->currentPage(),
                 'last_page' => $products->lastPage(),
@@ -100,6 +111,11 @@ class SenimanController extends Controller
             ],
         ]);
 
-        return view('web.Seniman.seniman-detail', compact('seniman', 'products'));
+        // Kirim data ke view
+        return view('web.Seniman.seniman-detail', [
+            'seniman' => (object)$senimanData,
+            'products' => $products, // tetap kirim paginator untuk links()
+            'productsData' => $productsData,
+        ]);
     }
 }

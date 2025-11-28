@@ -24,11 +24,7 @@
                 <div class="seniman-stats">
                     <div class="stat-item">
                         <i class="fas fa-palette"></i>
-                        <span>{{ $seniman->product->count() }} Karya</span>
-                    </div>
-                    <div class="stat-item">
-                        <i class="fas fa-calendar-alt"></i>
-                        <span>Bergabung {{ $seniman->created_at->format('Y') }}</span>
+                        <span>{{ $seniman->total_products ?? 0 }} Karya</span>
                     </div>
                 </div>
 
@@ -65,6 +61,16 @@
                 </div>
                 @endif
 
+                @php
+                    $socmedColors = [
+                        'facebook' => '#1877f3',
+                        'twitter' => '#1da1f2',
+                        'instagram' => '#e4405f',
+                        'youtube' => '#ff0000',
+                        'tiktok' => '#000000',
+                    ];
+                @endphp
+
                 @if($seniman->social && is_array($seniman->social))
                 <div class="info-item">
                     <i class="fas fa-share-alt"></i>
@@ -72,8 +78,8 @@
                     <span class="info-value d-flex flex-wrap" style="gap:8px;">
                         @foreach($seniman->social as $key => $url)
                             @if($url)
-                                <a href="{{ $url }}" target="_blank" class="btn btn-sm btn-primary" style="margin-right:4px;">
-                                    <i class="fab fa-{{ $key }}"></i> {{ ucfirst($key) }}
+                                <a href="{{ $url }}" target="_blank" class="btn btn-sm btn-light" style="margin-right:4px;">
+                                    <i class="fab fa-{{ $key }}" style="color:{{ $socmedColors[$key] ?? '#555' }}"></i> {{ ucfirst($key) }}
                                 </a>
                             @endif
                         @endforeach
@@ -92,30 +98,30 @@
             <h4><i class="fas fa-box-open"></i> Karya & Produk Seniman</h4>
             <p class="section-subtitle">Koleksi karya terbaik dari {{ $seniman->name }}</p>
         </div>
-    <div class="row">
-        @forelse($products as $product)
-            <div class="col-md-3 mb-4">
-                <div class="card h-100">
-                    @php
-                        $imageUtama = $product->imageUtama;
-                        $imagePath = $imageUtama ? $imageUtama->path : 'assets/img/default.jpg';
-                    @endphp
-                    <img src="{{ asset($imagePath) }}" class="card-img-top" alt="{{ $product->title }}" onerror="this.src='{{ asset('assets/img/default.jpg') }}'">
-                    <div class="card-body">
-                        <h5 class="card-title">{{ $product->title }}</h5>
-                        <p class="card-text">Rp {{ number_format($product->price, 0, ',', '.') }}</p>
-                        <a href="{{ route('detail', $product->slug) }}" class="btn btn-primary btn-sm">Lihat Detail</a>
+        <div class="row">
+            @forelse($productsData as $product)
+                <div class="col-md-3 mb-4">
+                    <div class="card h-100">
+                        @php
+                            $imagePath = $product['image_utama'] ?? 'assets/img/default.jpg';
+                        @endphp
+                        <img src="{{ asset($imagePath) }}" class="card-img-top" alt="{{ $product['title'] }}" onerror="this.src='{{ asset('assets/img/default.jpg') }}'">
+                        <div class="card-body">
+                            <h5 class="card-title">{{ $product['title'] }}</h5>
+                            <p class="card-text">Rp {{ number_format($product['price'], 0, ',', '.') }}</p>
+                            <a href="{{ route('detail', $product['slug']) }}" class="btn btn-primary btn-sm">Lihat Detail</a>
+                        </div>
                     </div>
                 </div>
-            </div>
-        @empty
-            <div class="col-12">
-                <p>Belum ada karya/produk dari seniman ini.</p>
-            </div>
-        @endforelse
-    </div>
-    <div class="d-flex justify-content-center mt-4">
-        {{ $products->links() }}
+            @empty
+                <div class="col-12">
+                    <p>Belum ada karya/produk dari seniman ini.</p>
+                </div>
+            @endforelse
+        </div>
+        <div class="d-flex justify-content-center mt-4">
+            {{ $products->links() }}
+        </div>
     </div>
 </div>
 @endsection
