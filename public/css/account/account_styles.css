@@ -296,6 +296,35 @@
     border-radius: 0.6rem !important;
 }
 
+/* Utility text color: cyan used across account pages */
+.text-cyan {
+    color: #15bcc5 !important;
+}
+
+/* Make Bootstrap form-switches use the cyan theme in account area */
+/* Scoped to modals and account content to avoid global overrides */
+#addAddressModal .form-check-input,
+#updateAddressModal .form-check-input,
+#deleteAddressModal .form-check-input,
+.card.content-border .form-check-input {
+    border-radius: 1rem;
+}
+
+#addAddressModal .form-check-input:checked,
+#updateAddressModal .form-check-input:checked,
+#deleteAddressModal .form-check-input:checked,
+.card.content-border .form-check-input:checked {
+    background-color: #15bcc5 !important;
+    border-color: #15bcc5 !important;
+}
+
+#addAddressModal .form-check-input:focus,
+#updateAddressModal .form-check-input:focus,
+#deleteAddressModal .form-check-input:focus,
+.card.content-border .form-check-input:focus {
+    box-shadow: 0 0 0 0.2rem rgba(21, 188, 197, 0.18) !important;
+}
+
 #addAddressModal select.form-control,
 #addAddressModal textarea.form-control {
     border-radius: 0.6rem !important;
@@ -312,145 +341,6 @@
     background: #f8f9fa;
     border-radius: 0.5rem;
 }
-
-
-/* =========================================
-   TAMBAHAN KHUSUS RIWAYAT LELANG (AUCTION)
-   ========================================= */
-
-/* 1. Style Kartu Statistik (Total Bids, dll) */
-.card-stat {
-    border: 1px solid #dee2e6;
-    border-radius: 0.8rem;
-    padding: 1.2rem;
-    height: 100%;
-    background-color: #fff;
-    transition: transform 0.2s;
-}
-
-.card-stat:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
-}
-
-.stat-title {
-    font-size: 0.85rem;
-    font-weight: 600;
-    color: #6c757d;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    display: block;
-    margin-bottom: 0.5rem;
-}
-
-.stat-value {
-    font-size: 1.5rem;
-    font-weight: 700;
-    color: #15bcc5; /* Menggunakan Cyan tema kamu */
-    margin-bottom: 0;
-}
-
-/* 2. Style Tabel Lelang */
-.table-auction thead th {
-    background-color: #051a36; /* Dark Blue tema kamu */
-    color: #ffffff;
-    font-weight: 500;
-    padding: 1rem;
-    border: none;
-    white-space: nowrap;
-}
-
-.table-auction tbody td {
-    padding: 1rem;
-    vertical-align: middle;
-    border-bottom: 1px solid #e9ecef;
-    color: #051a36;
-}
-
-/* 3. Style Status Badges */
-.badge-status {
-    padding: 0.4em 1em;
-    border-radius: 50rem;
-    font-weight: 500;
-    font-size: 0.85rem;
-}
-
-.badge-status.process {
-    background-color: #051a36; /* Dark Blue */
-    color: #fff;
-}
-
-.badge-status.win {
-    background-color: #15bcc5; /* Cyan tema kamu */
-    color: #fff;
-}
-
-.badge-status.lose {
-    background-color: #6c757d; /* Abu-abu */
-    color: #fff;
-}
-
-/* 4. Text Styling */
-.price-lost {
-    text-decoration: line-through;
-    color: #a0aec0; /* Abu-abu pudar */
-    font-weight: normal !important;
-}
-
-/* ==================================================
-   COMPACT TABLE STYLE (REFINED)
-   ================================================== */
-
-/* Helper Text */
-.date-bold {
-    font-weight: 700;
-    color: #051a36;
-    display: block;
-    margin-bottom: 2px;
-    font-size: 0.9rem;
-}
-.date-time {
-    font-weight: 400;
-    color: #6c757d;
-    font-size: 0.8rem;
-}
-.price-normal {
-    font-weight: 600;
-    color: #212529;
-    font-size: 0.9rem;
-}
-.price-lost {
-    text-decoration: line-through;
-    color: #15bcc5;
-    font-size: 0.9rem;
-}
-
-/* Badge Status */
-.badge-status {
-    padding: 0.35rem 0.8rem;
-    border-radius: 10rem;
-    font-weight: 600;
-    font-size: 0.75rem;
-    text-align: center;
-    min-width: 90px;
-    display: inline-block;
-}
-.badge-status.process { 
-    background-color: #051a36; 
-    color: #fff; 
-}
-
-.badge-status.win { 
-    background-color: #15bcc5; 
-    color: #fff; 
-}
-
-.badge-status.lose { 
-    background-color: #6c757d; 
-    color: #fff; 
-}
-/*batas table riwayat lelang*/
-
 
 /* Modal header: center title while keeping close button right-aligned */
 #addAddressModal .modal-header {

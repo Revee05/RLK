@@ -27,7 +27,7 @@
 
                     <div class="form-group mb-3">
                         <input type="text" id="update_label" class="form-control input-cyan" name="label_address"
-                            placeholder="Label Alamat">
+                            placeholder="Label Alamat (rumah / kantor / apartemen)" required>
                     </div>
 
                     <div class="form-group mb-3">
@@ -53,6 +53,14 @@
                     <div class="form-group mb-3">
                         <textarea id="update_address" class="form-control input-cyan" name="address" rows="2" placeholder="Alamat Lengkap"
                             required></textarea>
+                    </div>
+
+                    <div class="form-group mb-3">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="update_is_primary" name="is_primary"
+                                value="1">
+                            <label class="form-check-label" for="update_is_primary">Jadikan alamat utama</label>
+                        </div>
                     </div>
 
                 </div>
@@ -108,6 +116,9 @@
                     document.getElementById('update_phone').value = obj.phone || '';
                     document.getElementById('update_label').value = obj.label_address || '';
                     document.getElementById('update_address').value = obj.address || '';
+                    // set primary checkbox
+                    const updPrimary = document.getElementById('update_is_primary');
+                    if (updPrimary) updPrimary.checked = obj.is_primary ? true : false;
 
                     // set form action to resource update URL
                     const form = document.getElementById('formUpdateAddress');
@@ -155,7 +166,7 @@
             fetch('/lokasi/kabupaten/' + this.value).then(r => r.json()).then(data => {
                 kab.disabled = false;
                 data.forEach(k => kab.innerHTML +=
-                    `<option value("${k.id}">${k.nama_kabupaten}</option>`);
+                    `<option value="${k.id}">${k.nama_kabupaten}</option>`);
             }).catch(() => {});
         });
         kab.addEventListener('change', function() {

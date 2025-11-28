@@ -1,72 +1,64 @@
-{{-- FILE: resources/views/account/auction/_table_rows.blade.php --}}
-
 @forelse($history as $log)
-<tr class="d-flex flex-column d-md-table-row mb-3 mb-md-0 bg-white rounded shadow-sm border border-light border-md-0" style="border-bottom: 1.5px solid #888;">
+<tr class="bg-white">
     
-    {{-- KOLOM 1: JUDUL PRODUK --}}
-    {{-- Mobile: order-0 (paling atas), background abu tipis, text-center --}}
-    <td class="d-block d-md-table-cell align-middle px-3 py-2 fw-bold bg-light bg-md-white text-center text-md-start" style="width: 100%; font-size: 0.9rem;">
+    {{-- KOLOM 1: ITEM LELANG --}}
+    <td style="width: 20%; font-weight: 700; color: #000000ff;">
         {{ $log->product->title }}
     </td>
 
-    {{-- KOLOM 2: PENUTUPAN --}}
-    {{-- Mobile: d-flex justify-content-between (Kiri Label, Kanan Isi) --}}
-    <td class="d-flex d-md-table-cell justify-content-between align-middle px-3 py-2" style="width: 100%;">
-        {{-- Label Mobile --}}
-        <span class="d-md-none text-muted fw-bold" style="font-size: 0.8rem;">Penutupan:</span>
-        
-        {{-- Isi --}}
-        <div class="d-flex flex-column text-end text-md-start">
-            <span class="date-bold" style="font-size: 0.85rem;">
-                {{ \Carbon\Carbon::parse($log->product->end_date)->format('d M Y') }}
-            </span>
-            <span class="date-time" style="font-size: 0.75rem;">
-                {{ \Carbon\Carbon::parse($log->product->end_date)->format('H:i:s') }}
-            </span>
+    {{-- KOLOM 2: PENUTUPAN (Dibuat Rapat) --}}
+    <td style="width: 20%;">
+        {{-- Tambahkan line-height: 1.2 agar tanggal dan jam nempel --}}
+        <div style="font-weight: 700; font-size: 0.9rem; color: #000; line-height: 1.2;">
+            {{ \Carbon\Carbon::parse($log->product->end_date)->format('d M Y') }}
+        </div>
+        <div style="color: #000000ff; font-size: 0.9rem; line-height: 1.2;">
+            {{ \Carbon\Carbon::parse($log->product->end_date)->format('H:i:s') }}
         </div>
     </td>
 
     {{-- KOLOM 3: TAWARAN SAYA --}}
-    <td class="d-flex d-md-table-cell justify-content-between align-middle px-3 py-2" style="width: 100%;">
-        <span class="d-md-none text-muted fw-bold" style="font-size: 0.8rem;">Tawaran Saya:</span>
-
+    <td style="width: 20%;">
         @if($log->status_label == 'Kalah')
-            <span class="price-lost" style="font-size: 0.9rem;">
+            <span class="price-lost">
                 Rp {{ number_format($log->price, 0, ',', '.') }}
             </span>
         @else
-            <span class="price-normal" style="font-size: 0.9rem;">
+            <span class="price-normal">
                 Rp {{ number_format($log->price, 0, ',', '.') }}
             </span>
         @endif
     </td>
 
     {{-- KOLOM 4: TERTINGGI GLOBAL --}}
-    <td class="d-flex d-md-table-cell justify-content-between align-middle px-3 py-2" style="width: 100%;">
-        <span class="d-md-none text-muted fw-bold" style="font-size: 0.8rem;">Tertinggi Global:</span>
-
-        <span class="price-normal" style="font-size: 0.9rem;">
+    <td style="width: 20%;">
+        <span class="price-normal">
             Rp {{ number_format($log->highest_global, 0, ',', '.') }}
         </span>
     </td>
 
     {{-- KOLOM 5: STATUS --}}
-    <td class="d-flex d-md-table-cell justify-content-between align-middle px-3 py-2 text-md-center" style="width: 100%;">
-        <span class="d-md-none text-muted fw-bold" style="font-size: 0.8rem;">Status:</span>
+    <td style="width: 15%; text-align: center;">
+        @php
+            $badgeClass = 'badge-status'; 
+            if ($log->status_label == 'Dalam Proses') {
+                $badgeClass .= ' process';
+            } elseif ($log->status_label == 'Menang') {
+                $badgeClass .= ' win';
+            } else {
+                $badgeClass .= ' lose';
+            }
+        @endphp
 
-        <div>
-            @if($log->status_label == 'Dalam Proses')
-                <span class="badge-status process">Dalam Proses</span>
-            @elseif($log->status_label == 'Menang')
-                <span class="badge-status win">Menang</span>
-            @else
-                <span class="badge-status lose">Kalah</span>
-            @endif
-        </div>
+        <span class="{{ $badgeClass }}">
+            {{ $log->status_label }}
+        </span>
     </td>
 </tr>
 @empty
 <tr>
-    <td colspan="5" class="text-center py-4 text-muted">Belum ada riwayat lelang.</td>
+    <td colspan="5" class="text-center p-4 text-muted">
+        Belum ada riwayat lelang.
+    </td>
 </tr>
 @endforelse
