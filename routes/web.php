@@ -52,7 +52,6 @@ Route::get('/detail-products', function () {
 })->name('detail-products');
 
 // prod routes
-
 Route::get('/','Web\HomeController@index')->name('home');
 Route::get('/lelang','Web\HomeController@lelang')->name('lelang');
 Route::get('/blogs','Web\BlogController@index')->name('blogs');
@@ -61,12 +60,16 @@ Route::post('/new/login', 'Auth\\LoginController@postLogin')->name('new.login');
 Route::get('/products/search','Web\HomeController@search')->name('web.search');
 Route::post('/bid/messages', 'Web\ChatsController@sendMessage');
 Route::get('/checkout', 'Web\CheckoutMerchController@index')->name('checkout.index');
+
+// Seniman routes - harus sebelum route /{slug}
+Route::get('/seniman', 'Web\SenimanController@index')->name('seniman.index');
+Route::get('/seniman/{slug}', 'Web\SenimanController@detail')->name('seniman.detail');
+
 Route::get('/{slug}','Web\HomeController@detail')->name('detail');
 Route::get('/page/{slug}','Web\HomeController@page')->name('web.page');
 Route::get('/blog/{slug}','Web\BlogController@detail')->name('web.blog.detail');
 Route::get('/bid/messages/{slug}', 'Web\ChatsController@fetchMessages');
 Route::get('/category/{slug}','Web\HomeController@category')->name('products.category');
-Route::get('/seniman/{slug}','Web\HomeController@seniman')->name('products.seniman');
 
 
 Route::group(['middleware' => ['auth']], function () {

@@ -11,6 +11,7 @@ class Karya extends Model
         'name',
         'slug',
         'description',
+        'bio',
         'social',
         'image',
         'address',

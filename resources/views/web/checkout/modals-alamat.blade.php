@@ -10,13 +10,6 @@
 
       <div class="modal-body">
 
-        <!-- Tambah Alamat -->
-        <div class="address-item">
-            <button type="button" class="btn btn-dark w-100 py-2" id="btn-add-address">
-                Tambah Alamat
-            </button>
-        </div>
-
         <!-- LIST ALAMAT -->
         <div id="address-list">
             @if($addresses->count())
@@ -45,6 +38,12 @@
             @else
                 <p class="text-muted">Belum ada alamat.</p>
             @endif
+        </div>
+                <!-- Tambah Alamat -->
+        <div class="address-item">
+            <button type="button" class="btn btn-dark w-100 py-2" id="btn-add-address">
+                Tambah Alamat
+            </button>
         </div>
 
       </div>
