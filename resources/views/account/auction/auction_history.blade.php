@@ -22,33 +22,33 @@
                     {{-- A. STATISTIK (Tambahkan ID pada angka agar bisa diupdate JS) --}}
                     <div class="row g-3 mb-4">
                         <div class="col-md-4">
-                            <div class="card-stat">
+                            {{-- UPDATE: Tambahkan display: flex dan flex-direction column serta align-items flex-start --}}
+                            <div class="card-stat" style="text-align: left !important; display: flex !important; flex-direction: column !important; align-items: flex-start !important; justify-content: center !important;">
                                 <span class="stat-title">Total Penawaran</span>
                                 <h3 class="stat-value">
                                     <span id="stat-total-bids">{{ $totalBids }}</span> 
-                                    
-                                    {{-- HAPUS 'text-muted' agar warnanya ikut menjadi biru --}}
-                                    <span class="fs-5" style="color: #15bcc5;">Bids</span>
+                                    <span class="fs-4" style="color: #15bcc5;">Bids</span>
                                 </h3>
                             </div>
                         </div>
 
                         <div class="col-md-4">
-                            <div class="card-stat">
+                            {{-- UPDATE: Sama seperti di atas --}}
+                            <div class="card-stat" style="text-align: left !important; display: flex !important; flex-direction: column !important; align-items: flex-start !important; justify-content: center !important;">
                                 <span class="stat-title">Item Dimenangkan</span>
                                 <h3 class="stat-value">
                                     <span id="stat-items-won">{{ $itemsWon }}</span> 
-                                    
-                                    {{-- HAPUS 'text-muted' agar warnanya ikut menjadi biru --}}
-                                    <span class="fs-5" style="color: #15bcc5;">Item</span>
+                                    <span class="fs-4" style="color: #15bcc5;">Item</span>
                                 </h3>
                             </div>
                         </div>
+
                         <div class="col-md-4">
-                            <div class="card-stat">
+                            <div class="card-stat" style="text-align: left !important; display: flex !important; flex-direction: column !important; align-items: flex-start !important; justify-content: center !important;">
                                 <span class="stat-title">Penawaran Tertinggi</span>
-                                {{-- Tambah ID: stat-highest-bid --}}
-                                <h3 class="stat-value">Rp <span id="stat-highest-bid">{{ number_format($highestBid, 0, ',', '.') }}</span></h3>
+                                <h3 class="stat-value">
+                                    Rp <span id="stat-highest-bid">{{ number_format($highestBid, 0, ',', '.') }}</span>
+                                </h3>
                             </div>
                         </div>
                     </div>
@@ -59,9 +59,9 @@
                         <thead>
                         <tr>
                             <th style="width: 20%; background-color: #051a36; color: white; padding: 0.8rem; border: none;">Item Lelang</th>
-                            <th style="width: 20%; background-color: #051a36; color: white; padding: 0.8rem; border: none;">Penutupan</th>
-                            <th style="width: 20%; background-color: #051a36; color: white; padding: 0.8rem; border: none;">Tawaran Saya</th>
-                            <th style="width: 20%; background-color: #051a36; color: white; padding: 0.8rem; border: none;">Tawaran Tertinggi</th>
+                            <th style="width: 18%; background-color: #051a36; color: white; padding: 0.8rem; border: none;">Penutupan</th>
+                            <th style="width: 19%; background-color: #051a36; color: white; padding: 0.8rem; border: none;">Tawaran Saya</th>
+                            <th style="width: 23%; background-color: #051a36; color: white; padding: 0.8rem; border: none;">Tawaran Tertinggi</th>
                             <th class="text-center" style="width: 15%; background-color: #051a36; color: white; padding: 0.8rem; border: none;">Status</th>
                         </tr>
                         </thead>
