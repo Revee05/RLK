@@ -67,6 +67,7 @@
                 ['style', ['bold', 'italic', 'underline', 'clear']],
                 ['font', ['strikethrough']],
                 ['para', ['ul', 'ol', 'paragraph']],
+                
             ],
             height: 100
         });

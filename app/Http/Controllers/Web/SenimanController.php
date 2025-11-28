@@ -69,29 +69,28 @@ class SenimanController extends Controller
     {
         $seniman = Karya::where('slug', $slug)->firstOrFail();
         
-        // Ambil produk dari seniman ini
-        $products = $seniman->product()->paginate(12);
+        // Ambil produk dari seniman ini dengan eager load imageUtama
+        $products = $seniman->product()->with('imageUtama')->paginate(12);
 
-        // Ambil hanya data penting untuk produk
-        $products->getCollection()->transform(function($item) {
-            return (object)[
-                'id' => $item->id,
-                'name' => $item->name,
-                'slug' => $item->slug,
-                'image' => $item->image,
-                'price' => $item->price,
-            ];
-        });
+        // Hitung statistik
+        $totalProducts = $seniman->product()->count();
+        
+        // Data seniman yang lebih lengkap
+        $senimanData = [
+            'id' => $seniman->id,
+            'name' => $seniman->name,
+            'slug' => $seniman->slug,
+            'address' => $seniman->address,
+            'bio' => $seniman->bio,
+            'description' => $seniman->description,
+            'social' => $seniman->social,
+            'image' => $seniman->image,
+            'created_at' => $seniman->created_at,
+            'total_products' => $totalProducts,
+        ];
 
         \Log::info('SenimanController@detail response', [
-            'seniman' => [
-                'id' => $seniman->id,
-                'name' => $seniman->name,
-                'slug' => $seniman->slug,
-                'address' => $seniman->address,
-                'bio' => $seniman->bio,
-                'image' => $seniman->image,
-            ],
+            'seniman' => $senimanData,
             'products' => $products->items(),
             'pagination' => [
                 'current_page' => $products->currentPage(),

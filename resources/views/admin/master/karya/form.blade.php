@@ -23,24 +23,23 @@
         </div>
         <div class="form-group">
             {{ Form::label('name', 'Facebook') }}
-            {{ Form::text('social[facebook]', null, array('class' => 'form-control form-control-sm ','placeholder' => '')) }}
+            <input type="text" name="social[facebook]" value="{{ old('social.facebook', isset($karya) && $karya->social ? ($karya->social['facebook'] ?? '') : '') }}" class="form-control form-control-sm" placeholder="https://facebook.com/...">
         </div>
         <div class="form-group">
             {{ Form::label('name', 'Twitter') }}
-            {{ Form::text('social[twitter]', null, array('class' => 'form-control form-control-sm ','placeholder' => '')) }}
+            <input type="text" name="social[twitter]" value="{{ old('social.twitter', isset($karya) && $karya->social ? ($karya->social['twitter'] ?? '') : '') }}" class="form-control form-control-sm" placeholder="https://twitter.com/...">
         </div>
         <div class="form-group">
             {{ Form::label('name', 'Instagram') }}
-            {{ Form::text('social[instagram]', null, array('class' => 'form-control form-control-sm ','placeholder' => '')) }}
+            <input type="text" name="social[instagram]" value="{{ old('social.instagram', isset($karya) && $karya->social ? ($karya->social['instagram'] ?? '') : '') }}" class="form-control form-control-sm" placeholder="https://instagram.com/...">
         </div>
         <div class="form-group">
             {{ Form::label('name', 'Youtube') }}
-            {{ Form::text('social[youtube]', null, array('class' => 'form-control form-control-sm ','placeholder' => '')) }}
+            <input type="text" name="social[youtube]" value="{{ old('social.youtube', isset($karya) && $karya->social ? ($karya->social['youtube'] ?? '') : '') }}" class="form-control form-control-sm" placeholder="https://youtube.com/...">
         </div>
         <div class="form-group">
             {{ Form::label('name', 'Tiktok') }}
-            {{ Form::text('social[tiktok]', null, array('class' => 'form-control form-control-sm ','placeholder' => '')) }}
-            {{-- <input type="text" name="" id="tiktok" onkeyup="getVal()"> --}}
+            <input type="text" name="social[tiktok]" value="{{ old('social.tiktok', isset($karya) && $karya->social ? ($karya->social['tiktok'] ?? '') : '') }}" class="form-control form-control-sm" placeholder="https://tiktok.com/...">
         </div>
     </div>
     <div class="col-sm-3">

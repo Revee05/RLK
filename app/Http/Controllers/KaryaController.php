@@ -7,7 +7,9 @@ use App\Karya;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Log;
 use Intervention\Image\Facades\Image;
+use Exception;
 class KaryaController extends Controller
 {
     /**
@@ -49,13 +51,15 @@ class KaryaController extends Controller
             'name.required' => 'Nama karya wajib di isi',
         ]);
         try {
+            $imageName = '';
             if ($request->hasFile('fotoseniman')) {
                 $dir = 'uploads/senimans/';
-                $extension = strtolower($request->file('fotoseniman')->getClientOriginalExtension()); // get image extension
-                $fileName = uniqid() . '.' . $extension; // rename image
+                $extension = strtolower($request->file('fotoseniman')->getClientOriginalExtension());
+                $fileName = uniqid() . '.' . $extension;
                 $request->file('fotoseniman')->move($dir, $fileName);
-                $data['fotoseniman'] =  $fileName;
+                $imageName = $fileName;
             }
+            
             Karya::create([
                 'name'=> $request->name,
                 'slug'=> Str::slug($request->name, '-'),
@@ -63,7 +67,7 @@ class KaryaController extends Controller
                 'bio'=> $request->bio,
                 'social'=> $request->social,
                 'address'=> $request->address,
-                'image'=> $data['fotoseniman'] ?? '',
+                'image'=> $imageName,
             ]);
             return redirect()->route('master.karya.index')->with('message', 'Data berhasil disimpan');
         } catch (Exception $e) {
@@ -111,22 +115,19 @@ class KaryaController extends Controller
         ],[
             'name.required' => 'Nama karya wajib di isi',
         ]);
-        if ($request->hasFile('fotoseniman')) {
-            $dir = 'uploads/senimans/';
-            $extension = strtolower($request->file('fotoseniman')->getClientOriginalExtension()); // get image extension
-            $fileName = uniqid() . '.' . $extension; // rename image
-            $request->file('fotoseniman')->move($dir, $fileName);
-            $data['fotoseniman'] =  $fileName;
-        }
-        
         try {
             $karya = Karya::findOrFail($id);
-
-            if(empty($karya->image) AND $karya->image != NULL) {
-                $profile = $karya->image;
-            } else {
-                $profile = $data['fotoseniman'];
+            
+            // Handle image upload
+            $imageName = $karya->image; // Keep old image by default
+            if ($request->hasFile('fotoseniman')) {
+                $dir = 'uploads/senimans/';
+                $extension = strtolower($request->file('fotoseniman')->getClientOriginalExtension());
+                $fileName = uniqid() . '.' . $extension;
+                $request->file('fotoseniman')->move($dir, $fileName);
+                $imageName = $fileName; // Use new image
             }
+            
             $karya->update([
                 'name'=> $request->name,
                 'slug'=> Str::slug($request->name, '-'),
@@ -134,7 +135,7 @@ class KaryaController extends Controller
                 'bio'=> $request->bio,
                 'address'=> $request->address,
                 'social'=> $request->social,
-                'image'=> $profile,
+                'image'=> $imageName,
             ]);
             return redirect()->route('master.karya.index')->with('message', 'Data berhasil disimpan');
         } catch (Exception $e) {

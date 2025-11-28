@@ -64,6 +64,7 @@ Route::get('/checkout', 'Web\CheckoutMerchController@index')->name('checkout.ind
 // Seniman routes - harus sebelum route /{slug}
 Route::get('/seniman', 'Web\SenimanController@index')->name('seniman.index');
 Route::get('/seniman/{slug}', 'Web\SenimanController@detail')->name('seniman.detail');
+Route::get('/produk-seniman/{slug}', [\App\Http\Controllers\Web\SenimanController::class, 'detail'])->name('products.seniman');
 
 Route::get('/{slug}','Web\HomeController@detail')->name('detail');
 Route::get('/page/{slug}','Web\HomeController@page')->name('web.page');
