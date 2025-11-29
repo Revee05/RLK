@@ -1,7 +1,12 @@
 <!-- Left sidebar -->
 <div class="col-md-3">
     <div class="text-center mb-4">
-        <img src="{{ asset(Auth::user()->foto) ?? 'https://www.figma.com/api/mcp/asset/1bcfd75e-90c9-43bf-8586-79d92d395def' }}"
+
+
+        <!-- <img src="{{ asset(Auth::user()->foto) ?? 'https://www.figma.com/api/mcp/asset/1bcfd75e-90c9-43bf-8586-79d92d395def' }}" -->
+
+        <img src="{{ asset('images/default-avatar.png') }}"
+
             alt="avatar" class="rounded-circle img-fluid mb-3" style="width:200px; height:200px; object-fit:cover;">
         <h1 class="profile-name mb-0">{{ Auth::user()->name }}</h1>
         <a href="#" class="profile-view-link" data-bs-toggle="modal" data-bs-target="#modalProfilePicture">Lihat
@@ -20,7 +25,11 @@
             Password</a>
         <a href="{{ route('account.address.index') }}"
             class="list-group-item list-group-item-action border-nav-middle py-2 {{ request()->routeIs('account.address.*') ? 'active' : '' }}">Alamat</a>
-        <a href="#" class="list-group-item list-group-item-action border-nav-middle py-2">Favorit</a>
+        <a href="{{ route('account.favorites') }}"
+        class="list-group-item list-group-item-action border-nav-middle py-2 {{ request()->routeIs('account.favorites') ? 'active' : '' }}">
+        Favorit
+        </a>
+
         <a href="#" class="list-group-item list-group-item-action border-nav-middle py-2">Riwayat Lelang</a>
         <a href="#" class="list-group-item list-group-item-action border-nav-middle py-2">Riwayat
             Pembelian</a>

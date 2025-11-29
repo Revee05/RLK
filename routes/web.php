@@ -13,6 +13,7 @@
 use App\Http\Controllers\Web\CheckoutMerchController;
 use App\Http\Controllers\Web\CartController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\UsersController;
 
 require_once  __DIR__ . "/admin.php";
 require_once  __DIR__ . "/account.php";
@@ -127,3 +128,6 @@ Route::post('/checkout/shipping-cost', 'Web\CheckoutMerchController@calculateShi
 
 Route::post('/favorite/toggle', [\App\Http\Controllers\Web\FavoriteController::class, 'toggle'])
     ->name('favorite.toggle');
+
+
+   Route::get('/account/favorites', [UsersController::class, 'favorites'])->name('account.favorites');
