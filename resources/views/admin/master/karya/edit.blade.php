@@ -60,6 +60,20 @@
             ],
             height: 150
         });
+        
+        $('#bio-singkat').summernote({
+            placeholder: 'Tulis bio singkat...',
+            toolbar: [
+                ['style', ['bold', 'italic', 'underline', 'clear']],
+                ['font', ['strikethrough']],
+                ['fontsize', ['fontsize']],
+                ['para', ['ul', 'ol', 'paragraph']],
+                ['height', ['height']],
+                
+            ],
+            height: 100
+        });
+        
         function getVal() {
           const val = document.querySelector('#tiktok').value;
           console.log(val);
@@ -84,11 +98,28 @@
                       if (previewFotoSeniman) {
                           previewFotoSeniman.attr('src', reader.result);
                       }
+                      // Update preview card image
+                      $('#preview-image').attr('src', reader.result);
                   };
                     reader.readAsDataURL(files[0]);
                 }
                   });
-            } 
+            }
+            
+        // Live preview untuk nama
+        $('input[name="name"]').on('input', function(){
+            $('#preview-name').text($(this).val() || 'Nama Seniman');
+        });
+        
+        // Live preview untuk address
+        $('input[name="address"]').on('input', function(){
+            $('#preview-location').text($(this).val() || 'Kota Semarang');
+        });
+        
+        // Live preview untuk bio singkat (summernote)
+        $('#bio-singkat').on('summernote.change', function(we, contents) {
+            $('#preview-bio').html(contents || 'Bio singkat akan muncul di sini...');
+        });
       });
     </script>
 @endsection

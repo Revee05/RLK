@@ -156,6 +156,67 @@ Retrieved 2025-11-26, License - CC BY-SA 4.0
     background-color: #fff; 
 }
 
+/* =========================================
+   CUSTOM SCROLLBAR FINAL (GAYA GAMBAR 2)
+   ========================================= */
+
+/* 1. CONTAINER UTAMA */
+.ea_table tbody::-webkit-scrollbar {
+    width: 22px; /* Lebar area scroll */
+}
+
+/* 2. JALUR (TRACK) */
+.ea_table tbody::-webkit-scrollbar-track {
+    background: #ffffff; 
+    /* Garis pemisah kiri pada Track */
+    border-left: 1px solid #051a36; 
+}
+
+/* 3. TOMBOL (BUTTONS) - GARIS MENYAMBUNG */
+/* Penting: Tambahkan border-left di sini juga agar garisnya nyambung dari atas ke bawah */
+.ea_table tbody::-webkit-scrollbar-button {
+    display: none;             
+    height: 20px;              
+    width: 22px;               
+    background-color: #ffffff; 
+    border-left: 1px solid #051a36; /* INI KUNCINYA AGAR GARIS TIDAK PUTUS DI ATAS */
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: 10px;     
+}
+
+/* 4. BATANG GESER (THUMB) - TEKNIK BACKGROUND-CLIP */
+.ea_table tbody::-webkit-scrollbar-thumb {
+    background-color: #828282; /* Warna Abu-abu */
+    border-radius: 20px;       /* Bulat penuh */
+    
+    /* RAHASIA AGAR TIDAK MEMOTONG GARIS: */
+    border: 6px solid transparent; /* Border transparan sebagai jarak */
+    background-clip: content-box;  /* Warna hanya diisi di dalam, tidak kena border */
+}
+
+/* Efek Hover */
+.ea_table tbody::-webkit-scrollbar-thumb:hover {
+    background-color: #6c757d; 
+}
+
+/* 5. AKTIFKAN TOMBOL ATAS */
+.ea_table tbody::-webkit-scrollbar-button:single-button:vertical:decrement {
+    display: block; 
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%23000000'%3E%3Cpath d='M7.247 4.86l-4.796 5.481c-.566.647-.106 1.659.753 1.659h9.592a1 1 0 0 0 .753-1.659l-4.796-5.48a1 1 0 0 0-1.506 0z'/%3E%3C/svg%3E");
+}
+
+/* 6. AKTIFKAN TOMBOL BAWAH */
+.ea_table tbody::-webkit-scrollbar-button:single-button:vertical:increment {
+    display: block;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%23000000'%3E%3Cpath d='M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E");
+}
+
+/* 7. Efek Klik */
+.ea_table tbody::-webkit-scrollbar-button:active {
+    background-color: #ffffff; 
+}
+
 .ea_table thead {
     display: flex;
     width: 100%;
@@ -214,6 +275,7 @@ Retrieved 2025-11-26, License - CC BY-SA 4.0
 }
 
 
+
 /* Style untuk Badge Status seperti di Gambar */
 /* --- BASE BADGE STYLE --- */
 /* Style dasar untuk ukuran tombol agar seragam */
@@ -256,16 +318,16 @@ Retrieved 2025-11-26, License - CC BY-SA 4.0
 .price-normal {
     font-weight: 600;
     color: #212529; /* Hitam gelap */
-    font-size: 0.9rem;
+    font-size: 1rem;
 }
 
 /* Harga Kalah (Dicoret & Warna Tosca Pudar) */
 .price-lost {
     text-decoration: line-through;
     color: #5abebc; /* Menggunakan warna yang sama dengan badge WIN tapi text */
-    font-size: 0.9rem;
+    font-size: 1rem;
     font-weight: 500;
-    opacity: 0.8; /* Sedikit transparan agar terlihat pudar */
+    opacity: 0.9; /* Sedikit transparan agar terlihat pudar */
 }
 
 /* (Opsional) Efek Hover agar lebih interaktif */

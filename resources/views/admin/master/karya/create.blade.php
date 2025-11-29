@@ -53,6 +53,19 @@
 @section('js')
     <script src="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote.min.js"></script>
     <script type="text/javascript">
+        $('#bio-singkat').summernote({
+            placeholder: 'Tulis bio singkat untuk display hooks...',
+            toolbar: [
+                ['style', ['bold', 'italic', 'underline', 'clear']],
+                ['font', ['strikethrough']],
+                ['fontsize', ['fontsize']],
+                ['para', ['ul', 'ol', 'paragraph']],
+                ['height', ['height']],
+                
+            ],
+            height: 100
+        });
+                
         $('#biografi').summernote({
             placeholder: 'Tulis biografi...',
             toolbar: [
@@ -64,6 +77,7 @@
             ],
             height: 150
         });
+        
         function getVal() {
           const val = document.querySelector('#tiktok').value;
           console.log(val);
@@ -88,11 +102,28 @@
                       if (previewFotoSeniman) {
                           previewFotoSeniman.attr('src', reader.result);
                       }
+                      // Update preview card image
+                      $('#preview-image').attr('src', reader.result);
                   };
                     reader.readAsDataURL(files[0]);
                 }
                   });
-            } 
+            }
+            
+        // Live preview untuk nama
+        $('input[name="name"]').on('input', function(){
+            $('#preview-name').text($(this).val() || 'Nama Seniman');
+        });
+        
+        // Live preview untuk address
+        $('input[name="address"]').on('input', function(){
+            $('#preview-location').text($(this).val() || '(kota asal)');
+        });
+        
+        // Live preview untuk bio singkat (summernote)
+        $('#bio-singkat').on('summernote.change', function(we, contents) {
+            $('#preview-bio').html(contents || 'Bio singkat akan muncul di sini...');
+        });
       });
     </script>
 @endsection

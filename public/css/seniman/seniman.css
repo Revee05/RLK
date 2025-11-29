@@ -1,0 +1,324 @@
+.seniman-main-container {
+    max-width: 1200px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+/* Title halaman */
+.seniman-page-header {
+    padding: 40px 0 0 0;
+    /* border: 1px solid crimson; */
+}
+
+.seniman-page-header h2 {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #1a1a1a;
+    margin-bottom: 10px;
+}
+
+.seniman-page-header p {
+    color: #666;
+    font-size: 0.95rem;
+    line-height: 1.6;
+    max-width: 900px;
+}
+
+/* search dll */
+.seniman-search-bar { 
+    margin: 30px 0 10px 0;
+}
+
+.seniman-search-form {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: nowrap;
+}
+
+.search-wrapper {
+    position: relative;
+    flex: 1;
+    max-width: none;
+}
+
+.search-input {
+    border-radius: 50px;
+    border: 1.5px solid #c0c0c0;
+    padding: 10px 45px 10px 20px;
+    font-size: 0.9rem;
+    width: 100%;
+}
+
+.search-input:focus {
+    outline: none;
+    border-color: #666;
+    box-shadow: 0 0 0 3px rgba(0,0,0,0.08);
+}
+
+.search-icon-btn {
+    position: absolute;
+    right: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    padding: 6px 12px;
+    cursor: pointer;
+    color: #666;
+}
+
+.filter-sort-wrapper {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    flex-shrink: 0;
+}
+
+.filter-btn, .sort-btn {
+    border-radius: 50px;
+    border: 1.5px solid #c0c0c0;
+    background: white;
+    padding: 10px 20px;
+    font-size: 0.9rem;
+    color: #333;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+}
+
+.filter-btn:hover, .sort-btn:hover {
+    border-color: #666;
+    background: #f8f8f8;
+}
+
+.sort-select {
+    border-radius: 50px;
+    border: 1.5px solid #c0c0c0;
+    padding: 10px 36px 10px 20px; /* kanan lebih besar untuk ruang caret */
+    font-size: 0.9rem;
+    color: #333;
+    background: white url("data:image/svg+xml,%3Csvg width='12' height='8' viewBox='0 0 12 8' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1L6 6L11 1' stroke='%23666' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E") no-repeat right 16px center/16px 10px;
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    min-width: 120px;
+    cursor: pointer;
+}
+
+.sort-select:focus {
+    outline: none;
+    border-color: #666;
+}
+
+
+.seniman-card {
+    border: 1.5px solid #d0d0d0;
+    border-radius: 16px;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    height: 100%;
+    background: #fff;
+    display: flex;
+}
+
+.seniman-card:hover {
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    transform: translateY(-2px);
+}
+
+.seniman-image-wrapper {
+    width: 140px;
+    min-width: 140px;
+    height: 160px;
+    border-radius: 12px;
+    overflow: hidden;
+    margin: 15px;
+    background-color: #f5f5f5;
+    /* border: 1px solid crimson; */
+}
+
+.seniman-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.seniman-info {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    height: 100%;
+    padding: 18px 20px 18px 0;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.seniman-name {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: #222;
+    margin-bottom: 2px;
+}
+
+.seniman-location {
+    font-size: 1rem;
+    font-style: italic;
+    color: #444;
+    margin-bottom: 12px;
+    display: block;
+}
+
+
+.seniman-bio {
+    color: #555;
+    font-size: 0.95rem;
+    margin-top: 0;
+    line-height: 1.6;
+    word-break: break-word;
+    white-space: normal;
+}
+
+.bio-clamp {
+    display: -webkit-box;
+    -webkit-line-clamp: 5;
+    line-clamp: 5;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+    min-width: 0;
+}
+
+.sort-select {
+    border-radius: 50px;
+    border: 1.5px solid #c0c0c0;
+    padding: 10px 36px 10px 20px; /* kanan lebih besar untuk ruang caret */
+    font-size: 0.9rem;
+    color: #333;
+    background: white url("data:image/svg+xml,%3Csvg width='12' height='8' viewBox='0 0 12 8' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1L6 6L11 1' stroke='%23666' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E") no-repeat right 16px center/16px 10px;
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    min-width: 120px;
+    cursor: pointer;
+}
+
+.sort-select:focus {
+    outline: none;
+    border-color: #666;
+}
+
+
+/* Responsive Mobile */
+@media (max-width: 768px) {
+    .seniman-main-container {
+        padding: 0 15px;
+    }
+
+    .seniman-page-header {
+        padding: 20px 0 0 0;
+    }
+
+    .seniman-page-header h2 {
+        font-size: 1.5rem;
+    }
+
+    .seniman-page-header p {
+        font-size: 0.85rem;
+    }
+
+    .seniman-search-bar {
+        margin: 20px 0 15px 0;
+    }
+
+    .seniman-search-form {
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+
+    .search-wrapper {
+        width: 100%;
+        flex: none;
+    }
+
+    .filter-sort-wrapper {
+        width: 100%;
+        justify-content: space-between;
+    }
+
+    .filter-btn, .sort-btn {
+        padding: 8px 16px;
+        font-size: 0.85rem;
+    }
+
+    .sort-select {
+        min-width: auto;
+        flex: 1;
+        padding: 8px 16px;
+        font-size: 0.85rem;
+    }
+
+    .seniman-card {
+        flex-direction: column;
+    }
+
+    .seniman-image-wrapper {
+        width: 100%;
+        height: 200px;
+        margin: 0;
+        border-radius: 0;
+    }
+
+    .seniman-info {
+        padding: 15px;
+    }
+
+    .seniman-name {
+        font-size: 1.1rem;
+    }
+
+    .seniman-location {
+        font-size: 0.9rem;
+        margin-bottom: 8px;
+    }
+
+    .seniman-bio {
+        font-size: 0.85rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .seniman-page-header h2 {
+        font-size: 1.3rem;
+    }
+
+    .filter-sort-wrapper {
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .filter-btn, .sort-select {
+        width: 100%;
+    }
+
+    .seniman-image-wrapper {
+        height: 180px;
+    }
+
+    .seniman-name {
+        font-size: 1rem;
+    }
+
+    .seniman-location {
+        font-size: 0.85rem;
+    }
+
+    .seniman-bio {
+        font-size: 0.8rem;
+    }
+}
