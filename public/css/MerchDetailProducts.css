@@ -327,6 +327,65 @@
     cursor: not-allowed;
 }
 
+/* --- Product Guide Modal --- */
+.product-guide-modal .modal-header {
+    background: linear-gradient(135deg, #f3f6ff 0%, #e8eeff 100%);
+    border-bottom: 2px solid #d0d9f5;
+    padding: 1.2rem 1.5rem;
+}
+.product-guide-modal .modal-title {
+    font-weight: 700;
+    color: #1a2c50;
+    font-size: 1.3rem;
+}
+.product-guide-modal .modal-body {
+    background: #fff;
+    padding: 1.8rem;
+}
+.product-guide-modal .guide-image {
+    max-width: 100%;
+    height: auto;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    margin: 0 auto 1.5rem;
+    display: block;
+    border: 1px solid #e0e7ef;
+}
+.product-guide-modal .product-guide-content {
+    font-size: 0.95rem;
+    color: #333;
+    line-height: 1.6;
+}
+.product-guide-modal .product-guide-content table {
+    border-collapse: collapse !important;
+    width: 100%;
+    margin: 1rem auto;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+.product-guide-modal .product-guide-content th,
+.product-guide-modal .product-guide-content td {
+    border: 1px solid #8a9bc4 !important;
+    padding: 10px 12px;
+    text-align: center;
+    font-size: 0.9rem;
+}
+.product-guide-modal .product-guide-content th {
+    background: linear-gradient(135deg, #e8eeff 0%, #d0d9f5 100%);
+    font-weight: 700;
+    color: #1a2c50;
+    text-transform: uppercase;
+    font-size: 0.85rem;
+    letter-spacing: 0.5px;
+}
+.product-guide-modal .product-guide-content td {
+    background: #fafbff;
+}
+.product-guide-modal .modal-footer {
+    background: #f8f9fa;
+    border-top: 1px solid #e0e7ef;
+    padding: 0.9rem 1.5rem;
+}
+
 @media (max-width: 768px) {
     .thumb-carousel { padding: 6px 36px; }
     .thumb-item { width: 70px; height: 70px; }

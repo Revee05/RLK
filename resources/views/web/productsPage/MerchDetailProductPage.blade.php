@@ -14,39 +14,39 @@
     2. PREPROCESS DATA
 ========================= --}}
 @php
-    // 2.1 Main Variant
-    $mainVariant = $product->variants->firstWhere('is_default', 1) ?? $product->variants->first();
+// 2.1 Main Variant
+$mainVariant = $product->variants->firstWhere('is_default', 1) ?? $product->variants->first();
 
-    // 2.2 Main Image
-    $mainImage = ($mainVariant && $mainVariant->images->count())
-        ? asset($mainVariant->images->first()->image_path)
-        : 'https://placehold.co/500x400?text=No+Image';
+// 2.2 Main Image
+$mainImage = ($mainVariant && $mainVariant->images->count())
+? asset($mainVariant->images->first()->image_path)
+: 'https://placehold.co/500x400?text=No+Image';
 
-    // 2.3 All Images
-    $allImages = $product->variants->flatMap(fn($v) => ($v->images && $v->images->count()) ? $v->images : collect());
+// 2.3 All Images
+$allImages = $product->variants->flatMap(fn($v) => ($v->images && $v->images->count()) ? $v->images : collect());
 
-    // 2.4 Variant Data for JS
-    $variantsArray = $product->variants->map(function($v) {
-        return [
-            'id' => $v->id,
-            'display_stock' => $v->display_stock,
-            'price' => $v->price,
-            'discount' => $v->discount,
-            'sizes' => $v->sizes->map(fn($s) => [
-                'id' => $s->id,
-                'size' => $s->size,
-                'stock' => $s->stock,
-                'price' => $s->price,
-                'discount' => $s->discount,
-            ])->toArray(),
-            'image' => $v->images->first() ? asset($v->images->first()->image_path) : 'https://placehold.co/500x400?text=No+Image',
-        ];
-    })->values()->toArray();
+// 2.4 Variant Data for JS
+$variantsArray = $product->variants->map(function($v) {
+return [
+'id' => $v->id,
+'display_stock' => $v->display_stock,
+'price' => $v->price,
+'discount' => $v->discount,
+'sizes' => $v->sizes->map(fn($s) => [
+'id' => $s->id,
+'size' => $s->size,
+'stock' => $s->stock,
+'price' => $s->price,
+'discount' => $s->discount,
+])->toArray(),
+'image' => $v->images->first() ? asset($v->images->first()->image_path) : 'https://placehold.co/500x400?text=No+Image',
+];
+})->values()->toArray();
 
-    // 2.5 Total Stock
-    $totalStock = $product->variants->sum(fn($variant) => ($variant->sizes && $variant->sizes->count())
-        ? $variant->sizes->sum('stock')
-        : ($variant->display_stock ?? 0));
+// 2.5 Total Stock
+$totalStock = $product->variants->sum(fn($variant) => ($variant->sizes && $variant->sizes->count())
+? $variant->sizes->sum('stock')
+: ($variant->display_stock ?? 0));
 @endphp
 
 
@@ -67,7 +67,7 @@
     {{-- =========================
         4. PRODUCT DETAIL SECTION
     ========================= --}}
-    <div class="merch-product-detail">
+    <div class="row">
         <div class="row">
 
             {{-- =========================
@@ -77,7 +77,8 @@
 
                 {{-- 4A.1 Main Image --}}
                 <div class="main-image">
-                    <img src="{{ $mainImage }}" alt="{{ $product->name }}" class="img-fluid rounded" id="main-product-image">
+                    <img src="{{ $mainImage }}" alt="{{ $product->name }}" class="img-fluid rounded"
+                        id="main-product-image">
                 </div>
 
                 {{-- 4A.2 Thumbnail Carousel --}}
@@ -89,9 +90,8 @@
                     <div class="thumb-track-wrapper">
                         <div class="thumb-track" id="thumbTrack">
                             @foreach($allImages as $img)
-                                <img src="{{ asset($img->image_path) }}" 
-                                     alt="thumb"
-                                     class="thumb-item{{ $loop->first ? ' active-thumb' : '' }}">
+                            <img src="{{ asset($img->image_path) }}" alt="thumb"
+                                class="thumb-item{{ $loop->first ? ' active-thumb' : '' }}">
                             @endforeach
                         </div>
                     </div>
@@ -118,12 +118,13 @@
                 {{-- 4B.3 Price --}}
                 <div class="product-price mb-3" id="price-display">
                     @if($mainVariant && $mainVariant->display_discount)
-                        <span class="badge bg-danger me-2" id="discount-badge">-{{ rtrim(rtrim(number_format($mainVariant->display_discount, 2, '.', ''), '0'), '.') }}%</span>
-                        <span id="current-price">Rp. {{ number_format($mainVariant->display_price, 0, ',', '.') }}</span>
+                    <span class="badge bg-danger me-2"
+                        id="discount-badge">-{{ rtrim(rtrim(number_format($mainVariant->display_discount, 2, '.', ''), '0'), '.') }}%</span>
+                    <span id="current-price">Rp. {{ number_format($mainVariant->display_price, 0, ',', '.') }}</span>
                     @elseif($mainVariant)
-                        <span id="current-price">Rp. {{ number_format($mainVariant->display_price, 0, ',', '.') }}</span>
+                    <span id="current-price">Rp. {{ number_format($mainVariant->display_price, 0, ',', '.') }}</span>
                     @else
-                        <span class="text-muted">-</span>
+                    <span class="text-muted">-</span>
                     @endif
                 </div>
 
@@ -141,19 +142,17 @@
                         @foreach($product->variants as $variant)
                         <label class="variant-btn"
                             data-image="{{ $variant->images->first() ? asset($variant->images->first()->image_path) : 'https://placehold.co/500x400?text=No+Image' }}">
-                            
+
                             @php $img = $variant->images->first(); @endphp
-                            
+
                             @if($img)
-                                <img src="{{ asset($img->image_path) }}" alt="{{ $variant->name }}">
+                            <img src="{{ asset($img->image_path) }}" alt="{{ $variant->name }}">
                             @else
-                                <img src="https://placehold.co/40x40?text=?" alt="no-img">
+                            <img src="https://placehold.co/40x40?text=?" alt="no-img">
                             @endif
 
-                            <input type="radio" name="variant_id" value="{{ $variant->id }}"
-                                class="d-none"
-                                autocomplete="off"
-                                {{ $variant->id == $mainVariant->id ? 'checked' : '' }}>
+                            <input type="radio" name="variant_id" value="{{ $variant->id }}" class="d-none"
+                                autocomplete="off" {{ $variant->id == $mainVariant->id ? 'checked' : '' }}>
                             <span>{{ $variant->name }}</span>
                         </label>
                         @endforeach
@@ -177,6 +176,14 @@
                             <span class="text-muted">Tidak ada ukuran.</span>
                         @endif
                     </div>
+                    {{-- Tombol Panduan Produk (dinamis) muncul jika ada konten/gambar panduan --}}
+                    @if(!empty($product->size_guide_content) || !empty($product->size_guide_image))
+                    <div class="mt-2">
+                        <button type="button" class="btn btn-outline-info btn-sm" data-bs-toggle="modal" data-bs-target="#productGuideModal">
+                            {{ $product->guide_button_label ?? 'Panduan Produk' }}
+                        </button>
+                    </div>
+                    @endif
                 </div>
 
                 {{-- =========================
@@ -184,33 +191,39 @@
                 ========================= --}}
                 <div id="form-messages" class="mb-2"></div> {{-- Tambahan: Wadah pesan error/sukses --}}
 
-                <form action="{{ route('cart.addMerch') }}" method="POST" id="add-to-cart-form"> {{-- Tambahan: id="add-to-cart-form" --}}
+                <form action="{{ route('cart.addMerch') }}" method="POST" id="add-to-cart-form">
+                    {{-- Tambahan: id="add-to-cart-form" --}}
                     @csrf
 
                     {{-- PERUBAHAN 1: Ganti name="product_id" jadi "merch_product_id" --}}
                     <input type="hidden" name="merch_product_id" value="{{ $product->id }}">
 
                     {{-- Input hidden variant & size biarkan tetap sama --}}
-                    <input type="hidden" name="selected_variant_id" id="selected_variant_id" value="{{ $mainVariant->id }}">
-                    <input type="hidden" name="selected_size_id" id="selected_size_id" value="{{ $mainVariant->sizes->first()->id ?? '' }}">
+                    <input type="hidden" name="selected_variant_id" id="selected_variant_id"
+                        value="{{ $mainVariant->id }}">
+                    <input type="hidden" name="selected_size_id" id="selected_size_id"
+                        value="{{ $mainVariant->sizes->first()->id ?? '' }}">
 
                     {{-- Bagian Quantity biarkan tetap sama --}}
                     <label class="form-label fw-bold">Quantity</label>
                     <div class="d-flex align-items-center mb-3">
                         <div class="qty-group">
                             <button type="button" class="qty-btn minus" tabindex="-1">-</button>
-                            <input type="number" id="qty-input" name="quantity" value="1" min="1" class="qty-input" autocomplete="off">
+                            <input type="number" id="qty-input" name="quantity" value="1" min="1" class="qty-input"
+                                autocomplete="off">
                             <button type="button" class="qty-btn plus" tabindex="-1">+</button>
                         </div>
                         <span id="stock-info" class="text-muted ms-3">
-                            Tersedia {{ $mainVariant->sizes->count() ? ($mainVariant->sizes->first()->stock ?? 0) : ($mainVariant->display_stock ?? 0) }}
+                            Tersedia
+                            {{ $mainVariant->sizes->count() ? ($mainVariant->sizes->first()->stock ?? 0) : ($mainVariant->display_stock ?? 0) }}
                         </span>
                     </div>
 
                     {{-- PERUBAHAN 2: Tambahkan ID pada tombol dan Spinner loading --}}
                     <button type="submit" class="btn btn-primary btn-lg w-100 mb-3" id="btn-submit">
                         <span id="btn-text">Tambahkan ke keranjang</span>
-                        <span id="btn-spinner" class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+                        <span id="btn-spinner" class="spinner-border spinner-border-sm d-none" role="status"
+                            aria-hidden="true"></span>
                     </button>
                 </form>
 
@@ -247,36 +260,63 @@
         <div class="row g-3">
 
             @forelse($relatedProducts as $rel)
-                <div class="col-6 col-md-4 col-lg-2">
-                    <div class="card h-100 shadow-sm border-0">
-                        <a href="{{ route('merch.products.detail', $rel['slug']) }}"
-                           class="text-decoration-none text-dark">
+            <div class="col-6 col-md-4 col-lg-2">
+                <div class="card h-100 shadow-sm border-0">
+                    <a href="{{ route('merch.products.detail', $rel['slug']) }}" class="text-decoration-none text-dark">
 
-                            <img src="{{ $rel['image'] }}" class="card-img-top related-img" alt="{{ $rel['name'] }}">
+                        <img src="{{ $rel['image'] }}" class="card-img-top related-img" alt="{{ $rel['name'] }}">
 
-                            <div class="card-body p-2">
-                                <div class="fw-bold mb-1 related-title">{{ $rel['name'] }}</div>
+                        <div class="card-body p-2">
+                            <div class="fw-bold mb-1 related-title">{{ $rel['name'] }}</div>
 
-                                @if($rel['display_discount'])
-                                    <span class="badge bg-danger mb-1">-{{ $rel['display_discount'] }}%</span>
-                                @endif
+                            @if($rel['display_discount'])
+                            <span class="badge bg-danger mb-1">-{{ $rel['display_discount'] }}%</span>
+                            @endif
 
-                                <div class="related-price">
-                                    Rp. {{ number_format($rel['display_price'], 0, ',', '.') }}
-                                </div>
+                            <div class="related-price">
+                                Rp. {{ number_format($rel['display_price'], 0, ',', '.') }}
                             </div>
+                        </div>
 
-                        </a>
-                    </div>
+                    </a>
                 </div>
+            </div>
             @empty
-                <div class="col-12 text-muted">Tidak ada produk terkait.</div>
+            <div class="col-12 text-muted">Tidak ada produk terkait.</div>
             @endforelse
 
         </div>
     </div>
 
 </div>
+{{-- Product Guide Modal --}}
+@if(!empty($product->size_guide_content) || !empty($product->size_guide_image))
+<div class="modal fade product-guide-modal" id="productGuideModal" tabindex="-1" aria-labelledby="productGuideLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="productGuideLabel">
+                    {{ $product->guide_button_label ?? 'Panduan Produk' }}
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                @if(!empty($product->size_guide_image))
+                <div class="text-center">
+                    <img src="{{ asset($product->size_guide_image) }}" alt="Panduan Produk" class="guide-image">
+                </div>
+                @endif
+                @if(!empty($product->size_guide_content))
+                <div class="product-guide-content">{!! $product->size_guide_content !!}</div>
+                @endif
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
+            </div>
+        </div>
+    </div>
+</div>
+@endif
 @endsection
 
 
@@ -289,7 +329,7 @@
 document.addEventListener('DOMContentLoaded', function() {
     console.log('Product:', @json($product));
     console.log('Related Products:', @json($relatedProducts));
-    
+
     // 7.1 Data & Element References
     const variants = @json($variantsArray);
     const variantInputs = Array.from(document.querySelectorAll('.variant-btn input[type="radio"]'));
@@ -352,9 +392,9 @@ document.addEventListener('DOMContentLoaded', function() {
         const sizeIdx = currentSizeIndex(variant);
         const stock = computeStock(variant, sizeIdx);
 
-        stockInfoEl.innerHTML = stock < 1
-            ? '<span class="text-danger">Habis</span>'
-            : `Tersedia ${stock}`;
+        stockInfoEl.innerHTML = stock < 1 ?
+            '<span class="text-danger">Habis</span>' :
+            `Tersedia ${stock}`;
 
         if (qtyInputEl) {
             qtyInputEl.disabled = stock < 1;
@@ -387,13 +427,13 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // Format harga
         const formatPrice = (num) => 'Rp. ' + parseFloat(num).toLocaleString('id-ID');
-        
+
         // Format discount: hilangkan trailing zero
         const formatDiscount = (num) => {
             const formatted = parseFloat(num).toString();
             return formatted;
         };
-        
+
         if (discount > 0) {
             priceDisplay.innerHTML = `
                 <span class="badge bg-danger me-2" id="discount-badge">-${formatDiscount(discount)}%</span>
@@ -438,13 +478,16 @@ document.addEventListener('DOMContentLoaded', function() {
             mainImageEl.src = label.getAttribute('data-image');
 
             const tempStock = computeStock(variant, variant.sizes.length ? 0 : -1);
-            stockInfoEl.innerHTML = tempStock < 1 ? '<span class="text-danger">Habis</span>' : `Tersedia ${tempStock}`;
+            stockInfoEl.innerHTML = tempStock < 1 ? '<span class="text-danger">Habis</span>' :
+                `Tersedia ${tempStock}`;
         });
 
         label.addEventListener('mouseleave', () => {
-            const checkedVariant = document.querySelector('.variant-btn input[type="radio"]:checked');
+            const checkedVariant = document.querySelector(
+                '.variant-btn input[type="radio"]:checked');
             if (checkedVariant) {
-                mainImageEl.src = checkedVariant.closest('.variant-btn').getAttribute('data-image');
+                mainImageEl.src = checkedVariant.closest('.variant-btn').getAttribute(
+                    'data-image');
             }
             updateStockInfo();
         });
@@ -529,7 +572,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const btnSpinner = document.getElementById('btn-spinner');
     const msgContainer = document.getElementById('form-messages');
 
-    if(addToCartForm) {
+    if (addToCartForm) {
         addToCartForm.addEventListener('submit', function(e) {
             e.preventDefault(); // Mencegah reload halaman
 
@@ -542,30 +585,34 @@ document.addEventListener('DOMContentLoaded', function() {
             const formData = new FormData(this);
 
             fetch(this.action, {
-                method: 'POST',
-                headers: {
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-                    'Accept': 'application/json' // Minta respon JSON
-                },
-                body: formData
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    msgContainer.innerHTML = `<div class="alert alert-success py-2">${data.message}</div>`;
-                } else {
-                    msgContainer.innerHTML = `<div class="alert alert-danger py-2">${data.message}</div>`;
-                }
-            })
-            .catch(err => {
-                msgContainer.innerHTML = `<div class="alert alert-danger py-2">Terjadi kesalahan sistem.</div>`;
-            })
-            .finally(() => {
-                // Kembalikan tombol seperti semula
-                submitBtn.disabled = false;
-                btnText.innerText = 'Tambahkan ke keranjang';
-                btnSpinner.classList.add('d-none');
-            });
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')
+                            .getAttribute('content'),
+                        'Accept': 'application/json' // Minta respon JSON
+                    },
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        msgContainer.innerHTML =
+                            `<div class="alert alert-success py-2">${data.message}</div>`;
+                    } else {
+                        msgContainer.innerHTML =
+                            `<div class="alert alert-danger py-2">${data.message}</div>`;
+                    }
+                })
+                .catch(err => {
+                    msgContainer.innerHTML =
+                        `<div class="alert alert-danger py-2">Terjadi kesalahan sistem.</div>`;
+                })
+                .finally(() => {
+                    // Kembalikan tombol seperti semula
+                    submitBtn.disabled = false;
+                    btnText.innerText = 'Tambahkan ke keranjang';
+                    btnSpinner.classList.add('d-none');
+                });
         });
     }
 
@@ -575,11 +622,12 @@ document.addEventListener('DOMContentLoaded', function() {
     const descIcon = document.getElementById('toggle-desc-icon');
     let descVisible = false;
 
-    if(descBtn && descContent) {
+    if (descBtn && descContent) {
         descBtn.addEventListener('click', function() {
             descVisible = !descVisible;
             descContent.style.display = descVisible ? 'block' : 'none';
-            descBtn.innerHTML = `<span id="toggle-desc-icon">${descVisible ? '▲' : '▼'}</span> ${descVisible ? 'Sembunyikan' : 'Tampilkan'}`;
+            descBtn.innerHTML =
+                `<span id="toggle-desc-icon">${descVisible ? '▲' : '▼'}</span> ${descVisible ? 'Sembunyikan' : 'Tampilkan'}`;
         });
     }
 });
@@ -599,4 +647,5 @@ document.querySelectorAll('.qty-btn').forEach(btn => {
     });
 });
 </script>
+
 @endsection

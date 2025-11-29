@@ -53,7 +53,7 @@ class getDetail extends Controller
      */
     private function fetchProductWithRelations(string $slug): MerchProduct
     {
-        return MerchProduct::select('id', 'name', 'slug', 'description', 'status', 'type')
+        return MerchProduct::select('id', 'name', 'slug', 'description', 'status', 'type', 'size_guide_content', 'size_guide_image', 'guide_button_label')
             ->with([
                 'categories:id,name',
                 'variants' => function ($q) {
