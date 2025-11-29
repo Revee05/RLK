@@ -13,6 +13,14 @@
                     <div class="card-body mx-2">
                         <p class="text-muted">Kelola channel notifikasi yang ingin Anda terima.</p>
 
+                        <!-- Toast container (used for success/error toasts) -->
+                        <div aria-live="polite" aria-atomic="true" class="position-relative">
+                            <div id="accountToastContainer"
+                                style="position: fixed; right: 1rem; top: 1rem; z-index: 10800;
+                                display: flex; flex-direction: column; gap: .5rem;">
+                            </div>
+                        </div>
+
                         <form id="notificationSettingsForm" method="POST"
                             action="{{ route('account.notifications.update') }}">
                             @csrf
@@ -88,12 +96,6 @@
                                         pesanan</label>
                                 </div>
                             </div>
-
-                            <div class="mt-4">
-                                <button type="submit" class="btn btn-cyan rounded-3 text-dark"
-                                    id="saveNotifications">Simpan</button>
-                                <span id="notifSaved" class="text-success ms-3" style="display:none">Tersimpan.</span>
-                            </div>
                         </form>
                     </div>
                 </div>
@@ -104,30 +106,145 @@
 
 @section('js')
     <script>
-        document.getElementById('notificationSettingsForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            var form = e.target;
-            var data = new FormData(form);
+        document.addEventListener('DOMContentLoaded', function() {
+            var form = document.getElementById('notificationSettingsForm');
+            var savedEl = document.getElementById('notifSaved');
+            var inputs = form.querySelectorAll('.form-check-input');
+            var csrf = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+            var toastContainer = document.getElementById('accountToastContainer') || document.body;
 
-            fetch(form.action, {
-                method: 'POST',
-                headers: {
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute(
-                        'content'),
-                    'Accept': 'application/json'
-                },
-                body: data
-            }).then(function(res) {
-                return res.json();
-            }).then(function(json) {
-                var el = document.getElementById('notifSaved');
-                el.style.display = 'inline';
+            function makeToast(message, type) {
+                // type: 'success' | 'danger' | 'info'
+                var bgClass = type === 'success' ? 'bg-success' : (type === 'danger' ? 'bg-danger' : 'bg-info');
+
+                // If Bootstrap Toast API exists, use it. Otherwise fallback to a simple manual toast.
+                if (typeof bootstrap !== 'undefined' && bootstrap.Toast) {
+                    var toast = document.createElement('div');
+                    toast.className = 'toast align-items-center text-white ' + bgClass + ' border-0';
+                    toast.setAttribute('role', 'alert');
+                    toast.setAttribute('aria-live', 'assertive');
+                    toast.setAttribute('aria-atomic', 'true');
+
+                    toast.innerHTML = `
+                        <div class="d-flex">
+                            <div class="toast-body">${message}</div>
+                            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                        </div>`;
+
+                    toastContainer.appendChild(toast);
+                    var bsToast = new bootstrap.Toast(toast, {
+                        delay: 3500
+                    });
+                    bsToast.show();
+                    toast.addEventListener('hidden.bs.toast', function() {
+                        toast.remove();
+                    });
+                    return;
+                }
+
+                // Fallback manual toast
+                var manual = document.createElement('div');
+                manual.style.background = (type === 'success') ? '#198754' : ((type === 'danger') ? '#dc3545' :
+                    '#0dcaf0');
+                manual.style.color = '#fff';
+                manual.style.padding = '0.6rem 0.9rem';
+                manual.style.borderRadius = '0.4rem';
+                manual.style.boxShadow = '0 6px 18px rgba(0,0,0,0.08)';
+                manual.style.marginBottom = '0.5rem';
+                manual.style.maxWidth = '320px';
+                manual.style.fontSize = '0.95rem';
+                manual.textContent = message;
+
+                // If container is body, position fixed top-right
+                if (toastContainer === document.body) {
+                    manual.style.position = 'fixed';
+                    manual.style.right = '1rem';
+                    manual.style.top = (1 + (toastContainer._manualToastOffset || 0)) + 'rem';
+                    toastContainer._manualToastOffset = (toastContainer._manualToastOffset || 0) +
+                        3.2; // stack spacing
+                }
+
+                toastContainer.appendChild(manual);
                 setTimeout(function() {
-                    el.style.display = 'none';
-                }, 2500);
-            }).catch(function(err) {
-                alert('Terjadi kesalahan saat menyimpan pengaturan.');
-                console.error(err);
+                    manual.remove();
+                    if (toastContainer === document.body) {
+                        toastContainer._manualToastOffset = Math.max(0, (toastContainer
+                            ._manualToastOffset || 0) - 3.2);
+                    }
+                }, 3500);
+            }
+
+            function showSavedQuick() {
+                if (savedEl) {
+                    savedEl.style.display = 'inline';
+                    setTimeout(function() {
+                        savedEl.style.display = 'none';
+                    }, 1400);
+                }
+            }
+
+            // Attach per-switch change handlers
+            inputs.forEach(function(input) {
+                input.addEventListener('change', function(e) {
+                    var name = this.name;
+                    var value = this.checked ? 1 : 0;
+                    var formCheck = this.closest('.form-check');
+
+                    // small spinner element
+                    var spinner = document.createElement('span');
+                    spinner.className = 'spinner-border spinner-border-sm ms-2';
+                    spinner.setAttribute('role', 'status');
+                    spinner.setAttribute('aria-hidden', 'true');
+
+                    // disable input while saving
+                    this.disabled = true;
+                    if (formCheck) formCheck.appendChild(spinner);
+
+                    var data = new FormData();
+                    data.append('_token', csrf);
+                    data.append(name, value);
+
+                    fetch(form.action, {
+                        method: 'POST',
+                        headers: {
+                            'Accept': 'application/json'
+                        },
+                        body: data
+                    }).then(function(res) {
+                        if (!res.ok) {
+                            // server error: show toast with status
+                            if (res.status >= 500) {
+                                makeToast(
+                                    'Terjadi kesalahan server. Silakan coba lagi nanti.',
+                                    'danger');
+                            } else {
+                                makeToast('Gagal menyimpan. Periksa koneksi Anda.',
+                                    'danger');
+                            }
+                            throw new Error('HTTP ' + res.status);
+                        }
+                        return res.json();
+                    }).then(function(json) {
+                        if (json && json.success) {
+                            showSavedQuick();
+                        } else {
+                            makeToast((json && json.message) ? json.message :
+                                'Gagal menyimpan.', 'danger');
+                        }
+                    }).catch(function(err) {
+                        console.error(err);
+                    }).finally(() => {
+                        // remove spinner and re-enable
+                        input.disabled = false;
+                        if (spinner && spinner.parentNode) spinner.parentNode.removeChild(
+                            spinner);
+                    });
+                });
+            });
+
+            // Prevent form submit (we update per-switch)
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
             });
         });
     </script>
