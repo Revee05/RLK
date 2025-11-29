@@ -26,7 +26,11 @@ class AddressController extends Controller
     public function index()
     {
         $user = Auth::user();
-        $userAddress = UserAddress::where('user_id', $user->id)->get();
+        // Ensure primary address (is_primary) appears first, then fallback to default ordering by id
+        $userAddress = UserAddress::where('user_id', $user->id)
+            ->orderByDesc('is_primary')
+            ->orderBy('id')
+            ->get();
         return view('account.address.address', compact('userAddress'));
     }
 
