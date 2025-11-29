@@ -386,3 +386,48 @@
 #updateAddressModal .modal-footer {
     justify-content: center !important;
 }
+
+/* Variant: place the switch control on the right, label on the left
+   Used in account notification settings to match design */
+.form-switch-right {
+    display: flex;
+    flex-direction: row-reverse;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.form-switch-right .form-check-label {
+    margin-bottom: 0;
+    margin-left: 0;
+}
+
+.form-switch-right .form-check-input {
+    margin: 0;
+}
+
+.card.content-border .card-body .form-check {
+    padding-left: 0; /* remove checkbox indentation */
+    margin-left: 0;
+}
+
+/* Notification inputs: increase spacing and add separators */
+.card.content-border .card-body .form-group {
+    margin-top: 0.5rem;
+    margin-bottom: 0.75rem;
+}
+
+.card.content-border .card-body .form-check {
+    padding: 0.65rem 0;
+    border-bottom: 1px solid #e0e4e6;
+    margin-bottom: 0.5rem;
+}
+
+.card.content-border .card-body .form-group .form-check:last-of-type {
+    border-bottom: none;
+    margin-bottom: 0;
+}
+
+.card.content-border .card-body .form-check .form-check-label {
+    color: #343a40;
+}

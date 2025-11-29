@@ -35,4 +35,7 @@ Route::group(['prefix' => '/account', 'middleware' => ['auth', 'verified', 'IsMe
     Route::get('invoice/payment/error', 'Account\OrderController@error')->name('account.invoice.error');
     Route::get('invoice/payment/expired', 'Account\OrderController@expired')->name('account.invoice.expired');
     Route::get('invoice/{invoice}', 'Account\OrderController@invoice')->name('account.invoice');
+    // Notification settings
+    Route::get('/notifications', 'Account\NotificationController@index')->name('account.notifications');
+    Route::post('/notifications', 'Account\NotificationController@update')->name('account.notifications.update');
 });
