@@ -26,6 +26,12 @@
                         <i class="fas fa-palette"></i>
                         <span>{{ $seniman->total_products ?? 0 }} Karya</span>
                     </div>
+                    @if($seniman->created_at)
+                    <div class="stat-item">
+                        <i class="fas fa-calendar-alt"></i>
+                        <span>Bergabung sejak {{ \Carbon\Carbon::parse($seniman->created_at)->translatedFormat('d F Y') }}</span>
+                    </div>
+                    @endif
                 </div>
 
                 @if($seniman->address)

@@ -41,6 +41,17 @@ $(document).ready(function() {
         itemSelectText: '',
         shouldSort: false
     });
+
+    // Initialize Summernote for product guide content
+    $('#size-guide-content').summernote({
+        placeholder: 'Tulis panduan ukuran/dimensi di sini... (opsional)',
+        toolbar: [
+            ['style', ['bold', 'italic', 'underline', 'clear']],
+            ['para', ['ul', 'ol', 'paragraph']],
+            ['table', ['table']],
+        ],
+        height: 180
+    });
 });
 
 // ========================= SCRIPT DINAMIS VARIANT =========================

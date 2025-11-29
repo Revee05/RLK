@@ -17,7 +17,7 @@
                 </a>
                 <div class="dropdown-menu" id="koleksiKaryaDropdownMenu">
                     <a class="dropdown-item" href="{{ route('lelang') }}">All Auction Products</a>
-                    <a class="dropdown-item" href="{{ route('all-other-product') }}">Other Products</a>
+                    <a class="dropdown-item" href="{{ route('all-other-product') }}">Merchandise Products</a>
                 </div>
             </div>
 
