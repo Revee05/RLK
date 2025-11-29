@@ -96,7 +96,7 @@ class SenimanController extends Controller
                 'title' => $product->title,
                 'slug' => $product->slug,
                 'price' => $product->price,
-                'description' => $product->description,
+                // 'description' => $product->description,
                 'image_utama' => $product->imageUtama ? $product->imageUtama->path : null,
             ];
         });
