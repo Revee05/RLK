@@ -70,6 +70,7 @@ Route::group(['middleware' => ['auth']], function () {
         ->name('account.auction_history');
 });
 
+
 // merch product route
 Route::get('/merch/categories', 'Web\MerchProduct\GetMerchCategory')->name('merch.categories');
 Route::get('/merch/{slug}', 'Web\MerchProduct\getDetail')->name('merch.products.detail');

@@ -151,7 +151,7 @@
 
                         {{-- F. Total(Mobile: Col 6, Desktop: Col 2) --}}
                         <div class="col-6 col-md-2 text-end mt-2 mt-md-0 d-flex flex-column justify-content-center align-items-end">
-                            <strong class="fs-6 text-primary mb-1" id="row-total-{{ $item->id }}">
+                            <strong class="fs-6 text-primary mb-1 text-dark" id="row-total-{{ $item->id }}">
                                 Rp{{ number_format($total, 0, ',', '.') }}
                             </strong>
                         </div>
@@ -179,7 +179,7 @@
                         </div>
                         
                         <button type="submit" class="btn btn-dark w-100 py-3 fw-bold shadow-sm transition-btn">
-                            Checkout Sekarang
+                            Checkout
                         </button>
                     </div>
                 </div>
