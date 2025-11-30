@@ -22,7 +22,10 @@
                                                 <div>
                                                     <div class="mb-1">
                                                         <span
-                                                            class="address-badge mb-1">{{ ucwords($ua->label_address) }}</span>
+                                                            class="small text-cyan fw-bold">{{ ucwords($ua->label_address) }}</span>
+                                                        @if (!empty($ua->is_primary) && $ua->is_primary)
+                                                            <span class="address-badge mb-1">Utama</span>
+                                                        @endif
                                                         <div class="d-flex align-items-center">
                                                             <strong class="me-2 mb-0">{{ $ua->name }}</strong>
                                                             <span class="address-divider text-muted">|</span>
@@ -36,19 +39,18 @@
                                                         {{ $ua->kecamatan->nama_kecamatan }}</div>
                                                 </div>
                                                 <div class="address-actions d-flex align-items-center">
-                                                    <a href="{{ route('account.address.edit', $ua->id) }}"
-                                                        class="btn-icon icon-edit" aria-label="Ubah alamat">
+                                                    <a href="#" class="btn-icon icon-edit open-update-address"
+                                                        aria-label="Ubah alamat"
+                                                        data-url="{{ route('account.address.edit', $ua->id) }}"
+                                                        data-id="{{ $ua->id }}">
                                                         <i class="bi bi-pencil-square"></i>
                                                     </a>
-                                                    <form action="{{ route('account.address.destroy', [$ua->id]) }}"
-                                                        method="post" class="d-inline-block ms-2">
-                                                        @method('delete')
-                                                        @csrf
-                                                        <button onclick="return confirm('Hapus alamat ini?')" type="submit"
-                                                            class="btn-icon icon-delete" aria-label="Hapus alamat">
-                                                            <i class="bi bi-trash"></i>
-                                                        </button>
-                                                    </form>
+                                                    <button type="button"
+                                                        class="btn-icon icon-delete open-delete-address ms-2"
+                                                        aria-label="Hapus alamat"
+                                                        data-url="{{ route('account.address.destroy', [$ua->id]) }}">
+                                                        <i class="bi bi-trash"></i>
+                                                    </button>
                                                 </div>
                                             </div>
                                         </div>
@@ -85,41 +87,81 @@
         document.addEventListener('DOMContentLoaded', function() {
             const container = document.getElementById('accountToastContainer');
 
+            // Success toast
             @if (session('success'))
-                const toastSuccess = document.createElement('div');
-                toastSuccess.className = 'toast align-items-center text-white bg-success border-0';
-                toastSuccess.setAttribute('role', 'alert');
-                toastSuccess.setAttribute('aria-live', 'assertive');
-                toastSuccess.setAttribute('aria-atomic', 'true');
-                toastSuccess.innerHTML = `
-                    <div class="d-flex">
-                        <div class="toast-body">{!! session('success') !!}</div>
-                        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
-                    </div>`;
-                container.appendChild(toastSuccess);
-                new bootstrap.Toast(toastSuccess, {
-                    delay: 4000
-                }).show();
+                (function() {
+                    const toastSuccess = document.createElement('div');
+                    toastSuccess.className = 'toast align-items-center text-white bg-success border-0';
+                    toastSuccess.setAttribute('role', 'alert');
+                    toastSuccess.setAttribute('aria-live', 'assertive');
+                    toastSuccess.setAttribute('aria-atomic', 'true');
+                    toastSuccess.innerHTML = `
+                        <div class="d-flex">
+                            <div class="toast-body">{!! session('success') !!}</div>
+                            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                        </div>`;
+                    container.appendChild(toastSuccess);
+                    new bootstrap.Toast(toastSuccess, {
+                        delay: 4000
+                    }).show();
+                })();
             @endif
 
+            // Error toast
             @if (session('error'))
-                const toastError = document.createElement('div');
-                toastError.className = 'toast align-items-center text-white bg-danger border-0';
-                toastError.setAttribute('role', 'alert');
-                toastError.setAttribute('aria-live', 'assertive');
-                toastError.setAttribute('aria-atomic', 'true');
-                toastError.innerHTML = `
-                    <div class="d-flex">
-                        <div class="toast-body">{!! session('error') !!}</div>
-                        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
-                    </div>`;
-                container.appendChild(toastError);
-                new bootstrap.Toast(toastError, {
-                    delay: 4000
-                }).show();
+                (function() {
+                    const toastError = document.createElement('div');
+                    toastError.className = 'toast align-items-center text-white bg-danger border-0';
+                    toastError.setAttribute('role', 'alert');
+                    toastError.setAttribute('aria-live', 'assertive');
+                    toastError.setAttribute('aria-atomic', 'true');
+                    toastError.innerHTML = `
+                        <div class="d-flex">
+                            <div class="toast-body">{!! session('error') !!}</div>
+                            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                        </div>`;
+                    container.appendChild(toastError);
+                    new bootstrap.Toast(toastError, {
+                        delay: 4000
+                    }).show();
+                })();
             @endif
+
+            // Wire edit buttons: only set modal edit URL and show modal; modal will fetch/populate
+            document.querySelectorAll('.open-update-address').forEach(function(el) {
+                el.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const url = this.getAttribute('data-url');
+                    if (!url) return;
+
+                    const updModalEl = document.getElementById('updateAddressModal');
+                    if (!updModalEl) return;
+
+                    // attach the edit URL to modal for its own show handler
+                    updModalEl.dataset.editUrl = url;
+                    const updModal = new bootstrap.Modal(updModalEl);
+                    updModal.show();
+                });
+            });
+
+            // Wire delete buttons to open confirmation modal
+            document.querySelectorAll('.open-delete-address').forEach(function(el) {
+                el.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const url = this.getAttribute('data-url');
+                    if (!url) return;
+
+                    const delModalEl = document.getElementById('deleteAddressModal');
+                    if (!delModalEl) return;
+                    delModalEl.dataset.deleteUrl = url;
+                    const delModal = new bootstrap.Modal(delModalEl);
+                    delModal.show();
+                });
+            });
         });
     </script>
 @endsection
 
 @include('account.address.modal-add-address')
+@include('account.address.modal-update-address')
+@include('account.address.modal-delete-address')

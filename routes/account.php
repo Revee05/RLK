@@ -25,9 +25,17 @@ Route::group(['prefix' => '/account', 'middleware' => ['auth', 'verified', 'IsMe
     Route::get('/address/get/desa/{id}', 'Account\AddressController@getDesa')->name('address.get.desa');
     Route::get('/ubah/kata-sandi', 'Account\MemberController@kataSandi')->name('account.katasandi');
     Route::resource('orders', 'Account\OrderController', ['as' => 'account']);
+
+    // Merchandise Purchase History Routes
+    Route::get('/riwayat-pembelian', 'Account\RiwayatPembelianController@index')->name('account.purchase.history');
+    Route::get('/riwayat-pembelian/merch-order/{id}', 'Account\RiwayatPembelianController@show')->name('account.merch.order.show');
+
     Route::get('invoice/payment/finish', 'Account\OrderController@finish')->name('account.invoice.finish');
     Route::get('invoice/payment/unfinish', 'Account\OrderController@unfinish')->name('account.invoice.unfinish');
     Route::get('invoice/payment/error', 'Account\OrderController@error')->name('account.invoice.error');
     Route::get('invoice/payment/expired', 'Account\OrderController@expired')->name('account.invoice.expired');
     Route::get('invoice/{invoice}', 'Account\OrderController@invoice')->name('account.invoice');
+    // Notification settings
+    Route::get('/notifications', 'Account\NotificationController@index')->name('account.notifications');
+    Route::post('/notifications', 'Account\NotificationController@update')->name('account.notifications.update');
 });

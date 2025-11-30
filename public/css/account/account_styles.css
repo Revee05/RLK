@@ -296,6 +296,35 @@
     border-radius: 0.6rem !important;
 }
 
+/* Utility text color: cyan used across account pages */
+.text-cyan {
+    color: #15bcc5 !important;
+}
+
+/* Make Bootstrap form-switches use the cyan theme in account area */
+/* Scoped to modals and account content to avoid global overrides */
+#addAddressModal .form-check-input,
+#updateAddressModal .form-check-input,
+#deleteAddressModal .form-check-input,
+.card.content-border .form-check-input {
+    border-radius: 1rem;
+}
+
+#addAddressModal .form-check-input:checked,
+#updateAddressModal .form-check-input:checked,
+#deleteAddressModal .form-check-input:checked,
+.card.content-border .form-check-input:checked {
+    background-color: #15bcc5 !important;
+    border-color: #15bcc5 !important;
+}
+
+#addAddressModal .form-check-input:focus,
+#updateAddressModal .form-check-input:focus,
+#deleteAddressModal .form-check-input:focus,
+.card.content-border .form-check-input:focus {
+    box-shadow: 0 0 0 0.2rem rgba(21, 188, 197, 0.18) !important;
+}
+
 #addAddressModal select.form-control,
 #addAddressModal textarea.form-control {
     border-radius: 0.6rem !important;
@@ -331,4 +360,74 @@
 /* Center footer buttons for add address modal */
 #addAddressModal .modal-footer {
     justify-content: center !important;
+}
+
+/* Make update modal use the same styles as addAddressModal (visual parity) */
+#updateAddressModal .form-control,
+#updateAddressModal select.form-control,
+#updateAddressModal textarea.form-control {
+    border-radius: 0.6rem !important;
+}
+
+#updateAddressModal .modal-header {
+    position: relative;
+    padding-top: 2rem;
+    padding-bottom: 2rem;
+}
+
+#updateAddressModal .modal-header .modal-title {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    margin: 0;
+}
+
+#updateAddressModal .modal-footer {
+    justify-content: center !important;
+}
+
+/* Variant: place the switch control on the right, label on the left
+   Used in account notification settings to match design */
+.form-switch-right {
+    display: flex;
+    flex-direction: row-reverse;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.form-switch-right .form-check-label {
+    margin-bottom: 0;
+    margin-left: 0;
+}
+
+.form-switch-right .form-check-input {
+    margin: 0;
+}
+
+.card.content-border .card-body .form-check {
+    padding-left: 0; /* remove checkbox indentation */
+    margin-left: 0;
+}
+
+/* Notification inputs: increase spacing and add separators */
+.card.content-border .card-body .form-group {
+    margin-top: 0.5rem;
+    margin-bottom: 0.75rem;
+}
+
+.card.content-border .card-body .form-check {
+    padding: 0.65rem 0;
+    border-bottom: 1px solid #e0e4e6;
+    margin-bottom: 0.5rem;
+}
+
+.card.content-border .card-body .form-group .form-check:last-of-type {
+    border-bottom: none;
+    margin-bottom: 0;
+}
+
+.card.content-border .card-body .form-check .form-check-label {
+    color: #343a40;
 }

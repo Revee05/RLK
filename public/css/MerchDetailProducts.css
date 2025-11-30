@@ -17,12 +17,15 @@
 .merch-product-detail .main-image {
     background: #fafbfc;
     margin-bottom: 18px;
-    box-shadow: 0 2px 8px rgba(26,44,80,0.04);
+    box-shadow: 0 2px 8px rgba(2, 27, 78, 0.04);
+    /* border: 1px solid crimson; */
 }
+
 .merch-product-detail .main-image img {
     width: 100%;
+    min-height: 340px;
     max-height: 340px;
-    object-fit: cover;
+    object-fit: contain;
     border-radius: 10px;
     background: #f7f7f7;
 }
@@ -33,7 +36,7 @@
     flex-wrap: wrap;
     gap: 10px;
     margin-bottom: 10px;
-    border: 1px solid crimson;
+    /* border: 1px solid crimson; */
 }
 .thumb-images img {
     width: 80px;
@@ -210,8 +213,7 @@
     position: relative;
     margin-bottom: 18px;
     padding: 6px 42px; /* ruang untuk tombol */
-    background: #fff;
-    border: 1px solid #e2e2e2;
+    background: transparent;
     border-radius: 10px;
 }
 
@@ -281,6 +283,107 @@
 .thumb-nav:disabled {
     opacity: 0.35;
     cursor: not-allowed;
+}
+
+.qty-group {
+    display: flex;
+    align-items: center;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    overflow: hidden;
+    background: #fff;
+    width: max-content;
+}
+.qty-input {
+    width: 48px;
+    text-align: center;
+    border: none;
+    outline: none;
+    font-size: 1.1rem;
+    padding: 6px 0;
+    background: transparent;
+}
+.qty-btn {
+    width: 36px;
+    height: 36px;
+    border: none;
+    background: #f3f6ff;
+    color: #1a2c50;
+    font-size: 1.3rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background 0.18s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    user-select: none;
+}
+.qty-btn:active {
+    background: #e0e7ff;
+}
+.qty-btn:disabled {
+    color: #ccc;
+    background: #f7f7f7;
+    cursor: not-allowed;
+}
+
+/* --- Product Guide Modal --- */
+.product-guide-modal .modal-header {
+    background: linear-gradient(135deg, #f3f6ff 0%, #e8eeff 100%);
+    border-bottom: 2px solid #d0d9f5;
+    padding: 1.2rem 1.5rem;
+}
+.product-guide-modal .modal-title {
+    font-weight: 700;
+    color: #1a2c50;
+    font-size: 1.3rem;
+}
+.product-guide-modal .modal-body {
+    background: #fff;
+    padding: 1.8rem;
+}
+.product-guide-modal .guide-image {
+    max-width: 100%;
+    height: auto;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    margin: 0 auto 1.5rem;
+    display: block;
+    border: 1px solid #e0e7ef;
+}
+.product-guide-modal .product-guide-content {
+    font-size: 0.95rem;
+    color: #333;
+    line-height: 1.6;
+}
+.product-guide-modal .product-guide-content table {
+    border-collapse: collapse !important;
+    width: 100%;
+    margin: 1rem auto;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+.product-guide-modal .product-guide-content th,
+.product-guide-modal .product-guide-content td {
+    border: 1px solid #8a9bc4 !important;
+    padding: 10px 12px;
+    text-align: center;
+    font-size: 0.9rem;
+}
+.product-guide-modal .product-guide-content th {
+    background: linear-gradient(135deg, #e8eeff 0%, #d0d9f5 100%);
+    font-weight: 700;
+    color: #1a2c50;
+    text-transform: uppercase;
+    font-size: 0.85rem;
+    letter-spacing: 0.5px;
+}
+.product-guide-modal .product-guide-content td {
+    background: #fafbff;
+}
+.product-guide-modal .modal-footer {
+    background: #f8f9fa;
+    border-top: 1px solid #e0e7ef;
+    padding: 0.9rem 1.5rem;
 }
 
 @media (max-width: 768px) {

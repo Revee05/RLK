@@ -1,6 +1,6 @@
 <!-- Modal: Tambah Alamat (reuse modal-tambah-address implementation) -->
 <!-- This modal is opened from the account address page 'Tambah Alamat' button -->
-<div class="modal fade" id="addAddressModal" tabindex="-1" aria-hidden="true">
+<div class="modal fade" id="addAddressModal" tabindex="-1" aria-hidden="true" style="display:none;" data-lazy="1">
     <div class="modal-dialog modal-dialog-centered modal-md">
         <div class="modal-content">
 
@@ -27,7 +27,7 @@
 
                     <div class="form-group mb-3">
                         <input type="text" class="form-control input-cyan" name="label_address"
-                            placeholder="Label Alamat">
+                            placeholder="Label Alamat (rumah / kantor / apartemen)" required>
                     </div>
 
                     <div class="form-group mb-3">
@@ -52,10 +52,18 @@
                         <textarea class="form-control input-cyan" name="address" rows="2" placeholder="Alamat Lengkap" required></textarea>
                     </div>
 
+                    <div class="form-group mb-3">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="is_primary" name="is_primary" value="1">
+                            <label class="form-check-label" for="is_primary">Jadikan alamat utama</label>
+                        </div>
+                    </div>
+
                 </div>
 
                 <div class="modal-footer">
-                    <button type="submit" class="btn btn-darkblue btn-wide btn-rounded" id="saveNewAddress">Simpan</button>
+                    <button type="submit" class="btn btn-darkblue btn-wide btn-rounded"
+                        id="saveNewAddress">Simpan</button>
                 </div>
 
             </form>

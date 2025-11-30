@@ -39,6 +39,9 @@ class MerchProductController extends Controller
         \DB::transaction(function () use ($request) {
             $request->validate($this->storeValidationRules());
 
+            // Debug: Log request variants data
+            // \Log::info('Store Request Variants Data', ['variants' => $request->variants]);
+
             $merchProduct = MerchProduct::create($this->buildProductPayload($request));
             $this->syncCategories($merchProduct, $request->get('categories', []), false);
 
@@ -54,7 +57,7 @@ class MerchProductController extends Controller
             $this->recomputeAndPersistAggregates($merchProduct->fresh(['variants.images', 'variants.sizes']));
         });
 
-        return redirect()->route('master.merchProduct.index')->with('success', 'Product created!');
+        return redirect()->route('master.merchProduct.index')->with('success', 'Produk merchandise berhasil ditambahkan!');
     }
 
     public function edit($id)
@@ -75,6 +78,10 @@ class MerchProductController extends Controller
         \DB::transaction(function () use ($request, $id) {
             $merchProduct = MerchProduct::findOrFail($id);
             $request->validate($this->updateValidationRules($merchProduct->id));
+
+            // Debug: Log request variants data
+            // \Log::info('Update Request Variants Data', ['variants' => $request->variants]);
+            // \Log::info('Update Request', $request->all());
 
             $merchProduct->update($this->buildProductPayload($request, $merchProduct->id));
             $this->syncCategories($merchProduct, $request->get('categories', []), true);
@@ -107,7 +114,7 @@ class MerchProductController extends Controller
             $this->recomputeAndPersistAggregates($merchProduct->fresh(['variants.images', 'variants.sizes']));
         });
 
-        return redirect()->route('master.merchProduct.index')->with('success', 'Product updated!');
+        return redirect()->route('master.merchProduct.index')->with('success', 'Produk merchandise berhasil diperbarui!');
     }
 
     public function destroy($id)
@@ -118,16 +125,37 @@ class MerchProductController extends Controller
                 'variants.images',
                 'variants.sizes'
             ])->findOrFail($id);
+            
+            // Detach categories
             $product->categories()->detach();
+            
+            // Delete variants and their dependencies
             $product->variants->each(function ($variant) {
+                // Delete image files from storage and database
+                $variant->images->each(function ($image) {
+                    if ($image->image_path && file_exists(public_path($image->image_path))) {
+                        @unlink(public_path($image->image_path));
+                    }
+                });
                 $variant->images()->delete();
+                
+                // Delete sizes
                 $variant->sizes()->delete();
+                
+                // Delete variant
                 $variant->delete();
             });
+            
+            // Delete size guide image if exists
+            if ($product->size_guide_image && file_exists(public_path($product->size_guide_image))) {
+                @unlink(public_path($product->size_guide_image));
+            }
+            
+            // Delete product
             $product->delete();
         });
 
-        return redirect()->route('master.merchProduct.index')->with('success', 'Product deleted!');
+        return redirect()->route('master.merchProduct.index')->with('success', 'Produk merchandise berhasil dihapus!');
     }
     /* ------------------------------- Variants Ops ------------------------------ */
     private function upsertVariant(MerchProduct $product, array $variantData, int $idx, $defaultRaw)
@@ -142,7 +170,16 @@ class MerchProductController extends Controller
             'stock' => $hasSizes ? null : ($variantData['stock'] ?? 0),
             'price' => $hasSizes ? null : ($variantData['price'] ?? null),
             'discount' => $hasSizes ? null : ($variantData['discount'] ?? 0),
+            'weight' => $variantData['weight'] ?? null,
         ];
+
+        // Debug: Log variant data and payload
+        // \Log::info('Upsert Variant', [
+        //     'variantData' => $variantData,
+        //     'payload' => $payload,
+        //     'weight_exists' => isset($variantData['weight']),
+        //     'weight_value' => $variantData['weight'] ?? 'NOT SET'
+        // ]);
 
         $variant = !empty($variantData['id'])
             ? tap($product->variants()->where('id', $variantData['id'])->firstOrFail())->update($payload)
@@ -325,6 +362,10 @@ class MerchProductController extends Controller
             'categories' => 'nullable|array',
             'categories.*' => 'exists:merch_categories,id',
             'variants' => 'required|array',
+            // Product guide (optional)
+            'size_guide_content' => 'nullable|string',
+            'size_guide_image' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
+            'guide_button_label' => 'nullable|string|max:255',
         ];
     }
 
@@ -338,13 +379,14 @@ class MerchProductController extends Controller
             'variants.*.images.*.image_path' => 'nullable|file|image|max:2048',
             'variants.*.sizes' => 'nullable|array',
             'variants.*.sizes.*.id' => $updating ? 'nullable|exists:merch_product_variant_sizes,id' : 'nullable',
-            'variants.*.sizes.*.size' => 'required_with:variants.*.sizes|string|max:50',
+            'variants.*.sizes.*.size' => 'nullable|string|max:50', 
             'variants.*.sizes.*.stock' => 'nullable|integer|min:0',
             'variants.*.sizes.*.price' => 'nullable|numeric|min:0',
             'variants.*.sizes.*.discount' => 'nullable|numeric|min:0|max:100',
             'variants.*.stock' => 'nullable|integer|min:0',
             'variants.*.price' => 'nullable|numeric|min:0',
             'variants.*.discount' => 'nullable|numeric|min:0|max:100',
+            'variants.*.weight' => 'required|numeric|min:0',
         ];
     }
 
@@ -352,6 +394,37 @@ class MerchProductController extends Controller
     private function buildProductPayload(Request $request, $excludeId = null): array
     {
         $data = $request->only(['name', 'description', 'status', 'type']);
+
+        $data['guide_button_label'] = $request->filled('guide_button_label')
+            ? $request->input('guide_button_label')
+            : null;
+
+        $data['size_guide_content'] = $request->filled('size_guide_content')
+            ? $request->input('size_guide_content')
+            : null;
+
+        // Handle remove image
+        if ($excludeId) {
+            $existing = MerchProduct::find($excludeId);
+            if ($request->has('remove_size_guide_image') && $existing && $existing->size_guide_image) {
+                if (file_exists(public_path($existing->size_guide_image))) {
+                    @unlink(public_path($existing->size_guide_image));
+                }
+                $data['size_guide_image'] = null;
+            }
+        }
+
+        // Handle upload baru
+        if ($request->hasFile('size_guide_image')) {
+            if ($excludeId) {
+                $existing = $existing ?? MerchProduct::find($excludeId);
+                if ($existing && $existing->size_guide_image && file_exists(public_path($existing->size_guide_image))) {
+                    @unlink(public_path($existing->size_guide_image));
+                }
+            }
+            $data['size_guide_image'] = (new Uploads())->handleUpload($request->file('size_guide_image'));
+        }
+
         $data['slug'] = $this->generateUniqueSlug($request->name, $excludeId);
         return $data;
     }

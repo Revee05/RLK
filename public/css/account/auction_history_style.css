@@ -1,0 +1,390 @@
+/* =========================================
+   TAMBAHAN KHUSUS RIWAYAT LELANG (AUCTION)
+   ========================================= */
+
+/* 1. Style Kartu Statistik (Total Bids, dll) */
+.card-stat {
+    border: 1px solid #000000;
+    border-radius: 0.8rem;
+    padding: 1.2rem;
+    height: 100%;
+    background-color: #fff;
+    transition: transform 0.2s;
+}
+
+.card-stat:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+}
+
+.stat-title {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #000000;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    display: block;
+    margin-bottom: 0.5rem;
+}
+
+.stat-value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #15bcc5; /* Menggunakan Cyan tema kamu */
+    margin-bottom: 0;
+}
+
+/* 2. Style Tabel Lelang */
+.table-auction thead th {
+    background-color: #051a36; /* Dark Blue tema kamu */
+    color: #ffffff;
+    font-weight: 500;
+    padding: 1rem;
+    border: none;
+    white-space: nowrap;
+}
+
+.table-auction tbody td {
+    padding: 1rem;
+    vertical-align: middle;
+    border-bottom: 1px solid #e9ecef;
+    color: #051a36;
+}
+
+/* 3. Style Status Badges */
+.badge-status {
+    padding: 0.4em 1em;
+    border-radius: 50rem;
+    font-weight: 500;
+    font-size: 0.85rem;
+}
+
+.badge-status.process {
+    background-color: #051a36; /* Dark Blue */
+    color: #fff;
+}
+
+.badge-status.win {
+    background-color: #15bcc5; /* Cyan tema kamu */
+    color: #fff;
+}
+
+.badge-status.lose {
+    background-color: #6c757d; /* Abu-abu */
+    color: #fff;
+}
+
+/* 4. Text Styling */
+.price-lost {
+    text-decoration: line-through;
+    color: #a0aec0; /* Abu-abu pudar */
+    font-weight: normal !important;
+}
+
+/* ==================================================
+   COMPACT TABLE STYLE (REFINED)
+   ================================================== */
+
+/* Helper Text */
+.date-bold {
+    font-weight: 700;
+    color: #051a36;
+    display: block;
+    margin-bottom: 2px;
+    font-size: 0.9rem;
+}
+.date-time {
+    font-weight: 400;
+    color: #6c757d;
+    font-size: 0.8rem;
+}
+.price-normal {
+    font-weight: 600;
+    color: #212529;
+    font-size: 0.9rem;
+}
+.price-lost {
+    text-decoration: line-through;
+    color: #15bcc5;
+    font-size: 0.9rem;
+}
+
+
+
+/* scroll table */
+/*
+Source - https://stackoverflow.com/a
+Posted by Ersel Aktas, modified by community. See post 'Timeline' for change history
+Retrieved 2025-11-26, License - CC BY-SA 4.0
+*/
+
+/* 1. Garis Luar Tabel (Frame Utama) */
+.ea_table {
+    /* Tambahkan !important agar memaksa warna berubah */
+    border: 1px solid #051a36 !important; 
+    
+    border-radius: 8px;
+    background: #fff;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+}
+
+/* 2. Garis Horizontal (Pemisah Antar Baris) */
+.ea_table tbody tr {
+    display: flex;
+    width: 100%;
+    align-items: center;
+    
+    /* Tambahkan !important di sini juga */
+    border-bottom: 1px solid #051a36 !important; 
+}
+
+.ea_table tbody, thead {
+  flex-direction: column;
+  display: flex;
+}
+
+.ea_table tbody {
+    display: block;
+    height: 290px; /* Tinggi area scroll */
+    overflow-y: auto; /* Scroll aktif */
+    width: 100%;
+    /* Background putih agar kontras dengan header */
+    background-color: #fff; 
+}
+
+/* =========================================
+   CUSTOM SCROLLBAR FINAL (GAYA GAMBAR 2)
+   ========================================= */
+
+/* 1. CONTAINER UTAMA */
+.ea_table tbody::-webkit-scrollbar {
+    width: 22px; /* Lebar area scroll */
+}
+
+/* 2. JALUR (TRACK) */
+.ea_table tbody::-webkit-scrollbar-track {
+    background: #ffffff; 
+    /* Garis pemisah kiri pada Track */
+    border-left: 1px solid #051a36; 
+}
+
+/* 3. TOMBOL (BUTTONS) - GARIS MENYAMBUNG */
+/* Penting: Tambahkan border-left di sini juga agar garisnya nyambung dari atas ke bawah */
+.ea_table tbody::-webkit-scrollbar-button {
+    display: none;             
+    height: 20px;              
+    width: 22px;               
+    background-color: #ffffff; 
+    border-left: 1px solid #051a36; /* INI KUNCINYA AGAR GARIS TIDAK PUTUS DI ATAS */
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: 10px;     
+}
+
+/* 4. BATANG GESER (THUMB) - TEKNIK BACKGROUND-CLIP */
+.ea_table tbody::-webkit-scrollbar-thumb {
+    background-color: #828282; /* Warna Abu-abu */
+    border-radius: 20px;       /* Bulat penuh */
+    
+    /* RAHASIA AGAR TIDAK MEMOTONG GARIS: */
+    border: 6px solid transparent; /* Border transparan sebagai jarak */
+    background-clip: content-box;  /* Warna hanya diisi di dalam, tidak kena border */
+}
+
+/* Efek Hover */
+.ea_table tbody::-webkit-scrollbar-thumb:hover {
+    background-color: #6c757d; 
+}
+
+/* 5. AKTIFKAN TOMBOL ATAS */
+.ea_table tbody::-webkit-scrollbar-button:single-button:vertical:decrement {
+    display: block; 
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%23000000'%3E%3Cpath d='M7.247 4.86l-4.796 5.481c-.566.647-.106 1.659.753 1.659h9.592a1 1 0 0 0 .753-1.659l-4.796-5.48a1 1 0 0 0-1.506 0z'/%3E%3C/svg%3E");
+}
+
+/* 6. AKTIFKAN TOMBOL BAWAH */
+.ea_table tbody::-webkit-scrollbar-button:single-button:vertical:increment {
+    display: block;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%23000000'%3E%3Cpath d='M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E");
+}
+
+/* 7. Efek Klik */
+.ea_table tbody::-webkit-scrollbar-button:active {
+    background-color: #ffffff; 
+}
+
+.ea_table thead {
+    display: flex;
+    width: 100%;
+    /* KUNCI PERBAIKAN: Padding kanan 8px untuk mengimbangi lebar scrollbar di body */
+    padding-right: 8px; 
+    background-color: #051a36; /* Warna Header Full */
+    box-sizing: border-box;
+}
+
+.ea_table thead tr {
+    width: 100%;
+    margin: 0;
+}
+
+.ea_table tr {
+    display: flex;
+    align-items: center; /* Vertikal center */
+    width: 100%;
+    margin: 0; /* Pastikan tidak ada jarak antar baris */
+    padding: 0; /* Pastikan tidak ada padding di baris */
+}
+
+.ea_table tbody tr {
+    display: flex;
+    width: 100%;
+    align-items: center;
+    border-bottom: 1px solid #eee;
+}
+
+
+.ea_table tbody tr:nth-child(2n+1) {
+  background: #f8f8f8;
+  }
+
+.ea_table th, .ea_table td {
+    padding: 0.8rem 1rem; /* Padding rapi */
+    flex: none !important; /* Matikan flex grow agar width % akurat */
+    box-sizing: border-box;
+    font-size: 0.9rem;
+}
+
+.ea_table th {
+    padding: 0.8rem 1rem; /* Header boleh sedikit lebih lega */
+    font-size: 0.95rem;
+}
+
+.ea_table th {
+    color: white;
+    font-weight: 600;
+}
+
+/* Pastikan lebar TD menimpa flex:1 bawaan agar lurus dengan Header */
+.ea_table td {
+    flex: none !important; /* Mematikan flex grow default */
+    box-sizing: border-box;
+}
+
+
+
+/* Style untuk Badge Status seperti di Gambar */
+/* --- BASE BADGE STYLE --- */
+/* Style dasar untuk ukuran tombol agar seragam */
+.badge-status {
+    display: inline-block;
+    width: 120px;       /* Lebar fix agar tombol lurus rapi */
+    padding: 8px 0;     /* Padding atas bawah */
+    text-align: center;
+    color: white;
+    font-weight: 600;
+    font-size: 0.85rem;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    border: none;
+    line-height: 1.2;
+}
+
+/* --- VARIANT WARNA STATUS --- */
+
+/* 1. DALAM PROSES (Biru Gelap - Sesuai Header) */
+.badge-status.process {
+    background-color: #051a36; 
+    border-radius: 7px; /* Sedikit melengkung */
+}
+
+/* 2. MENANG (Tosca/Teal - Sesuai Gambar) */
+.badge-status.win {
+    background-color: #5abebc; /* Warna tosca lembut sesuai gambar */
+    border-radius: 7px;        /* Sudut lebih kotak sedikit dibanding proses */
+}
+
+/* 3. KALAH (Abu-abu - Sesuai Gambar) */
+.badge-status.lose {
+    background-color: #888888; /* Abu-abu medium */
+    border-radius: 7px;
+}
+
+/* --- STYLE HARGA (Tawaran Saya) --- */
+
+/* Harga Normal (Hitam Tebal) */
+.price-normal {
+    font-weight: 600;
+    color: #212529; /* Hitam gelap */
+    font-size: 1rem;
+}
+
+/* Harga Kalah (Dicoret & Warna Tosca Pudar) */
+.price-lost {
+    text-decoration: line-through;
+    color: #5abebc; /* Menggunakan warna yang sama dengan badge WIN tapi text */
+    font-size: 1rem;
+    font-weight: 500;
+    opacity: 0.9; /* Sedikit transparan agar terlihat pudar */
+}
+
+/* (Opsional) Efek Hover agar lebih interaktif */
+.badge-custom-dark:hover {
+    background-color: #082d5e;
+    cursor: default;
+}
+
+
+/* =========================================
+   RESPONSIVE TABLE (MOBILE VIEW)
+   ========================================= */
+
+@media (max-width: 768px) {
+    
+    /* 1. Sembunyikan Header Tabel Utama */
+    .ea_table thead {
+        display: none !important; 
+    }
+
+    /* 2. Style KARTU (Baris Data) - INI YANG DIPERTEBAL */
+    .ea_table tbody tr {
+        display: flex !important;
+        flex-direction: column !important;
+        
+        /* UBAH DISINI: Border dipertebal (2px) dan warna BIRU GELAP (#051a36) */
+        border: 2px solid #051a36 !important; 
+        
+        margin-bottom: 15px !important;    /* Jarak antar kartu */
+        border-radius: 8px !important;     /* Sudut kartu melengkung */
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1); /* Tambah bayangan agar lebih pop-up */
+        background-color: #fff;
+    }
+
+    /* 3. Style GARIS DALAM KARTU (Pemisah antar data: Item, Tanggal, Harga) */
+    .ea_table td {
+        width: 100% !important;
+        
+        /* UBAH DISINI: Garis pemisah dalam kartu dibuat sedikit lebih jelas (abu-abu sedang) */
+        border-bottom: 1px solid #ffffff !important; 
+        
+        padding: 12px 15px !important;
+        display: flex;
+        justify-content: space-between; /* Agar Label kiri & Data kanan rapi */
+        align-items: center;
+    }
+
+    /* Hapus garis bawah pada elemen terakhir dalam kartu (Status) agar rapi */
+    .ea_table td:last-child {
+        border-bottom: none !important;
+    }
+
+    /* Penyesuaian Font di HP */
+    .price-normal, .price-lost {
+        font-size: 1rem !important;
+    }
+}
+
+
+/*batas table riwayat lelang*/

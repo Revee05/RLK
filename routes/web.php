@@ -13,6 +13,7 @@
 use App\Http\Controllers\Web\CheckoutMerchController;
 use App\Http\Controllers\Web\CartController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Account\AuctionHistoryController;
 
 require_once  __DIR__ . "/admin.php";
 require_once  __DIR__ . "/account.php";
@@ -36,7 +37,6 @@ Route::post('/payment/callback', 'PaymentController@callback');
 
 
 // prod routes
-
 Route::get('/','Web\HomeController@index')->name('home');
 Route::get('/lelang','Web\HomeController@lelang')->name('lelang');
 Route::get('/blogs','Web\BlogController@index')->name('blogs');
@@ -45,28 +45,29 @@ Route::post('/new/login', 'Auth\\LoginController@postLogin')->name('new.login');
 Route::get('/products/search','Web\HomeController@search')->name('web.search');
 Route::post('/bid/messages', 'Web\ChatsController@sendMessage');
 Route::get('/checkout', 'Web\CheckoutMerchController@index')->name('checkout.index');
+
+// Seniman routes - harus sebelum route /{slug}
+Route::get('/seniman', 'Web\SenimanController@index')->name('seniman.index');
+Route::get('/seniman/{slug}', 'Web\SenimanController@detail')->name('seniman.detail');
+Route::get('/produk-seniman/{slug}', [\App\Http\Controllers\Web\SenimanController::class, 'detail'])->name('products.seniman');
+
 Route::get('/{slug}','Web\HomeController@detail')->name('detail');
 Route::get('/page/{slug}','Web\HomeController@page')->name('web.page');
 Route::get('/blog/{slug}','Web\BlogController@detail')->name('web.blog.detail');
 Route::get('/bid/messages/{slug}', 'Web\ChatsController@fetchMessages');
 Route::get('/category/{slug}','Web\HomeController@category')->name('products.category');
-Route::get('/seniman/{slug}','Web\HomeController@seniman')->name('products.seniman');
 
-// Route bagian cart
+
 Route::group(['middleware' => ['auth']], function () {
-    // Halaman List Keranjang
+    // cart
     Route::get('/cart', 'Web\CartController@index')->name('cart.index');
-
-    // Tambah ke Keranjang (Merch)
-    // NOTE: Parameter {id} dihapus karena data dikirim via form (Request body)
     Route::post('/cart/add-merch', 'Web\CartController@addMerchToCart')->name('cart.addMerch');
-
-    // Update Quantity (AJAX)
-    // Menggunakan Model Binding {cartItem} sesuai controller
     Route::post('/cart/update/{cartItem}', 'Web\CartController@updateQuantity')->name('cart.update');
-
-    // Hapus Item
     Route::delete('/cart/{cartItem}', 'Web\CartController@destroy')->name('cart.destroy');
+
+    // Auction History
+    Route::get('/account/auction', [AuctionHistoryController::class, 'index'])
+        ->name('account.auction_history');
 });
 
 // merch product route
