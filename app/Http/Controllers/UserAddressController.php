@@ -90,7 +90,8 @@ class UserAddressController extends Controller
                         <div class="fw-bold">'.$addr->label_address.'</div>
                         <div class="small text-muted">
                             '.$addr->name.' • '.$addr->phone.' <br>
-                            '.$addr->address.' <br>
+                            '.$addr->address.', 
+                            '.($addr->district->name ?? '-').'<br>
                             '.($addr->city->name ?? '-').',
                             '.($addr->province->name ?? '-').'
                         </div>

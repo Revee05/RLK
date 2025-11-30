@@ -23,25 +23,6 @@ Route::get('/cart', function () {
     return view('web.cart');
 });
 
-Route::get('/test-add-cart', function() {
-    session()->put('cart', [
-        [
-            'product_id' => 1,
-            'name' => 'Merch Hoodie',
-            'price' => 150000,
-            'quantity' => 2,
-        ],
-        [
-            'product_id' => 2,
-            'name' => 'Sticker Set',
-            'price' => 25000,
-            'quantity' => 1,
-        ]
-    ]);
-
-    return 'Cart ditambahkan!';
-}); 
-
 // route untuk view
 Route::get('/all-other-product', function () {
     return view('web.productsPage.MerchAllProductPage');
@@ -49,6 +30,10 @@ Route::get('/all-other-product', function () {
 Route::get('/detail-products', function () {
     return view('web.productsPage.MerchDetailProductPage');
 })->name('detail-products');
+
+Route::get('/pay', 'PaymentController@createInvoice')->name('pay');
+Route::post('/payment/callback', 'PaymentController@callback');
+
 
 // prod routes
 
@@ -99,6 +84,16 @@ Route::middleware(['auth'])->group(function () {
     
     Route::get('/checkout', [CheckoutMerchController::class, 'index'])->name('checkout.index');
     Route::post('/checkout/process', [CheckoutMerchController::class, 'process'])->name('checkout.process');
+    
+    Route::post('/checkout/pay', 'Web\PaymentController@payNow')->name('checkout.pay');
+    Route::get('/checkout/success', function(){
+        return "Pembayaran berhasil!";
+    })->name('checkout.success');
+
+    Route::get('/checkout/failed', function(){
+        return "Pembayaran gagal!";
+    })->name('checkout.failed');
+
     // ... route checkout lainnya
 });
 
@@ -125,5 +120,5 @@ Route::get('/lokasi/district/{city_id}', 'LocationController@district')->name('l
 
 Route::post('/alamat/store', 'UserAddressController@store')->name('alamat.store');
 Route::get('/alamat/refresh', 'UserAddressController@refreshList')->name('alamat.refresh');
-//Route::post('/checkout/shipping-cost', 'Web\CheckoutMerchController@calculateShipping')->name('checkout.shipping-cost');
+//Route::get('/cosuccess/{orderNumber}', 'Web\CheckoutMerchController@cosuccess')->name('cosuccess');
 

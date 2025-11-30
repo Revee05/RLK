@@ -7,12 +7,15 @@ use Illuminate\Http\Request;
 use App\UserAddress;
 use App\Shipper;
 use App\OrderMerch;
-use App\CartItem; // Model Cart Database (Punya Anda)
+use App\CartItem; 
 use Illuminate\Support\Str;
-use App\Provinsi;
-use App\Kabupaten;
-use App\Kecamatan;
+use App\Province;
+use App\City;
+use App\District;
 use Illuminate\Support\Facades\DB;
+use App\Services\RajaOngkirService;
+use App\models\MerchProductVariant;
+use Xendit\Xendit;
 
 
 class CheckoutMerchController extends Controller
@@ -50,6 +53,7 @@ class CheckoutMerchController extends Controller
         $cart = $cartItems->map(function ($item) {
             // Logika Gambar
             $imagePath = '/img/default.png';
+
             if ($item->merchVariant && $item->merchVariant->images->isNotEmpty()) {
                 $imagePath = $item->merchVariant->images->first()->image_path; 
             } elseif ($item->merchProduct && $item->merchProduct->images->isNotEmpty()) {
@@ -58,9 +62,10 @@ class CheckoutMerchController extends Controller
 
             // Logika Nama Produk
             $productName = $item->merchProduct->name ?? 'Unknown Product';
-            if($item->merchSize) {
+            
+            /*if($item->merchSize) {
                 $productName .= ' (' . $item->merchSize->size . ')';
-            }
+            }*/
 
             return [
                 'id'       => $item->id,
@@ -68,12 +73,24 @@ class CheckoutMerchController extends Controller
                 'price'    => $item->price,
                 'quantity' => $item->quantity,
                 'image'    => $imagePath,
+
+                // --- Informasi Varian ---
+                'variant_name' => $item->merchVariant->name ?? null, 
+                'variant_code' => $item->merchVariant->code ?? null,
+                'discount'     => $item->merchVariant->discount ?? null,
+                'stock'        => $item->merchVariant->stock ?? null,
+
+                // Size
+                'size_name'    => $item->merchSize->size ?? null,  
+
                 // Data ID Asli untuk proses backend nanti
                 'product_id' => $item->merch_product_id,
                 'variant_id' => $item->merch_product_variant_id,
                 'size_id'    => $item->merch_product_variant_size_id,
             ];
         });
+
+
 
         // ==================================================================
         // 4. HITUNG TOTAL
@@ -97,7 +114,13 @@ class CheckoutMerchController extends Controller
         $shippers = Shipper::all();
 
         // Ambil semua provinsi
-        $provinsi = Provinsi::all();
+        $province = Province::all();
+
+        $selectedAddressId = session('checkout_address_id');
+
+        $selectedAddress = $selectedAddressId
+            ? UserAddress::with(['province','city','district'])->find($selectedAddressId)
+            : auth()->user()->userAddress()->with(['province','city','district'])->first();
 
         return view('web.checkout.index', compact(
             'cart',
@@ -107,12 +130,15 @@ class CheckoutMerchController extends Controller
             'totalQty',     
             'addresses',
             'shippers',
-            'provinsi'
+            'province',
+            'selectedItemIds', 
+            'isGiftWrap',
+            'selectedAddress',
         ));
     }
 
     // ==================================================================
-    // METHOD PROCESS: GABUNGAN FIX (Logic DB Anda + Struktur Teman)
+    // METHOD PROCESS
     // ==================================================================
     public function process(Request $request)
     {
@@ -148,6 +174,7 @@ class CheckoutMerchController extends Controller
         
         // Handle Bungkus Kado (Dari Input Hidden)
         $biayaLayanan = 0;
+
         if ($request->has('is_gift_wrap') && $request->is_gift_wrap == '1') {
             $biayaLayanan = 10000;
         }
@@ -158,7 +185,6 @@ class CheckoutMerchController extends Controller
         try {
             DB::beginTransaction();
 
-            // 4. Buat Order (Struktur sama dengan punya Teman Anda)
             $order = OrderMerch::create([
                 'user_id'       => auth()->id(),
                 'address_id'    => $request->address_id,
@@ -201,18 +227,23 @@ class CheckoutMerchController extends Controller
         }
 
         // Simpan pilihan alamat ke session (agar persist saat refresh)
-        session(['checkout_address' => $address]);
+        session(['checkout_address_id' => $address->id]);
 
         return response()->json([
             'status' => 'success',
             'address' => [
                 'label_address' => $address->label_address,
-                'name' => $address->name,
-                'phone' => $address->phone,
-                'address' => $address->address,
-                'kecamatan' => $address->kecamatan->nama_kecamatan ?? '',
-                'kabupaten' => $address->kabupaten->nama_kabupaten ?? '',
-                'provinsi' => $address->provinsi->nama_provinsi ?? '',
+                'name'          => $address->name,
+                'phone'         => $address->phone,
+                'address'       => $address->address,
+                'district'      => $address->district->name ?? '',
+                'city'          => $address->city->name ?? '',
+                'province'      => $address->province->name ?? '',
+
+                // Tambahkan ID untuk kurir
+                'district_id'   => $address->district_id,
+                'city_id'       => $address->city_id,
+                'province_id'   => $address->province_id,
             ]
         ]);
     }
@@ -225,13 +256,67 @@ class CheckoutMerchController extends Controller
             $result[] = [
                 'id'    => $ship->id,
                 'name'  => $ship->name,
-                'price' => 0,       // flat 0
+                'price' => 10000,       // flat 0
                 'eta'   => '-',     // default
             ];
         }
         return response()->json($result);
     }
 
+    public function getShippingCost(Request $request)
+    {
+        try {
+            $origin         = (int) $request->origin;
+            $destination    = (int) $request->destination;
+            $weight         = (int) $request->weight ?: 1000;
+
+            $couriers = ['jne', 'tiki', 'pos'];
+
+            \Log::info('PAYLOAD RAJAONGKIR:', [
+                'origin' => $origin,
+                'destination' => $destination,
+                'weight' => $weight,
+                'courier' => $couriers,
+                'price' => 'lowest'
+            ]);
+
+            $rajaOngkir = new RajaOngkirService();
+            $result = [];
+
+            foreach ($couriers as $courier) {
+
+                $response = $rajaOngkir->calculateCost(
+                    $origin,
+                    $destination,
+                    $weight,
+                    $courier,
+                    'lowest'
+                );
+
+                if (!empty($response['data'])) {
+
+                    foreach ($response['data'] as $service) {
+                        $result[] = [
+                            'id'    => $courier . '-' . $service['service'],
+                            'name'  => strtoupper($courier) . ' - ' . $service['service'],
+                            'price' => $service['cost'],
+                            'eta'   => $service['etd']
+                        ];
+                    }
+                }
+            }
+
+            usort($result, fn($a,$b) => $a['price'] <=> $b['price']);
+
+            return response()->json($result);
+
+        } catch (\Throwable $e) {
+            \Log::error('Shipping cost error: ' . $e->getMessage());
+            return response()->json([
+                'error' => 'Gagal mengambil data kurir.'
+            ], 500);
+        }
+    }
 
     public function success($invoice)
     {
