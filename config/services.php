@@ -31,7 +31,7 @@ return [
     ],
 
     'xendit' => [
-        'secret' => env('XENDIT_SECRET_KEY'),
+        'secret_key' => env('XENDIT_SECRET_KEY'),
     ],
 
 ];

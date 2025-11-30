@@ -24,25 +24,6 @@ Route::get('/cart', function () {
     return view('web.cart');
 });
 
-Route::get('/test-add-cart', function() {
-    session()->put('cart', [
-        [
-            'product_id' => 1,
-            'name' => 'Merch Hoodie',
-            'price' => 150000,
-            'quantity' => 2,
-        ],
-        [
-            'product_id' => 2,
-            'name' => 'Sticker Set',
-            'price' => 25000,
-            'quantity' => 1,
-        ]
-    ]);
-
-    return 'Cart ditambahkan!';
-}); 
-
 // route untuk view
 Route::get('/all-other-product', function () {
     return view('web.productsPage.MerchAllProductPage');
@@ -50,6 +31,10 @@ Route::get('/all-other-product', function () {
 Route::get('/detail-products', function () {
     return view('web.productsPage.MerchDetailProductPage');
 })->name('detail-products');
+
+Route::get('/pay', 'PaymentController@createInvoice')->name('pay');
+Route::post('/payment/callback', 'PaymentController@callback');
+
 
 // prod routes
 Route::get('/','Web\HomeController@index')->name('home');
@@ -100,6 +85,16 @@ Route::middleware(['auth'])->group(function () {
     
     Route::get('/checkout', [CheckoutMerchController::class, 'index'])->name('checkout.index');
     Route::post('/checkout/process', [CheckoutMerchController::class, 'process'])->name('checkout.process');
+    
+    Route::post('/checkout/pay', 'Web\PaymentController@payNow')->name('checkout.pay');
+    Route::get('/checkout/success', function(){
+        return "Pembayaran berhasil!";
+    })->name('checkout.success');
+
+    Route::get('/checkout/failed', function(){
+        return "Pembayaran gagal!";
+    })->name('checkout.failed');
+
     // ... route checkout lainnya
 });
 
@@ -107,6 +102,8 @@ Route::middleware(['auth'])->group(function () {
 Route::post('/checkout/process', 'Web\CheckoutMerchController@process')->name('checkout.process');
 Route::get('/checkout/success/{invoice}', 'Web\CheckoutMerchController@success')->name('checkout.success');
 Route::post('/checkout/set-address', 'Web\CheckoutMerchController@setAddress')->name('checkout.set-address');
+Route::post('/checkout/shipping-cost', 'Web\CheckoutMerchController@getShippingCost')->name('checkout.shipping-cost');
+
 
 // API untuk fetch lokasi (dipakai AJAX di form)
 Route::get('/get-kabupaten/{id}', function($id){
@@ -114,15 +111,15 @@ Route::get('/get-kabupaten/{id}', function($id){
 });
 
 // List semua provinsi
-Route::get('/lokasi/provinsi', 'ProvinsiController@getAll')->name('lokasi.provinsi');
+Route::get('/lokasi/province', 'LocationController@province')->name('lokasi.province');
 
 // List kabupaten berdasarkan provinsi
-Route::get('/lokasi/kabupaten/{provinsi_id}', 'KabupatenController@getByProvinsi')->name('lokasi.kabupaten');
+Route::get('/lokasi/city/{province_id}', 'LocationController@city')->name('lokasi.city');
 
 // List kecamatan berdasarkan kabupaten
-Route::get('/lokasi/kecamatan/{kabupaten_id}', 'KecamatanController@getByKabupaten')->name('lokasi.kecamatan');
+Route::get('/lokasi/district/{city_id}', 'LocationController@district')->name('lokasi.district');
 
 Route::post('/alamat/store', 'UserAddressController@store')->name('alamat.store');
 Route::get('/alamat/refresh', 'UserAddressController@refreshList')->name('alamat.refresh');
-Route::post('/checkout/shipping-cost', 'Web\CheckoutMerchController@calculateShipping')->name('checkout.shipping-cost');
+//Route::get('/cosuccess/{orderNumber}', 'Web\CheckoutMerchController@cosuccess')->name('cosuccess');
 

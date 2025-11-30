@@ -1,129 +1,548 @@
-/* ========================
-   GLOBAL LAYOUT
-======================== */
-body {
-    background-color: #fafbfc;
-    font-family: 'Inter', sans-serif;
+.address-wrapper {
+    width: 100%;
+    max-width: 600px;
+    border: 1px solid #8A8A8A;
+    border-radius: 10px;
+    padding: 20px 25px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    background: #FFF;
 }
 
-h2, h6, .fw-bold {
-    color: #0d1b2a;
+/* Left Section */
+.address-left {
+    width: 75%;
 }
 
-/* ========================
-   ADDRESS SECTION
-======================== */
-#checkout-selected-address .address-card {
-    border: 1px solid #d8e3f0 !important;
-    border-radius: 14px !important;
-    padding: 18px 20px !important;
-    background: #ffffff;
-}
-
-#checkout-selected-address h6 {
-    font-size: 15px;
+/* Title */
+.title-address {
+    color: #000;
+    font-family: Helvetica;
+    font-size: 16px;
     font-weight: 700;
 }
 
-#checkout-selected-address .small {
-    font-size: 13px;
-    line-height: 1.4;
+/* Row for name | phone */
+.address-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
 }
 
-.btn-dark {
-    background: #0b1e3f !important;
-    border: none;
-    border-radius: 10px !important;
-    padding: 10px 16px;
+/* Name */
+.address-name {
+    color: #000;
+    font-family: Helvetica;
+    font-size: 14px;
 }
 
-/* ========================
-   SHIPPING OPTIONS
-======================== */
-.card {
-    border-radius: 16px !important;
-    border: 1px solid #e0e7f1 !important;
+/* Separator "|" */
+.address-separator {
+    color: #828282;
+    font-size: 14px;
 }
 
-.card-body {
-    padding: 22px 26px !important;
+/* Phone */
+.address-phone {
+    color: rgba(130, 130, 130, 0.63);
+    font-family: Helvetica;
+    font-size: 14px;
 }
 
-label.pointer {
+/* Address detail */
+.address-detail {
+    color: #828282;
+    font-family: Helvetica;
+    font-size: 12px;
+    font-weight: 400;
+    line-height: 150%;
+}
+
+/* Right Section */
+.address-right {
+    display: flex;
+    align-items: center;
+}
+
+/* Button */
+.btn-change-address {
+    width: 106px;
+    height: 32px;
+    background: #051A36;
+    border: 1px solid #051A36;
+    border-radius: 10px;
+    font-family: Helvetica;
+    font-size: 14px;
+    color: #FFF;
+}
+
+.shipping-box {
+    width: 100%;
+    margin-top: 10px;
+    max-width: 600px;
+    border-radius: 10px;
+    border: 1px solid #8A8A8A;
+    padding: 20px;
+}
+
+.shipping-title {
+    color: #000;
+    text-align: left;
+    font-family: Helvetica;
+    font-size: 18px;
+    font-weight: bold;
+    font-style: normal;
+    text-transform: capitalize;
+    padding: 0px 8px;
+}
+
+.shipping-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding: 12px 8px;
+    border-radius: 10px;
     cursor: pointer;
-    border-radius: 14px !important;
-    border: 1px solid #d8e3f0 !important;
-    transition: 0.15s;
+    width: 100%;
 }
 
-label.pointer:hover {
-    background-color: #f5f9ff;
-    border-color: #9bb8e2 !important;
+.shipping-subtitle {
+    color: #000;
+    text-align: left;
+    font-family: Helvetica;
+    font-size: 16px;
+    font-weight: 700;
+    text-transform: capitalize;
 }
 
-/* shipping radio */
-.shipper-radio {
+.shipping-desc {
+    color: #828282;
+    text-align: justify;
+    font-family: Helvetica;
+    font-size: 12px;
+    margin-top: 4px;
+    text-transform: capitalize;
+}
+
+.shipper-radio-custom {
+    width: 15px !important;
+    height: 15px !important;
+    accent-color: #000; /* radio custom color */
+    margin-left: 10px;
+    flex-shrink: 0;
+}
+
+.pickup-info {
+    display: none;
+    margin-top: 10px;
+    color: #000;
+    font-size: 12px;
+    padding: 0px 8px;
+}
+
+.btn-kurir {
+    padding: 4px 10px;
+    font-size: 12px;
+    border-radius: 6px;
+    margin-top: 8px;
+}
+
+.selected-shipper {
+    display: none;
+    margin-top: 8px;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.hidden {
+    display: none !important;
+}
+
+.note-wrapper {
+    width: 100%;
+    max-width: 600px;
+    border: 1px solid #8A8A8A;
+    border-radius: 10px;
+    padding: 10px 28px;
+    position: relative;
+    cursor: pointer;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: center; /* HEADER TENGAH */
+    margin-top: 10px;
+
+    max-height: 50px;
+    transition: max-height .3s ease;
+}
+
+.note-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.note-title {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-family: Helvetica;
+    font-size: 16px;
+    font-weight: 700;
+}
+
+.note-icon {
     width: 18px;
     height: 18px;
-    margin-top: 4px;
 }
 
-/* ========================
-   NOTE AREA
-======================== */
-textarea.form-control {
-    border-radius: 14px !important;
-    border: 1px solid #d8e3f0;
+.note-count {
+    color: #828282;
+    font-size: 14px;
+    font-family: Helvetica;
+}
+
+.note-input {
+    width: 100%;
+    border: none;
+    outline: none;
     resize: none;
+    font-size: 12px;
+    font-family: Helvetica;
+    margin-top: 10px;
+    height: 50px;
+
+    display: none;
+    opacity: 0;
+    transition: opacity .2s ease-in-out;
 }
 
-/* ========================
-   PRODUCT SUMMARY RIGHT
-======================== */
-.card img {
-    object-fit: cover;
-    border-radius: 12px;
+.note-input.show {
+    display: block;
+    opacity: 1;
 }
 
-.card-body hr {
-    margin: 18px 0;
-    opacity: 0.3;
+.note-wrapper.open {
+    /* Expanded */
+    max-height: 300px; /* nilai besar supaya cukup */
+    justify-content: flex-start;
 }
 
-/* Price text size */
-#total_price {
+.note-area {
+    margin-top: 12px;
+    width: 100%;
+    height: auto;
+    min-height: 60px;
+    resize: none;
+    border: 1px solid #dcdcdc;
+    border-radius: 6px;
+    padding: 10px;
+    font-family: Helvetica;
+    font-size: 12px;
+    color: #000; 
+    outline: none;
+}
+
+/* WRAPPER BOX */
+.payment-box {
+    width: 100%;
+    max-width: 600px;
+    height: 90px;
+    border-radius: 10px;
+    border: 1px solid #8A8A8A;
+    padding: 10px 15px;
+    background: #fff;
+
+    /* pengganti d-flex */
+    display: flex;
+    justify-content: space-between; 
+    align-items: center;            
+    margin-bottom: 24px; 
+}
+
+/* LEFT AREA */
+.payment-left {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+/* LOGO */
+.payment-logo {
+    width: 60px;
+    height: 20px;
+    object-fit: contain;
+}
+
+/* TEXT WRAPPER */
+.payment-text {
+    display: flex;
+    flex-direction: column;
+}
+
+/* TITLE */
+.payment-title {
+    color: #000;
+    font-family: Helvetica, sans-serif;
+    font-size: 14px;
     font-weight: 700;
-    color: #0b1e3f;
+    line-height: 16px;
 }
 
-/* ========================
-   PAYMENT METHOD
-======================== */
-#payment-method-card {
-    border-radius: 16px !important;
+/* FEE */
+.payment-fee {
+    color: #000;
+    font-family: Helvetica, sans-serif;
+    font-size: 12px;
+    font-weight: 400;
+    line-height: 16px;
+    margin-top: 5px;
 }
 
-/* ========================
-   PAY NOW BUTTON
-======================== */
-.btn-dark.w-100 {
-    background: #0b1e3f !important;
-    height: 52px;
-    border-radius: 14px !important;
+/* BUTTON */
+.payment-btn {
+    width: 80px;
+    height: 30px;
+
+    border-radius: 10px;
+    border: 1px solid #051A36;
+    background: #051A36;
+
+    color: white;
+    font-family: Helvetica, sans-serif;
+    font-size: 12px;
+    cursor: pointer;
+}
+
+.paynow-btn {
+    width: 100%;
+    max-width: 600px;
+    height: 50px;
+    border: none;
+    border-radius: 10px;
+    background: #051A36;
+
+    box-shadow: 0 20px 35px rgba(0, 0, 0, 0.15);
+
+    color: #FFF;
+    font-family: Helvetica, sans-serif;
+    font-size: 16px;
+    font-weight: 400;
+    line-height: 16px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    cursor: pointer;
+}
+
+/* ===============================
+   MODAL ALAMAT
+   =============================== */
+.modal-alamat .modal-dialog {
+    max-width: 562px !important;
+}
+
+.modal-alamat .modal-content {
+    border-radius: 15px;
+    background: #FFF;
+    padding: 20px 25px;
+}
+
+/* TITLE */
+.modal-alamat .modal-header h5 {
+    color: #000;
+    font-family: Helvetica;
+    font-size: 20px;
+    font-weight: 700;
+    line-height: 100%;
+}
+
+.modal-alamat .btn-close {
+    opacity: .4;
+}
+
+/* BUTTON TAMBAH ALAMAT */
+.modal-alamat .btn-add-address {
+    width: 100%;
+    max-width: 485px;
+    height: 40px;
+    align-items: center;      
+    justify-content: center;
+    border-radius: 10px;
+    background: #051A36;
+    border: none;
+
+    color: #FFF;
+    font-family: Helvetica;
     font-size: 16px;
 }
 
-/* ========================
-   IMAGE BLOCK (PRODUCT)
-======================== */
-.product-summary-image {
-    border-radius: 16px;
-    overflow: hidden;
+.modal-alamat .address-item {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 20px;
 }
 
-/* ========================
-   SPACING
-======================== */
-.mb-4 {
-    margin-bottom: 28px !important;
+/* CARD ALAMAT */
+.modal-alamat .address-card {
+    width: 100%;
+    max-width: 485px;
+    border-radius: 10px;
+    border: 1px solid #8A8A8A;
+    padding: 15px;
+    cursor: pointer;
+    display: flex !important;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+.modal-alamat .address-card.active {
+    border: 2px solid #0EA5A5; /* warna biru seperti contoh */
+}
+
+/* LABEL UTAMA */
+.modal-alamat .label-utama {
+    background: #0EA5A5;
+    color: #FFF;
+    font-size: 10px;
+    padding: 3px 10px;
+    border-radius: 5px;
+    display: inline-block;
+    margin-bottom: 6px;
+}
+
+/* NAMA */
+.modal-alamat .address-name {
+    color: #000;
+    font-family: Helvetica;
+    font-size: 14px;
+    font-weight: 700;
+    line-height: 100%;
+}
+
+/* NOMOR & GARIS */
+.modal-alamat .address-separator {
+    margin: 0 6px;
+    color: rgba(130, 130, 130, 0.63);
+}
+
+.modal-alamat .address-phone {
+    color: rgba(130, 130, 130, 0.63);
+    font-family: Helvetica;
+    font-size: 14px;
+    font-weight: 400;
+}
+
+/* ALAMAT */
+.modal-alamat .address-detail {
+    color: #828282;
+    font-family: Helvetica;
+    font-size: 12px;
+    font-weight: 400;
+    line-height: 154%;
+}
+
+/* RADIO */
+.modal-alamat .form-check-input {
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+}
+
+.checkout-card {
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 3px 8px rgba(0,0,0,0.08);
+    padding: 20px;
+    margin-bottom: 20px;
+}
+
+.checkout-item {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.checkout-item-img {
+    width: 90px;
+    height: 90px;
+    object-fit: cover;
+    border-radius: 10px;
+    border: 1px solid #e0e0e0;
+}
+
+.checkout-item-info {
+    flex: 1;
+}
+
+.checkout-item-name {
+    font-weight: 700;
+    font-size: 15px;
+    margin-bottom: 3px;
+}
+
+.checkout-item-variant {
+    font-size: 12px;
+    color: #666;
+    margin-bottom: 8px;
+}
+
+.checkout-item-sub {
+    font-size: 13px;
+    color: #666;
+}
+
+.checkout-item-total {
+    margin-top: 6px;
+    font-weight: 700;
+    font-size: 14px;
+    color: #222;
+}
+
+.checkout-divider {
+    border: none;
+    border-top: 1px solid #e6e6e6;
+    margin: 15px 0;
+}
+
+.checkout-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
+}
+
+.checkout-row .label {
+    color: #777;
+    font-size: 14px;
+}
+
+.checkout-row .value {
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.checkout-row.total .label {
+    font-size: 18px;
+    font-weight: 700;
+    color: #222;
+}
+
+.checkout-row.total .value {
+    font-size: 18px;
+    font-weight: 700;
+    color: #222;
+}
+
+.checkout-item-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.checkout-item-sub {
+    font-size: 14px;
+    color: #555;
 }
