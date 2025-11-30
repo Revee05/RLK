@@ -59,9 +59,9 @@
                         <thead>
                         <tr>
                             <th style="width: 20%; background-color: #051a36; color: white; padding: 0.8rem; border: none;">Item Lelang</th>
-                            <th style="width: 18%; background-color: #051a36; color: white; padding: 0.8rem; border: none;">Penutupan</th>
-                            <th style="width: 19%; background-color: #051a36; color: white; padding: 0.8rem; border: none;">Tawaran Saya</th>
-                            <th style="width: 23%; background-color: #051a36; color: white; padding: 0.8rem; border: none;">Tawaran Tertinggi</th>
+                            <th style="width: 18.5%; background-color: #051a36; color: white; padding: 0.8rem; border: none;">Penutupan</th>
+                            <th style="width: 18%; background-color: #051a36; color: white; padding: 0.8rem; border: none;">Tawaran Saya</th>
+                            <th style="width: 24%; background-color: #051a36; color: white; padding: 0.8rem; border: none;">Tawaran Tertinggi</th>
                             <th class="text-center" style="width: 15%; background-color: #051a36; color: white; padding: 0.8rem; border: none;">Status</th>
                         </tr>
                         </thead>
