@@ -131,3 +131,6 @@ Route::post('/favorite/toggle', [\App\Http\Controllers\Web\FavoriteController::c
 
 
    Route::get('/account/favorites', [UsersController::class, 'favorites'])->name('account.favorites');
+
+   Route::delete('/account/favorites/{id}', 'Account\FavoriteController@remove')
+    ->name('account.favorites.remove');
