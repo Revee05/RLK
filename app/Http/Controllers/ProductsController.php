@@ -352,9 +352,30 @@ class ProductsController extends Controller
     public function destroy($id)
     {
         try {
-             $product = Products::findOrFail($id);
-             $product->delete();
-             return back();
+            $product = Products::findOrFail($id);
+
+
+            // Hapus semua gambar terkait (file fisik & database)
+            $images = ProductImage::where('products_id', $product->id)->get();
+            foreach ($images as $img) {
+                // Hapus file fisik jika ada
+                if ($img->path && file_exists(public_path($img->path))) {
+                    @unlink(public_path($img->path));
+                }
+                $img->delete();
+            }
+
+            // Hapus relasi kelengkapan (pivot table)
+            if (method_exists($product, 'kelengkapans')) {
+                $product->kelengkapans()->detach();
+            }
+
+            // Hapus semua bid terkait
+            Bid::where('product_id', $product->id)->delete();
+
+            // Hapus produk
+            $product->delete();
+            return back();
         } catch (Exception $e) {
             $this->logException('Destroy product error', $e, ['product_id' => $id]);
         }
