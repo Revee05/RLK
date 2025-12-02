@@ -12,6 +12,7 @@
 */
 use App\Http\Controllers\Web\CheckoutMerchController;
 use App\Http\Controllers\Web\CartController;
+use App\Http\Controllers\PanduanController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Account\AuctionHistoryController;
 
@@ -124,3 +125,24 @@ Route::post('/alamat/store', 'UserAddressController@store')->name('alamat.store'
 Route::get('/alamat/refresh', 'UserAddressController@refreshList')->name('alamat.refresh');
 //Route::get('/cosuccess/{orderNumber}', 'Web\CheckoutMerchController@cosuccess')->name('cosuccess');
 
+
+// Group Route Panduan
+Route::prefix('panduan')->group(function () {
+    
+    // 1. Pembelian Produk
+    Route::get('/pembelian', [PanduanController::class, 'pembelian'])
+        ->name('panduan.beli');
+
+    // 2. Peserta Lelang
+    Route::get('/lelang-peserta', [PanduanController::class, 'lelangPeserta'])
+        ->name('panduan.lelang.peserta');
+
+    // 3. Penjualan Karya Lelang
+    Route::get('/penjualan-karya', [PanduanController::class, 'penjualanKarya'])
+        ->name('panduan.penjualan.karya');
+
+    // 4. Penjualan Produk
+    Route::get('/penjualan-produk', [PanduanController::class, 'penjualanProduk'])
+        ->name('panduan.penjualan.produk');
+        
+});
