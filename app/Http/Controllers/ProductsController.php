@@ -306,33 +306,37 @@ class ProductsController extends Controller
                 }            
             }
             // $product->kelengkapans()->sync($request->kelengkapan_id);
-            //save images
+            //save images (hapus file lama jika ada upload baru)
             try {
                 $allImage = [
-                    'img_utama' => $request->fotosatu, 
-                    'img_depan' => $request->fotodua,
+                    'img_utama'   => $request->fotosatu,
+                    'img_depan'   => $request->fotodua,
                     'img_samping' => $request->fototiga,
-                    'img_atas' => $request->fotoempat,
+                    'img_atas'    => $request->fotoempat,
                 ];
                 foreach ($allImage as $key => $val) {
-                    if ($key) {
-                        if (!empty($val)) {
-                            $path = (new Upload)->handleUploadProduct($val);
-                            $image = [
-                                'products_id' => $product->id,
-                                'name' => $key,
-                                'path' => $path,
-                            ];
-                            $check = ProductImage::where(['products_id' => $product->id, 'name' => $key])->first();
-                            if ($check === null) {
-                                ProductImage::create($image);
-                            } else {
-                                $check->update($image);
-                            }
+                    if (!empty($val)) {
+                        // Cari image lama
+                        $check = ProductImage::where(['products_id' => $product->id, 'name' => $key])->first();
+                        // Jika ada image lama, hapus file fisiknya
+                        if ($check && $check->path && file_exists(public_path($check->path))) {
+                            @unlink(public_path($check->path));
+                        }
+                        // Upload image baru
+                        $path = (new Upload)->handleUploadProduct($val);
+                        $image = [
+                            'products_id' => $product->id,
+                            'name'        => $key,
+                            'path'        => $path,
+                        ];
+                        // Update atau create image record
+                        if ($check === null) {
+                            ProductImage::create($image);
+                        } else {
+                            $check->update($image);
                         }
                     }
                 }
-                
             } catch (Exception $e) {
                 $this->logException('Save images error', $e, ['phase' => 'update', 'product_id' => $id]);
             }
