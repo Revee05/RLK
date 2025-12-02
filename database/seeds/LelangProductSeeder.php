@@ -18,7 +18,7 @@ class LelangProductSeeder extends Seeder
             $data[] = [
                 'user_id'      => 1,
                 'kategori_id'  => 1, // pastikan id kategori 1 ada
-                'karya_id'     => 1, // pastikan id karya 1 ada
+                'karya_id'     => 5, // pastikan id karya 5 ada
                 'title'        => 'Lelang Product ' . $i,
                 'slug'         => Str::slug('Lelang Product ' . $i . '-' . uniqid()),
                 'description'  => 'Deskripsi produk lelang ke-' . $i,
