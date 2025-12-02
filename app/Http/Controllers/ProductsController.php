@@ -63,7 +63,7 @@ class ProductsController extends Controller
             Log::info('=== END DATA REQUEST ===', $logContext);
         }
             
-        $this->validate($request,[
+        $this->validate($request, [
             'title'=> 'required',
             'description'=> 'required',
             'price'=> 'required|numeric',
@@ -78,7 +78,8 @@ class ProductsController extends Controller
             'kondisi'=> 'required',
             'kelipatan'=> 'required|numeric',
             'end_date'=> 'nullable|date_format:Y-m-d H:i:s',
-        ],[
+            'type' => 'required|in:normal,featured',
+        ], [
             'title.required' => 'Judul harus diisi',
             'description.required' => 'Deskripsi produk harus diisi',
             'price.required' => 'Harga produk harus diisi',
@@ -94,6 +95,8 @@ class ProductsController extends Controller
             'kelipatan.required' => 'Kelipatan produk harus diisi',
             'end_date.required' => 'Tanggal berakhir harus diisi',
             'end_date.date_format' => 'Format tanggal harus Y-m-d H:i:s',
+            'type.required' => 'Tipe produk harus diisi',
+            'type.in' => 'Tipe produk harus diisi',
         ]);
 
         // save product
@@ -128,6 +131,7 @@ class ProductsController extends Controller
                 'kondisi'=> $request->kondisi,
                 'kelipatan'=> $kelipatan,
                 'end_date' => $endDate,
+                'type' => $request->type ?? 'normal',
             ]);
             //save kelengkapan karya
             if(!empty($request->kelengkapan_id)){
@@ -217,7 +221,7 @@ class ProductsController extends Controller
             Log::info('=== END DATA REQUEST ===', $logContext);
         }
 
-        $this->validate($request,[
+        $this->validate($request, [
             'title'=> 'required',
             'description'=> 'required',
             'price'=> 'required|numeric',
@@ -229,11 +233,11 @@ class ProductsController extends Controller
             'long'=> 'required|numeric',
             'height'=> 'required|numeric',
             'width'=> 'required|numeric',
-            'height'=> 'required|numeric',
             'kondisi'=> 'required',
             'kelipatan'=> 'required|numeric',
             'end_date'=> 'nullable|date_format:Y-m-d H:i:s',
-        ],[
+            'type' => 'required|in:normal,featured', // <-- Tambahkan baris ini
+        ], [
             'title.required' => 'Judul harus diisi',
             'description.required' => 'Deskripsi produk harus diisi',
             'price.required' => 'Harga produk harus diisi',
@@ -248,6 +252,8 @@ class ProductsController extends Controller
             'kelipatan.required' => 'Kelipatan produk harus diisi',
             'end_date.required' => 'Tanggal berakhir harus diisi',
             'end_date.date_format' => 'Format tanggal harus Y-m-d H:i:s',
+            'type.required' => 'Tipe produk harus diisi', // <-- Tambahkan pesan ini
+            'type.in' => 'Tipe produk harus normal atau featured', // <-- Tambahkan pesan ini
         ]);
 
         // save product
@@ -280,6 +286,7 @@ class ProductsController extends Controller
                 'kondisi'=> $request->kondisi,
                 'kelipatan'=> $request->kelipatan,
                 'end_date' => $endDate,
+                'type' => $request->type ?? 'normal',
             ]);
             // if(!empty($request->kelengkapan_id)){
             //     //hapus dulu
@@ -299,33 +306,37 @@ class ProductsController extends Controller
                 }            
             }
             // $product->kelengkapans()->sync($request->kelengkapan_id);
-            //save images
+            //save images (hapus file lama jika ada upload baru)
             try {
                 $allImage = [
-                    'img_utama' => $request->fotosatu, 
-                    'img_depan' => $request->fotodua,
+                    'img_utama'   => $request->fotosatu,
+                    'img_depan'   => $request->fotodua,
                     'img_samping' => $request->fototiga,
-                    'img_atas' => $request->fotoempat,
+                    'img_atas'    => $request->fotoempat,
                 ];
                 foreach ($allImage as $key => $val) {
-                    if ($key) {
-                        if (!empty($val)) {
-                            $path = (new Upload)->handleUploadProduct($val);
-                            $image = [
-                                'products_id' => $product->id,
-                                'name' => $key,
-                                'path' => $path,
-                            ];
-                            $check = ProductImage::where(['products_id' => $product->id, 'name' => $key])->first();
-                            if ($check === null) {
-                                ProductImage::create($image);
-                            } else {
-                                $check->update($image);
-                            }
+                    if (!empty($val)) {
+                        // Cari image lama
+                        $check = ProductImage::where(['products_id' => $product->id, 'name' => $key])->first();
+                        // Jika ada image lama, hapus file fisiknya
+                        if ($check && $check->path && file_exists(public_path($check->path))) {
+                            @unlink(public_path($check->path));
+                        }
+                        // Upload image baru
+                        $path = (new Upload)->handleUploadProduct($val);
+                        $image = [
+                            'products_id' => $product->id,
+                            'name'        => $key,
+                            'path'        => $path,
+                        ];
+                        // Update atau create image record
+                        if ($check === null) {
+                            ProductImage::create($image);
+                        } else {
+                            $check->update($image);
                         }
                     }
                 }
-                
             } catch (Exception $e) {
                 $this->logException('Save images error', $e, ['phase' => 'update', 'product_id' => $id]);
             }
@@ -345,9 +356,30 @@ class ProductsController extends Controller
     public function destroy($id)
     {
         try {
-             $product = Products::findOrFail($id);
-             $product->delete();
-             return back();
+            $product = Products::findOrFail($id);
+
+
+            // Hapus semua gambar terkait (file fisik & database)
+            $images = ProductImage::where('products_id', $product->id)->get();
+            foreach ($images as $img) {
+                // Hapus file fisik jika ada
+                if ($img->path && file_exists(public_path($img->path))) {
+                    @unlink(public_path($img->path));
+                }
+                $img->delete();
+            }
+
+            // Hapus relasi kelengkapan (pivot table)
+            if (method_exists($product, 'kelengkapans')) {
+                $product->kelengkapans()->detach();
+            }
+
+            // Hapus semua bid terkait
+            Bid::where('product_id', $product->id)->delete();
+
+            // Hapus produk
+            $product->delete();
+            return back();
         } catch (Exception $e) {
             $this->logException('Destroy product error', $e, ['product_id' => $id]);
         }

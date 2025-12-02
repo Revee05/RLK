@@ -24,7 +24,7 @@ Route::get('/cart', function () {
     return view('web.cart');
 });
 
-// route untuk view
+// route untuk view produk merchandise
 Route::get('/all-other-product', function () {
     return view('web.productsPage.MerchAllProductPage');
 })->name('all-other-product');
@@ -32,30 +32,41 @@ Route::get('/detail-products', function () {
     return view('web.productsPage.MerchDetailProductPage');
 })->name('detail-products');
 
+// route untuk view produk lelang
+Route::get('/lelang', function () {
+    return view('web.LelangPage.lelang');
+})->name('lelang');
+
+//
 Route::get('/pay', 'PaymentController@createInvoice')->name('pay');
 Route::post('/payment/callback', 'PaymentController@callback');
-
-
-// prod routes
 Route::get('/','Web\HomeController@index')->name('home');
-Route::get('/lelang','Web\HomeController@lelang')->name('lelang');
 Route::get('/blogs','Web\BlogController@index')->name('blogs');
 Route::get('/galeri-kami','Web\HomeController@galeriKami')->name('galeri.kami');
 Route::post('/new/login', 'Auth\\LoginController@postLogin')->name('new.login');
 Route::get('/products/search','Web\HomeController@search')->name('web.search');
-Route::post('/bid/messages', 'Web\ChatsController@sendMessage');
 Route::get('/checkout', 'Web\CheckoutMerchController@index')->name('checkout.index');
 
-// Seniman routes - harus sebelum route /{slug}
+// Seniman routes
 Route::get('/seniman', 'Web\SenimanController@index')->name('seniman.index');
 Route::get('/seniman/{slug}', 'Web\SenimanController@detail')->name('seniman.detail');
 Route::get('/produk-seniman/{slug}', [\App\Http\Controllers\Web\SenimanController::class, 'detail'])->name('products.seniman');
 
-Route::get('/{slug}','Web\HomeController@detail')->name('detail');
-Route::get('/page/{slug}','Web\HomeController@page')->name('web.page');
-Route::get('/blog/{slug}','Web\BlogController@detail')->name('web.blog.detail');
+// Detail halaman produk lelang
+Route::get('/lelang-products/json', [\App\Http\Controllers\Web\LelangProduct\getAll::class, 'json'])->name('lelang.products.json');
+Route::get('/lelang-categories', [\App\Http\Controllers\Web\LelangProduct\getCategory::class, 'LelangCategory'])->name('lelang.categories');
+Route::get('/lelang/{slug}', [\App\Http\Controllers\Web\LelangProduct\getDetail::class, 'show'])->name('lelang.detail');
+Route::post('/bid/messages', 'Web\ChatsController@sendMessage');
 Route::get('/bid/messages/{slug}', 'Web\ChatsController@fetchMessages');
+
+
+// halaman home/beranda
+Route::get('/page/{slug}','Web\HomeController@page')->name('web.page');
+Route::get('/{slug}','Web\HomeController@detail')->name('detail');
 Route::get('/category/{slug}','Web\HomeController@category')->name('products.category');
+
+// Blog detail di halaman blog detail
+Route::get('/blog/{slug}','Web\BlogController@detail')->name('web.blog.detail');
 
 
 Route::group(['middleware' => ['auth']], function () {

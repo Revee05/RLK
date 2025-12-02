@@ -28,6 +28,7 @@ class Products extends Model
         'width',
         'status',
         'kondisi',
+        'type',
         'kelipatan',
         'end_date',
     ];
