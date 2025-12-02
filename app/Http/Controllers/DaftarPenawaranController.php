@@ -15,9 +15,20 @@ class DaftarPenawaranController extends Controller
      */
     public function index()
     {
-        $daftarPenawaran = Bid::with(['product'=> function($q){
-            $q->where('status',1);
-        }])->groupBy('product_id')->select('product_id','id', DB::raw('count(*) as total'))->get();
+        // sementara aku ubah karena produk expired masih tampil namun error jadi diubah yang produk aktif aja yang diambil
+        // $daftarPenawaran = Bid::with(['product'=> function($q){
+        //     $q->where('status',1);
+        // }])->groupBy('product_id')->select('product_id','id', DB::raw('count(*) as total'))->get();
+        
+        $daftarPenawaran = Bid::with('product')
+        ->select(
+            'product_id',
+            DB::raw('MAX(id) as id'),          // bid terakhir
+            DB::raw('COUNT(*) as total')       // total bid pada produk ini
+        )
+        ->groupBy('product_id')
+        ->get();
+
         return view('admin.penawaran.index',compact('daftarPenawaran'));
     }
 

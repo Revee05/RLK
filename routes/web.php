@@ -44,7 +44,7 @@ Route::get('/blogs','Web\BlogController@index')->name('blogs');
 Route::get('/galeri-kami','Web\HomeController@galeriKami')->name('galeri.kami');
 Route::post('/new/login', 'Auth\\LoginController@postLogin')->name('new.login');
 Route::get('/products/search','Web\HomeController@search')->name('web.search');
-Route::post('/bid/messages', 'Web\ChatsController@sendMessage');
+Route::post('/bid/messages', 'Web\ChatsController@sendMessage')->name('bid.send');
 Route::get('/checkout', 'Web\CheckoutMerchController@index')->name('checkout.index');
 
 // Seniman routes - harus sebelum route /{slug}
@@ -55,7 +55,7 @@ Route::get('/produk-seniman/{slug}', [\App\Http\Controllers\Web\SenimanControlle
 Route::get('/{slug}','Web\HomeController@detail')->name('detail');
 Route::get('/page/{slug}','Web\HomeController@page')->name('web.page');
 Route::get('/blog/{slug}','Web\BlogController@detail')->name('web.blog.detail');
-Route::get('/bid/messages/{slug}', 'Web\ChatsController@fetchMessages');
+Route::get('/bid/messages/{slug}', 'Web\ChatsController@fetchMessages')->name('bid.fetch');
 Route::get('/category/{slug}','Web\HomeController@category')->name('products.category');
 
 

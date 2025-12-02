@@ -1,65 +1,77 @@
-require('./bootstrap');
-import moment from 'moment';
+require("./bootstrap");
 
-window.Vue = require('vue');
+import Vue from "vue";
+window.Vue = Vue;
 
+Vue.component("chat-form", require("./components/ChatForm.vue").default);
+Vue.component("chat-messages", require("./components/ChatMessages.vue").default);
 
-Vue.component('chat-messages', require('./components/ChatMessages.vue').default);
-Vue.component('chat-form', require('./components/ChatForm.vue').default);
+function waitForSlug(callback) {
+    let tries = 0;
 
-Vue.filter('formatDate', function(value) {
-    if (value) {
-        return moment(String(value)).format('D-mm-Y hh:mm:ss')
-    }
-});
+    const timer = setInterval(() => {
+        tries++;
 
-const app = new Vue({
-    el: '#app',
+        if (window.productSlug && window.productSlug !== "undefined") {
+            clearInterval(timer);
+            callback();
+        }
 
-    data: {
-        messages: [],
-        bidding: '',
-        // newMessage:''
-    },
+        if (tries > 30) {
+            clearInterval(timer);
+            console.error("ERROR: productSlug tetap undefined!");
+        }
+    }, 100);
+}
 
-    created() {
-        this.fetchMessages();
-        Echo.private('chat')
-          .listen('MessageSent', (e) => {
-            this.messages.push({
-              message: e.bid,
-              user: e.user,
-              tanggal: e.tanggal
-            });
-          });
-    },
+waitForSlug(() => {
+    console.log("Vue initialized. slug =", window.productSlug);
 
-    methods: {
-        fetchMessages() {
-            const url = window.location.href;
-            const slug = url.split("/").slice(-1)[0];
-            console.log(slug);
+    window.app = new Vue({
+        el: "#app",
 
-            axios.get('/bid/messages/'+slug).then(response => {
-                // console.log("fetchMessages",response.data);
-                this.messages = response.data;
-            });
+        data: {
+            messages: []
         },
 
-        addMessage(message) {
-           if(!this.messages.some(data => data.message === message.message)){
-                //don't exists
-                this.messages.push(message);
-                axios.post('/bid/messages', message).then(response => {
-                  console.log("add messages",response.data);
-                });
-            
-            }else{
-                //exists because Jonh Doe has id 1
-                alert("Bid sudah ada");
-                window.location.reload(); 
-            }
-        }
-    }
+        created() {
+            this.fetchMessages();
 
+            Echo.private(`product.${window.productId}`)
+                .listen("MessageSent", (e) => {
+                    this.messages.push({
+                        user: e.user,
+                        message: e.bid,
+                        tanggal: e.tanggal,
+                    });
+
+                    this.$nextTick(() => {
+                        let el = document.getElementById("chat-container");
+                        if (el) el.scrollTop = el.scrollHeight;
+                    });
+                })
+                .listen("BidSent", (e) => {
+                    console.log("Realtime BidSent", e);
+                });
+        },
+
+        methods: {
+            fetchMessages() {
+                axios
+                    .get(`/bid/messages/${window.productSlug}`)
+                    .then((res) => {
+                        this.messages = res.data;
+                    })
+                    .catch((err) => {
+                        console.error("Gagal ambil messages:", err);
+                    });
+            },
+
+            addMessage(msg) {
+                axios.post("/bid/messages", msg).then(() => {
+                    this.messages.push(msg);
+                });
+            },
+        },
+    });
 });
