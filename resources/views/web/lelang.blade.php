@@ -16,7 +16,7 @@
         <div class="row gx-4 gx-lg-4 row-cols-2 row-cols-md-3 row-cols-xl-4">
             @foreach($products as $produk)
             <div class="col-md-3 mb-4">
-                <a href="{{route('detail',$produk->slug)}}" class="text-decoration-none">
+                <a href="{{route('lelang.detail',$produk->slug)}}" class="text-decoration-none">
                     
                     <div class="card h-100 card-produk">
                         <!-- Product image-->
@@ -53,7 +53,7 @@
                             </div>
                         </div>
                         <div class="card-footer text-center">
-                            <a href="{{route('detail',$produk->slug)}}" class="btn btn-block w-100">BID</a>
+                            <a href="{{route('lelang.detail',$produk->slug)}}" class="btn btn-block w-100">BID</a>
                         </div>
                     </div>
                 </a>

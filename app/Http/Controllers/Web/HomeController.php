@@ -39,51 +39,6 @@ class HomeController extends Controller
         return view('web.home',compact('products','sliders','blogs', 'featuredEvent'));
     }
 
-    public function lelang()
-    {
-        $products = Products::active()->orderBy('id','desc')->paginate(16);
-        return view('web.lelang',compact('products'));
-    }
-
-    public function detail($slug)
-    {
-        // ... (sisa kode Anda tetap sama) ...
-        //cek data is exist
-        $validator = Validator::make(['slug'=>$slug], [
-            'slug'=>['required','exists:products,slug']
-        ]);
-
-        //jika tidak ada redirect ke halaman 404
-        if ($validator->fails()) {
-            abort('404');
-        }
-
-        try {
-            
-            $product = Products::where('slug',$slug)->first();
-            //jika data kosong
-            if (empty($product)) {
-                abort('404');
-            }
-
-            if(Auth::check() === FALSE){
-                $bid = Bid::with('user')->where('product_id',$product->id)->get();
-                $bids = $bid->map(function($data){
-                    return [
-                        'user'=>$data->user,
-                        'message'=>$data->price,
-                        'produk'=>$data->product_id
-                    ];
-                });
-                return view('web.detail',compact('product','bids'));
-            }
-            return view('web.detail',compact('product'));
-        
-        } catch (Exception $e) {
-             Log::error('Detail Product :'. $e->getMessage());
-        }
-    }
-
     public function category($slug)
     {
         // ... (sisa kode Anda tetap sama) ...

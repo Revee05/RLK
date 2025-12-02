@@ -110,11 +110,6 @@
                   </div>
                 </div>
                 @endif
-                {{-- Deskripsi produk --}}
-                <div class="pt-2 fw-bold m-block">Deskripsi</div>
-                 <div class="single-desc m-block">
-                    {!!$product->description!!} 
-                </div>
                 {{-- Tombol bid --}}
                 <div class="d-block w-100 bid-button py-2">
                     <button type="button" class="btn btn-danger btn-block w-100" id="bid-button">Bid</button>

@@ -38,7 +38,7 @@ Route::post('/payment/callback', 'PaymentController@callback');
 
 // prod routes
 Route::get('/','Web\HomeController@index')->name('home');
-Route::get('/lelang','Web\HomeController@lelang')->name('lelang');
+Route::get('/lelang', [\App\Http\Controllers\Web\LelangProduct\getAll::class, 'index'])->name('lelang');
 Route::get('/blogs','Web\BlogController@index')->name('blogs');
 Route::get('/galeri-kami','Web\HomeController@galeriKami')->name('galeri.kami');
 Route::post('/new/login', 'Auth\\LoginController@postLogin')->name('new.login');
@@ -51,6 +51,8 @@ Route::get('/seniman', 'Web\SenimanController@index')->name('seniman.index');
 Route::get('/seniman/{slug}', 'Web\SenimanController@detail')->name('seniman.detail');
 Route::get('/produk-seniman/{slug}', [\App\Http\Controllers\Web\SenimanController::class, 'detail'])->name('products.seniman');
 
+// Detail produk lelang
+Route::get('/lelang/{slug}', [\App\Http\Controllers\Web\LelangProduct\getDetail::class, 'show'])->name('lelang.detail');
 Route::get('/{slug}','Web\HomeController@detail')->name('detail');
 Route::get('/page/{slug}','Web\HomeController@page')->name('web.page');
 Route::get('/blog/{slug}','Web\BlogController@detail')->name('web.blog.detail');
