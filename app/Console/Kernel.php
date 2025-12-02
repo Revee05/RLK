@@ -16,6 +16,8 @@ class Kernel extends ConsoleKernel
          Commands\SendEmails::class,
          Commands\EndDate::class,
          Commands\SyncRajaOngkir::class,
+         Commands\AuctionProcess::class,
+         Commands\AuctionExpire::class,
     ];
 
     /**
@@ -28,8 +30,13 @@ class Kernel extends ConsoleKernel
     {
         // $schedule->command('inspire')
         //          ->hourly();
-        $schedule->command('checkout:send')->everyMinute();
-        $schedule->command('bid:expired')->everyMinute();
+        // $schedule->command('checkout:send')->everyMinute();
+        // $schedule->command('bid:expired')->everyMinute();
+        // Proses pemenang lelang setiap menit
+        $schedule->command('auction:process')->everyMinute();
+
+        // Cleanup produk yang tak diambil (opsional)
+        $schedule->command('auction:expire')->daily();
     }
 
     /**
