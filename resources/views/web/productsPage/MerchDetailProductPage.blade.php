@@ -5,7 +5,7 @@
     1. PAGE CSS
 ========================= --}}
 @section('css')
-<link href="{{ asset('css/MerchDetailProducts.css') }}" rel="stylesheet">
+<link href="{{ asset('css/merch/MerchDetailProducts.css') }}" rel="stylesheet">
 @endsection
 
 @section('content')

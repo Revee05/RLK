@@ -1,6 +1,7 @@
 @extends('web.partials.layout')
 @section('lelang','aktiv')
 @section('css')
+<link href="{{ asset('css/lelang/LelangProductPage.css') }}" rel="stylesheet">
 <style type="text/css">
 .mark-lelang {
     position: absolute;
@@ -47,7 +48,7 @@
                 </ul>
             </div>
         </div>
-        <div id="products-grid" class="row gx-4 gx-lg-4 row-cols-2 row-cols-md-3 row-cols-xl-4">
+        <div id="products-grid" class="products-grid-parent">
             {{-- Produk akan dimunculkan via JS --}}
         </div>
         <div class="text-center mt-4">
@@ -78,34 +79,31 @@
             });
     }
 
-    function renderProduct(product) {
-        const priceHtml = (product.diskon && product.diskon > 0) ?
-            `<s>${product.price_str}</s> <span class="text-danger">${product.price}</span>` :
-            `${product.price_str}`;
+    function renderProduct(product, idx) {
+        if (!product) return '';
+        
+        let batchIdx = idx % 21;
+        let cellClass = "cell";
+        if (batchIdx === 0 || batchIdx === 8 || batchIdx === 16) cellClass += " span-2";
+
+        let imageUrl = product.image ? `/${product.image}` : 'assets/img/default.jpg';
+
+        // Hanya tampilkan harga, tanpa badge diskon
+        let priceHtml = `<span class="product-price">${product.price_str}</span>`;
 
         return `
-            <div class="col-md-3 mb-4">
-                <a href="/lelang/${product.slug}" class="text-decoration-none">
-                    <div class="card h-100 card-produk">
-                        <div class="card-figure">
-                            <img class="card-img-top card-image" src="/${product.image}" alt="${product.title}" />
-                            <div class="mark-lelang btn btn-light rounded-0 border">LELANG</div>
-                        </div>
-                        <div class="card-body p-2">
-                            <div class="text-left">
-                                <h5 class="fw-bolder produk-title">${product.title}</h5>
-                                <div class="kategori-produk">
-                                    <a class="text-decoration-none text-dark" href="/category/${product.category_slug}">${product.category}</a>
-                                </div>
-                                <div class="price-produk">${priceHtml}</div>
-                            </div>
-                        </div>
-                        <div class="card-footer text-center">
-                            <a href="/lelang/${product.slug}" class="btn btn-block w-100">BID</a>
-                        </div>
-                    </div>
-                </a>
-            </div>`;
+        <a href="/lelang/${product.slug}" class="${cellClass}" style="text-decoration:none; color:inherit;">
+            <div class="card product-card h-100">
+                <div class="mark-lelang btn btn-light rounded-0 border">LELANG</div>
+                <img src="${imageUrl}" class="card-img-top" alt="${product.title}">
+                <div class="card-body text-left p-2">
+                    <div class="product-title">${product.title}</div>
+                    <div class="text-muted small mb-1">${product.category}</div>
+                    <div>${priceHtml}</div>
+                </div>
+            </div>
+        </a>
+        `;
     }
 
     function fetchProducts(batch = 1, search = "", category = "", sort = "") {
@@ -125,15 +123,21 @@
                 const grid = document.getElementById('products-grid');
                 if (batch === 1) grid.innerHTML = "";
                 if (data.products && data.products.length > 0) {
-                    data.products.forEach((product) => {
-                        grid.insertAdjacentHTML('beforeend', renderProduct(product));
+                    data.products.forEach((product, idx) => {
+                        if (product) {
+                            grid.insertAdjacentHTML('beforeend', renderProduct(product, idx));
+                        }
                     });
                 } else {
                     if (batch === 1) {
                         grid.innerHTML = '<div class="col-12 text-center text-muted">Tidak ada produk ditemukan.</div>';
                     }
                 }
-                document.getElementById('load-more').style.display = data.has_more ? '' : 'none';
+                if (!data.has_more_featured && !data.has_more_normal) {
+                    document.getElementById('load-more').style.display = 'none';
+                } else {
+                    document.getElementById('load-more').style.display = '';
+                }
                 isLoading = false;
             })
             .catch((err) => {

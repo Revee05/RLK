@@ -1,0 +1,198 @@
+.products-grid-header {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: center;
+    gap: 12px;
+    max-width: 800px;
+    margin: 0 auto 24px auto;
+    /* border: 1px solid red; */
+}
+
+.products-grid-header .search-input {
+    min-width: 180px;
+    max-width: auto;
+    border-radius: 50px;
+    padding-left: 20px;
+    padding-right: 20px;
+    border: 1px solid #000000;
+}
+
+.products-grid-header .d-flex {
+    display: flex;
+    gap: 5px;
+}
+
+.products-grid-header .btn {
+    border-radius: 10px;
+    border: 1px solid #000000;
+    color: #000000;
+    font-weight: 500;
+    transition: background 0
+    .15s, color 0.15s, border 0.15s;
+}
+
+.products-grid-header .btn:hover, 
+.products-grid-header .btn:focus {
+    background: #051A36;
+    color: #fff;
+    border-color: #051A36;
+}
+
+.products-grid-parent {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    max-width: 1000px;
+    margin-left: auto;
+    margin-right: auto;
+    /* border: 1px solid #ff0000; */
+}
+
+/* Card style */
+.card.product-card {
+    min-height: 170px;
+    box-shadow: 0 4px 16px rgba(5,26,54,0.08), 0 1.5px 4px rgba(5,26,54,0.10);
+    cursor: pointer;
+    background: linear-gradient(135deg, #f8fafc 80%, #e3e9f3 100%);
+    transition: box-shadow 0.2s, transform 0.2s;
+    position: relative;
+    overflow: hidden;
+    /* border: 1px solid crimson; */
+}
+
+.card-img-top { /* Untuk cell span 1 (normal) */
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    object-fit: cover;
+    display: block;
+    /* border: 1px solid crimson; */
+}
+
+.cell.span-2 .card-img-top {
+    height: 180px;              /* Untuk cell span 2 (featured) */
+    aspect-ratio: 2.70 / 1;
+}
+
+.card-body {
+    padding: 14px 12px 12px 12px;
+    margin-left: 5px;
+    /* border: 1px solid #ff0000; */
+}
+
+.product-title {
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: #051A36;
+    margin-bottom: 4px;
+    letter-spacing: 0.01em;
+}
+
+.product-price {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #0d6efd;
+    margin-bottom: 2px;
+    /* border: 1px solid crimson; */
+}
+
+.product-price-original {
+    font-size: 0.9rem;
+    color: #888;
+    text-decoration: line-through;
+    margin-left: 4px;
+    font-weight: 500;
+    vertical-align: middle;
+    opacity: 0.85;
+    letter-spacing: 0.01em;
+    display: inline-block;
+    /* border: 1px solid crimson */
+}
+
+.product-discount {
+    font-size: 0.92rem;
+    color: #e74c3c;
+    font-weight: 500;
+    margin-bottom: 2px;
+}
+
+.product-stock {
+    font-size: 0.85rem;
+    color: #6c757d;
+    margin-bottom: 0;
+}
+
+.cell {
+    transition: transform 0.15s, box-shadow 0.15s;
+    background: #fff;
+    box-shadow: 0 1px 4px rgba(5,26,54,0.06);
+    overflow: hidden;
+    /* border: 1px solid crimson; */
+}
+
+.cell:hover {
+    transform: translateY(-2px) scale(1.01);
+    box-shadow: 0 4px 16px rgba(5,26,54,0.13);
+    border-color: #d0d7e2;
+}
+
+.cell.span-2 {
+    grid-column: span 2;
+}
+
+/* Tambahkan di bawah .card.product-card */
+.discount-badge {
+    position: absolute;
+    top: 2px;
+    right: 2px;
+    z-index: 2;
+    background: linear-gradient(90deg, #ff5858 60%, #ffb347 100%);
+    color: #fff;
+    font-weight: bold;
+    font-size: 1rem;
+    padding: 6px 14px 6px 12px;
+    border-radius: 18px 6px 18px 6px;
+    box-shadow: 0 2px 8px rgba(255,88,88,0.12);
+    letter-spacing: 0.02em;
+    border: 2px solid #fff;
+    transition: transform 0.15s;
+    pointer-events: none;
+}
+
+.card.product-card:hover .discount-badge {
+    transform: scale(1.08) rotate(-2deg);
+}
+
+.products-grid-header .form-control {
+    border-radius: 50px;
+    box-shadow: none;
+}
+.products-grid-header .btn {
+    border-radius: 50px;
+    min-width: 50px;
+    font-weight: 500;
+}
+.products-grid-header .fa-search,
+.products-grid-header .fa-filter,
+.products-grid-header .fa-sort {
+    font-size: 1rem;
+}
+
+.dropdown-item.active, .dropdown-item:active {
+    background-color: #0d6efd;
+    color: #fff;
+}
+
+
+
+
+
+
+@media (max-width: 991.98px) {
+    .products-grid-parent {
+        grid-template-columns: 1fr 1fr;
+    }
+    .cell.span-2 {
+        grid-column: span 2;
+    }
+}
+
