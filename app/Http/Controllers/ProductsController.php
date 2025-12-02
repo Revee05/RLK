@@ -63,7 +63,7 @@ class ProductsController extends Controller
             Log::info('=== END DATA REQUEST ===', $logContext);
         }
             
-        $this->validate($request,[
+        $this->validate($request, [
             'title'=> 'required',
             'description'=> 'required',
             'price'=> 'required|numeric',
@@ -78,7 +78,8 @@ class ProductsController extends Controller
             'kondisi'=> 'required',
             'kelipatan'=> 'required|numeric',
             'end_date'=> 'nullable|date_format:Y-m-d H:i:s',
-        ],[
+            'type' => 'required|in:normal,featured',
+        ], [
             'title.required' => 'Judul harus diisi',
             'description.required' => 'Deskripsi produk harus diisi',
             'price.required' => 'Harga produk harus diisi',
@@ -94,6 +95,8 @@ class ProductsController extends Controller
             'kelipatan.required' => 'Kelipatan produk harus diisi',
             'end_date.required' => 'Tanggal berakhir harus diisi',
             'end_date.date_format' => 'Format tanggal harus Y-m-d H:i:s',
+            'type.required' => 'Tipe produk harus diisi',
+            'type.in' => 'Tipe produk harus diisi',
         ]);
 
         // save product
@@ -128,6 +131,7 @@ class ProductsController extends Controller
                 'kondisi'=> $request->kondisi,
                 'kelipatan'=> $kelipatan,
                 'end_date' => $endDate,
+                'type' => $request->type ?? 'normal',
             ]);
             //save kelengkapan karya
             if(!empty($request->kelengkapan_id)){
@@ -217,7 +221,7 @@ class ProductsController extends Controller
             Log::info('=== END DATA REQUEST ===', $logContext);
         }
 
-        $this->validate($request,[
+        $this->validate($request, [
             'title'=> 'required',
             'description'=> 'required',
             'price'=> 'required|numeric',
@@ -229,11 +233,11 @@ class ProductsController extends Controller
             'long'=> 'required|numeric',
             'height'=> 'required|numeric',
             'width'=> 'required|numeric',
-            'height'=> 'required|numeric',
             'kondisi'=> 'required',
             'kelipatan'=> 'required|numeric',
             'end_date'=> 'nullable|date_format:Y-m-d H:i:s',
-        ],[
+            'type' => 'required|in:normal,featured', // <-- Tambahkan baris ini
+        ], [
             'title.required' => 'Judul harus diisi',
             'description.required' => 'Deskripsi produk harus diisi',
             'price.required' => 'Harga produk harus diisi',
@@ -248,6 +252,8 @@ class ProductsController extends Controller
             'kelipatan.required' => 'Kelipatan produk harus diisi',
             'end_date.required' => 'Tanggal berakhir harus diisi',
             'end_date.date_format' => 'Format tanggal harus Y-m-d H:i:s',
+            'type.required' => 'Tipe produk harus diisi', // <-- Tambahkan pesan ini
+            'type.in' => 'Tipe produk harus normal atau featured', // <-- Tambahkan pesan ini
         ]);
 
         // save product
@@ -280,6 +286,7 @@ class ProductsController extends Controller
                 'kondisi'=> $request->kondisi,
                 'kelipatan'=> $request->kelipatan,
                 'end_date' => $endDate,
+                'type' => $request->type ?? 'normal',
             ]);
             // if(!empty($request->kelengkapan_id)){
             //     //hapus dulu

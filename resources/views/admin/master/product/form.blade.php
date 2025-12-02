@@ -141,4 +141,18 @@
         @endforeach
     </div>
 </div>
+<div class="form-group row">
+    {{ Form::label('type', 'Tipe Produk *',['class'=>'col-sm-2 col-form-label']) }}
+    <div class="col-sm-3">
+        {{ Form::select(
+            'type',
+            ['normal' => 'Normal', 'featured' => 'Featured'],
+            old('type', $product->type ?? null),
+            ['class' => 'form-control form-control-sm', 'placeholder' => 'Pilih Tipe']
+        ) }}
+        @if ($errors->has('type'))
+            <span class="text-danger">{{ $errors->first('type') }}</span>
+        @endif
+    </div>
+</div>
 
