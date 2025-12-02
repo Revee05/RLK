@@ -16,8 +16,12 @@ class getCategory extends Controller
             ->orderBy('name')
             ->get();
 
-        return response()->json([
+        $response = [
             'categories' => $categories,
-        ]);
+        ];
+        if (app()->environment(['local', 'testing'])) {
+            \Log::info('LelangCategory JSON Response:', $response);
+        }
+        return response()->json($response);
     }
 }
