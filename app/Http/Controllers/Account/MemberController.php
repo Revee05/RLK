@@ -14,13 +14,25 @@ use Auth;
 use Illuminate\Support\Facades\Hash;
 use App\Product\Uploads;
 use Illuminate\Support\Facades\Log;
+use Exception;
 
 class MemberController extends Controller
 {
     public function profile()
     {
-        $user = Auth::user();
-        return view('account.profile_new', compact('user'));
+        try {
+            $user = Auth::user();
+            $response = view('account.profile_new', compact('user'));
+            if (app()->environment(['local', 'development'])) {
+                Log::info('MemberController@profile response', ['user_id' => $user->id]);
+            }
+            return $response;
+        } catch (Exception $e) {
+            if (app()->environment(['local', 'development'])) {
+                Log::error('MemberController@profile error', ['error' => $e->getMessage()]);
+            }
+            throw $e;
+        }
     }
     public function updateProfile(Request $request)
     {
@@ -43,24 +55,39 @@ class MemberController extends Controller
             $input['password'] = Hash::make($request->password);
         }
         try {
-
             $user = User::findOrFail($id);
             if ($id == Auth::user()->id) {
                 $user->fill($input)->save();
+                if (app()->environment(['local', 'development'])) {
+                    Log::info('MemberController@updateProfile response', ['user_id' => $id]);
+                }
                 return redirect()->back()->with('message', 'Data berhasil diupdate');
             }
             Auth::logout();
             return redirect('/login');
         } catch (Exception $e) {
-            Log::error("User save error " . $e->getMessage());
+            if (app()->environment(['local', 'development'])) {
+                Log::error('MemberController@updateProfile error', ['error' => $e->getMessage(), 'request' => $request->all()]);
+            }
+            throw $e;
         }
     }
-    
+
     public function kataSandi()
     {
-
-        $user = User::findOrFail(Auth::user()->id);
-        return view('account.password.password_new', compact('user'));
+        try {
+            $user = User::findOrFail(Auth::user()->id);
+            $response = view('account.password.password_new', compact('user'));
+            if (app()->environment(['local', 'development'])) {
+                Log::info('MemberController@kataSandi response', ['user_id' => $user->id]);
+            }
+            return $response;
+        } catch (Exception $e) {
+            if (app()->environment(['local', 'development'])) {
+                Log::error('MemberController@kataSandi error', ['error' => $e->getMessage()]);
+            }
+            throw $e;
+        }
     }
 
     /**
@@ -90,7 +117,14 @@ class MemberController extends Controller
             $user->save();
 
             if ($request->ajax()) {
+                if (app()->environment(['local', 'development'])) {
+                    Log::info('MemberController@uploadAvatar response (ajax)', ['user_id' => $user->id]);
+                }
                 return response()->json(['success' => true, 'path' => $path]);
+            }
+
+            if (app()->environment(['local', 'development'])) {
+                Log::info('MemberController@uploadAvatar response', ['user_id' => $user->id]);
             }
 
             return redirect()->back()->with('message', 'Foto profil berhasil diperbarui');
