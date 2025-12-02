@@ -196,3 +196,19 @@
     }
 }
 
+.lelang-timer-badge {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: #2ec4f1;
+    color: #fff;
+    font-size: 0.95rem;
+    font-weight: 600;
+    padding: 4px 12px;
+    border-radius: 8px;
+    z-index: 10;
+}
+.card.product-card {
+    position: relative;
+}
+

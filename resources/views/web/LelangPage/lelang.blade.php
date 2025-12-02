@@ -88,18 +88,20 @@
 
         let imageUrl = product.image ? `/${product.image}` : 'assets/img/default.jpg';
 
-        // Hanya tampilkan harga, tanpa badge diskon
-        let priceHtml = `<span class="product-price">${product.price_str}</span>`;
+        // Jika ada waktu lelang, tampilkan badge waktu (opsional)
+        let badgeWaktu = product.end_time
+            ? `<div class="lelang-timer-badge">${product.end_time}</div>`
+            : '';
 
         return `
         <a href="/lelang/${product.slug}" class="${cellClass}" style="text-decoration:none; color:inherit;">
             <div class="card product-card h-100">
-                <div class="mark-lelang btn btn-light rounded-0 border">LELANG</div>
+                ${badgeWaktu}
                 <img src="${imageUrl}" class="card-img-top" alt="${product.title}">
                 <div class="card-body text-left p-2">
                     <div class="product-title">${product.title}</div>
-                    <div class="text-muted small mb-1">${product.category}</div>
-                    <div>${priceHtml}</div>
+                    <div class="text-muted small mb-1">Bidding Tertinggi:</div>
+                    <div class="product-price">Rp. ${product.price_str}</div>
                 </div>
             </div>
         </a>
