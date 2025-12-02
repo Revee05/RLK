@@ -39,12 +39,6 @@ class HomeController extends Controller
         return view('web.home',compact('products','sliders','blogs', 'featuredEvent'));
     }
 
-    public function lelang()
-    {
-        $products = Products::active()->orderBy('id','desc')->paginate(16);
-        return view('web.lelang',compact('products'));
-    }
-
     public function detail($slug)
     {
         // ... (sisa kode Anda tetap sama) ...

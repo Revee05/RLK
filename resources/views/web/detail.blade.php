@@ -367,11 +367,92 @@
                             @endif
                         </div>
 
+<<<<<<< HEAD
                         {{-- Render thumbs --}}
                         <div class="thumb-row" id="thumbRow">
                             @foreach ($thumbs as $i => $img)
                                 <div class="thumb-item" data-index="{{ $i + 1 }}" data-src="{{ asset($img->path) }}">
                                     <img src="{{ asset($img->path) }}" alt="thumb {{ $i + 1 }}">
+=======
+            {{-- Kolom tengah: detail produk --}}
+            <div class="col col-mobile">
+                {{-- Judul produk --}}
+                <h1 class="single-title">{{$product->title}}</h1>
+                {{-- Harga produk --}}
+                <div class="text-danger single-price">{{$product->price_str}}</div>
+                {{-- Kelipatan bid --}}
+                <div class="d-flex caption-produk">
+                  <div class="flex-grow1">Kelipatan Bid</div>
+                  <div class="flex-grow2">{{$product->kelipatan_bid}}</div>
+                </div>
+                {{-- Informasi produk --}}
+                <div class="pt-2 fw-bold">Informasi Produk</div>
+                <div class="d-flex caption-produk">
+                  <div class="flex-grow1">Berat</div>
+                  <div class="flex-grow2">{{$product->weight}}</div>
+                </div>
+                <div class="d-flex caption-produk">
+                  <div class="flex-grow1">Kondisi</div>
+                  <div class="flex-grow2">{{$product->kondisi}}</div>
+                </div>
+                <div class="d-flex caption-produk">
+                  <div class="flex-grow1">Kategori</div>
+                  <div class="flex-grow2">
+                    {{-- Link ke kategori --}}
+                    <a href="{{route('products.category',$product->kategori->slug)}}" class="text-decoration-none text-dark">
+                        {{$product->kategori->name}}
+                    </a>
+                  </div>
+                </div>
+                <div class="d-flex caption-produk">
+                  <div class="flex-grow1">Seniman</div>
+                  <div class="flex-grow2">
+                    {{-- Link ke seniman --}}
+                    <a href="{{route('products.seniman',$product->karya->slug)}}" class="text-decoration-none text-dark">
+                        {{$product->karya->name}}
+                    </a>
+                  </div>
+                </div>
+                <div class="d-flex caption-produk">
+                  <div class="flex-grow1">Tanggal berakhir</div>
+                  <div class="flex-grow2">{{$product->end_date_indo}}</div>
+                </div>
+                {{-- Info pengiriman --}}
+                <div class="row mt-4">
+                  <div class="col-md-12 single-send fw-bold">
+                    Pengiriman
+                  </div>
+                  <div class="col-md-12 single-city">
+                    Dikirim dari <span>Semarang</span>
+                  </div>
+                </div>
+                {{-- Info asuransi jika ada --}}
+                @if($product->asuransi)
+                <div class="row mt-2">
+                  <div class="col-md-12 single-send fw-bold">
+                    Proteksi Kerusakan
+                  </div>
+                  <div class="col-md-12 single-city">
+                    melindungi produkmu dari risiko rusak maupun kerugian selama 6 bulan
+                  </div>
+                </div>
+                @endif
+                {{-- Tombol bid --}}
+                <div class="d-block w-100 bid-button py-2">
+                    <button type="button" class="btn btn-danger btn-block w-100" id="bid-button">Bid</button>
+                </div>
+            </div>
+
+            {{-- Kolom kanan: panel bid/chat --}}
+            <div class="col" id="bid-mobile">
+                <div class="panel panel-default rounded-4">
+                    {{-- Header panel bid/chat --}}
+                    <div class="panel-heading panel-heading-mobile">
+                        <div class="bid-foto">
+                            <div class="d-flex p-2">
+                                <div class="d-block px-2 text-white" id="bid-off">
+                                    <i class="fa fa-times"></i>
+>>>>>>> d7ee93efee9b0fa4e4b5ea5a6fab712e004c3718
                                 </div>
                             @endforeach
                         </div>
