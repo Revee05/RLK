@@ -70,7 +70,10 @@ class getAll extends Controller
             ->where('type', $type);
 
         if ($search !== '') {
-            $query->where('title', 'like', '%' . $search . '%');
+            // Hilangkan semua spasi dari input search
+            $searchNoSpace = preg_replace('/\s+/', '', strtolower($search));
+            // Cari judul produk dengan spasi dihilangkan juga
+            $query->whereRaw("REPLACE(LOWER(title), ' ', '') LIKE ?", ['%' . $searchNoSpace . '%']);
         }
 
         if ($category !== '') {

@@ -114,6 +114,9 @@
         if (category) url += "&category=" + encodeURIComponent(category);
         if (sort) url += "&sort=" + encodeURIComponent(sort);
 
+        // Disable tombol submit saat loading
+        document.getElementById('search-btn').disabled = true;
+
         fetch(url)
             .then(res => {
                 if (!res.ok) throw new Error('Network response was not ok');
@@ -139,6 +142,7 @@
                     document.getElementById('load-more').style.display = '';
                 }
                 isLoading = false;
+                document.getElementById('search-btn').disabled = false;
             })
             .catch((err) => {
                 const grid = document.getElementById('products-grid');
@@ -146,6 +150,7 @@
                     grid.innerHTML = '<div class="col-12 text-center text-danger">Gagal memuat produk: ' + err.message + '</div>';
                 }
                 isLoading = false;
+                document.getElementById('search-btn').disabled = false;
             });
     }
 
@@ -159,9 +164,26 @@
         });
 
         const searchInput = document.querySelector('.search-input');
+        const searchError = document.createElement('div');
+        searchError.className = 'text-danger small mt-1';
+        searchInput.parentNode.appendChild(searchError);
+
         document.getElementById('search-form').addEventListener('submit', function(e) {
             e.preventDefault();
-            currentSearch = searchInput.value;
+            let val = searchInput.value.trim();
+            searchError.textContent = '';
+            if (val.length > 50) {
+                searchError.textContent = 'Pencarian maksimal 50 karakter.';
+                searchInput.classList.add('is-invalid');
+                return;
+            }
+            if (val.length === 0) {
+                searchError.textContent = 'Kata kunci pencarian tidak boleh kosong.';
+                searchInput.classList.add('is-invalid');
+                return;
+            }
+            searchInput.classList.remove('is-invalid');
+            currentSearch = val;
             currentBatch = 1;
             fetchProducts(currentBatch, currentSearch, currentCategory, currentSort);
         });
