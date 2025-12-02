@@ -154,6 +154,24 @@
         <script src="https://cdnjs.cloudflare.com/ajax/libs/pusher/7.2.0/pusher.min.js"></script>
         <script src="{{ mix('js/app.js') }}"></script>
 
+            <!-- Header-->
+            @include('web.partials.header')
+            
+            <!-- Navigation-->
+            {{-- @include('web.partials.nav') --}}
+
+            {{-- content --}}
+            @yield('content')
+
+        <!-- Footer-->
+        @include('web.partials.footer')
+        <!-- Bootstrap core JS-->
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+        <!-- Core theme JS-->
+        <script src="{{asset('theme/js/scripts.js')}}"></script>
+        
+        @yield('js')
+
         <script>
             let userId = window.Laravel.userId;
 
@@ -205,23 +223,5 @@
                     });
             }
         </script>
-
-            <!-- Header-->
-            @include('web.partials.header')
-            
-            <!-- Navigation-->
-            {{-- @include('web.partials.nav') --}}
-
-            {{-- content --}}
-            @yield('content')
-
-        <!-- Footer-->
-        @include('web.partials.footer')
-        <!-- Bootstrap core JS-->
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
-        <!-- Core theme JS-->
-        <script src="{{asset('theme/js/scripts.js')}}"></script>
-        
-        @yield('js')
     </body>
 </html>

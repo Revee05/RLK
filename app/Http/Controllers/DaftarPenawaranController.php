@@ -20,11 +20,12 @@ class DaftarPenawaranController extends Controller
         //     $q->where('status',1);
         // }])->groupBy('product_id')->select('product_id','id', DB::raw('count(*) as total'))->get();
         
-        $daftarPenawaran = Bid::whereHas('product', function($q){
-            $q->where('status',1);
-        })
-        ->with('product')
-        ->select('product_id', DB::raw('MIN(id) as id'), DB::raw('count(*) as total'))
+        $daftarPenawaran = Bid::with('product')
+        ->select(
+            'product_id',
+            DB::raw('MAX(id) as id'),          // bid terakhir
+            DB::raw('COUNT(*) as total')       // total bid pada produk ini
+        )
         ->groupBy('product_id')
         ->get();
 

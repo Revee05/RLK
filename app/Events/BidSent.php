@@ -30,8 +30,13 @@ class BidSent implements ShouldBroadcast
      *
      * @return \Illuminate\Broadcasting\Channel|array
      */
+    public function broadcastAs()
+    {
+        return 'BidSent';
+    }
+
     public function broadcastOn()
     {
-        return new PrivateChannel('bid');
+        return new PrivateChannel('product.' . request()->produk);
     }
 }

@@ -25,11 +25,11 @@ Route::get('/blogs','Web\BlogController@index')->name('blogs');
 Route::get('/galeri-kami','Web\HomeController@galeriKami')->name('galeri.kami');
 Route::post('/new/login', 'Auth\\LoginController@postLogin')->name('new.login');
 Route::get('/products/search','Web\HomeController@search')->name('web.search');
-Route::post('/bid/messages', 'Web\ChatsController@sendMessage');
+Route::post('/bid/messages', 'Web\ChatsController@sendMessage')->name('bid.send');
 Route::get('/{slug}','Web\HomeController@detail')->name('detail');
 Route::get('/page/{slug}','Web\HomeController@page')->name('web.page');
 Route::get('/blog/{slug}','Web\BlogController@detail')->name('web.blog.detail');
-Route::get('/bid/messages/{slug}', 'Web\ChatsController@fetchMessages');
+Route::get('/bid/messages/{slug}', 'Web\ChatsController@fetchMessages')->name('bid.fetch');
 Route::get('/category/{slug}','Web\HomeController@category')->name('products.category');
 Route::get('/seniman/{slug}','Web\HomeController@seniman')->name('products.seniman');
 
