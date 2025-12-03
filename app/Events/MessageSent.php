@@ -22,14 +22,14 @@ class MessageSent implements ShouldBroadcast
      * @var User
      */
     public $user;
-
+    public $bid;
+    public $tanggal;
     /**
      * Bid details
      *
      * @var Bid
      */
-    public $bid;
-    public $tanggal;
+    // public $bid;
 
     /**
      * Create a new event instance.
@@ -41,13 +41,17 @@ class MessageSent implements ShouldBroadcast
      *
      * @return void
      */
-    public function __construct(User $user, $bid,$tanggal)
+    public function __construct(User $user, $bid, $tanggal)
     {
         $this->user = $user;
-        $this->bid = $bid;
-        $this->tanggal = $tanggal;
+        $this->bid      = $bid;
+        $this->tanggal  = $tanggal;
     }
 
+    public function broadcastAs()
+    {
+        return 'MessageSent';
+    }
     /**
      * Get the channels the event should broadcast on.
      *
@@ -55,6 +59,6 @@ class MessageSent implements ShouldBroadcast
      */
     public function broadcastOn()
     {
-        return new PrivateChannel('chat');
+        return new PrivateChannel('product.' . request()->produk);
     }
 }

@@ -12,6 +12,7 @@
 */
 use App\Http\Controllers\Web\CheckoutMerchController;
 use App\Http\Controllers\Web\CartController;
+use App\Http\Controllers\PanduanController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Account\AuctionHistoryController;
 
@@ -45,6 +46,7 @@ Route::get('/blogs','Web\BlogController@index')->name('blogs');
 Route::get('/galeri-kami','Web\HomeController@galeriKami')->name('galeri.kami');
 Route::post('/new/login', 'Auth\\LoginController@postLogin')->name('new.login');
 Route::get('/products/search','Web\HomeController@search')->name('web.search');
+Route::post('/bid/messages', 'Web\ChatsController@sendMessage')->name('bid.send');
 Route::get('/checkout', 'Web\CheckoutMerchController@index')->name('checkout.index');
 
 // Seniman routes
@@ -52,6 +54,10 @@ Route::get('/seniman', 'Web\SenimanController@index')->name('seniman.index');
 Route::get('/seniman/{slug}', 'Web\SenimanController@detail')->name('seniman.detail');
 Route::get('/produk-seniman/{slug}', [\App\Http\Controllers\Web\SenimanController::class, 'detail'])->name('products.seniman');
 
+Route::get('/{slug}','Web\HomeController@detail')->name('detail');
+Route::get('/page/{slug}','Web\HomeController@page')->name('web.page');
+Route::get('/blog/{slug}','Web\BlogController@detail')->name('web.blog.detail');
+Route::get('/bid/messages/{slug}', 'Web\ChatsController@fetchMessages')->name('bid.fetch');
 // Detail halaman produk lelang
 Route::get('/lelang-products/json', [\App\Http\Controllers\Web\LelangProduct\getAll::class, 'json'])->name('lelang.products.json');
 Route::get('/lelang-categories', [\App\Http\Controllers\Web\LelangProduct\getCategory::class, 'LelangCategory'])->name('lelang.categories');
@@ -62,7 +68,6 @@ Route::get('/bid/messages/{slug}', 'Web\ChatsController@fetchMessages');
 
 // halaman home/beranda
 Route::get('/page/{slug}','Web\HomeController@page')->name('web.page');
-Route::get('/{slug}','Web\HomeController@detail')->name('detail');
 Route::get('/category/{slug}','Web\HomeController@category')->name('products.category');
 
 // Blog detail di halaman blog detail
@@ -135,3 +140,24 @@ Route::post('/alamat/store', 'UserAddressController@store')->name('alamat.store'
 Route::get('/alamat/refresh', 'UserAddressController@refreshList')->name('alamat.refresh');
 //Route::get('/cosuccess/{orderNumber}', 'Web\CheckoutMerchController@cosuccess')->name('cosuccess');
 
+
+// Group Route Panduan
+Route::prefix('panduan')->group(function () {
+    
+    // 1. Pembelian Produk
+    Route::get('/pembelian', [PanduanController::class, 'pembelian'])
+        ->name('panduan.beli');
+
+    // 2. Peserta Lelang
+    Route::get('/lelang-peserta', [PanduanController::class, 'lelangPeserta'])
+        ->name('panduan.lelang.peserta');
+
+    // 3. Penjualan Karya Lelang
+    Route::get('/penjualan-karya', [PanduanController::class, 'penjualanKarya'])
+        ->name('panduan.penjualan.karya');
+
+    // 4. Penjualan Produk
+    Route::get('/penjualan-produk', [PanduanController::class, 'penjualanProduk'])
+        ->name('panduan.penjualan.produk');
+        
+});

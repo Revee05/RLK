@@ -79,6 +79,13 @@ class AuctionHistoryController extends Controller
                     'totalBids' => $totalBids,
                     'itemsWon'  => $itemsWon,
                     'highestBid'=> number_format($highestBidUser, 0, ',', '.')
+                ],
+
+                'debug_data' => [
+                    'message' => 'Data berhasil diambil dari server',
+                    'raw_history' => $history, // Kita kirim data asli history buat dicek
+                    'user_id' => $userId,
+                    'waktu_server' => Carbon::now()->toDateTimeString()
                 ]
             ]);
         }

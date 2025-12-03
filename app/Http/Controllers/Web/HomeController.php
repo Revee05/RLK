@@ -54,24 +54,44 @@ class HomeController extends Controller
 
         try {
             
-            $product = Products::where('slug',$slug)->first();
-            //jika data kosong
-            if (empty($product)) {
-                abort('404');
+            $product = Products::where('slug',$slug)
+            ->with(['imageUtama','images','kategori','karya','kelengkapans'])
+            ->firstOrFail();
+
+            // Ambil semua bidding
+            $bidList = Bid::where('product_id', $product->id)
+                        ->with('user')
+                        ->orderBy('price', 'desc')
+                        ->get();
+
+            // Highest bidding
+            $highestBid = $bidList->first() ? $bidList->first()->price : $product->price;
+
+            // Kelipatan bidding
+            $step = intval($product->kelipatan);
+
+            // Dropdown kelipatan 5x
+            $nominals = [];
+            for ($i=1; $i<=5; $i++) {
+                $nominals[] = $highestBid + ($step * $i);
             }
 
-            if(Auth::check() === FALSE){
-                $bid = Bid::with('user')->where('product_id',$product->id)->get();
-                $bids = $bid->map(function($data){
-                    return [
-                        'user'=>$data->user,
-                        'message'=>$data->price,
-                        'produk'=>$data->product_id
-                    ];
-                });
-                return view('web.detail',compact('product','bids'));
-            }
-            return view('web.detail',compact('product'));
+            // Related products
+            $related = Products::where('kategori_id', $product->kategori_id)
+                        ->where('id','!=',$product->id)
+                        ->active()
+                        ->take(4)
+                        ->with('imageUtama')
+                        ->get();
+
+            // Pass to view
+            return view('web.detail', [
+                'product'     => $product,
+                'bids'        => $bidList,
+                'highestBid'  => $highestBid,
+                'nominals'    => $nominals,
+                'related'     => $related,
+            ]);
         
         } catch (Exception $e) {
              Log::error('Detail Product :'. $e->getMessage());
