@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Web\LelangProduct;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Products;
+use App\Bid; 
+use Illuminate\Support\Facades\Log;
 
 class getAll extends Controller
 {
@@ -13,66 +15,80 @@ class getAll extends Controller
     private const NORMAL_PAGE_SIZE = 18;
     private const SPAN2_INDEXES = [0, 8, 16];
 
-    /**
-     * Mengembalikan data produk lelang dalam format JSON (untuk AJAX)
-     */
     public function json(Request $request)
     {
-        // Validasi & normalisasi parameter
-        $batch = max(1, (int) $request->query('batch', 1));
-        $search = trim((string) $request->query('search', ''));
-        $category = trim((string) $request->query('category', ''));
-        $sort = (string) $request->query('sort', '');
+        try {
+            $batch = max(1, (int) $request->query('batch', 1));
+            $search = trim((string) $request->query('search', ''));
+            $category = trim((string) $request->query('category', ''));
+            $sort = (string) $request->query('sort', '');
 
-        // Query untuk produk featured (type = 'featured')
-        $featuredQuery = $this->buildQuery('featured', $search, $category, $sort);
-        $featured = $featuredQuery->simplePaginate(self::FEATURED_PAGE_SIZE, ['*'], 'featured_page', $batch);
+            // Query Featured
+            $featuredQuery = $this->buildQuery('featured', $search, $category, $sort);
+            $featured = $featuredQuery->simplePaginate(self::FEATURED_PAGE_SIZE, ['*'], 'featured_page', $batch);
 
-        // Query untuk produk normal (type = 'normal')
-        $normalQuery = $this->buildQuery('normal', $search, $category, $sort);
-        $normal = $normalQuery->simplePaginate(self::NORMAL_PAGE_SIZE, ['*'], 'normal_page', $batch);
+            // Query Normal
+            $normalQuery = $this->buildQuery('normal', $search, $category, $sort);
+            $normal = $normalQuery->simplePaginate(self::NORMAL_PAGE_SIZE, ['*'], 'normal_page', $batch);
 
-        // Gabungkan dengan pola grid
-        $result = $this->composeGrid($featured, $normal);
+            $result = $this->composeGrid($featured, $normal);
 
-        // Transform data
-        $products = array_map(function ($p) {
-            if (!$p) return null;
-            return [
-                'title' => $p->title,
-                'slug' => $p->slug,
-                'image' => $p->imageUtama->path ?? 'assets/img/default.jpg',
-                'category' => optional($p->kategori)->name ?? '',
-                'category_slug' => optional($p->kategori)->slug ?? '',
-                'price' => $p->price,
-                'price_str' => $p->price_str,
-                'diskon' => $p->diskon,
+            $products = array_map(function ($p) {
+                if (!$p) return null;
+
+                // DATA HARGA TERTINGGI
+                // Kita ambil dari kolom virtual 'highest_bid_amount' yang dibuat di buildQuery
+                // Jika null (belum ada bid), kita set ke 0
+                $highestBid = $p->highest_bid_amount ?? 0;
+
+                return [
+                    'title' => $p->title,
+                    'slug'  => $p->slug,
+                    'image' => $p->imageUtama->path ?? 'assets/img/default.jpg',
+                    'category' => optional($p->kategori)->name ?? '',
+                    'category_slug' => optional($p->kategori)->slug ?? '',
+                    'price' => $p->price,         // Harga asli (angka)
+                    'price_str' => $p->price_str, // Harga asli (format Rp string dari Model)
+                    'diskon' => $p->diskon,
+                    'highest_bid' => $highestBid, // Harga bid tertinggi (angka)
+                    'end_date_iso' => $p->end_date ? $p->end_date->toIso8601String() : null,
+                ];
+            }, $result);
+
+            $response = [
+                'batch' => $batch,
+                'count' => count(array_filter($products)),
+                'products' => array_values($products),
+                'has_more_featured' => $featured->hasMorePages(),
+                'has_more_normal' => $normal->hasMorePages(),
             ];
-        }, $result);
 
-        $response = [
-            'batch' => $batch,
-            'count' => count(array_filter($products)),
-            'products' => array_values($products),
-            'has_more_featured' => $featured->hasMorePages(),
-            'has_more_normal' => $normal->hasMorePages(),
-        ];
+            $this->responseLog($response);
 
-        $this->responseLog($response); // gunakan fungsi log khusus
+            return response()->json($response);
 
-        return response()->json($response);
+        } catch (\Throwable $e) {
+            return response()->json(['error' => true, 'message' => $e->getMessage()], 200);
+        }
     }
 
     private function buildQuery(string $type, ?string $search, ?string $category, string $sort)
     {
+        // --- OPTIMASI SUBQUERY (SOLUSI AGAR TIDAK BOROS) ---
+        // Kita siapkan perintah untuk mencari MAX price dari tabel bid
+        // Pastikan nama tabel 'bid' sesuai dengan model App\Bid
+        $highestBidQuery = \App\Bid::selectRaw('MAX(price)')
+            ->whereColumn('product_id', 'products.id');
+
+        // Masukkan subquery ke dalam query utama
         $query = Products::with(['imageUtama', 'kategori'])
+            ->select('products.*') // Ambil semua kolom produk
+            ->selectSub($highestBidQuery, 'highest_bid_amount') // Tambah kolom virtual
             ->where('status', 1)
             ->where('type', $type);
 
         if ($search !== '') {
-            // Hilangkan semua spasi dari input search
             $searchNoSpace = preg_replace('/\s+/', '', strtolower($search));
-            // Cari judul produk dengan spasi dihilangkan juga
             $query->whereRaw("REPLACE(LOWER(title), ' ', '') LIKE ?", ['%' . $searchNoSpace . '%']);
         }
 
@@ -120,13 +136,10 @@ class getAll extends Controller
         return $grid;
     }
 
-    /**
-     * Log response JSON hanya di environment local/testing
-     */
     private function responseLog(array $response): void
     {
         if (app()->environment(['local', 'testing'])) {
-            \Log::info('LelangProduct JSON Response:', $response);
+            Log::info('LelangProduct JSON Response:', $response);
         }
     }
 }

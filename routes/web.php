@@ -46,10 +46,7 @@ Route::get('/blogs','Web\BlogController@index')->name('blogs');
 Route::get('/galeri-kami','Web\HomeController@galeriKami')->name('galeri.kami');
 Route::post('/new/login', 'Auth\\LoginController@postLogin')->name('new.login');
 Route::get('/products/search','Web\HomeController@search')->name('web.search');
-<<<<<<< HEAD
 Route::post('/bid/messages', 'Web\ChatsController@sendMessage')->name('bid.send');
-=======
->>>>>>> d7ee93efee9b0fa4e4b5ea5a6fab712e004c3718
 Route::get('/checkout', 'Web\CheckoutMerchController@index')->name('checkout.index');
 
 // Seniman routes
@@ -57,12 +54,10 @@ Route::get('/seniman', 'Web\SenimanController@index')->name('seniman.index');
 Route::get('/seniman/{slug}', 'Web\SenimanController@detail')->name('seniman.detail');
 Route::get('/produk-seniman/{slug}', [\App\Http\Controllers\Web\SenimanController::class, 'detail'])->name('products.seniman');
 
-<<<<<<< HEAD
 Route::get('/{slug}','Web\HomeController@detail')->name('detail');
 Route::get('/page/{slug}','Web\HomeController@page')->name('web.page');
 Route::get('/blog/{slug}','Web\BlogController@detail')->name('web.blog.detail');
 Route::get('/bid/messages/{slug}', 'Web\ChatsController@fetchMessages')->name('bid.fetch');
-=======
 // Detail halaman produk lelang
 Route::get('/lelang-products/json', [\App\Http\Controllers\Web\LelangProduct\getAll::class, 'json'])->name('lelang.products.json');
 Route::get('/lelang-categories', [\App\Http\Controllers\Web\LelangProduct\getCategory::class, 'LelangCategory'])->name('lelang.categories');
@@ -73,8 +68,6 @@ Route::get('/bid/messages/{slug}', 'Web\ChatsController@fetchMessages');
 
 // halaman home/beranda
 Route::get('/page/{slug}','Web\HomeController@page')->name('web.page');
-Route::get('/{slug}','Web\HomeController@detail')->name('detail');
->>>>>>> d7ee93efee9b0fa4e4b5ea5a6fab712e004c3718
 Route::get('/category/{slug}','Web\HomeController@category')->name('products.category');
 
 // Blog detail di halaman blog detail

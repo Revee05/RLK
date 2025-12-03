@@ -88,10 +88,30 @@
 
         let imageUrl = product.image ? `/${product.image}` : 'assets/img/default.jpg';
 
-        // Jika ada waktu lelang, tampilkan badge waktu (opsional)
-        let badgeWaktu = product.end_time
-            ? `<div class="lelang-timer-badge">${product.end_time}</div>`
-            : '';
+        // --- UPDATE LOGIKA TIMER DI SINI ---
+        // Kita beri class khusus 'lelang-countdown' dan atribut 'data-end'
+        let badgeWaktu = '';
+        if (product.end_date_iso) {
+            badgeWaktu = `<div class="lelang-timer-badge lelang-countdown" data-end="${product.end_date_iso}">
+                            --:--:--:--
+                          </div>`;
+        }
+
+        // --- Logika Harga (Tetap sama seperti sebelumnya) ---
+        let displayPrice = '';
+        let labelHarga = '';
+        let priceColor = '';
+
+        if (product.highest_bid && product.highest_bid > 0) {
+            let formattedPrice = new Intl.NumberFormat('id-ID').format(product.highest_bid);
+            displayPrice = `Rp. ${formattedPrice}`;
+            labelHarga = 'Bidding Tertinggi:';
+            priceColor = '#0d6efd'; 
+        } else {
+            displayPrice = product.price_str; 
+            labelHarga = 'Harga Awal:';
+            priceColor = '#6c757d'; 
+        }
 
         return `
         <a href="/lelang/${product.slug}" class="${cellClass}" style="text-decoration:none; color:inherit;">
@@ -100,8 +120,8 @@
                 <img src="${imageUrl}" class="card-img-top" alt="${product.title}">
                 <div class="card-body text-left p-2">
                     <div class="product-title">${product.title}</div>
-                    <div class="text-muted small mb-1">Bidding Tertinggi:</div>
-                    <div class="product-price">Rp. ${product.price_str}</div>
+                    <div class="text-muted small mb-1">${labelHarga}</div>
+                    <div class="product-price fw-bold" style="color: ${priceColor};">${displayPrice}</div>
                 </div>
             </div>
         </a>
@@ -207,6 +227,55 @@
                 fetchProducts(currentBatch, currentSearch, currentCategory, currentSort);
             }
         });
+
+        
+    });
+
+    // --- SCRIPT COUNTDOWN GLOBAL (Letakkan di bawah fetchProducts) ---
+    
+    // Fungsi untuk memformat angka jadi 2 digit (09, 10, etc)
+    const pad = n => (n < 10 ? '0' + n : n);
+
+    function startGlobalCountdown() {
+        // Cek apakah interval sudah jalan biar tidak dobel
+        if (window.lelangInterval) return;
+
+        window.lelangInterval = setInterval(() => {
+            const now = new Date().getTime();
+            
+            // Ambil semua elemen timer yang ada di layar
+            const timers = document.querySelectorAll('.lelang-countdown');
+            
+            timers.forEach(el => {
+                const endStr = el.getAttribute('data-end');
+                if (!endStr) return;
+
+                const endDate = new Date(endStr).getTime();
+                const distance = endDate - now;
+
+                if (distance < 0) {
+                    el.innerHTML = "SELESAI";
+                    el.style.backgroundColor = "#dc3545"; // Merah kalau selesai
+                    return;
+                }
+
+                // Hitung hari, jam, menit, detik
+                const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+                const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+                const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+                // Update teks badge
+                // Format: Hari:Jam:Menit:Detik
+                el.innerHTML = `${pad(days)}:${pad(hours)}:${pad(minutes)}:${pad(seconds)}`;
+            });
+
+        }, 1000);
+    }
+
+    // Panggil fungsi ini sekali saat halaman dimuat
+    document.addEventListener('DOMContentLoaded', function() {
+        startGlobalCountdown();
     });
     </script>
     @endpush
