@@ -35,7 +35,6 @@
                 </select>
 
                 <button class="btn-bid-now" id="btnBidNow">Bid Sekarang</button>
-            
             {{-- Jika Belum Login: Tampilkan Tombol Login --}}
             @else
                 <div class="mt-4 text-center">
