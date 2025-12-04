@@ -23,6 +23,7 @@ class DatabaseSeeder extends Seeder
         $this->call(ProdukSeeder::class);
         $this->call(KelengkapanSeeder::class);
         $this->call(AdminUserSeeder::class); // Ini seeder dari yang kita buat tadi 👍
+        $this->call(PanduanSeeder::class);
         
         // import provinsi
         $provinsi = base_path('database/seeds/provinsi.sql');

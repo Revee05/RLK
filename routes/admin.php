@@ -91,4 +91,14 @@ Route::resource('/daftar-pemenang','DaftarPemenangController',['as' => 'admin'])
 //users
  Route::get('/user/status/{id}','UsersController@status')->name('admin.user.status');
  Route::resource('/user','UsersController',['as' => 'admin']);
+
+ // admin/panduan
+// Panduan Admin
+Route::group(['prefix' => '/panduan'], function () {
+        Route::get('/', 'PanduanAdminController@index')->name('admin.panduan.index');
+        Route::post('/upload/{id}', 'PanduanAdminController@upload')->name('admin.panduan.upload');
+        Route::delete('/hapus/{id}', 'PanduanAdminController@hapus')->name('admin.panduan.hapus');
 });
+
+});
+
