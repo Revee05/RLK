@@ -152,7 +152,6 @@
         =============================== -->
 
         <script src="https://cdnjs.cloudflare.com/ajax/libs/pusher/7.2.0/pusher.min.js"></script>
-        <script src="{{ mix('js/app.js') }}"></script>
 
             <!-- Header-->
             @include('web.partials.header')

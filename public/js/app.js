@@ -1909,41 +1909,53 @@ module.exports = {
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony default export */ __webpack_exports__["default"] = ({
+  // === Props yang dikirim dari parent: user, id produk, kelipatan bid, harga awal ===
   props: ["user", "produk", "kelipatan", "price"],
   data: function data() {
     return {
+      // === Menyimpan nilai bid yang akan dikirim, default = harga awal ===
       newMessage: Number(this.price)
     };
   },
   created: function created() {
     var _this = this;
+    // === Ambil riwayat bid dan tentukan bid berikutnya ===
     this.fetchMessages();
 
-    // Listen realtime highest bid
+    // === Mendengarkan update realtime harga tertinggi via Echo ===
     Echo["private"]("product.".concat(this.produk)).listen("BidSent", function (e) {
       var highest = Number(e.price);
+      // === Update bid berikutnya berdasarkan harga tertinggi + kelipatan ===
       _this.newMessage = highest + Number(_this.kelipatan);
     });
   },
   methods: {
+    // === Mengambil riwayat bid untuk menentukan bid berikutnya ===
     fetchMessages: function fetchMessages() {
       var _this2 = this;
       axios.get("/bid/messages/".concat(window.productSlug)).then(function (res) {
         if (res.data.length > 0) {
+          // === Ambil bid terakhir (paling besar/terakhir diajukan) ===
           var last = res.data[res.data.length - 1];
+          // === Bid selanjutnya = bid terakhir + kelipatan ===
           _this2.newMessage = Number(last.message) + Number(_this2.kelipatan);
         } else {
+          // === Jika belum ada bid, pakai harga awal sebagai bid ===
           _this2.newMessage = Number(_this2.price);
         }
       });
     },
-    /* DIPANGGIL DARI TOMBOL BID SEKARANG */sendBid: function sendBid(val) {
+    /* === DIPANGGIL DARI TOMBOL BID MANUAL (dropdown) === */sendBidFromButton: function sendBidFromButton(val) {
+      // === Set bid sesuai nominal yang dipilih lalu kirim ===
       this.newMessage = Number(val);
       this.sendMessage();
     },
-    /* KIRIM BID */sendMessage: function sendMessage() {
+    /* === KIRIM BID KE PARENT COMPONENT === */sendMessage: function sendMessage() {
+      // === Membuat timestamp manual (YYYY-MM-DD HH:mm:ss) ===
       var today = new Date();
       var timestamp = today.getFullYear() + "-" + String(today.getMonth() + 1).padStart(2, "0") + "-" + String(today.getDate()).padStart(2, "0") + " " + today.getHours() + ":" + today.getMinutes() + ":" + today.getSeconds();
+
+      // === Emit event ke parent agar bid diproses backend ===
       this.$emit("messagesent", {
         user: this.user,
         message: this.newMessage,
@@ -1966,8 +1978,11 @@ __webpack_require__.r(__webpack_exports__);
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony default export */ __webpack_exports__["default"] = ({
+  // === Menerima props "messages" yang berisi daftar objek pesan ===
   props: ["messages"],
   methods: {
+    // === Memformat angka menjadi format ribuan dengan titik ===
+    // contoh: 10000 -> 10.000
     format: function format(n) {
       return Number(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
     }
@@ -38398,69 +38413,228 @@ module.exports = function(module) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
-/* harmony import */ var vue__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! vue */ "./node_modules/vue/dist/vue.common.js");
+/* WEBPACK VAR INJECTION */(function(process) {/* harmony import */ var vue__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! vue */ "./node_modules/vue/dist/vue.common.js");
 /* harmony import */ var vue__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(vue__WEBPACK_IMPORTED_MODULE_0__);
+// === Load konfigurasi awal aplikasi (bootstrap Laravel Mix) ===
 __webpack_require__(/*! ./bootstrap */ "./resources/js/bootstrap.js");
 
+// === Expose Vue ke window agar komponen dapat diakses global ===
 window.Vue = vue__WEBPACK_IMPORTED_MODULE_0___default.a;
+
+// === Registrasi komponen global untuk form chat dan daftar message ===
 vue__WEBPACK_IMPORTED_MODULE_0___default.a.component("chat-form", __webpack_require__(/*! ./components/ChatForm.vue */ "./resources/js/components/ChatForm.vue")["default"]);
 vue__WEBPACK_IMPORTED_MODULE_0___default.a.component("chat-messages", __webpack_require__(/*! ./components/ChatMessages.vue */ "./resources/js/components/ChatMessages.vue")["default"]);
+
+// === Menunggu window.productSlug sampai tersedia sebelum inisialisasi Vue ===
 function waitForSlug(callback) {
   var tries = 0;
   var timer = setInterval(function () {
     tries++;
+
+    // === Jika slug sudah siap, hentikan timer dan jalankan callback ===
     if (window.productSlug && window.productSlug !== "undefined") {
       clearInterval(timer);
       callback();
     }
+
+    // === Jika slug tidak muncul setelah beberapa percobaan, hentikan dan tampilkan error ===
     if (tries > 30) {
       clearInterval(timer);
       console.error("ERROR: productSlug tetap undefined!");
     }
   }, 100);
 }
+
+// === Helper untuk cek mode environment (local, testing, development) ===
+function isDebugEnv() {
+  var env = window.appEnv || process.env.APP_ENV || "development" || "";
+  return ["local", "testing", "development", "dev"].includes(env.toLowerCase());
+}
+
+// === Mulai inisialisasi Vue setelah slug terdeteksi ===
 waitForSlug(function () {
-  console.log("Vue initialized. slug =", window.productSlug);
+  if (isDebugEnv()) console.log("Vue initialized. slug =", window.productSlug);
   window.app = new vue__WEBPACK_IMPORTED_MODULE_0___default.a({
     el: "#app",
     data: {
-      messages: []
+      // === Set data awal messages berdasarkan existingBids jika tersedia ===
+      messages: window.existingBids && window.existingBids.length > 0 ? window.existingBids : []
     },
     created: function created() {
-      var _this = this;
+      // === Ambil daftar message awal dari backend ===
       this.fetchMessages();
-      Echo["private"]("product.".concat(window.productId)).listen("MessageSent", function (e) {
-        _this.messages.push({
+
+      // === Jalankan polling fallback untuk menjaga state ketika Echo idle ===
+      this.startStatePolling();
+
+      // === Listener Laravel Echo pada channel privat produk ===
+      Echo["private"]("product.".concat(window.productId))
+      // === Listener untuk update harga tertinggi ===
+      .listen("BidSent", function (e) {
+        var price = Number(e.price);
+        if (!isNaN(price)) {
+          // === Update elemen harga tertinggi di UI ===
+          var highestEl = document.getElementById("highestPrice");
+          if (highestEl) highestEl.innerText = "Rp " + window.formatRp(price);
+
+          // === Update dropdown kelipatan nominal ===
+          window.updateNominalDropdown(price);
+        }
+      })
+      // === Listener untuk update riwayat bid ===
+      .listen("MessageSent", function (e) {
+        // === Tambahkan message baru ke awal daftar ===
+        window.app.messages.unshift({
           user: e.user,
-          message: e.bid,
+          message: e.bid || e.message,
           tanggal: e.tanggal
         });
-        _this.$nextTick(function () {
-          var el = document.getElementById("chat-container");
-          if (el) el.scrollTop = el.scrollHeight;
-        });
-      }).listen("BidSent", function (e) {
-        console.log("Realtime BidSent", e);
       });
     },
     methods: {
+      // === Mengambil seluruh message untuk productSlug dari server ===
       fetchMessages: function fetchMessages() {
-        var _this2 = this;
+        var _this = this;
         axios.get("/bid/messages/".concat(window.productSlug)).then(function (res) {
-          _this2.messages = res.data;
+          // === Backend sudah mengurutkan: terbaru di atas ===
+          _this.messages = res.data;
         })["catch"](function (err) {
-          console.error("Gagal ambil messages:", err);
+          if (isDebugEnv()) console.error("Gagal ambil messages:", err);
         });
       },
+      // === Polling fallback untuk sinkronisasi state jika Echo mati/idle ===
+      startStatePolling: function startStatePolling() {
+        var POLL_MS = 15 * 1000; // === Interval polling 15 detik ===
+        var lastEventTs = Date.now();
+
+        // === Bind event status koneksi Echo (opsional, hanya logging) ===
+        try {
+          var conn = Echo.connector && Echo.connector.pusher && Echo.connector.pusher.connection;
+          if (conn) {
+            if (isDebugEnv()) conn.bind("connected", function () {
+              console.log("[Poll] Echo connected");
+            });
+            if (isDebugEnv()) conn.bind("disconnected", function () {
+              console.warn("[Poll] Echo disconnected");
+            });
+            if (isDebugEnv()) conn.bind("error", function (err) {
+              console.error("[Poll] Echo error", err);
+            });
+          }
+        } catch (e) {
+          if (isDebugEnv()) console.warn("[Poll] Echo bind failed", e);
+        }
+
+        // === Update timestamp ketika event MessageSent masuk ===
+        Echo["private"]("product.".concat(window.productId)).listen("MessageSent", function () {
+          lastEventTs = Date.now();
+        });
+
+        // === Jalankan polling periodik ===
+        setInterval(function () {
+          var now = Date.now();
+          var idle = now - lastEventTs > POLL_MS; // === Cek apakah Echo idle ===
+          var url = "/bid/state/".concat(window.productSlug);
+
+          // === Jika tidak idle, polling tidak dijalankan ===
+          if (!idle) return;
+
+          // === Ambil state terbaru dari server ===
+          axios.get(url).then(function (res) {
+            var data = res.data || {};
+            var highest = Number(data.highest);
+            var msgs = Array.isArray(data.messages) ? data.messages : [];
+
+            // === Sinkronisasi harga tertinggi ===
+            if (!isNaN(highest)) {
+              var highestEl = document.getElementById("highestPrice");
+              if (highestEl) highestEl.innerText = "Rp " + window.formatRp(highest);
+              window.updateNominalDropdown(highest);
+            }
+
+            // === Sinkronisasi riwayat bid jika ada yang lebih baru ===
+            if (msgs.length > 0) {
+              if (!window.app.messages.length || window.app.messages[0].message !== msgs[0].message) {
+                window.app.messages.unshift(msgs[0]);
+              }
+            }
+          })["catch"](function (err) {
+            if (isDebugEnv()) console.warn("[Poll] State fetch failed", err);
+          });
+        }, POLL_MS);
+      },
+      // === Mengirim bid baru ke server ===
       addMessage: function addMessage(msg) {
-        var _this3 = this;
-        axios.post("/bid/messages", msg).then(function () {
-          _this3.messages.push(msg);
+        var _this2 = this;
+        axios.post("/bid/messages", msg).then(function (res) {
+          if (isDebugEnv()) console.log("[addMessage] Bid berhasil dikirim:", res.data);
+
+          // === Update UI secara instan untuk pengirim (optimistic update) ===
+          if (res.data.status === "Message Sent!" && res.data.data) {
+            // === Tambahkan riwayat bid baru ===
+            _this2.messages.unshift({
+              user: res.data.data.user,
+              message: res.data.data.message,
+              tanggal: res.data.data.tanggal
+            });
+
+            // === Update harga tertinggi ===
+            var price = Number(res.data.data.message);
+            if (!isNaN(price)) {
+              var highestEl = document.getElementById("highestPrice");
+              if (highestEl) {
+                // === Format angka ribuan ===
+                highestEl.innerText = "Rp " + price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+
+                // === Highlight harga untuk memberi efek perubahan ===
+                highestEl.style.transition = "all 0.3s ease";
+                highestEl.style.backgroundColor = "#fef3c7";
+                setTimeout(function () {
+                  highestEl.style.backgroundColor = "transparent";
+                }, 800);
+              }
+
+              // === Update dropdown kelipatan nominal ===
+              if (typeof updateNominalDropdown === "function") {
+                updateNominalDropdown(price);
+              }
+            }
+            if (isDebugEnv()) console.log("[addMessage] ✓ UI updated immediately for bidder");
+          }
+
+          // === User lain otomatis update dari Echo ===
+        })["catch"](function (err) {
+          if (isDebugEnv()) console.error("[addMessage] Bid gagal:", err);
+
+          // Cek jika error karena harga sudah diambil user lain
+          if (err.response && err.response.data && err.response.data.message && err.response.data.message.includes("Harga bid ini sudah diambil user lain")) {
+            // Langsung fetch data terbaru dari server
+            axios.get("/bid/state/".concat(window.productSlug)).then(function (res) {
+              var data = res.data || {};
+              var highest = Number(data.highest);
+              var msgs = Array.isArray(data.messages) ? data.messages : [];
+              // Update harga tertinggi dan dropdown
+              if (!isNaN(highest)) {
+                var highestEl = document.getElementById("highestPrice");
+                if (highestEl) highestEl.innerText = "Rp " + window.formatRp(highest);
+                window.updateNominalDropdown(highest);
+              }
+              // Update riwayat bid
+              if (msgs.length > 0) {
+                if (!window.app.messages.length || window.app.messages[0].message !== msgs[0].message) {
+                  window.app.messages.unshift(msgs[0]);
+                }
+              }
+              if (isDebugEnv()) console.log("[addMessage] Fetched state after bid collision");
+            });
+          }
+          alert("Gagal mengirim bid. Silakan coba lagi.");
         });
       }
     }
   });
 });
+/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../../node_modules/process/browser.js */ "./node_modules/process/browser.js")))
 
 /***/ }),
 
@@ -38474,6 +38648,7 @@ waitForSlug(function () {
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var laravel_echo__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! laravel-echo */ "./node_modules/laravel-echo/dist/echo.js");
+var _document$querySelect;
 window._ = __webpack_require__(/*! lodash */ "./node_modules/lodash/lodash.js");
 
 /**
@@ -38500,7 +38675,13 @@ window.Echo = new laravel_echo__WEBPACK_IMPORTED_MODULE_0__["default"]({
   broadcaster: 'pusher',
   key: "b1dc225a5960d6c519ca",
   cluster: "ap1",
-  forceTLS: true
+  forceTLS: true,
+  authEndpoint: '/broadcasting/auth',
+  auth: {
+    headers: {
+      'X-CSRF-TOKEN': (_document$querySelect = document.querySelector('meta[name="csrf-token"]')) === null || _document$querySelect === void 0 ? void 0 : _document$querySelect.getAttribute('content')
+    }
+  }
 });
 
 /***/ }),
@@ -38661,8 +38842,8 @@ __webpack_require__.r(__webpack_exports__);
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-__webpack_require__(/*! C:\laragon\www\RLK\resources\js\app.js */"./resources/js/app.js");
-module.exports = __webpack_require__(/*! C:\laragon\www\RLK\resources\sass\app.scss */"./resources/sass/app.scss");
+__webpack_require__(/*! C:\Users\HP\Documents\GitHub\RLK\resources\js\app.js */"./resources/js/app.js");
+module.exports = __webpack_require__(/*! C:\Users\HP\Documents\GitHub\RLK\resources\sass\app.scss */"./resources/sass/app.scss");
 
 
 /***/ })
