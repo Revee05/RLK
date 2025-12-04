@@ -1,5 +1,5 @@
 <template>
-    <!-- ChatForm-->
+    <!-- Form bid tersembunyi, hanya digunakan sebagai logic component -->
     <div style="display:none;"></div>
 </template>
 
@@ -38,7 +38,7 @@ export default {
         },
 
         /* DIPANGGIL DARI TOMBOL BID SEKARANG */
-        sendBid(val) {
+        sendBidFromButton(val) {
             this.newMessage = Number(val);
             this.sendMessage();
         },

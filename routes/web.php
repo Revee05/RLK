@@ -64,7 +64,7 @@ Route::get('/lelang', function () { return view('web.LelangPage.lelang'); })->na
 Route::get('/lelang-products/json', [\App\Http\Controllers\Web\LelangProduct\getAll::class, 'json'])->name('lelang.products.json');
 Route::get('/lelang-categories', [\App\Http\Controllers\Web\LelangProduct\getCategory::class, 'LelangCategory'])->name('lelang.categories');
 Route::get('/lelang/{slug}', [\App\Http\Controllers\Web\LelangProduct\getDetail::class, 'show'])->name('lelang.detail');
-Route::post('/bid/messages', 'Web\ChatsController@sendMessage')->name('bid.send');
+Route::post('/bid/messages', 'Web\ChatsController@sendMessage')->middleware('auth')->name('bid.send');
 Route::get('/bid/messages/{slug}', 'Web\ChatsController@fetchMessages')->name('bid.fetch');
 
 // =============================

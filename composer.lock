@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "e43db5721c798961529f102026a55e36",
+    "content-hash": "2d49e2637c4801f179abb26ee6ed87e6",
     "packages": [
         {
             "name": "barryvdh/laravel-dompdf",
@@ -5738,62 +5738,48 @@
         },
         {
             "name": "xendit/xendit-php",
-            "version": "3.6.0",
+            "version": "2.6.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/xendit/xendit-php.git",
-                "reference": "c83ed13a5573b2929ff5d1ff19a9a35c1784c00a"
+                "reference": "4a5b3c9acaae727de96bf0868d22a6ec612f2e00"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/xendit/xendit-php/zipball/c83ed13a5573b2929ff5d1ff19a9a35c1784c00a",
-                "reference": "c83ed13a5573b2929ff5d1ff19a9a35c1784c00a",
+                "url": "https://api.github.com/repos/xendit/xendit-php/zipball/4a5b3c9acaae727de96bf0868d22a6ec612f2e00",
+                "reference": "4a5b3c9acaae727de96bf0868d22a6ec612f2e00",
                 "shasum": ""
             },
             "require": {
-                "ext-curl": "*",
                 "ext-json": "*",
-                "ext-mbstring": "*",
-                "guzzlehttp/guzzle": "^7.3",
-                "guzzlehttp/psr7": "^1.7 || ^2.0",
-                "php": "^7.4 || ^8.0"
+                "guzzlehttp/guzzle": ">=6.0",
+                "php": ">=7.2.0"
             },
             "require-dev": {
-                "friendsofphp/php-cs-fixer": "^3.5",
-                "phpunit/phpunit": "^8.0 || ^9.0"
+                "phpunit/phpunit": "8.5",
+                "squizlabs/php_codesniffer": "~3.5",
+                "vlucas/phpdotenv": "^4.1"
             },
             "type": "library",
             "autoload": {
                 "psr-4": {
-                    "Xendit\\": "lib/"
+                    "Xendit\\": "src/"
                 }
             },
             "notification-url": "https://packagist.org/downloads/",
             "license": [
-                "unlicense"
+                "MIT"
             ],
-            "authors": [
-                {
-                    "name": "OpenAPI-Generator contributors",
-                    "homepage": "https://openapi-generator.tech"
-                }
-            ],
-            "description": "Xendit PHP SDK",
-            "homepage": "https://openapi-generator.tech",
+            "description": "PHP clients for Xendit API",
+            "homepage": "https://github.com/xendit/xendit-php",
             "keywords": [
-                "api",
-                "openapi",
-                "openapi-generator",
-                "openapitools",
-                "php",
-                "rest",
-                "sdk"
+                "xendit"
             ],
             "support": {
                 "issues": "https://github.com/xendit/xendit-php/issues",
-                "source": "https://github.com/xendit/xendit-php/tree/3.6.0"
+                "source": "https://github.com/xendit/xendit-php/tree/2.6.0"
             },
-            "time": "2023-11-06T05:00:57+00:00"
+            "time": "2020-11-07T05:15:06+00:00"
         }
     ],
     "packages-dev": [

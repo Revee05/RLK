@@ -1937,7 +1937,7 @@ __webpack_require__.r(__webpack_exports__);
         }
       });
     },
-    /* DIPANGGIL DARI TOMBOL BID SEKARANG */sendBid: function sendBid(val) {
+    /* DIPANGGIL DARI TOMBOL BID SEKARANG */sendBidFromButton: function sendBidFromButton(val) {
       this.newMessage = Number(val);
       this.sendMessage();
     },
@@ -38424,29 +38424,30 @@ waitForSlug(function () {
   window.app = new vue__WEBPACK_IMPORTED_MODULE_0___default.a({
     el: "#app",
     data: {
-      messages: []
+      messages: window.existingBids && window.existingBids.length > 0 ? window.existingBids : []
     },
     created: function created() {
       var _this = this;
       this.fetchMessages();
       Echo["private"]("product.".concat(window.productId)).listen("MessageSent", function (e) {
-        _this.messages.push({
+        console.log('[MessageSent] Bid baru diterima:', e);
+        // Bid baru masuk di atas (paling baru di index 0)
+        _this.messages.unshift({
           user: e.user,
-          message: e.bid,
+          message: e.bid || e.message,
           tanggal: e.tanggal
         });
         _this.$nextTick(function () {
           var el = document.getElementById("chat-container");
-          if (el) el.scrollTop = el.scrollHeight;
+          if (el) el.scrollTop = 0;
         });
-      }).listen("BidSent", function (e) {
-        console.log("Realtime BidSent", e);
       });
     },
     methods: {
       fetchMessages: function fetchMessages() {
         var _this2 = this;
         axios.get("/bid/messages/".concat(window.productSlug)).then(function (res) {
+          // Terima data dari backend apa adanya (sudah urut terbaru di atas)
           _this2.messages = res.data;
         })["catch"](function (err) {
           console.error("Gagal ambil messages:", err);
@@ -38454,8 +38455,44 @@ waitForSlug(function () {
       },
       addMessage: function addMessage(msg) {
         var _this3 = this;
-        axios.post("/bid/messages", msg).then(function () {
-          _this3.messages.push(msg);
+        axios.post("/bid/messages", msg).then(function (res) {
+          console.log('[addMessage] Bid berhasil dikirim:', res.data);
+
+          // Langsung update UI untuk user yang melakukan bid
+          if (res.data.status === 'Message Sent!' && res.data.data) {
+            // Update riwayat bid
+            _this3.messages.unshift({
+              user: res.data.data.user,
+              message: res.data.data.message,
+              tanggal: res.data.data.tanggal
+            });
+
+            // Update harga tertinggi di UI
+            var price = Number(res.data.data.message);
+            if (!isNaN(price)) {
+              var highestEl = document.getElementById('highestPrice');
+              if (highestEl) {
+                highestEl.innerText = 'Rp ' + price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+                // Animasi highlight
+                highestEl.style.transition = 'all 0.3s ease';
+                highestEl.style.backgroundColor = '#fef3c7';
+                setTimeout(function () {
+                  highestEl.style.backgroundColor = 'transparent';
+                }, 800);
+              }
+
+              // Update dropdown
+              if (typeof updateNominalDropdown === 'function') {
+                updateNominalDropdown(price);
+              }
+            }
+            console.log('[addMessage] ✓ UI updated immediately for bidder');
+          }
+
+          // Echo event akan handle update untuk user lain
+        })["catch"](function (err) {
+          console.error('[addMessage] Bid gagal:', err);
+          alert('Gagal mengirim bid. Silakan coba lagi.');
         });
       }
     }
@@ -38474,6 +38511,7 @@ waitForSlug(function () {
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var laravel_echo__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! laravel-echo */ "./node_modules/laravel-echo/dist/echo.js");
+var _document$querySelect;
 window._ = __webpack_require__(/*! lodash */ "./node_modules/lodash/lodash.js");
 
 /**
@@ -38500,7 +38538,13 @@ window.Echo = new laravel_echo__WEBPACK_IMPORTED_MODULE_0__["default"]({
   broadcaster: 'pusher',
   key: "b1dc225a5960d6c519ca",
   cluster: "ap1",
-  forceTLS: true
+  forceTLS: true,
+  authEndpoint: '/broadcasting/auth',
+  auth: {
+    headers: {
+      'X-CSRF-TOKEN': (_document$querySelect = document.querySelector('meta[name="csrf-token"]')) === null || _document$querySelect === void 0 ? void 0 : _document$querySelect.getAttribute('content')
+    }
+  }
 });
 
 /***/ }),
@@ -38661,8 +38705,8 @@ __webpack_require__.r(__webpack_exports__);
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-__webpack_require__(/*! C:\laragon\www\RLK\resources\js\app.js */"./resources/js/app.js");
-module.exports = __webpack_require__(/*! C:\laragon\www\RLK\resources\sass\app.scss */"./resources/sass/app.scss");
+__webpack_require__(/*! C:\Users\HP\Documents\GitHub\RLK\resources\js\app.js */"./resources/js/app.js");
+module.exports = __webpack_require__(/*! C:\Users\HP\Documents\GitHub\RLK\resources\sass\app.scss */"./resources/sass/app.scss");
 
 
 /***/ })

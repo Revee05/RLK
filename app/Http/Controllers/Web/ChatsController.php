@@ -40,13 +40,13 @@ class ChatsController extends Controller
     public function fetchMessages($slug)
     {
         $product = Products::where('slug',$slug)->first();
-        $bid = Bid::with('user')->where('product_id',$product->id)->get();
+        $bid = Bid::with('user')->where('product_id',$product->id)->orderBy('created_at', 'desc')->get();
         $bids = $bid->map(function($data){
             return [
                 'user'=>$data->user,
                 'message'=>$data->price,
                 'produk'=>$data->product_id,
-                'tanggal'=> Carbon::parse($data->created_at)->format('Y-m-d h:m:s')
+                'tanggal'=> Carbon::parse($data->created_at)->format('Y-m-d H:i:s')
             ];
         });
         return $bids;
@@ -77,24 +77,59 @@ class ChatsController extends Controller
                     ]);
                     $bid = $request->input('message');
 
-                    //histori bid
-                    broadcast(new MessageSent($user, $bid, $bids->created_at))->toOthers();
-                    //bid
-                    event(new BidSent($bid));
-                    
+                    \Log::info('[BID] New bid created', [
+                        'user_id' => $user->id,
+                        'user_name' => $user->name,
+                        'price' => $bid,
+                        'product_id' => $productID
+                    ]);
 
-                    return ['status' => 'Message Sent!'];
-                    // try {
-                        
-                    //     //send notification Bid
-                    //     $this->sendNotificationBid($bids);
-                        
-                    // } catch (Exception $e) {
-                    //     \Log::error("Failed send notifikasi ".$e->getMessage());
-                    // }
+                    //histori bid - broadcast ke user lain
+                    broadcast(new MessageSent($user, $bid, $bids->created_at, $productID))->toOthers();
+                    \Log::info('[BID] MessageSent broadcasted to others');
+                    
+                    //bid - broadcast ke SEMUA user termasuk yang melakukan bid
+                    broadcast(new BidSent($bid, $productID));
+                    \Log::info('[BID] BidSent broadcasted to all users', ['price' => $bid]);
+
+                    $response = [
+                        'status' => 'Message Sent!',
+                        'data' => [
+                            'user' => [
+                                'id' => $user->id,
+                                'name' => $user->name,
+                                'email' => $user->email,
+                            ],
+                            'message' => $bids->price,
+                            'produk' => $bids->product_id,
+                            'tanggal' => Carbon::parse($bids->created_at)->format('Y-m-d H:i:s')
+                        ]
+                    ];
+
+                    if (in_array(config('app.env'), ['local', 'testing', 'development'])) {
+                        \Log::info('Response:', $response);
+                    }
+
+                    return $response;
                 } else {
                     \Log::info("Bid Sudah ada");
-                    return ['status' => 'Bid already!'];
+                    $response = [
+                        'status' => 'Bid already!',
+                        'data' => [
+                            'user' => [
+                                'id' => $checkBid->user->id,
+                                'name' => $checkBid->user->name,
+                                'email' => $checkBid->user->email,
+                            ],
+                            'message' => $checkBid->price,
+                            'produk' => $checkBid->product_id,
+                            'tanggal' => Carbon::parse($checkBid->created_at)->format('Y-m-d H:i:s')
+                        ]
+                    ];
+                    if (in_array(config('app.env'), ['local', 'testing', 'development'])) {
+                        \Log::info('Response:', $response);
+                    }
+                    return $response;
                 }                
             
         } catch (Exception $e) {
