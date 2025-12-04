@@ -38430,38 +38430,40 @@ waitForSlug(function () {
       messages: window.existingBids && window.existingBids.length > 0 ? window.existingBids : []
     },
     created: function created() {
-      var _this = this;
       this.fetchMessages();
 
       // Start fallback polling if Echo becomes idle or disconnected
       this.startStatePolling();
-      Echo["private"]("product.".concat(window.productId)).listen("MessageSent", function (e) {
-        console.log('[MessageSent] Bid baru diterima:', e);
-        // Bid baru masuk di atas (paling baru di index 0)
-        _this.messages.unshift({
+      Echo["private"]("product.".concat(window.productId)).listen("BidSent", function (e) {
+        var price = Number(e.price);
+        if (!isNaN(price)) {
+          // Update harga tertinggi
+          var highestEl = document.getElementById('highestPrice');
+          if (highestEl) highestEl.innerText = 'Rp ' + window.formatRp(price);
+          // Update dropdown kelipatan
+          window.updateNominalDropdown(price);
+        }
+      }).listen("MessageSent", function (e) {
+        // Update riwayat bid
+        window.app.messages.unshift({
           user: e.user,
           message: e.bid || e.message,
           tanggal: e.tanggal
-        });
-        _this.$nextTick(function () {
-          var el = document.getElementById("chat-container");
-          if (el) el.scrollTop = 0;
         });
       });
     },
     methods: {
       fetchMessages: function fetchMessages() {
-        var _this2 = this;
+        var _this = this;
         axios.get("/bid/messages/".concat(window.productSlug)).then(function (res) {
           // Terima data dari backend apa adanya (sudah urut terbaru di atas)
-          _this2.messages = res.data;
+          _this.messages = res.data;
         })["catch"](function (err) {
           console.error("Gagal ambil messages:", err);
         });
       },
       // Polling fallback: reconcile UI using canonical state
       startStatePolling: function startStatePolling() {
-        var _this3 = this;
         var POLL_MS = 10 * 1000; // 10s
         var lastEventTs = Date.now();
         try {
@@ -38498,32 +38500,30 @@ waitForSlug(function () {
             var msgs = Array.isArray(data.messages) ? data.messages : [];
             if (!isNaN(highest)) {
               var highestEl = document.getElementById('highestPrice');
-              if (highestEl) highestEl.innerText = 'Rp ' + highest.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
-              if (typeof updateNominalDropdown === 'function') updateNominalDropdown(highest);
+              if (highestEl) highestEl.innerText = 'Rp ' + window.formatRp(highest);
+              window.updateNominalDropdown(highest);
             }
 
-            // Push bid terbaru ke riwayat (jika ada)
+            // Update riwayat bid dengan bid terbaru
             if (msgs.length > 0) {
-              // Cek apakah bid sudah ada di messages, jika belum, unshift
-              if (!_this3.messages.length || _this3.messages[0].message !== msgs[0].message) {
-                _this3.messages.unshift(msgs[0]);
+              if (!window.app.messages.length || window.app.messages[0].message !== msgs[0].message) {
+                window.app.messages.unshift(msgs[0]);
               }
             }
-            console.log('[Poll] State reconciled (optimized)');
           })["catch"](function (err) {
             console.warn('[Poll] State fetch failed', err);
           });
         }, POLL_MS);
       },
       addMessage: function addMessage(msg) {
-        var _this4 = this;
+        var _this2 = this;
         axios.post("/bid/messages", msg).then(function (res) {
           console.log('[addMessage] Bid berhasil dikirim:', res.data);
 
           // Langsung update UI untuk user yang melakukan bid
           if (res.data.status === 'Message Sent!' && res.data.data) {
             // Update riwayat bid
-            _this4.messages.unshift({
+            _this2.messages.unshift({
               user: res.data.data.user,
               message: res.data.data.message,
               tanggal: res.data.data.tanggal

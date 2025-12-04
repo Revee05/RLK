@@ -175,22 +175,14 @@ window.formatRp = function(n) {
 }
 
 window.updateNominalDropdown = function(highest) {
-    const rawStep = {{ intval($product->kelipatan_bid ?? $product->kelipatan) }};
-    const step = Number(rawStep) || 10000; // fallback jika 0/NaN
+    // Ambil kelipatan dari produk
+    const rawStep = {{ intval($product->kelipatan) }};
+    const step = Number(rawStep) || 10000;
     const h = Number(highest);
     const select = document.getElementById('bidSelect');
-    if (!select) {
-        console.warn('[updateNominalDropdown] Element #bidSelect tidak ditemukan');
-        return;
-    }
-    
-    if (isNaN(h)) {
-        console.error('[updateNominalDropdown] Highest bukan angka:', highest);
-        return;
-    }
+    if (!select) return;
+    if (isNaN(h)) return;
 
-    console.log('[updateNominalDropdown] Updating dropdown. Highest:', h, 'Step:', step);
-    
     select.innerHTML = '<option value="">Pilih Nominal Bid</option>';
     for (let i = 1; i <= 5; i++) {
         const val = h + (step * i);
@@ -198,9 +190,7 @@ window.updateNominalDropdown = function(highest) {
         opt.value = val;
         opt.textContent = 'Rp ' + window.formatRp(val);
         select.appendChild(opt);
-        console.log('[updateNominalDropdown] Added option:', val);
     }
-    console.log('[updateNominalDropdown] ✓ Dropdown updated successfully');
 }
 
 // Integrasi tombol bid kanan (di area produk) dengan Vue

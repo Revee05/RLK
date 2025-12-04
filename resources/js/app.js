@@ -45,18 +45,22 @@ waitForSlug(() => {
             this.startStatePolling();
 
             Echo.private(`product.${window.productId}`)
+                .listen("BidSent", (e) => {
+                    const price = Number(e.price);
+                    if (!isNaN(price)) {
+                        // Update harga tertinggi
+                        const highestEl = document.getElementById('highestPrice');
+                        if (highestEl) highestEl.innerText = 'Rp ' + window.formatRp(price);
+                        // Update dropdown kelipatan
+                        window.updateNominalDropdown(price);
+                    }
+                })
                 .listen("MessageSent", (e) => {
-                    console.log('[MessageSent] Bid baru diterima:', e);
-                    // Bid baru masuk di atas (paling baru di index 0)
-                    this.messages.unshift({
+                    // Update riwayat bid
+                    window.app.messages.unshift({
                         user: e.user,
                         message: e.bid || e.message,
                         tanggal: e.tanggal,
-                    });
-
-                    this.$nextTick(() => {
-                        let el = document.getElementById("chat-container");
-                        if (el) el.scrollTop = 0;
                     });
                 });
         },
@@ -107,18 +111,16 @@ waitForSlug(() => {
 
                         if (!isNaN(highest)) {
                             const highestEl = document.getElementById('highestPrice');
-                            if (highestEl) highestEl.innerText = 'Rp ' + highest.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
-                            if (typeof updateNominalDropdown === 'function') updateNominalDropdown(highest);
+                            if (highestEl) highestEl.innerText = 'Rp ' + window.formatRp(highest);
+                            window.updateNominalDropdown(highest);
                         }
 
-                        // Push bid terbaru ke riwayat (jika ada)
+                        // Update riwayat bid dengan bid terbaru
                         if (msgs.length > 0) {
-                            // Cek apakah bid sudah ada di messages, jika belum, unshift
-                            if (!this.messages.length || this.messages[0].message !== msgs[0].message) {
-                                this.messages.unshift(msgs[0]);
+                            if (!window.app.messages.length || window.app.messages[0].message !== msgs[0].message) {
+                                window.app.messages.unshift(msgs[0]);
                             }
                         }
-                        console.log('[Poll] State reconciled (optimized)');
                     }).catch((err) => {
                         console.warn('[Poll] State fetch failed', err);
                     });

@@ -63,17 +63,17 @@ class ChatsController extends Controller
     {
         $product = Products::where('slug',$slug)->firstOrFail();
 
-        // Ambil hanya 1 bid terbaru
+        // Ambil bid terbaru
         $latestBid = Bid::with('user')
             ->where('product_id', $product->id)
             ->orderBy('created_at', 'desc')
             ->first();
 
         $highest = $latestBid ? (int) $latestBid->price : (int) $product->price;
-        $step = (int) ($product->kelipatan_bid ?? $product->kelipatan ?? 10000);
+        $step = (int) ($product->kelipatan ?? 10000);
         if ($step <= 0) { $step = 10000; }
 
-        // Next nominals (5 options)
+        // Next nominals: 5x kelipatan dari harga tertinggi
         $nextNominals = [];
         for ($i = 1; $i <= 5; $i++) {
             $nextNominals[] = $highest + ($step * $i);
@@ -97,7 +97,7 @@ class ChatsController extends Controller
             'highest' => $highest,
             'step' => $step,
             'nextNominals' => $nextNominals,
-            'messages' => $messages, // hanya bid terbaru
+            'messages' => $messages,
             'productId' => (int) $product->id,
             'slug' => $slug,
         ];
