@@ -10,18 +10,24 @@ class getCategory extends Controller
 {
     public function LelangCategory()
     {
-        // Ambil semua kategori produk tanpa filter produk aktif
-        $categories = Kategori::where('cat_type', 'product')
-            ->select('id', 'name', 'slug')
-            ->orderBy('name')
-            ->get();
+        try {
+            // Ambil semua kategori produk tanpa filter produk aktif
+            $categories = Kategori::where('cat_type', 'product')
+                ->select('id', 'name', 'slug')
+                ->orderBy('name')
+                ->get();
 
-        $response = [
-            'categories' => $categories,
-        ];
-        if (app()->environment(['local', 'testing'])) {
+            $response = [
+                'categories' => $categories,
+            ];
             \Log::info('LelangCategory JSON Response:', $response);
+
+            return response()->json($response);
+        } catch (\Throwable $e) {
+            \Log::error('LelangCategory ERROR: ' . $e->getMessage(), [
+                'trace' => $e->getTraceAsString(),
+            ]);
+            return response()->json(['error' => 'Gagal mengambil kategori'], 500);
         }
-        return response()->json($response);
     }
 }

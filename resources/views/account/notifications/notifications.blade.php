@@ -30,7 +30,7 @@
                                 <input type="hidden" name="email_enabled" value="0">
                                 <div class="form-check form-switch form-switch-right">
                                     <input type="checkbox" class="form-check-input" id="email_enabled" name="email_enabled"
-                                        value="1" {{ $settings->email_enabled ? 'checked' : '' }}>
+                                        value="1" {{ $settings->email_enabled ? 'checked' : '' }} disabled>
                                     <label class="form-check-label" for="email_enabled">Aktifkan email notifikasi</label>
                                 </div>
 
@@ -43,7 +43,7 @@
                                         pesanan</label>
                                 </div>
 
-                                <input type="hidden" name="email_promo" value="0">
+                                {{-- <input type="hidden" name="email_promo" value="0">
                                 <div class="form-check form-switch form-switch-right">
                                     <input type="checkbox" class="form-check-input" id="email_promo" name="email_promo"
                                         value="1" {{ $settings->email_promo ? 'checked' : '' }}>
@@ -56,7 +56,7 @@
                                 <input type="hidden" name="wa_enabled" value="0">
                                 <div class="form-check form-switch form-switch-right">
                                     <input type="checkbox" class="form-check-input" id="wa_enabled" name="wa_enabled"
-                                        value="1" {{ $settings->wa_enabled ? 'checked' : '' }}>
+                                        value="1" {{ $settings->wa_enabled ? 'checked' : '' }} disabled>
                                     <label class="form-check-label" for="wa_enabled">Aktifkan WhatsApp notifikasi</label>
                                 </div>
 
@@ -94,7 +94,7 @@
                                         {{ $settings->banner_order_status ? 'checked' : '' }}>
                                     <label class="form-check-label" for="banner_order_status">Perubahan status
                                         pesanan</label>
-                                </div>
+                                </div> --}}
                             </div>
                         </form>
                     </div>

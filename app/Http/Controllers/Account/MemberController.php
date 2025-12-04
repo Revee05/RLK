@@ -61,7 +61,7 @@ class MemberController extends Controller
                 if (app()->environment(['local', 'development'])) {
                     Log::info('MemberController@updateProfile response', ['user_id' => $id]);
                 }
-                return redirect()->back()->with('message', 'Data berhasil diupdate');
+                return redirect()->back()->with('success', 'Data berhasil diupdate');
             }
             Auth::logout();
             return redirect('/login');
@@ -69,7 +69,7 @@ class MemberController extends Controller
             if (app()->environment(['local', 'development'])) {
                 Log::error('MemberController@updateProfile error', ['error' => $e->getMessage(), 'request' => $request->all()]);
             }
-            throw $e;
+            return redirect()->back()->with('error', 'Gagal memperbarui profil. Silakan coba lagi.');
         }
     }
 

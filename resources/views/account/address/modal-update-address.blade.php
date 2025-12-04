@@ -31,20 +31,19 @@
                     </div>
 
                     <div class="form-group mb-3">
-                        <select class="form-control input-cyan" id="update_provinsi" name="provinsi_id" required>
+                        <select class="form-control input-cyan" id="update_provinsi" name="province_id" required>
                             <option value="">Pilih Provinsi</option>
                         </select>
                     </div>
 
                     <div class="form-group mb-3">
-                        <select class="form-control input-cyan" id="update_kabupaten" name="kabupaten_id" disabled
-                            required>
+                        <select class="form-control input-cyan" id="update_kabupaten" name="city_id" disabled required>
                             <option value="">Pilih Kabupaten/Kota</option>
                         </select>
                     </div>
 
                     <div class="form-group mb-3">
-                        <select class="form-control input-cyan" id="update_kecamatan" name="kecamatan_id" disabled
+                        <select class="form-control input-cyan" id="update_kecamatan" name="district_id" disabled
                             required>
                             <option value="">Pilih Kecamatan</option>
                         </select>
@@ -85,20 +84,67 @@
         const kab = document.getElementById('update_kabupaten');
         const kec = document.getElementById('update_kecamatan');
 
+        let selectedProvinceId = '';
+        let selectedCityId = '';
+        let selectedDistrictId = '';
+
+        const populateOptions = (select, options, placeholder, selected) => {
+            select.innerHTML = `<option value="">${placeholder}</option>`;
+            options.forEach(option => {
+                const isSelected = option.id == selected ? ' selected' : '';
+                select.innerHTML +=
+                    `<option value="${option.id}"${isSelected}>${option.name}</option>`;
+            });
+        };
+
+        const loadProvinces = (selectedId = '') => {
+            return fetch("{{ route('lokasi.province') }}")
+                .then(res => res.json())
+                .then(data => {
+                    populateOptions(prov, data, 'Pilih Provinsi', selectedId);
+                    if (selectedId) prov.value = selectedId;
+                    prov.disabled = false;
+                });
+        };
+
+        const loadCities = (provinceId, selectedId = '') => {
+            if (!provinceId) {
+                kab.innerHTML = `<option value="">Pilih Kabupaten</option>`;
+                kab.disabled = true;
+                return Promise.resolve();
+            }
+            return fetch('/lokasi/city/' + provinceId)
+                .then(res => res.json())
+                .then(data => {
+                    populateOptions(kab, data, 'Pilih Kabupaten', selectedId);
+                    if (selectedId) kab.value = selectedId;
+                    kab.disabled = false;
+                });
+        };
+
+        const loadDistricts = (cityId, selectedId = '') => {
+            if (!cityId) {
+                kec.innerHTML = `<option value="">Pilih Kecamatan</option>`;
+                kec.disabled = true;
+                return Promise.resolve();
+            }
+            return fetch('/lokasi/district/' + cityId)
+                .then(res => res.json())
+                .then(data => {
+                    populateOptions(kec, data, 'Pilih Kecamatan', selectedId);
+                    if (selectedId) kec.value = selectedId;
+                    kec.disabled = false;
+                });
+        };
+
         // Populate provinsi and fetch address data when modal opens
         modalEl.addEventListener('show.bs.modal', function(e) {
             prov.innerHTML = '<option value="">Pilih Provinsi</option>';
             kab.innerHTML = '<option value="">Pilih Kabupaten</option>';
             kec.innerHTML = '<option value="">Pilih Kecamatan</option>';
+            prov.disabled = true;
             kab.disabled = true;
             kec.disabled = true;
-
-            let provUrl = "{{ route('lokasi.provinsi') }}" || "/lokasi/provinsi";
-            // load provinsi options first
-            fetch(provUrl).then(r => r.json()).then(data => {
-                data.forEach(p => prov.innerHTML +=
-                    `<option value="${p.id}">${p.nama_provinsi}</option>`);
-            }).catch(() => {});
 
             // If the opener stored an edit URL on the modal, fetch the address data and populate fields
             const editUrl = modalEl.dataset.editUrl;
@@ -126,58 +172,41 @@
                     const base = modalEl.dataset.updateBase || '/account/address';
                     if (form) form.action = base.replace(/\/$/, '') + '/' + obj.id;
 
-                    // populate kabupaten/kecamatan based on selected provinsi
-                    if (obj.provinsi_id) {
-                        prov.value = obj.provinsi_id;
-                        fetch('/lokasi/kabupaten/' + obj.provinsi_id)
-                            .then(r => r.json())
-                            .then(kabs => {
-                                kab.innerHTML = '<option value="">Pilih Kabupaten</option>';
-                                kabs.forEach(k => kab.innerHTML +=
-                                    `<option value="${k.id}">${k.nama_kabupaten}</option>`);
-                                kab.disabled = false;
-                                if (obj.kabupaten_id) kab.value = obj.kabupaten_id;
+                    const provinceId = obj.province_id;
+                    const cityId = obj.city_id;
+                    const districtId = obj.district_id;
+                    selectedProvinceId = provinceId ?? '';
+                    selectedCityId = cityId ?? '';
+                    selectedDistrictId = districtId ?? '';
 
-                                if (obj.kabupaten_id) {
-                                    fetch('/lokasi/kecamatan/' + obj.kabupaten_id)
-                                        .then(r => r.json())
-                                        .then(kecs => {
-                                            kec.innerHTML =
-                                                '<option value="">Pilih Kecamatan</option>';
-                                            kecs.forEach(kc => kec.innerHTML +=
-                                                `<option value="${kc.id}">${kc.nama_kecamatan}</option>`
-                                            );
-                                            kec.disabled = false;
-                                            if (obj.kecamatan_id) kec.value = obj
-                                                .kecamatan_id;
-                                        }).catch(() => {});
-                                }
-                            }).catch(() => {});
-                    }
+                    const loaders = [loadProvinces(selectedProvinceId)];
+                    loaders.push(loadCities(selectedProvinceId, selectedCityId));
+                    loaders.push(loadDistricts(selectedCityId, selectedDistrictId));
+
+                    Promise.all(loaders)
+                        .catch(() => {})
+                        .finally(() => {
+                            if (!selectedProvinceId) prov.disabled = false;
+                            if (!selectedCityId) kab.disabled = true;
+                            if (!selectedDistrictId) kec.disabled = true;
+                        });
                 }).catch(() => {});
+
         });
 
         prov.addEventListener('change', function() {
-            kab.innerHTML = '<option value="">Pilih Kabupaten</option>';
-            kec.innerHTML = '<option value="">Pilih Kecamatan</option>';
+            selectedProvinceId = this.value;
+            selectedCityId = '';
+            selectedDistrictId = '';
             kab.disabled = true;
             kec.disabled = true;
-            if (!this.value) return;
-            fetch('/lokasi/kabupaten/' + this.value).then(r => r.json()).then(data => {
-                kab.disabled = false;
-                data.forEach(k => kab.innerHTML +=
-                    `<option value="${k.id}">${k.nama_kabupaten}</option>`);
-            }).catch(() => {});
+            loadCities(this.value);
         });
         kab.addEventListener('change', function() {
-            kec.innerHTML = '<option value="">Pilih Kecamatan</option>';
+            selectedCityId = this.value;
+            selectedDistrictId = '';
             kec.disabled = true;
-            if (!this.value) return;
-            fetch('/lokasi/kecamatan/' + this.value).then(r => r.json()).then(data => {
-                kec.disabled = false;
-                data.forEach(k => kec.innerHTML +=
-                    `<option value="${k.id}">${k.nama_kecamatan}</option>`);
-            }).catch(() => {});
+            loadDistricts(this.value);
         });
     });
 </script>

@@ -37,10 +37,10 @@ class getDetail extends Controller
                 return abort(404);
             }
 
-            // 3. Ambil Semua History Bidding (Urutkan dari Terbesar/Terbaru)
+            // 3. Ambil Semua History Bidding (Urutkan dari Terbaru)
             $bids = Bid::with('user')
                 ->where('product_id', $product->id)
-                ->orderBy('price', 'desc') 
+                ->orderBy('created_at', 'desc') 
                 ->get();
 
             // ---------------------------------------------------------
@@ -50,22 +50,19 @@ class getDetail extends Controller
             $initialMessages = $bids->map(function ($item) {
                 return [
                     'user' => [
+                        'id' => $item->user->id ?? 0,
                         'name' => $item->user->name ?? 'Pengguna',
                         'email' => $item->user->email ?? '-'
                     ],
-                    // Pesan yang muncul di chat bubble
-                    'message' => 'Rp ' . number_format($item->price, 0, ',', '.'), 
-                    // Harga asli (integer) untuk logika JS
-                    'price'   => $item->price,
+                    // Message harus berisi HARGA (integer), bukan string format
+                    'message' => $item->price,
                     // Tanggal format ISO/String
-                    'tanggal' => $item->created_at->format('d M Y H:i'),
+                    'tanggal' => $item->created_at->format('Y-m-d H:i:s'),
                 ];
             });
 
-            // Opsional: Jika chat widget Anda menampilkan pesan baru di BAWAH,
-            // kita harus membalik urutan array (karena query DB tadi DESC/terbaru di atas).
-            // Jika chat Anda terbaru di ATAS, hapus baris ->reverse() ini.
-            $initialMessages = $initialMessages->reverse()->values();
+            // Data terbaru harus di atas (descending by created_at)
+            $initialMessages = $initialMessages->values();
 
 
             // 4. Hitung Highest Bid
