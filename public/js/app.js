@@ -38447,7 +38447,7 @@ function waitForSlug(callback) {
 
 // === Helper untuk cek mode environment (local, testing, development) ===
 function isDebugEnv() {
-  var env = window.appEnv || process.env.APP_ENV || "development" || '';
+  var env = window.appEnv || process.env.APP_ENV || "development" || "";
   return ["local", "testing", "development", "dev"].includes(env.toLowerCase());
 }
 
@@ -38474,8 +38474,8 @@ waitForSlug(function () {
         var price = Number(e.price);
         if (!isNaN(price)) {
           // === Update elemen harga tertinggi di UI ===
-          var highestEl = document.getElementById('highestPrice');
-          if (highestEl) highestEl.innerText = 'Rp ' + window.formatRp(price);
+          var highestEl = document.getElementById("highestPrice");
+          if (highestEl) highestEl.innerText = "Rp " + window.formatRp(price);
 
           // === Update dropdown kelipatan nominal ===
           window.updateNominalDropdown(price);
@@ -38511,22 +38511,22 @@ waitForSlug(function () {
         try {
           var conn = Echo.connector && Echo.connector.pusher && Echo.connector.pusher.connection;
           if (conn) {
-            if (isDebugEnv()) conn.bind('connected', function () {
-              console.log('[Poll] Echo connected');
+            if (isDebugEnv()) conn.bind("connected", function () {
+              console.log("[Poll] Echo connected");
             });
-            if (isDebugEnv()) conn.bind('disconnected', function () {
-              console.warn('[Poll] Echo disconnected');
+            if (isDebugEnv()) conn.bind("disconnected", function () {
+              console.warn("[Poll] Echo disconnected");
             });
-            if (isDebugEnv()) conn.bind('error', function (err) {
-              console.error('[Poll] Echo error', err);
+            if (isDebugEnv()) conn.bind("error", function (err) {
+              console.error("[Poll] Echo error", err);
             });
           }
         } catch (e) {
-          if (isDebugEnv()) console.warn('[Poll] Echo bind failed', e);
+          if (isDebugEnv()) console.warn("[Poll] Echo bind failed", e);
         }
 
         // === Update timestamp ketika event MessageSent masuk ===
-        Echo["private"]("product.".concat(window.productId)).listen('MessageSent', function () {
+        Echo["private"]("product.".concat(window.productId)).listen("MessageSent", function () {
           lastEventTs = Date.now();
         });
 
@@ -38547,8 +38547,8 @@ waitForSlug(function () {
 
             // === Sinkronisasi harga tertinggi ===
             if (!isNaN(highest)) {
-              var highestEl = document.getElementById('highestPrice');
-              if (highestEl) highestEl.innerText = 'Rp ' + window.formatRp(highest);
+              var highestEl = document.getElementById("highestPrice");
+              if (highestEl) highestEl.innerText = "Rp " + window.formatRp(highest);
               window.updateNominalDropdown(highest);
             }
 
@@ -38559,7 +38559,7 @@ waitForSlug(function () {
               }
             }
           })["catch"](function (err) {
-            if (isDebugEnv()) console.warn('[Poll] State fetch failed', err);
+            if (isDebugEnv()) console.warn("[Poll] State fetch failed", err);
           });
         }, POLL_MS);
       },
@@ -38567,10 +38567,10 @@ waitForSlug(function () {
       addMessage: function addMessage(msg) {
         var _this2 = this;
         axios.post("/bid/messages", msg).then(function (res) {
-          if (isDebugEnv()) console.log('[addMessage] Bid berhasil dikirim:', res.data);
+          if (isDebugEnv()) console.log("[addMessage] Bid berhasil dikirim:", res.data);
 
           // === Update UI secara instan untuk pengirim (optimistic update) ===
-          if (res.data.status === 'Message Sent!' && res.data.data) {
+          if (res.data.status === "Message Sent!" && res.data.data) {
             // === Tambahkan riwayat bid baru ===
             _this2.messages.unshift({
               user: res.data.data.user,
@@ -38581,33 +38581,33 @@ waitForSlug(function () {
             // === Update harga tertinggi ===
             var price = Number(res.data.data.message);
             if (!isNaN(price)) {
-              var highestEl = document.getElementById('highestPrice');
+              var highestEl = document.getElementById("highestPrice");
               if (highestEl) {
                 // === Format angka ribuan ===
-                highestEl.innerText = 'Rp ' + price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+                highestEl.innerText = "Rp " + price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
 
                 // === Highlight harga untuk memberi efek perubahan ===
-                highestEl.style.transition = 'all 0.3s ease';
-                highestEl.style.backgroundColor = '#fef3c7';
+                highestEl.style.transition = "all 0.3s ease";
+                highestEl.style.backgroundColor = "#fef3c7";
                 setTimeout(function () {
-                  highestEl.style.backgroundColor = 'transparent';
+                  highestEl.style.backgroundColor = "transparent";
                 }, 800);
               }
 
               // === Update dropdown kelipatan nominal ===
-              if (typeof updateNominalDropdown === 'function') {
+              if (typeof updateNominalDropdown === "function") {
                 updateNominalDropdown(price);
               }
             }
-            if (isDebugEnv()) console.log('[addMessage] ✓ UI updated immediately for bidder');
+            if (isDebugEnv()) console.log("[addMessage] ✓ UI updated immediately for bidder");
           }
 
           // === User lain otomatis update dari Echo ===
         })["catch"](function (err) {
-          if (isDebugEnv()) console.error('[addMessage] Bid gagal:', err);
+          if (isDebugEnv()) console.error("[addMessage] Bid gagal:", err);
 
           // Cek jika error karena harga sudah diambil user lain
-          if (err.response && err.response.data && err.response.data.message && err.response.data.message.includes('Harga bid ini sudah diambil user lain')) {
+          if (err.response && err.response.data && err.response.data.message && err.response.data.message.includes("Harga bid ini sudah diambil user lain")) {
             // Langsung fetch data terbaru dari server
             axios.get("/bid/state/".concat(window.productSlug)).then(function (res) {
               var data = res.data || {};
@@ -38615,8 +38615,8 @@ waitForSlug(function () {
               var msgs = Array.isArray(data.messages) ? data.messages : [];
               // Update harga tertinggi dan dropdown
               if (!isNaN(highest)) {
-                var highestEl = document.getElementById('highestPrice');
-                if (highestEl) highestEl.innerText = 'Rp ' + window.formatRp(highest);
+                var highestEl = document.getElementById("highestPrice");
+                if (highestEl) highestEl.innerText = "Rp " + window.formatRp(highest);
                 window.updateNominalDropdown(highest);
               }
               // Update riwayat bid
@@ -38625,10 +38625,10 @@ waitForSlug(function () {
                   window.app.messages.unshift(msgs[0]);
                 }
               }
-              if (isDebugEnv()) console.log('[addMessage] Fetched state after bid collision');
+              if (isDebugEnv()) console.log("[addMessage] Fetched state after bid collision");
             });
           }
-          alert('Gagal mengirim bid. Silakan coba lagi.');
+          alert("Gagal mengirim bid. Silakan coba lagi.");
         });
       }
     }

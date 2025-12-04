@@ -92,26 +92,36 @@
                                 </div>
 
                                 {{-- HISTORY / REALTIME --}}
-                                    <div class="history-box" style="background:#f8f9fa; border:1px solid #ddd; border-radius:8px; padding:16px;">
-                                        <div class="history-head" style="background:#20c997; color:#fff; padding:8px 12px; border-radius:6px 6px 0 0; font-weight:bold;">Riwayat Bidding</div>
+                                <div class="history-box"
+                                    style="background:#f8f9fa; border:1px solid #ddd; border-radius:8px; padding:16px;">
+                                    <div class="history-head"
+                                        style="background:#20c997; color:#fff; padding:8px 12px; border-radius:6px 6px 0 0; font-weight:bold;">
+                                        Riwayat Bidding</div>
 
-                                        @if (Auth::check())
-                                        <div id="chat-container" class="history-body" style="overflow-y:auto; max-height:400px; min-height:120px; background:#fff; border:1px solid #eee; border-radius:6px; margin-bottom:12px; padding:8px;">
-                                            <chat-messages :messages="messages"></chat-messages>
-                                        </div>
-                                        <chat-form ref="bidForm" :user='@json(Auth::user())' :produk="{{ intval($product->id) }}" :kelipatan="{{ intval($product->kelipatan_bid ?? $product->kelipatan) }}" :price="{{ intval($product->price) }}" v-on:messagesent="addMessage"></chat-form>
-                                        @else
-                                        <div class="history-body" style="overflow-y:auto; max-height:400px; min-height:120px; background:#fff; border:1px solid #eee; border-radius:6px; margin-bottom:12px; padding:8px;">
-                                            @foreach ($bids as $b)
-                                            <div class="history-item">
-                                                <strong>{{ $b->user->name }}</strong>
-                                                <span>Rp {{ number_format($b->price, 0, ',', '.') }}</span>
-                                            </div>
-                                            @endforeach
-                                        </div>
-                                        <a href="{{ url('/login') }}" class="btn btn-outline-secondary mt-2 w-100">Login untuk ikut bidding</a>
-                                        @endif
+                                    @if (Auth::check())
+                                    <div id="chat-container" class="history-body"
+                                        style="overflow-y:auto; max-height:400px; min-height:120px; background:#fff; border:1px solid #eee; border-radius:6px; margin-bottom:12px; padding:8px;">
+                                        <chat-messages :messages="messages"></chat-messages>
                                     </div>
+                                    <chat-form ref="bidForm" :user='@json(Auth::user())'
+                                        :produk="{{ intval($product->id) }}"
+                                        :kelipatan="{{ intval($product->kelipatan_bid ?? $product->kelipatan) }}"
+                                        :price="{{ intval($product->price) }}" v-on:messagesent="addMessage">
+                                    </chat-form>
+                                    @else
+                                    <div class="history-body"
+                                        style="overflow-y:auto; max-height:400px; min-height:120px; background:#fff; border:1px solid #eee; border-radius:6px; margin-bottom:12px; padding:8px;">
+                                        @foreach ($bids as $b)
+                                        <div class="history-item">
+                                            <strong>{{ $b->user->name }}</strong>
+                                            <span>Rp {{ number_format($b->price, 0, ',', '.') }}</span>
+                                        </div>
+                                        @endforeach
+                                    </div>
+                                    <a href="{{ url('/login') }}" class="btn btn-outline-secondary mt-2 w-100">Login
+                                        untuk ikut bidding</a>
+                                    @endif
+                                </div>
 
                                 {{-- SHIPPING --}}
                                 <div class="shipping-section" style="margin-top:30px; margin-left:30px;">
@@ -160,22 +170,31 @@
 @section('js')
 {{-- Pastikan variabel global di-define SEBELUM app.js --}}
 <script>
-    // PENTING: Variabel global HARUS didefinisikan SEBELUM app.js di-load
-    window.productId = {{ intval($product->id) }};
-    window.productSlug = "{{ $product->slug }}";
-    window.initialHighest = {{ intval($highestBid) }};
+/**
+ * Inisialisasi variabel global untuk digunakan di JS dan Vue.
+ * - productId: ID produk yang sedang ditampilkan
+ * - productSlug: slug produk
+ * - initialHighest: harga bid tertinggi saat ini
+ */
+window.productId = {{ intval($product->id) }};
+window.productSlug = "{{ $product->slug }}";
+window.initialHighest = {{ intval($highestBid) }};
 </script>
 <script src="{{ asset('js/app.js') }}"></script>
 
 {{-- Script untuk update dropdown & fungsi bidding --}}
 <script>
-// Global functions agar bisa diakses dari Vue dan Echo listeners
+/**
+ * Fungsi formatRp: Format angka ke format rupiah (Rp).
+ * Fungsi updateNominalDropdown: Update pilihan nominal bid pada dropdown sesuai harga tertinggi.
+ * Fungsi setupBidButtonListener: Integrasi tombol bid dengan Vue instance.
+ * Fungsi waitForVueAndSetupBidBtn: Menunggu Vue siap sebelum mengaktifkan tombol bid.
+ */
 window.formatRp = function(n) {
     return n.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
 }
 
 window.updateNominalDropdown = function(highest) {
-    // Ambil kelipatan dari produk
     const rawStep = {{ intval($product->kelipatan) }};
     const step = Number(rawStep) || 10000;
     const h = Number(highest);
@@ -193,7 +212,6 @@ window.updateNominalDropdown = function(highest) {
     }
 }
 
-// Integrasi tombol bid kanan (di area produk) dengan Vue
 function setupBidButtonListener() {
     var btn = document.getElementById('btnBidNow');
     var select = document.getElementById('bidSelect');
@@ -215,7 +233,6 @@ function setupBidButtonListener() {
     });
 }
 
-// Tunggu sampai window.app (Vue) sudah siap
 function waitForVueAndSetupBidBtn() {
     var btn = document.getElementById('btnBidNow');
     if (btn) btn.disabled = true;
@@ -235,9 +252,8 @@ function waitForVueAndSetupBidBtn() {
     }, 100);
 }
 
+// Event listener untuk inisialisasi dropdown dan tombol bid setelah DOM siap
 document.addEventListener('DOMContentLoaded', waitForVueAndSetupBidBtn);
-
-// Initialize dropdown dengan harga tertinggi saat ini
 document.addEventListener('DOMContentLoaded', function() {
     const initialHighest = {{ intval($highestBid) }};
     console.log('[Init] Setting initial dropdown with highest:', initialHighest);
@@ -245,29 +261,30 @@ document.addEventListener('DOMContentLoaded', function() {
         window.updateNominalDropdown(initialHighest);
     }
 });
+</script>
 
-
+{{-- Listener realtime bidding menggunakan Laravel Echo --}}
+<script>
+/**
+ * Jika user sudah login, aktifkan listener realtime untuk update UI bidding.
+ * - Mendengarkan event BidSent dan MessageSent dari channel Echo.
+ * - Update harga tertinggi, dropdown nominal bid, dan nilai bid di Vue ChatForm.
+ */
 @if(Auth::check())
-// Listener untuk update UI realtime tanpa reload
 if (typeof Echo !== 'undefined') {
     console.log('[Echo] Mendengarkan channel product.{{ $product->id }}');
-    
     const channel = Echo.private(`product.{{ $product->id }}`);
-    
-    // Monitor connection status
+
     Echo.connector.pusher.connection.bind('connected', () => {
         console.log('[Pusher] Connected to WebSocket');
     });
-    
     Echo.connector.pusher.connection.bind('disconnected', () => {
         console.warn('[Pusher] Disconnected from WebSocket');
     });
-    
     Echo.connector.pusher.connection.bind('error', (err) => {
         console.error('[Pusher] Connection error:', err);
     });
-    
-    // Listen to BidSent event for UI updates
+
     channel.listen('BidSent', (e) => {
         console.log('[BidSent] Event diterima:', e);
         const price = Number(e.price || e);
@@ -275,41 +292,30 @@ if (typeof Echo !== 'undefined') {
             console.error('[BidSent] Invalid price:', e);
             return;
         }
-
-        // 1. Update label harga tertinggi di sidebar kanan
+        // Update harga tertinggi di sidebar kanan
         const highestEl = document.getElementById('highestPrice');
         if (highestEl) {
-            console.log('[BidSent] Updating highestPrice to:', price);
             highestEl.innerText = 'Rp ' + window.formatRp(price);
-            // Animasi highlight
             highestEl.style.transition = 'all 0.3s ease';
             highestEl.style.backgroundColor = '#fef3c7';
             setTimeout(() => {
                 highestEl.style.backgroundColor = 'transparent';
             }, 800);
-        } else {
-            console.warn('[BidSent] Element #highestPrice tidak ditemukan');
         }
-
-        // 2. Update dropdown nominal bid dengan harga terbaru
-        console.log('[BidSent] Updating dropdown options');
+        // Update dropdown nominal bid
         window.updateNominalDropdown(price);
-
-        // 3. Update nilai next bid di Vue ChatForm
+        // Update nilai next bid di Vue ChatForm
         if (window.app && window.app.$refs && window.app.$refs.bidForm) {
             const kelipatan = {{ intval($product->kelipatan_bid ?? $product->kelipatan) }};
             window.app.$refs.bidForm.newMessage = price + kelipatan;
-            console.log('[BidSent] Updated ChatForm newMessage to:', price + kelipatan);
         }
-
         console.log('[BidSent] ✓ UI berhasil diupdate dengan harga:', price);
     });
-    
-    // Also listen to MessageSent for additional logging
+
     channel.listen('MessageSent', (e) => {
         console.log('[MessageSent] Event diterima di detail.blade.php:', e);
     });
-    
+
     console.log('[Echo] ✓ Listener berhasil didaftarkan');
 } else {
     console.error('[Echo] Echo is not defined! WebSocket tidak aktif.');
@@ -319,11 +325,16 @@ if (typeof Echo !== 'undefined') {
 
 {{-- Script untuk Image Slider --}}
 <script>
+/**
+ * Script image slider:
+ * - Memastikan data-src pada gambar utama dan thumbnail sudah terisi.
+ * - Menukar gambar utama dengan thumbnail saat thumbnail diklik.
+ * - Memberi efek animasi pada pergantian gambar.
+ */
 (function() {
     function $(sel) {
         return document.querySelector(sel);
     }
-
     function ensureDatas() {
         const main = $('#mainDisplay');
         if (main && !main.dataset.src) main.dataset.src = main.src;
@@ -334,7 +345,6 @@ if (typeof Echo !== 'undefined') {
             }
         });
     }
-
     function doSwap(mainImg, thumbElem) {
         const thumbImg = thumbElem.querySelector('img');
         if (!thumbImg) return;
@@ -377,6 +387,12 @@ if (typeof Echo !== 'undefined') {
 
 {{-- Script Countdown --}}
 <script>
+/**
+ * Script countdown:
+ * - Menampilkan waktu mundur sampai lelang berakhir.
+ * - Mengupdate tampilan setiap detik.
+ * - Otomatis berhenti jika waktu habis atau element hilang.
+ */
 (function() {
     console.info('[countdown] init');
     try {
@@ -386,18 +402,14 @@ if (typeof Echo !== 'undefined') {
     } catch (e) {
         console.warn('[countdown] clear prev failed', e);
     }
-
     const pad = n => (n < 10 ? '0' + n : n);
-
     function findEl() {
         return document.getElementById('mainCountdown');
     }
-
     function readRaw() {
         const el = findEl();
         return el ? el.dataset.end : null;
     }
-
     function tryParseIso(s) {
         if (!s) return null;
         let t = String(s).trim();
@@ -410,13 +422,11 @@ if (typeof Echo !== 'undefined') {
         if (!isNaN(d2.getTime())) return d2;
         return null;
     }
-
     let attempts = 0;
     const maxAttempts = 30;
     let endDate = null;
     let lastRaw = null;
     let interval = null;
-
     function startTicking() {
         if (interval) return;
         interval = setInterval(tick, 1000);
@@ -429,7 +439,6 @@ if (typeof Echo !== 'undefined') {
             }
         };
     }
-
     function tick() {
         const elNow = findEl();
         if (!elNow) {
@@ -467,7 +476,6 @@ if (typeof Echo !== 'undefined') {
         const sec = Math.floor(s % 60);
         elNow.innerText = `${pad(d)}:${pad(h)}:${pad(m)}:${pad(sec)}`;
     }
-
     const initialRaw = readRaw();
     lastRaw = initialRaw;
     if (initialRaw) {
@@ -481,10 +489,8 @@ if (typeof Echo !== 'undefined') {
     } else {
         startTicking();
     }
-
     document.addEventListener('visibilitychange', function() {
-        if (document.visibilityState === 'visible' && window.__auction_countdown && window
-            .__auction_countdown.tick) {
+        if (document.visibilityState === 'visible' && window.__auction_countdown && window.__auction_countdown.tick) {
             window.__auction_countdown.tick();
         }
     }, false);
@@ -493,17 +499,22 @@ if (typeof Echo !== 'undefined') {
 
 {{-- Init Data dari Controller ke JS Global Variable --}}
 <script>
-// INI SOLUSI AGAR RIWAYAT MUNCUL:
-// Kita oper data JSON dari controller ke variabel window
+/**
+ * Menginisialisasi data bid awal dari backend ke variabel global JS.
+ * Data ini digunakan untuk mengisi pesan bidding pada Vue Chat.
+ */
 window.existingBids = @json($initialMessages ?? []);
 </script>
 
 {{-- Script Tambahan untuk meng-inject data ke Vue Instance --}}
 <script>
+/**
+ * Setelah DOM siap, inject data existingBids ke instance Vue jika tersedia.
+ * Memastikan data riwayat bid langsung muncul di chat tanpa reload.
+ */
 document.addEventListener("DOMContentLoaded", function() {
     if (typeof app !== 'undefined') {
         if (window.existingBids && window.existingBids.length > 0) {
-            // Gunakan data apa adanya dari backend (sudah urut terbaru di atas)
             if (app.messages) {
                 app.messages = window.existingBids;
             }
@@ -511,5 +522,4 @@ document.addEventListener("DOMContentLoaded", function() {
     }
 });
 </script>
-
 @endsection
