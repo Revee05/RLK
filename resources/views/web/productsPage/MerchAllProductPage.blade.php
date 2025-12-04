@@ -174,78 +174,94 @@ function fetchProducts(batch = 1, search = "", category = "", sort = "") {
         });
 }
 
-document.addEventListener('DOMContentLoaded', function() {
-    // Cek localStorage untuk kategori & versinya
-    const cached = localStorage.getItem('merch_categories');
-    const cachedVersion = localStorage.getItem('merch_categories_version');
-    if (cached && cachedVersion) {
+async function ensureCategories() {
+        // try use local first
         try {
-            const categories = JSON.parse(cached);
-            categoriesVersionCached = cachedVersion;
-            if (Array.isArray(categories) && categories.length > 0) {
-                categoriesCached = categories;
-                populateCategories(categories);
+            const local = localStorage.getItem('merch_categories');
+            const localVer = localStorage.getItem('merch_categories_version');
+            if (local && localVer) {
+                categoriesCached = JSON.parse(local);
+                categoriesVersionCached = localVer;
+                populateCategories(categoriesCached);
             }
-        } catch (e) {}
+        } catch (e) {
+            categoriesCached = null;
+            categoriesVersionCached = null;
+            console.error('Invalid local categories cache', e);
+        }
+
+        // fetch server version only (lightweight)
+        try {
+            const verRes = await fetch('/merch/categories?version_only=1', { cache: 'no-store' });
+            if (!verRes.ok) throw new Error('version check failed');
+            const verData = await verRes.json();
+            const serverVer = verData.categories_version || null;
+
+            // jika local kosong atau versi beda -> ambil full categories
+            if (!categoriesVersionCached || categoriesVersionCached !== serverVer) {
+                const fullRes = await fetch('/merch/categories', { cache: 'no-store' });
+                if (!fullRes.ok) throw new Error('fetch full categories failed');
+                const fullData = await fullRes.json();
+                if (fullData && Array.isArray(fullData.categories)) {
+                    try {
+                        localStorage.setItem('merch_categories', JSON.stringify(fullData.categories));
+                        localStorage.setItem('merch_categories_version', fullData.categories_version);
+                    } catch (e) { /* ignore storage errors */ }
+                    categoriesCached = fullData.categories;
+                    categoriesVersionCached = fullData.categories_version;
+                    populateCategories(categoriesCached);
+                }
+            } // else versi sama -> tetap gunakan local
+        } catch (e) {
+            console.error('Category version check/update failed, using local if available', e);
+        }
     }
 
-    fetchProducts(currentBatch, currentSearch, currentCategory, currentSort);
-
-    document.getElementById('load-more').addEventListener('click', function() {
-        currentBatch++;
+document.addEventListener('DOMContentLoaded', async function() {
+        await ensureCategories();
         fetchProducts(currentBatch, currentSearch, currentCategory, currentSort);
-    });
 
-    // Submit search
-    const searchInput = document.querySelector('.search-input');
-    document.getElementById('search-form').addEventListener('submit', function(e) {
-        e.preventDefault();
-        currentSearch = searchInput.value;
-        currentBatch = 1;
-        fetchProducts(currentBatch, currentSearch, currentCategory, currentSort);
-    });
+        document.getElementById('load-more').addEventListener('click', function() {
+            currentBatch++;
+            fetchProducts(currentBatch, currentSearch, currentCategory, currentSort);
+        });
 
-    // Filter kategori
-    document.getElementById('category-dropdown').addEventListener('click', function(e) {
-        if (e.target.classList.contains('category-item')) {
-            currentCategory = e.target.getAttribute('data-category');
-            document.getElementById('filter-label').textContent = e.target.textContent;
-            // Highlight aktif
-            document.querySelectorAll('#category-dropdown .category-item').forEach(item => item
-                .classList.remove('active'));
-            e.target.classList.add('active');
+        // Submit search
+        const searchInput = document.querySelector('.search-input');
+        document.getElementById('search-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            currentSearch = searchInput.value;
             currentBatch = 1;
             fetchProducts(currentBatch, currentSearch, currentCategory, currentSort);
-        }
-    });
+        });
 
-    // Sort by
-    document.getElementById('sort-dropdown').addEventListener('click', function(e) {
-        if (e.target.classList.contains('sort-item')) {
-            currentSort = e.target.getAttribute('data-sort');
-            document.getElementById('sort-label').textContent = e.target.textContent;
-            // Highlight aktif
-            document.querySelectorAll('#sort-dropdown .sort-item').forEach(item => item.classList
-                .remove('active'));
-            e.target.classList.add('active');
-            currentBatch = 1;
-            fetchProducts(currentBatch, currentSearch, currentCategory, currentSort);
-        }
-    });
-
-    // Ambil kategori dari server dan simpan ke localStorage jika ada perubahan
-    fetch('/merch/categories')
-        .then(res => res.json())
-        .then(data => {
-            console.log('Kategori dari API:', data);
-            if (data.categories && data.categories.length) {
-                localStorage.setItem('merch_categories', JSON.stringify(data.categories));
-                localStorage.setItem('merch_categories_version', data.categories_version);
-                categoriesCached = data.categories;
-                populateCategories(data.categories);
+        // Filter kategori
+        document.getElementById('category-dropdown').addEventListener('click', function(e) {
+            if (e.target.classList.contains('category-item')) {
+                currentCategory = e.target.getAttribute('data-category');
+                document.getElementById('filter-label').textContent = e.target.textContent;
+                // Highlight aktif
+                document.querySelectorAll('#category-dropdown .category-item').forEach(item => item
+                    .classList.remove('active'));
+                e.target.classList.add('active');
+                currentBatch = 1;
+                fetchProducts(currentBatch, currentSearch, currentCategory, currentSort);
             }
-        })
-        .catch(err => console.error('Fetch kategori error:', err));
+        });
+
+        // Sort by
+        document.getElementById('sort-dropdown').addEventListener('click', function(e) {
+            if (e.target.classList.contains('sort-item')) {
+                currentSort = e.target.getAttribute('data-sort');
+                document.getElementById('sort-label').textContent = e.target.textContent;
+                // Highlight aktif
+                document.querySelectorAll('#sort-dropdown .sort-item').forEach(item => item.classList
+                    .remove('active'));
+                e.target.classList.add('active');
+                currentBatch = 1;
+                fetchProducts(currentBatch, currentSearch, currentCategory, currentSort);
+            }
+        });
     });
 </script>
 @endsection

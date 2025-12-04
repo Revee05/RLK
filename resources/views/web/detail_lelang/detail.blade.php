@@ -75,12 +75,12 @@
 
                                     <div class="details-grid">
                                         <div>
-                                            <p class="label-teal">Material</p>
-                                            <p>{{ $product->material ?? '-' }}</p>
-                                            <p class="label-teal">Dimensi</p>
-                                            <p>{{ $product->dimension ?? '-' }}</p>
+                                            <!-- <p class="label-teal">Material</p>
+                                            <p>{{ $product->material ?? '-' }}</p> -->
+                                            <!-- <p class="label-teal">Dimensi</p>
+                                            <p>{{ $product->dimension ?? '-' }}</p> -->
                                             <p class="label-teal">Berat</p>
-                                            <p>{{ $product->weight ?? '-' }}</p>
+                                            <p>{{ $product->weight ?? '-' }} gr</p>
                                         </div>
                                         <div>
                                             <p class="label-teal">Tahun Karya</p>

@@ -23,6 +23,9 @@ class getAll extends Controller
             $category = trim((string) $request->query('category', ''));
             $sort = (string) $request->query('sort', '');
 
+            // current authenticated user (nullable)
+            $currentUserId = auth()->id();
+
             // Query Featured
             $featuredQuery = $this->buildQuery('featured', $search, $category, $sort);
             $featured = $featuredQuery->simplePaginate(self::FEATURED_PAGE_SIZE, ['*'], 'featured_page', $batch);
@@ -33,7 +36,7 @@ class getAll extends Controller
 
             $result = $this->composeGrid($featured, $normal);
 
-            $products = array_map(function ($p) {
+            $products = array_map(function ($p) use ($currentUserId) {
                 if (!$p) return null;
 
                 // DATA HARGA TERTINGGI
@@ -52,6 +55,10 @@ class getAll extends Controller
                     'diskon' => $p->diskon,
                     'highest_bid' => $highestBid, // Harga bid tertinggi (angka)
                     'end_date_iso' => $p->end_date ? $p->end_date->toIso8601String() : null,
+                    // tambahan untuk frontend: status dan id pemenang (dari products)
+                    'status' => $p->status,
+                    'winner_id' => $p->winner_id ?? null,
+                    'is_winner' => ($p->status == 2 && $p->winner_id && $currentUserId && ($p->winner_id == $currentUserId)),
                 ];
             }, $result);
 
@@ -84,7 +91,7 @@ class getAll extends Controller
         $query = Products::with(['imageUtama', 'kategori'])
             ->select('products.*') // Ambil semua kolom produk
             ->selectSub($highestBidQuery, 'highest_bid_amount') // Tambah kolom virtual
-            ->where('status', 1)
+            ->whereIn('status', [1, 2])
             ->where('type', $type);
 
         if ($search !== '') {
