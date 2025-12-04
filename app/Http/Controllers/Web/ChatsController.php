@@ -53,6 +53,55 @@ class ChatsController extends Controller
     }
 
     /**
+     * Get realtime state for a product: highest bid, next nominals, latest messages
+     */
+    public function state($slug)
+    {
+        $product = Products::where('slug',$slug)->firstOrFail();
+
+        // Latest bids (newest first)
+        $bids = Bid::with('user')
+            ->where('product_id', $product->id)
+            ->orderBy('created_at', 'desc')
+            ->limit(20)
+            ->get();
+
+        $messages = $bids->map(function ($data) {
+            return [
+                'user' => [
+                    'id' => $data->user->id ?? 0,
+                    'name' => $data->user->name ?? 'User',
+                    'email' => $data->user->email ?? '-' ,
+                ],
+                'message' => (int) $data->price,
+                'tanggal' => Carbon::parse($data->created_at)->format('Y-m-d H:i:s')
+            ];
+        });
+
+        // Highest bid fallback to product price
+        $highest = $bids->first() ? (int) $bids->first()->price : (int) $product->price;
+
+        // Step (kelipatan)
+        $step = (int) ($product->kelipatan_bid ?? $product->kelipatan ?? 10000);
+        if ($step <= 0) { $step = 10000; }
+
+        // Next nominals (5 options)
+        $nextNominals = [];
+        for ($i = 1; $i <= 5; $i++) {
+            $nextNominals[] = $highest + ($step * $i);
+        }
+
+        return response()->json([
+            'highest' => $highest,
+            'step' => $step,
+            'nextNominals' => $nextNominals,
+            'messages' => $messages,
+            'productId' => (int) $product->id,
+            'slug' => $slug,
+        ]);
+    }
+
+    /**
      * Persist message to database
      *
      * @param  Request $request

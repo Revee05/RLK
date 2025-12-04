@@ -38419,6 +38419,9 @@ function waitForSlug(callback) {
     }
   }, 100);
 }
+
+// Echo listener for history updates
+
 waitForSlug(function () {
   console.log("Vue initialized. slug =", window.productSlug);
   window.app = new vue__WEBPACK_IMPORTED_MODULE_0___default.a({
@@ -38429,6 +38432,9 @@ waitForSlug(function () {
     created: function created() {
       var _this = this;
       this.fetchMessages();
+
+      // Start fallback polling if Echo becomes idle or disconnected
+      this.startStatePolling();
       Echo["private"]("product.".concat(window.productId)).listen("MessageSent", function (e) {
         console.log('[MessageSent] Bid baru diterima:', e);
         // Bid baru masuk di atas (paling baru di index 0)
@@ -38453,15 +38459,66 @@ waitForSlug(function () {
           console.error("Gagal ambil messages:", err);
         });
       },
-      addMessage: function addMessage(msg) {
+      // Polling fallback: reconcile UI using canonical state
+      startStatePolling: function startStatePolling() {
         var _this3 = this;
+        var POLL_MS = 15000; // 15s
+        var lastEventTs = Date.now();
+        try {
+          var conn = Echo.connector && Echo.connector.pusher && Echo.connector.pusher.connection;
+          if (conn) {
+            conn.bind('connected', function () {
+              console.log('[Poll] Echo connected');
+            });
+            conn.bind('disconnected', function () {
+              console.warn('[Poll] Echo disconnected');
+            });
+            conn.bind('error', function (err) {
+              console.error('[Poll] Echo error', err);
+            });
+          }
+        } catch (e) {
+          console.warn('[Poll] Echo bind failed', e);
+        }
+
+        // Update lastEvent when MessageSent arrives
+        Echo["private"]("product.".concat(window.productId)).listen('MessageSent', function () {
+          lastEventTs = Date.now();
+        });
+
+        // Periodic polling
+        setInterval(function () {
+          var now = Date.now();
+          var idle = now - lastEventTs > POLL_MS;
+          var url = "/bid/state/".concat(window.productSlug);
+          if (!idle) return;
+          axios.get(url).then(function (res) {
+            var data = res.data || {};
+            var highest = Number(data.highest);
+            var msgs = Array.isArray(data.messages) ? data.messages : [];
+            if (!isNaN(highest)) {
+              var highestEl = document.getElementById('highestPrice');
+              if (highestEl) highestEl.innerText = 'Rp ' + highest.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+              if (typeof updateNominalDropdown === 'function') updateNominalDropdown(highest);
+            }
+
+            // Reconcile messages (newest first)
+            _this3.messages = msgs;
+            console.log('[Poll] State reconciled');
+          })["catch"](function (err) {
+            console.warn('[Poll] State fetch failed', err);
+          });
+        }, POLL_MS);
+      },
+      addMessage: function addMessage(msg) {
+        var _this4 = this;
         axios.post("/bid/messages", msg).then(function (res) {
           console.log('[addMessage] Bid berhasil dikirim:', res.data);
 
           // Langsung update UI untuk user yang melakukan bid
           if (res.data.status === 'Message Sent!' && res.data.data) {
             // Update riwayat bid
-            _this3.messages.unshift({
+            _this4.messages.unshift({
               user: res.data.data.user,
               message: res.data.data.message,
               tanggal: res.data.data.tanggal

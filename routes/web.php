@@ -66,6 +66,8 @@ Route::get('/lelang-categories', [\App\Http\Controllers\Web\LelangProduct\getCat
 Route::get('/lelang/{slug}', [\App\Http\Controllers\Web\LelangProduct\getDetail::class, 'show'])->name('lelang.detail');
 Route::post('/bid/messages', 'Web\ChatsController@sendMessage')->middleware('auth')->name('bid.send');
 Route::get('/bid/messages/{slug}', 'Web\ChatsController@fetchMessages')->name('bid.fetch');
+// Realtime state endpoint for reconciliation
+Route::get('/bid/state/{slug}', 'Web\ChatsController@state')->name('bid.state');
 
 // =============================
 // MERCHANDISE PRODUCT

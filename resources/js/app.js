@@ -24,6 +24,8 @@ function waitForSlug(callback) {
     }, 100);
 }
 
+            // Echo listener for history updates
+
 waitForSlug(() => {
     console.log("Vue initialized. slug =", window.productSlug);
 
@@ -38,6 +40,9 @@ waitForSlug(() => {
 
         created() {
             this.fetchMessages();
+
+            // Start fallback polling if Echo becomes idle or disconnected
+            this.startStatePolling();
 
             Echo.private(`product.${window.productId}`)
                 .listen("MessageSent", (e) => {
@@ -67,6 +72,52 @@ waitForSlug(() => {
                     .catch((err) => {
                         console.error("Gagal ambil messages:", err);
                     });
+            },
+
+            // Polling fallback: reconcile UI using canonical state
+            startStatePolling() {
+                const POLL_MS = 15000; // 15s
+                let lastEventTs = Date.now();
+
+                try {
+                    const conn = Echo.connector && Echo.connector.pusher && Echo.connector.pusher.connection;
+                    if (conn) {
+                        conn.bind('connected', () => { console.log('[Poll] Echo connected'); });
+                        conn.bind('disconnected', () => { console.warn('[Poll] Echo disconnected'); });
+                        conn.bind('error', (err) => { console.error('[Poll] Echo error', err); });
+                    }
+                } catch (e) { console.warn('[Poll] Echo bind failed', e); }
+
+                // Update lastEvent when MessageSent arrives
+                Echo.private(`product.${window.productId}`).listen('MessageSent', () => {
+                    lastEventTs = Date.now();
+                });
+
+                // Periodic polling
+                setInterval(() => {
+                    const now = Date.now();
+                    const idle = now - lastEventTs > POLL_MS;
+                    const url = `/bid/state/${window.productSlug}`;
+                    if (!idle) return;
+
+                    axios.get(url).then((res) => {
+                        const data = res.data || {};
+                        const highest = Number(data.highest);
+                        const msgs = Array.isArray(data.messages) ? data.messages : [];
+
+                        if (!isNaN(highest)) {
+                            const highestEl = document.getElementById('highestPrice');
+                            if (highestEl) highestEl.innerText = 'Rp ' + highest.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+                            if (typeof updateNominalDropdown === 'function') updateNominalDropdown(highest);
+                        }
+
+                        // Reconcile messages (newest first)
+                        this.messages = msgs;
+                        console.log('[Poll] State reconciled');
+                    }).catch((err) => {
+                        console.warn('[Poll] State fetch failed', err);
+                    });
+                }, POLL_MS);
             },
 
             addMessage(msg) {
