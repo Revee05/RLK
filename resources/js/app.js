@@ -209,33 +209,36 @@ waitForSlug(() => {
                             res.data.status === "Message Sent!" &&
                             res.data.data
                         ) {
-                            // === Tambahkan riwayat bid baru ===
+                            const serverData = res.data.data || {};
+
+                            // === Tambahkan riwayat bid baru (gunakan message dari server) ===
                             this.messages.unshift({
-                                user: res.data.data.user,
-                                message: res.data.data.message,
-                                tanggal: res.data.data.tanggal,
+                                user: serverData.user,
+                                message: serverData.message,
+                                tanggal: serverData.tanggal,
                             });
 
-                            // === Update harga tertinggi ===
-                            const price = Number(res.data.data.message);
-                            if (!isNaN(price)) {
+                            // === Prefer highest dari server jika tersedia ===
+                            const highestFromServer =
+                                typeof serverData.highest !== "undefined"
+                                    ? Number(serverData.highest)
+                                    : NaN;
+
+                            const displayPrice = !isNaN(highestFromServer)
+                                ? highestFromServer
+                                : Number(serverData.message);
+
+                            if (!isNaN(displayPrice)) {
                                 const highestEl =
                                     document.getElementById("highestPrice");
                                 if (highestEl) {
-                                    // === Format angka ribuan ===
                                     highestEl.innerText =
-                                        "Rp " +
-                                        price
-                                            .toString()
-                                            .replace(
-                                                /\B(?=(\d{3})+(?!\d))/g,
-                                                "."
-                                            );
+                                        "Rp " + window.formatRp(displayPrice);
 
-                                    // === Highlight harga untuk memberi efek perubahan ===
                                     highestEl.style.transition =
                                         "all 0.3s ease";
-                                    highestEl.style.backgroundColor = "#fef3c7";
+                                    highestEl.style.backgroundColor =
+                                        "#fef3c7";
                                     setTimeout(() => {
                                         highestEl.style.backgroundColor =
                                             "transparent";
@@ -246,9 +249,10 @@ waitForSlug(() => {
                                 if (
                                     typeof updateNominalDropdown === "function"
                                 ) {
-                                    updateNominalDropdown(price);
+                                    updateNominalDropdown(displayPrice);
                                 }
                             }
+
                             if (isDebugEnv())
                                 console.log(
                                     "[addMessage] ✓ UI updated immediately for bidder"
