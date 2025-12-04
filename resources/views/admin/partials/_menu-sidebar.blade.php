@@ -96,7 +96,7 @@
         </a>
     </li>
     <li class="nav-item @yield('panduan')">
-        <a class="nav-link collapsed" href="{{ route('admin.panduan.index') }}">
+        <a class="nav-link collapsed " href="{{ route('admin.panduan.index') }}">
             <i class="fas fa-book-open"></i>
             <span>Panduan Pengguna</span>
         </a>

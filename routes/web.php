@@ -115,9 +115,10 @@ Route::get('/alamat/refresh', 'UserAddressController@refreshList')->name('alamat
 // =============================
 // PANDUAN (GUIDE)
 // =============================
-Route::prefix('panduan')->group(function () {
-    Route::get('/pembelian', [PanduanController::class, 'pembelian'])->name('panduan.beli');
-    Route::get('/lelang-peserta', [PanduanController::class, 'lelangPeserta'])->name('panduan.lelang.peserta');
-    Route::get('/penjualan-karya', [PanduanController::class, 'penjualanKarya'])->name('panduan.penjualan.karya');
-    Route::get('/penjualan-produk', [PanduanController::class, 'penjualanProduk'])->name('panduan.penjualan.produk');
-});
+// Route::prefix('panduan')->group(function () {
+//     Route::get('/pembelian', [PanduanController::class, 'pembelian'])->name('panduan.beli');
+//     Route::get('/lelang-peserta', [PanduanController::class, 'lelangPeserta'])->name('panduan.lelang.peserta');
+//     Route::get('/penjualan-karya', [PanduanController::class, 'penjualanKarya'])->name('panduan.penjualan.karya');
+//     Route::get('/penjualan-produk', [PanduanController::class, 'penjualanProduk'])->name('panduan.penjualan.produk');
+// });
+Route::get('/panduan/{slug}', 'PanduanController@show')->name('panduan.show');

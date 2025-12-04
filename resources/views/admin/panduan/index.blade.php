@@ -1,5 +1,6 @@
 @extends('admin.partials._layout')
 @section('title', 'Panduan Pengguna')
+@section('panduan', 'active')
 
 @section('css')
     <!-- DataTables -->
