@@ -43,6 +43,7 @@ class AddressController extends Controller
     public function create()
     {
         $user = Auth::user();
+        Log::info('AddressController@create invoked', ['user_id' => $user->id ?? null]);
         $provinsis = Cache::remember('provinsis', 180, function () {
             return Provinsi::pluck('nama_provinsi', 'id');
         });
@@ -67,6 +68,7 @@ class AddressController extends Controller
      */
     public function store(Request $request)
     {
+        Log::info('AddressController@store invoked', ['user_id' => $request->user_id, 'payload' => $request->all()]);
         try {
             // validation moved inside try so ValidationException dapat ditangani di bawah
             $this->validate($request, [
@@ -108,6 +110,7 @@ class AddressController extends Controller
                 'label_address' => $request->label_address,
                 'is_primary' => $request->boolean('is_primary'),
             ]);
+            Log::info('AddressController@store success', ['user_address' => $userAddress]);
             return redirect()->route('account.address.index')->with('success', 'Alamat berhasil ditambahkan!');
         } catch (ValidationException $e) {
             // handle validation errors and return with validation messages
@@ -169,6 +172,7 @@ class AddressController extends Controller
      */
     public function update(Request $request, $id)
     {
+        Log::info('AddressController@update invoked', ['user_id' => $request->user_id, 'address_id' => $id, 'payload' => $request->all()]);
         try {
             $this->validate($request, [
                 'name' => 'required',
@@ -211,6 +215,7 @@ class AddressController extends Controller
                 'label_address' => $request->label_address,
                 'is_primary' => $request->boolean('is_primary'),
             ]);
+            Log::info('AddressController@update success', ['user_address' => $userAddress]);
             return redirect()->route('account.address.index')->with('success', 'Alamat berhasil diperbarui!');
         } catch (ValidationException $e) {
             return redirect()->back()->withErrors($e->validator)->withInput();
@@ -228,9 +233,11 @@ class AddressController extends Controller
      */
     public function destroy($id)
     {
+        Log::info('AddressController@destroy invoked', ['user_address_id' => $id]);
         try {
             $userAddress = UserAddress::findOrFail($id);
             $userAddress->delete();
+            Log::info('AddressController@destroy success', ['user_address_id' => $id]);
             return back()->with('success', 'Alamat berhasil dihapus!');
         } catch (Exception $e) {
             Log::error('AddressController@destroy failed: ' . $e->getMessage(), ['exception' => $e]);
@@ -239,6 +246,7 @@ class AddressController extends Controller
     }
     public function getDesa(Request $request, $id)
     {
+        Log::info('AddressController@getDesa invoked', ['kecamatan_id' => $id, 'term' => $request->term]);
         if ($request->ajax()) {
 
             $term = trim($request->term);
@@ -259,6 +267,7 @@ class AddressController extends Controller
                 )
             );
 
+            Log::info('AddressController@getDesa response', ['kecamatan_id' => $id, 'results' => count($results['results'])]);
             return \Response::json($results);
         }
     }
