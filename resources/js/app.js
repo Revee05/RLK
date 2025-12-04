@@ -76,7 +76,7 @@ waitForSlug(() => {
 
             // Polling fallback: reconcile UI using canonical state
             startStatePolling() {
-                const POLL_MS = 15000; // 15s
+                const POLL_MS = 10 * 1000; // 10s
                 let lastEventTs = Date.now();
 
                 try {

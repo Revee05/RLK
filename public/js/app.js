@@ -38462,7 +38462,7 @@ waitForSlug(function () {
       // Polling fallback: reconcile UI using canonical state
       startStatePolling: function startStatePolling() {
         var _this3 = this;
-        var POLL_MS = 15000; // 15s
+        var POLL_MS = 10 * 1000; // 10s
         var lastEventTs = Date.now();
         try {
           var conn = Echo.connector && Echo.connector.pusher && Echo.connector.pusher.connection;

@@ -11,6 +11,7 @@ use App\Events\MessageSent;
 use App\Events\BidSent;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 use App\Jobs\SendNotifacationBid;
 
@@ -49,6 +50,9 @@ class ChatsController extends Controller
                 'tanggal'=> Carbon::parse($data->created_at)->format('Y-m-d H:i:s')
             ];
         });
+        if (in_array(config('app.env'), ['local', 'testing', 'development'])) {
+            \Log::info('[fetchMessages] Response:', $bids->toArray());
+        }
         return $bids;
     }
 
@@ -91,14 +95,18 @@ class ChatsController extends Controller
             $nextNominals[] = $highest + ($step * $i);
         }
 
-        return response()->json([
+        $response = [
             'highest' => $highest,
             'step' => $step,
             'nextNominals' => $nextNominals,
             'messages' => $messages,
             'productId' => (int) $product->id,
             'slug' => $slug,
-        ]);
+        ];
+        if (in_array(config('app.env'), ['local', 'testing', 'development'])) {
+            \Log::info('[state] Response:', $response);
+        }
+        return response()->json($response);
     }
 
     /**
@@ -110,40 +118,73 @@ class ChatsController extends Controller
     public function sendMessage(Request $request)
     {
         try {
-                //Rikuest
-                $priceBid = $request->input('message');
-                $productID = $request->input('produk');
-                
+                // Input
+                $priceBid = (int) $request->input('message');
+                $productID = (int) $request->input('produk');
                 $user = Auth::user();
-                
-                $checkBid = Bid::where('product_id',$productID)->where('price',$priceBid)->first();
-                
-                // jika bid belum ada...
-                if (empty($checkBid)) {
+
+                // Validasi awal input
+                if (!$priceBid || !$productID || !$user) {
+                    return response()->json(['status' => 'error', 'message' => 'Input tidak valid'], 422);
+                }
+
+                // Transaksi untuk mencegah tabrakan bid (race condition)
+                $result = DB::transaction(function () use ($user, $productID, $priceBid) {
+                    // Kunci baris product untuk update agar serial per product
+                    $product = Products::where('id', $productID)->lockForUpdate()->first();
+                    if (!$product) {
+                        return response()->json(['status' => 'error', 'message' => 'Produk tidak ditemukan'], 404);
+                    }
+
+                    // Ambil highest terbaru dari DB
+                    $currentHighest = (int) Bid::where('product_id', $productID)->max('price');
+                    if ($currentHighest <= 0) {
+                        $currentHighest = (int) $product->price;
+                    }
+
+                    // Kelipatan
+                    $step = (int) ($product->kelipatan_bid ?? $product->kelipatan ?? 10000);
+                    if ($step <= 0) { $step = 10000; }
+
+                    // Tolak jika sama dengan harga yang sudah ada (duplicate), atau lebih kecil/sama dari highest
+                    if ($priceBid <= $currentHighest) {
+                        return response()->json(['status' => 'error', 'message' => 'Bid harus lebih tinggi dari harga tertinggi saat ini'], 422);
+                    }
+
+                    // Wajib sesuai kelipatan dari highest
+                    $diff = $priceBid - $currentHighest;
+                    if ($diff % $step !== 0) {
+                        return response()->json(['status' => 'error', 'message' => 'Bid harus sesuai kelipatan yang ditentukan'], 422);
+                    }
+
+                    // Cek lagi jika harga sama untuk produk ini
+                    $checkBid = Bid::where('product_id', $productID)->where('price', $priceBid)->first();
+                    if (!empty($checkBid)) {
+                        return response()->json(['status' => 'error', 'message' => 'Harga bid ini sudah diambil user lain'], 409);
+                    }
+
+                    // Simpan
                     $bids = $user->bid()->create([
                         'price' => $priceBid,
                         'product_id' => $productID,
                     ]);
-                    $bid = $request->input('message');
 
-                    \Log::info('[BID] New bid created', [
+                    $bid = $priceBid;
+
+                    Log::info('[BID] New bid created', [
                         'user_id' => $user->id,
                         'user_name' => $user->name,
                         'price' => $bid,
                         'product_id' => $productID
                     ]);
 
-                    //histori bid - broadcast ke user lain
+                    // Broadcast
                     broadcast(new MessageSent($user, $bid, $bids->created_at, $productID))->toOthers();
-                    \Log::info('[BID] MessageSent broadcasted to others');
-                    
-                    //bid - broadcast ke SEMUA user termasuk yang melakukan bid
                     broadcast(new BidSent($bid, $productID));
-                    \Log::info('[BID] BidSent broadcasted to all users', ['price' => $bid]);
 
-                    $response = [
-                        'status' => 'Message Sent!',
-                        'data' => [
+                    return [
+                        'status' => 'Message Sent!'
+                        , 'data' => [
                             'user' => [
                                 'id' => $user->id,
                                 'name' => $user->name,
@@ -154,35 +195,23 @@ class ChatsController extends Controller
                             'tanggal' => Carbon::parse($bids->created_at)->format('Y-m-d H:i:s')
                         ]
                     ];
+                });
 
+                if (is_array($result)) {
                     if (in_array(config('app.env'), ['local', 'testing', 'development'])) {
-                        \Log::info('Response:', $response);
+                        Log::info('[sendMessage] Response:', $result);
                     }
-
-                    return $response;
-                } else {
-                    \Log::info("Bid Sudah ada");
-                    $response = [
-                        'status' => 'Bid already!',
-                        'data' => [
-                            'user' => [
-                                'id' => $checkBid->user->id,
-                                'name' => $checkBid->user->name,
-                                'email' => $checkBid->user->email,
-                            ],
-                            'message' => $checkBid->price,
-                            'produk' => $checkBid->product_id,
-                            'tanggal' => Carbon::parse($checkBid->created_at)->format('Y-m-d H:i:s')
-                        ]
-                    ];
-                    if (in_array(config('app.env'), ['local', 'testing', 'development'])) {
-                        \Log::info('Response:', $response);
-                    }
-                    return $response;
-                }                
+                    return $result;
+                }
+                // Jika result adalah Response (error), kembalikan langsung
+                if (in_array(config('app.env'), ['local', 'testing', 'development'])) {
+                    Log::info('[sendMessage] Error Response:', (array) $result);
+                }
+                return $result;
             
         } catch (Exception $e) {
              \Log::error("Save error ".$e->getMessage());
+             return response()->json(['status' => 'error', 'message' => 'Terjadi kesalahan saat menyimpan bid'], 500);
         }
 
     }
