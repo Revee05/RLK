@@ -31,6 +31,7 @@ class AddressController extends Controller
             ->orderByDesc('is_primary')
             ->orderBy('id')
             ->get();
+        Log::info('AddressController@index response', ['user_address' => $userAddress]);
         return view('account.address.address', compact('userAddress'));
     }
 
@@ -73,9 +74,9 @@ class AddressController extends Controller
                 'user_id' => 'required',
                 'phone' => 'required',
                 'address' => 'required',
-                'provinsi_id' => 'required',
-                'kabupaten_id' => 'required',
-                'kecamatan_id' => 'required',
+                'province_id' => 'required',
+                'city_id' => 'required',
+                'district_id' => 'required',
                 // 'desa_id'=>'required',
                 'label_address' => 'required',
                 // 'kodepos'=>'',
@@ -84,9 +85,9 @@ class AddressController extends Controller
                 'user_id.required' => 'wajib di isi',
                 'phone.required' => 'Nomer hp wajib di isi',
                 'address.required' => 'Alamat wajib di isi',
-                'provinsi_id.required' => 'Provinsi wajib di isi',
-                'kabupaten_id.required' => 'Kabupaten wajib di isi',
-                'kecamatan_id.required' => 'Kecamtan wajib di isi',
+                'province_id.required' => 'Provinsi wajib di isi',
+                'city_id.required' => 'Kabupaten wajib di isi',
+                'district_id.required' => 'Kecamtan wajib di isi',
                 // 'desa_id.required'=>'Desa wajib di isi',
                 // 'kodepos'=>'Kodepost wajib di isi',
                 'label_address' => 'Label alamat wajib di isi',
@@ -101,11 +102,9 @@ class AddressController extends Controller
                 'user_id' => $request->user_id,
                 'phone' => $request->phone,
                 'address' => $request->address,
-                'provinsi_id' => $request->provinsi_id,
-                'kabupaten_id' => $request->kabupaten_id,
-                'kecamatan_id' => $request->kecamatan_id,
-                // 'desa_id'=>$request->desa_id,
-                // 'kodepos'=>$request->kodepos,
+                'province_id' => $request->province_id,
+                'city_id' => $request->city_id,
+                'district_id' => $request->district_id,
                 'label_address' => $request->label_address,
                 'is_primary' => $request->boolean('is_primary'),
             ]);
@@ -138,8 +137,8 @@ class AddressController extends Controller
      */
     public function edit($id)
     {
-        $user_address = UserAddress::with(['provinsi', 'kabupaten', 'kecamatan'])->findOrFail($id);
-
+        $user_address = UserAddress::with(['province', 'city', 'district'])->findOrFail($id);
+        Log::info('AddressController@edit response', ['user_address' => $user_address]);
         // If request expects JSON (AJAX), return the address as JSON for modal population
         if (request()->ajax() || request()->wantsJson()) {
             return response()->json($user_address);
@@ -176,9 +175,9 @@ class AddressController extends Controller
                 'user_id' => 'required',
                 'phone' => 'required',
                 'address' => 'required',
-                'provinsi_id' => 'required',
-                'kabupaten_id' => 'required',
-                'kecamatan_id' => 'required',
+                'province_id' => 'required',
+                'city_id' => 'required',
+                'district_id' => 'required',
                 // 'desa_id' => 'required',
                 'label_address' => 'required',
                 // 'kodepos' => '',
@@ -187,9 +186,9 @@ class AddressController extends Controller
                 'user_id.required' => 'wajib di isi',
                 'phone.required' => 'Nomer hp wajib di isi',
                 'address.required' => 'Alamat wajib di isi',
-                'provinsi_id.required' => 'Provinsi wajib di isi',
-                'kabupaten_id.required' => 'Kabupaten wajib di isi',
-                'kecamatan_id.required' => 'Kecamtan wajib di isi',
+                'province_id.required' => 'Provinsi wajib di isi',
+                'city_id.required' => 'Kabupaten wajib di isi',
+                'district_id.required' => 'Kecamtan wajib di isi',
                 // 'desa_id.required' => 'Desa wajib di isi',
                 // 'kodepos' => 'Kodepost wajib di isi',
                 'label_address' => 'Label alamat wajib di isi',
@@ -206,11 +205,9 @@ class AddressController extends Controller
                 'user_id' => $request->user_id,
                 'phone' => $request->phone,
                 'address' => $request->address,
-                'provinsi_id' => $request->provinsi_id,
-                'kabupaten_id' => $request->kabupaten_id,
-                'kecamatan_id' => $request->kecamatan_id,
-                // 'desa_id' => $request->desa_id,
-                // 'kodepos' => $request->kodepos,
+                'province_id' => $request->province_id,
+                'city_id' => $request->city_id,
+                'district_id' => $request->district_id,
                 'label_address' => $request->label_address,
                 'is_primary' => $request->boolean('is_primary'),
             ]);
