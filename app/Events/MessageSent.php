@@ -1,7 +1,11 @@
 <?php
 
+
+// === Namespace untuk event MessageSent ===
 namespace App\Events;
 
+
+// === Import model dan trait yang diperlukan untuk event broadcasting ===
 use App\User;
 use App\Bid;
 use App\Products;
@@ -13,35 +17,23 @@ use Illuminate\Contracts\Broadcasting\ShouldBroadcastNow;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 
+
+// === Event MessageSent digunakan untuk broadcast pesan/bid baru ke client yang subscribe channel produk terkait ===
 class MessageSent implements ShouldBroadcastNow
 {
+    // === Trait Laravel untuk event broadcasting dan serialisasi ===
     use Dispatchable, InteractsWithSockets, SerializesModels;
-     /**
-     * User that sent the message
-     *
-     * @var User
-     */
-    public $user;
-    public $bid;
-    public $tanggal;
-    public $productId;
-    /**
-     * Bid details
-     *
-     * @var Bid
-     */
-    // public $bid;
 
-    /**
-     * Create a new event instance.
-     *
-     * @return void
-     */
-    /**
-     * Create a new event instance.
-     *
-     * @return void
-     */
+    // === User yang mengirim pesan/bid ===
+    public $user;
+    // === Nilai bid atau pesan yang dikirim ===
+    public $bid;
+    // === Tanggal/waktu bid dikirim ===
+    public $tanggal;
+    // === ID produk yang terkait dengan bid/pesan ===
+    public $productId;
+
+    // === Konstruktor event, menerima user, bid, tanggal, dan productId ===
     public function __construct(User $user, $bid, $tanggal, $productId)
     {
         $this->user = $user;
@@ -50,11 +42,13 @@ class MessageSent implements ShouldBroadcastNow
         $this->productId = $productId;
     }
 
+    // === Nama event yang akan dibroadcast ke client (frontend) ===
     public function broadcastAs()
     {
         return 'MessageSent';
     }
-    
+
+    // === Data yang dikirim ke client saat event dibroadcast ===
     public function broadcastWith()
     {
         \Log::info('[MessageSent Event] Broadcasting data', [
@@ -76,12 +70,8 @@ class MessageSent implements ShouldBroadcastNow
             'productId' => $this->productId
         ];
     }
-    
-    /**
-     * Get the channels the event should broadcast on.
-     *
-     * @return \Illuminate\Broadcasting\Channel|array
-     */
+
+    // === Channel privat tempat event akan dibroadcast, hanya user tertentu yang bisa subscribe ===
     public function broadcastOn()
     {
         return new PrivateChannel('product.' . $this->productId);
