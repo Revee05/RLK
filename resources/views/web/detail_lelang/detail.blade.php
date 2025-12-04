@@ -85,21 +85,26 @@
 
                             <div class="details-grid">
                                 <div>
-                                    <p class="label-teal">Material</p>
-                                    <p>{{ $product->material ?? '-' }}</p>
-                                    <p class="label-teal">Dimensi</p>
-                                    <p>{{ $product->dimension ?? '-' }}</p>
+                                    <p class="label-teal">Stock</p>
+                                    <p>{{ $product->stock ?? '-' }}</p>
                                     <p class="label-teal">Berat</p>
                                     <p>{{ $product->weight ?? '-' }}</p>
+                                    <p class="label-teal">Ukuran</p>
+                                    <p>{{ $product->long ?? '-' }} X {{ $product->width ?? '-' }} X
+                                        {{ $product->height ?? '-' }}</p>
                                 </div>
                                 <div>
-                                    <p class="label-teal">Tahun Karya</p>
-                                    <p>{{ $product->year ?? '-' }}</p>
+                                    <p class="label-teal">Kondisi</p>
+                                    <p>{{ $product->kondisi ?? '-' }}</p>
                                     <p class="label-teal">Seniman</p>
                                     <p>{{ $product->karya->name ?? '-' }}</p>
                                 </div>
                             </div>
+
+                            <h4>Kelengkapan Produk</h4>
+                            <div></div>
                         </div>
+
 
                         {{-- HISTORY / REALTIME --}}
                         <div class="history-box">
