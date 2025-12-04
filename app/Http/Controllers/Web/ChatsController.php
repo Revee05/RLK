@@ -63,29 +63,13 @@ class ChatsController extends Controller
     {
         $product = Products::where('slug',$slug)->firstOrFail();
 
-        // Latest bids (newest first)
-        $bids = Bid::with('user')
+        // Ambil hanya 1 bid terbaru
+        $latestBid = Bid::with('user')
             ->where('product_id', $product->id)
             ->orderBy('created_at', 'desc')
-            ->limit(20)
-            ->get();
+            ->first();
 
-        $messages = $bids->map(function ($data) {
-            return [
-                'user' => [
-                    'id' => $data->user->id ?? 0,
-                    'name' => $data->user->name ?? 'User',
-                    'email' => $data->user->email ?? '-' ,
-                ],
-                'message' => (int) $data->price,
-                'tanggal' => Carbon::parse($data->created_at)->format('Y-m-d H:i:s')
-            ];
-        });
-
-        // Highest bid fallback to product price
-        $highest = $bids->first() ? (int) $bids->first()->price : (int) $product->price;
-
-        // Step (kelipatan)
+        $highest = $latestBid ? (int) $latestBid->price : (int) $product->price;
         $step = (int) ($product->kelipatan_bid ?? $product->kelipatan ?? 10000);
         if ($step <= 0) { $step = 10000; }
 
@@ -95,16 +79,30 @@ class ChatsController extends Controller
             $nextNominals[] = $highest + ($step * $i);
         }
 
+        // Data bid terbaru untuk riwayat
+        $messages = [];
+        if ($latestBid) {
+            $messages[] = [
+                'user' => [
+                    'id' => $latestBid->user->id ?? 0,
+                    'name' => $latestBid->user->name ?? 'User',
+                    'email' => $latestBid->user->email ?? '-' ,
+                ],
+                'message' => (int) $latestBid->price,
+                'tanggal' => \Carbon\Carbon::parse($latestBid->created_at)->format('Y-m-d H:i:s')
+            ];
+        }
+
         $response = [
             'highest' => $highest,
             'step' => $step,
             'nextNominals' => $nextNominals,
-            'messages' => $messages,
+            'messages' => $messages, // hanya bid terbaru
             'productId' => (int) $product->id,
             'slug' => $slug,
         ];
         if (in_array(config('app.env'), ['local', 'testing', 'development'])) {
-            \Log::info('[state] Response:', $response);
+            \Log::info('[state] Optimized Response:', $response);
         }
         return response()->json($response);
     }

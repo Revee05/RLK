@@ -38502,9 +38502,14 @@ waitForSlug(function () {
               if (typeof updateNominalDropdown === 'function') updateNominalDropdown(highest);
             }
 
-            // Reconcile messages (newest first)
-            _this3.messages = msgs;
-            console.log('[Poll] State reconciled');
+            // Push bid terbaru ke riwayat (jika ada)
+            if (msgs.length > 0) {
+              // Cek apakah bid sudah ada di messages, jika belum, unshift
+              if (!_this3.messages.length || _this3.messages[0].message !== msgs[0].message) {
+                _this3.messages.unshift(msgs[0]);
+              }
+            }
+            console.log('[Poll] State reconciled (optimized)');
           })["catch"](function (err) {
             console.warn('[Poll] State fetch failed', err);
           });
