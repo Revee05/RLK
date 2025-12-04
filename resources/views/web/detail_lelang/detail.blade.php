@@ -179,17 +179,13 @@
 @endsection
 
 @section('js')
-    {{-- ... (kode JS tetap sama seperti sebelumnya, tidak perlu diubah) ... --}}
-    <script src="{{ asset('js/app.js') }}"></script>
+    {{-- Pastikan variabel global di-define SEBELUM app.js --}}
     <script>
         window.productId = {{ intval($product->id) }};
         window.productSlug = "{{ $product->slug }}";
         window.initialHighest = {{ intval($highestBid) }};
-
-        if (!window.productSlug || window.productSlug === "undefined") {
-            console.warn("Product slug kosong! (dari Blade)");
-        }
     </script>
+    <script src="{{ asset('js/app.js') }}"></script>
 
     {{-- Script untuk update dropdown & fungsi bidding --}}
     <script>
@@ -429,10 +425,6 @@
 
     {{-- Init Data dari Controller ke JS Global Variable --}}
     <script>
-        window.productId = {{ intval($product->id) }};
-        window.productSlug = "{{ $product->slug }}";
-        window.initialHighest = {{ intval($highestBid) }};
-        
         // INI SOLUSI AGAR RIWAYAT MUNCUL:
         // Kita oper data JSON dari controller ke variabel window
         window.existingBids = @json($initialMessages ?? []); 
