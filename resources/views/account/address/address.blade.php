@@ -34,9 +34,9 @@
                                                     </div>
                                                     <div class="address-street text-muted">{{ $ua->address }}</div>
                                                     <div class="address-location text-muted small">
-                                                        {{ $ua->provinsi->nama_provinsi }},
-                                                        {{ $ua->kabupaten->nama_kabupaten }},
-                                                        {{ $ua->kecamatan->nama_kecamatan }}</div>
+                                                        {{ $ua->province->name }},
+                                                        {{ $ua->city->name }},
+                                                        {{ $ua->district->name }}</div>
                                                 </div>
                                                 <div class="address-actions d-flex align-items-center">
                                                     <a href="#" class="btn-icon icon-edit open-update-address"
