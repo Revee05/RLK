@@ -13,14 +13,14 @@ class BidNotification extends Mailable
     use Queueable, SerializesModels;
 
     public $bid;
-    /**
-     * Create a new message instance.
-     *
-     * @return void
-     */
-    public function __construct(Bid $bid)
+    public $winnerBid;
+    public $winnerPrice;
+
+    public function __construct($bid, $winnerBid = null)
     {
-         $this->bid = $bid;
+        $this->bid = $bid;
+        $this->winnerBid = $winnerBid;
+        $this->winnerPrice = $winnerBid ? $winnerBid->price : null;
     }
 
     /**
@@ -30,6 +30,12 @@ class BidNotification extends Mailable
      */
     public function build()
     {
-        return $this->subject('Bid Notification')->view('mail.bid_notifikasi');
+        return $this->subject('Hasil Lelang — Anda belum menang')
+                    ->view('mail.bid_notifikasi')
+                    ->with([
+                        'bid' => $this->bid,
+                        'winnerBid' => $this->winnerBid,
+                        'winnerPrice' => $this->winnerPrice,
+                    ]);
     }
 }
