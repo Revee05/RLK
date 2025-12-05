@@ -1,0 +1,44 @@
+.border-darkblue {
+    border-color: #051a36 !important;
+}
+
+.card.content-border {
+    background-color: #fff !important;
+}
+
+.card-head {
+    padding: 1rem 1rem;
+    margin-bottom: 0;
+}
+
+.card-head {
+    vertical-align: bottom;
+}
+
+.content-border {
+    border: 1px solid #051a36 !important;
+    border-radius: 1rem !important;
+}
+
+.border-nav-top {
+    border-top: 1px solid #051a36 !important;
+    border-right: 1px solid #051a36 !important;
+    border-left: 1px solid #051a36 !important;
+    border-top-left-radius: 0.5rem !important;
+    border-top-right-radius: 0.5rem !important;
+}
+.border-nav-middle {
+    border-top: 1px solid #051a36 !important;
+    border-right: 1px solid #051a36 !important;
+    border-left: 1px solid #051a36 !important;
+}
+.border-nav-bottom {
+    border: 1px solid #051a36 !important;
+    border-bottom-left-radius: 0.5rem !important;
+    border-bottom-right-radius: 0.5rem !important;
+}
+
+.list-group-item.list-group-item-action.active {
+    background-color: #051a36 !important;
+    color: #fff !important;
+}

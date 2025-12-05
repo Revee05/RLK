@@ -26,8 +26,8 @@
                     Tentang <span class="fa fa-caret-down caret-icon"></span>
                 </a>
                 <div class="dropdown-menu" id="tentangDropdownMenu">
-                    <a class="dropdown-item" href="{{ route('galeri.kami') }}">Perusahaan</a>
-                    <a class="dropdown-item" href="#">Tim</a>
+                    <a class="dropdown-item" href="{{ route('perusahaan') }}">Perusahaan</a>
+                    <a class="dropdown-item" href="{{ route('tim') }}">Tim</a>
                 </div>
             </div>
 
