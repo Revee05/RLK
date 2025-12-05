@@ -38571,22 +38571,22 @@ waitForSlug(function () {
 
           // === Update UI secara instan untuk pengirim (optimistic update) ===
           if (res.data.status === "Message Sent!" && res.data.data) {
-            // === Tambahkan riwayat bid baru ===
+            var serverData = res.data.data || {};
+
+            // === Tambahkan riwayat bid baru (gunakan message dari server) ===
             _this2.messages.unshift({
-              user: res.data.data.user,
-              message: res.data.data.message,
-              tanggal: res.data.data.tanggal
+              user: serverData.user,
+              message: serverData.message,
+              tanggal: serverData.tanggal
             });
 
-            // === Update harga tertinggi ===
-            var price = Number(res.data.data.message);
-            if (!isNaN(price)) {
+            // === Prefer highest dari server jika tersedia ===
+            var highestFromServer = typeof serverData.highest !== "undefined" ? Number(serverData.highest) : NaN;
+            var displayPrice = !isNaN(highestFromServer) ? highestFromServer : Number(serverData.message);
+            if (!isNaN(displayPrice)) {
               var highestEl = document.getElementById("highestPrice");
               if (highestEl) {
-                // === Format angka ribuan ===
-                highestEl.innerText = "Rp " + price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
-
-                // === Highlight harga untuk memberi efek perubahan ===
+                highestEl.innerText = "Rp " + window.formatRp(displayPrice);
                 highestEl.style.transition = "all 0.3s ease";
                 highestEl.style.backgroundColor = "#fef3c7";
                 setTimeout(function () {
@@ -38596,7 +38596,7 @@ waitForSlug(function () {
 
               // === Update dropdown kelipatan nominal ===
               if (typeof updateNominalDropdown === "function") {
-                updateNominalDropdown(price);
+                updateNominalDropdown(displayPrice);
               }
             }
             if (isDebugEnv()) console.log("[addMessage] ✓ UI updated immediately for bidder");

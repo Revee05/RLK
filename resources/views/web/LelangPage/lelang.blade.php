@@ -58,6 +58,7 @@
 
     @push('scripts')
     <script>
+    const currentUserId = @json(auth()->id()); // <-- tetap ada
     let currentBatch = 1;
     let isLoading = false;
     let currentSearch = "";
@@ -88,8 +89,7 @@
 
         let imageUrl = product.image ? `/${product.image}` : 'assets/img/default.jpg';
 
-        // --- UPDATE LOGIKA TIMER DI SINI ---
-        // Kita beri class khusus 'lelang-countdown' dan atribut 'data-end'
+        // --- TIMER BADGE (top) ---
         let badgeWaktu = '';
         if (product.end_date_iso) {
             badgeWaktu = `<div class="lelang-timer-badge lelang-countdown" data-end="${product.end_date_iso}">
@@ -97,7 +97,30 @@
                           </div>`;
         }
 
-        // --- Logika Harga (Tetap sama seperti sebelumnya) ---
+        // --- RESULT BADGE (tampil ketika status = 2 AND lelang sudah selesai) ---
+        let resultBadge = '';
+        if (product.status === 2) {
+            // pastikan lelang sudah selesai (jika ada end_date)
+            let ended = true;
+            if (product.end_date_iso) {
+                ended = (new Date(product.end_date_iso).getTime() <= Date.now());
+            }
+            if (ended) {
+                if (typeof product.is_winner !== 'undefined') {
+                    resultBadge = product.is_winner
+                        ? `<div class="lelang-result-badge" style="background:#28a745; color:#fff;">MENANG</div>`
+                        : `<div class="lelang-result-badge" style="background:#6c757d; color:#fff;">KALAH</div>`;
+                } else {
+                    if (product.winner_id && currentUserId && product.winner_id == currentUserId) {
+                        resultBadge = `<div class="lelang-result-badge" style="background:#28a745; color:#fff;">MENANG</div>`;
+                    } else {
+                        resultBadge = `<div class="lelang-result-badge" style="background:#6c757d; color:#fff;">KALAH</div>`;
+                    }
+                }
+            }
+        }
+
+        // --- Logika Harga ---
         let displayPrice = '';
         let labelHarga = '';
         let priceColor = '';
@@ -117,6 +140,7 @@
         <a href="/lelang/${product.slug}" class="${cellClass}" style="text-decoration:none; color:inherit;">
             <div class="card product-card h-100">
                 ${badgeWaktu}
+                ${resultBadge}
                 <img src="${imageUrl}" class="card-img-top" alt="${product.title}">
                 <div class="card-body text-left p-2">
                     <div class="product-title">${product.title}</div>
