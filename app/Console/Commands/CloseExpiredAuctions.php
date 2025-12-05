@@ -16,6 +16,9 @@ use App\Products;
 use App\Bid;
 // use App\Products;
 // use App\Bid;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\OrderShipped;
+use App\Mail\BidNotification;
 
 class CloseExpiredAuctions extends Command
 {
@@ -77,6 +80,36 @@ class CloseExpiredAuctions extends Command
                     $product->save();
 
                     $this->info("✅ [SOLD] Product ID {$product->id} - Pemenang User ID: {$winningBid->user_id} (Data Disimpan).");
+
+                    // Kirim email ke pemenang
+                    try {
+                        if ($winningBid->user && !empty($winningBid->user->email)) {
+                            Mail::to($winningBid->user->email)->send(new OrderShipped($winningBid));
+                            $this->info("✉️ Email dikirim ke pemenang: {$winningBid->user->email}");
+                        }
+                    } catch (\Exception $mailEx) {
+                        $this->error("Gagal mengirim email ke pemenang ({$product->id}): " . $mailEx->getMessage());
+                    }
+
+                    // Kirim notifikasi ke peserta lain (losers)
+                    try {
+                        $loserBids = Bid::where('product_id', $product->id)
+                                        ->where('user_id', '!=', $winningBid->user_id)
+                                        ->get()
+                                        ->groupBy('user_id');
+
+                        foreach ($loserBids as $userId => $bids) {
+                            // Ambil bid tertinggi dari user tersebut untuk konteks email
+                            $highestUserBid = $bids->sortByDesc('price')->first();
+                            if ($highestUserBid && $highestUserBid->user && !empty($highestUserBid->user->email)) {
+                                // Kirim juga data bid pemenang supaya view bisa menampilkan harga pemenang yang benar
+                                Mail::to($highestUserBid->user->email)->send(new BidNotification($highestUserBid, $winningBid));
+                                $this->info("✉️ Email kalah dikirim ke: {$highestUserBid->user->email}");
+                            }
+                        }
+                    } catch (\Exception $mailEx) {
+                        $this->error("Gagal mengirim email notifikasi kalah untuk produk {$product->id}: " . $mailEx->getMessage());
+                    }
                 } else {
                     // --- SKENARIO B: TIDAK ADA YANG BID (HANGUS) ---
                     
@@ -88,7 +121,9 @@ class CloseExpiredAuctions extends Command
                     
                     $product->save();
 
+                    // Tidak ada penawar — tidak ada email pemenang / kalah.
                     $this->info("❌ [EXPIRED] Product ID {$product->id} tidak ada penawaran.");
+                    $this->info("(No emails) Produk {$product->id} tidak ada penawaran — tidak ada email dikirim.");
                 }
 
                 DB::commit(); // Komit perubahan jika tidak ada error

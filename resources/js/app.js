@@ -108,9 +108,41 @@ waitForSlug(() => {
                     });
             },
 
+            // === NEW: Segera refresh state (highest + messages) tanpa menunggu polling ===
+            refreshStateImmediate() {
+                const url = `/bid/state/${window.productSlug}`;
+                if (isDebugEnv()) console.log('[refreshStateImmediate] fetch', url);
+                axios.get(url)
+                    .then((res) => {
+                        const data = res.data || {};
+                        const highest = Number(data.highest);
+                        const msgs = Array.isArray(data.messages) ? data.messages : [];
+
+                        // Update highest & dropdown
+                        if (!isNaN(highest)) {
+                            const highestEl = document.getElementById("highestPrice");
+                            if (highestEl) highestEl.innerText = "Rp " + window.formatRp(highest);
+                            if (typeof updateNominalDropdown === "function") {
+                                updateNominalDropdown(highest);
+                            }
+                        }
+
+                        // Sinkronisasi riwayat penuh dari server (ambil messages lengkap)
+                        // Lebih aman memanggil fetchMessages agar daftar penuh tersinkronisasi.
+                        this.fetchMessages();
+
+                        if (isDebugEnv()) console.log('[refreshStateImmediate] done', { highest, msgs_count: msgs.length });
+                    })
+                    .catch((err) => {
+                        if (isDebugEnv()) console.warn('[refreshStateImmediate] failed', err);
+                        // fallback: pastikan setidaknya ambil messages lagi
+                        this.fetchMessages();
+                    });
+            },
+
             // === Polling fallback untuk sinkronisasi state jika Echo mati/idle ===
             startStatePolling() {
-                const POLL_MS = 15 * 1000; // === Interval polling 15 detik ===
+                const POLL_MS = 10 * 1000; // === Interval polling 5 detik ===
                 let lastEventTs = Date.now();
 
                 // === Bind event status koneksi Echo (opsional, hanya logging) ===
@@ -265,53 +297,18 @@ waitForSlug(() => {
                         if (isDebugEnv())
                             console.error("[addMessage] Bid gagal:", err);
 
-                        // Cek jika error karena harga sudah diambil user lain
-                        if (
-                            err.response &&
-                            err.response.data &&
-                            err.response.data.message &&
-                            err.response.data.message.includes(
-                                "Harga bid ini sudah diambil user lain"
-                            )
-                        ) {
-                            // Langsung fetch data terbaru dari server
-                            axios
-                                .get(`/bid/state/${window.productSlug}`)
-                                .then((res) => {
-                                    const data = res.data || {};
-                                    const highest = Number(data.highest);
-                                    const msgs = Array.isArray(data.messages)
-                                        ? data.messages
-                                        : [];
-                                    // Update harga tertinggi dan dropdown
-                                    if (!isNaN(highest)) {
-                                        const highestEl =
-                                            document.getElementById(
-                                                "highestPrice"
-                                            );
-                                        if (highestEl)
-                                            highestEl.innerText =
-                                                "Rp " +
-                                                window.formatRp(highest);
-                                        window.updateNominalDropdown(highest);
-                                    }
-                                    // Update riwayat bid
-                                    if (msgs.length > 0) {
-                                        if (
-                                            !window.app.messages.length ||
-                                            window.app.messages[0].message !==
-                                                msgs[0].message
-                                        ) {
-                                            window.app.messages.unshift(
-                                                msgs[0]
-                                            );
-                                        }
-                                    }
-                                    if (isDebugEnv())
-                                        console.log(
-                                            "[addMessage] Fetched state after bid collision"
-                                        );
-                                });
+                        // Jika collision / sudah diambil user lain -> refresh state segera
+                        const msg = err.response && err.response.data && err.response.data.message
+                            ? err.response.data.message
+                            : "";
+
+                        if (err.response && (err.response.status === 409 || msg.includes("Harga bid ini sudah diambil user lain"))) {
+                            if (isDebugEnv()) console.log('[addMessage] Detected bid collision. Refreshing state immediately.');
+                            this.refreshStateImmediate();
+                        } else if (err.response && err.response.status === 422) {
+                            // Validasi (mis: bid lebih kecil atau tidak sesuai kelipatan) -> refresh juga untuk sinkronisasi
+                            if (isDebugEnv()) console.log('[addMessage] Validation error. Refreshing state to sync.');
+                            this.refreshStateImmediate();
                         }
 
                         alert("Gagal mengirim bid. Silakan coba lagi.");
