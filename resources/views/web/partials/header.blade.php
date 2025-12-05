@@ -38,7 +38,7 @@
                     Panduan <span class="fa fa-caret-down caret-icon"></span>
                 </a>
                 <div class="dropdown-menu" id="panduanDropdownMenu">
-                    <a class="dropdown-item" href="{{ route('panduan.beli') }}">Panduan Beli</a>
+                    <a class="dropdown-item" href="{{ route('panduan.show', 'peserta-lelang') }}">Panduan Beli</a>
                     <a class="dropdown-item" href="#">Panduan Jual</a>
                 </div>
             </div>
