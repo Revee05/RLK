@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use App\Panduan;
 
 class PanduanController extends Controller
 {
@@ -31,5 +32,13 @@ class PanduanController extends Controller
     {
         // Pastikan file view: resources/views/web/panduan/penjualan_produk.blade.php ada
         return view('web.panduan.penjualan_produk');
+    }
+
+    public function show($slug)
+    {
+        // Ambil data dari DB sesuai slug
+        $panduan = Panduan::where('slug', $slug)->firstOrFail();
+
+        return view('web.panduan.show', compact('panduan'));
     }
 }

@@ -62,14 +62,9 @@ class ChatsController extends Controller
     public function state($slug)
     {
         $product = Products::where('slug',$slug)->firstOrFail();
-
-        // Ambil bid terbaru
-        $latestBid = Bid::with('user')
-            ->where('product_id', $product->id)
-            ->orderBy('created_at', 'desc')
-            ->first();
-
-        $highest = $latestBid ? (int) $latestBid->price : (int) $product->price;
+        // Ambil nilai tertinggi (MAX) dari bids — lebih aman untuk sinkronisasi
+        $highestFromBids = (int) Bid::where('product_id', $product->id)->max('price');
+        $highest = $highestFromBids > 0 ? $highestFromBids : (int) $product->price;
         $step = (int) ($product->kelipatan ?? 10000);
         if ($step <= 0) { $step = 10000; }
 
@@ -79,8 +74,12 @@ class ChatsController extends Controller
             $nextNominals[] = $highest + ($step * $i);
         }
 
-        // Data bid terbaru untuk riwayat
+        // Data bid terbaru untuk riwayat (ambil 1 terbaru jika ada)
         $messages = [];
+        $latestBid = Bid::with('user')
+            ->where('product_id', $product->id)
+            ->orderBy('created_at', 'desc')
+            ->first();
         if ($latestBid) {
             $messages[] = [
                 'user' => [
@@ -167,22 +166,24 @@ class ChatsController extends Controller
                         'product_id' => $productID,
                     ]);
 
-                    $bid = $priceBid;
+                    // Hitung ulang highest setelah insert untuk memastikan sinkronisasi
+                    $newHighest = (int) Bid::where('product_id', $productID)->max('price');
 
                     Log::info('[BID] New bid created', [
                         'user_id' => $user->id,
                         'user_name' => $user->name,
-                        'price' => $bid,
-                        'product_id' => $productID
+                        'price' => $bids->price,
+                        'product_id' => $productID,
+                        'current_highest_after' => $newHighest,
                     ]);
 
-                    // Broadcast
-                    broadcast(new MessageSent($user, $bid, $bids->created_at, $productID))->toOthers();
-                    broadcast(new BidSent($bid, $productID));
+                    // Broadcast (Echo will notify other clients). We still return highest to caller.
+                    broadcast(new MessageSent($user, $bids->price, $bids->created_at, $productID))->toOthers();
+                    broadcast(new BidSent($bids->price, $productID));
 
                     return [
-                        'status' => 'Message Sent!'
-                        , 'data' => [
+                        'status' => 'Message Sent!',
+                        'data' => [
                             'user' => [
                                 'id' => $user->id,
                                 'name' => $user->name,
@@ -190,8 +191,9 @@ class ChatsController extends Controller
                             ],
                             'message' => $bids->price,
                             'produk' => $bids->product_id,
-                            'tanggal' => Carbon::parse($bids->created_at)->format('Y-m-d H:i:s')
-                        ]
+                            'tanggal' => Carbon::parse($bids->created_at)->format('Y-m-d H:i:s'),
+                            'highest' => $newHighest,
+                        ],
                     ];
                 });
 
