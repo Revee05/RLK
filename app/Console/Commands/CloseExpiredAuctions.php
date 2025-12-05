@@ -6,30 +6,29 @@ use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 
-// --- PENTING: SESUAIKAN NAMESPACE MODEL ---
-// Cek folder App kamu, apakah model ada di folder 'App\Models' atau langsung 'App'?
-// Gunakan salah satu baris di bawah ini sesuai struktur projectmu:
-
-// OPSI 1: Jika model ada di luar (Laravel versi lama)
-use App\Products;
+/**
+ * PENTING: Pastikan namespace model di bawah ini sesuai dengan struktur folder kamu.
+ * Jika Laravel versi 8 ke atas, biasanya ada di App\Models.
+ * Jika versi lama, mungkin langsung di App.
+ * (Pilih salah satu dan hapus komentar pada baris yang sesuai)
+ */
+use App\Products; 
 use App\Bid;
-
-// OPSI 2: Jika model ada di dalam folder Models (Laravel 8 ke atas)
-// use App\Models\Products;
-// use App\Models\Bid;
+// use App\Products;
+// use App\Bid;
 
 class CloseExpiredAuctions extends Command
 {
     /**
-     * Nama perintah yang akan kita ketik di terminal nanti.
-     * Contoh: php artisan lelang:close-expired
+     * Nama perintah console.
+     * Jalankan dengan: php artisan lelang:close-expired
      */
     protected $signature = 'lelang:close-expired';
 
     /**
-     * Penjelasan singkat tentang apa fungsi perintah ini.
+     * Deskripsi perintah.
      */
-    protected $description = 'Mengecek lelang yang expired, menentukan pemenang, dan update status.';
+    protected $description = 'Mengecek lelang expired, update status ke 2 (sold) atau 3 (expired), dan set winner_id.';
 
     public function __construct()
     {
@@ -37,7 +36,7 @@ class CloseExpiredAuctions extends Command
     }
 
     /**
-     * Di sinilah logika utamanya berjalan.
+     * Eksekusi perintah.
      */
     public function handle()
     {
@@ -45,8 +44,7 @@ class CloseExpiredAuctions extends Command
 
         $now = Carbon::now();
 
-        // 1. Cari Produk yang Statusnya MASIH 1 (Live) TAPI Waktunya SUDAH LEWAT
-        // Kita pakai get() biasa.
+        // 1. Cari Produk: Status Aktif (1) TAPI Waktu Habis (< Now)
         $expiredProducts = Products::where('status', 1)
                                    ->where('end_date', '<', $now)
                                    ->get();
@@ -59,40 +57,45 @@ class CloseExpiredAuctions extends Command
         $count = 0;
 
         foreach ($expiredProducts as $product) {
-            DB::beginTransaction(); // Mulai transaksi biar aman
+            DB::beginTransaction(); // Mulai transaksi database
             try {
-                // Cek bid tertinggi
+                // Cari bid tertinggi untuk produk ini
                 $winningBid = Bid::where('product_id', $product->id)
                                  ->orderBy('price', 'desc')
                                  ->first();
 
                 if ($winningBid) {
-                    // --- SKENARIO A: ADA PEMENANG ---
+                    // --- SKENARIO A: ADA PEMENANG (SOLD) ---
                     
-                    // 1. Update Produk jadi Status 2 (Sold/Terjual)
+                    // 1. Update Status Produk jadi 2 (Sold)
                     $product->status = 2;
+
+                    // 2. [PERBAIKAN] Simpan ID User pemenang ke kolom winner_id
+                    $product->winner_id = $winningBid->user_id;
+
+                    // 3. Simpan perubahan ke database
                     $product->save();
 
-                    // (Opsional) Update status di tabel bid jika ada kolom status
-                    // $winningBid->status = 2; 
-                    // $winningBid->save();
-
-                    $this->info("✅ [SOLD] Product ID {$product->id} dimenangkan oleh User ID {$winningBid->user_id} di harga Rp " . number_format($winningBid->price));
+                    $this->info("✅ [SOLD] Product ID {$product->id} - Pemenang User ID: {$winningBid->user_id} (Data Disimpan).");
                 } else {
-                    // --- SKENARIO B: GAK ADA YANG BID ---
+                    // --- SKENARIO B: TIDAK ADA YANG BID (HANGUS) ---
                     
-                    // Update Produk jadi Status 3 (Expired/Hangus)
+                    // Update Status Produk jadi 3 (Expired/Hangus)
                     $product->status = 3;
+                    
+                    // Pastikan winner_id null (opsional, untuk menjaga data bersih)
+                    $product->winner_id = null;
+                    
                     $product->save();
 
                     $this->info("❌ [EXPIRED] Product ID {$product->id} tidak ada penawaran.");
                 }
 
-                DB::commit(); // Simpan perubahan
+                DB::commit(); // Komit perubahan jika tidak ada error
                 $count++;
 
             } catch (\Exception $e) {
-                DB::rollback(); // Batalkan jika error
+                DB::rollback(); // Batalkan perubahan jika terjadi error
                 $this->error("Error pada Product ID {$product->id}: " . $e->getMessage());
             }
         }
