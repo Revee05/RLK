@@ -7,7 +7,8 @@ use App\Models\Bid;
 use App\Models\Products;
 use App\Events\MessageSent;
 use App\Events\BidSent;
-use Auth;
+use Illuminate\Support\Facades\Auth;
+use Carbon\Carbon; // WAJIB: Import Carbon untuk cek waktu
 
 class BidController extends Controller
 {
@@ -30,7 +31,6 @@ class BidController extends Controller
     {
         //
     }
-
 
     /**
      * Display the specified resource.
@@ -95,7 +95,7 @@ class BidController extends Controller
         return response()->json($payload);
     }
 
-    // POST /bid/messages
+    // POST /bid/messages (Main Endpoint untuk Bid)
     public function store(Request $request)
     {
         $request->validate([
@@ -104,6 +104,34 @@ class BidController extends Controller
             'produk' => 'required|integer',
             'tanggal' => 'required'
         ]);
+
+        // --- [VALIDASI KEAMANAN DIMULAI] ---
+
+        $product = Products::find($request->produk);
+
+        if (!$product) {
+            return response()->json(['status' => 'error', 'message' => 'Produk tidak ditemukan'], 404);
+        }
+
+        // 1. Cek Status Database (Menangkap jika Robot Scheduler sudah bekerja)
+        if ($product->status != 1) {
+            return response()->json([
+                'status' => 'error', 
+                'message' => 'Maaf, lelang ini sudah ditutup atau terjual!'
+            ], 400);
+        }
+
+        // 2. Cek Jam Dinding / Realtime (Menangkap gap waktu sebelum Robot bekerja)
+        // Ini mencegah user ngebid di detik ke 59 tapi request baru masuk di detik 01 lewat.
+        if (Carbon::now() > $product->end_date) {
+            return response()->json([
+                'status' => 'error', 
+                'message' => 'Waktu lelang SUDAH HABIS!'
+            ], 400);
+        }
+
+        // --- [VALIDASI KEAMANAN SELESAI] ---
+
 
         // store bid
         $bid = new Bid();
@@ -129,10 +157,21 @@ class BidController extends Controller
         ]);
     }
 
+    // Endpoint Alternatif (Chat/Direct Message Bid)
     public function sendMessage(Request $request)
     {
         $price = $request->message;
         $productID = $request->produk;
+
+        // --- [VALIDASI KEAMANAN TAMBAHAN] ---
+        // Kita juga harus mengamankan pintu ini
+        $product = Products::find($productID);
+
+        // Jika produk tidak ada, status bukan 1, atau waktu habis -> TOLAK
+        if (!$product || $product->status != 1 || Carbon::now() > $product->end_date) {
+             return ['status' => 'Lelang sudah ditutup / Waktu Habis'];
+        }
+        // --- [SELESAI VALIDASI] ---
 
         $user = Auth::user();
 
