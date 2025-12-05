@@ -19,6 +19,7 @@
         <link href="{{asset('theme/css/omahkoding.css')}}?=v.0.0.14" rel="stylesheet" />
         <link href="{{ asset('css/header.css') }}" rel="stylesheet">
         <link href="{{ asset('css/footer.css') }}" rel="stylesheet">
+        <link href="{{ asset('css/tentang/tentang_styles.css') }}" rel="stylesheet">
         <!-- Custom fonts for this template-->
         <link href="{{asset('assets/vendor/fontawesome-free/css/all.min.css')}}" rel="stylesheet" type="text/css">
         {{-- <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/1.0.18/vue.min.js"></script> --}}
@@ -155,7 +156,7 @@
 
             <!-- Header-->
             @include('web.partials.header')
-            
+
             <!-- Navigation-->
             {{-- @include('web.partials.nav') --}}
 
@@ -168,7 +169,7 @@
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
         <!-- Core theme JS-->
         <script src="{{asset('theme/js/scripts.js')}}"></script>
-        
+
         @yield('js')
 
         <script>
@@ -191,7 +192,7 @@
                             icon.innerHTML = "🎉";
                             icon.className = "popup-icon-winner";
 
-                            title.innerHTML = 
+                            title.innerHTML =
                                 `🎉 SELAMAT! ANDA TERPILIH SEBAGAI PEMENANG LELANG <br> <b>${data.title}</b> 🎉`;
 
                             desc.innerHTML =
@@ -206,7 +207,7 @@
 
                             icon.className = "popup-icon-loser";
 
-                            title.innerHTML = 
+                            title.innerHTML =
                                 `😢 Mohon maaf penawaranmu untuk <b>${data.title}</b> Belum Berhasil😢`;
 
                             desc.innerHTML =

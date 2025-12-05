@@ -26,25 +26,25 @@ class HomeController extends Controller
     public function index()
     {
 
-        $products = Products::active()->orderBy('id','desc')->take(5)->get();
+        $products = Products::active()->orderBy('id', 'desc')->take(5)->get();
         $sliders = Sliders::active()->get();
-        $blogs = Posts::Blog()->orderBy('id','desc')->where('status','PUBLISHED')->take(3)->get();
+        $blogs = Posts::Blog()->orderBy('id', 'desc')->where('status', 'PUBLISHED')->take(3)->get();
 
         // 2. TAMBAHKAN INI (Mengambil 1 event aktif terbaru)
         $featuredEvent = Event::whereIn('status', ['active', 'coming_soon'])
-                        ->latest()
-                        ->first();
+            ->latest()
+            ->first();
 
         // 3. MODIFIKASI INI (Tambahkan 'featuredEvent' ke compact)
-        return view('web.home',compact('products','sliders','blogs', 'featuredEvent'));
+        return view('web.home', compact('products', 'sliders', 'blogs', 'featuredEvent'));
     }
 
     public function detail($slug)
     {
         // ... (sisa kode Anda tetap sama) ...
         //cek data is exist
-        $validator = Validator::make(['slug'=>$slug], [
-            'slug'=>['required','exists:products,slug']
+        $validator = Validator::make(['slug' => $slug], [
+            'slug' => ['required', 'exists:products,slug']
         ]);
 
         //jika tidak ada redirect ke halaman 404
@@ -53,16 +53,16 @@ class HomeController extends Controller
         }
 
         try {
-            
-            $product = Products::where('slug',$slug)
-            ->with(['imageUtama','images','kategori','karya','kelengkapans'])
-            ->firstOrFail();
+
+            $product = Products::where('slug', $slug)
+                ->with(['imageUtama', 'images', 'kategori', 'karya', 'kelengkapans'])
+                ->firstOrFail();
 
             // Ambil semua bidding
             $bidList = Bid::where('product_id', $product->id)
-                        ->with('user')
-                        ->orderBy('price', 'desc')
-                        ->get();
+                ->with('user')
+                ->orderBy('price', 'desc')
+                ->get();
 
             // Highest bidding
             $highestBid = $bidList->first() ? $bidList->first()->price : $product->price;
@@ -72,17 +72,17 @@ class HomeController extends Controller
 
             // Dropdown kelipatan 5x
             $nominals = [];
-            for ($i=1; $i<=5; $i++) {
+            for ($i = 1; $i <= 5; $i++) {
                 $nominals[] = $highestBid + ($step * $i);
             }
 
             // Related products
             $related = Products::where('kategori_id', $product->kategori_id)
-                        ->where('id','!=',$product->id)
-                        ->active()
-                        ->take(4)
-                        ->with('imageUtama')
-                        ->get();
+                ->where('id', '!=', $product->id)
+                ->active()
+                ->take(4)
+                ->with('imageUtama')
+                ->get();
 
             // Pass to view
             return view('web.detail', [
@@ -92,9 +92,8 @@ class HomeController extends Controller
                 'nominals'    => $nominals,
                 'related'     => $related,
             ]);
-        
         } catch (Exception $e) {
-             Log::error('Detail Product :'. $e->getMessage());
+            Log::error('Detail Product :' . $e->getMessage());
         }
     }
 
@@ -102,116 +101,117 @@ class HomeController extends Controller
     {
         // ... (sisa kode Anda tetap sama) ...
         //cek data is exist
-        $validator = Validator::make(['slug'=>$slug], [
-            'slug'=>['required','exists:kategori,slug']
+        $validator = Validator::make(['slug' => $slug], [
+            'slug' => ['required', 'exists:kategori,slug']
         ]);
 
         //jika tidak ada redirect ke halaman 404
         if ($validator->fails()) {
             abort('404');
         }
-        
+
         try {
-            
-            $products = Products::whereHas('kategori',function($query) use ($slug){
-                return $query->where('slug',$slug);
-            })->active()->orderBy('id','desc')->paginate(16);
+
+            $products = Products::whereHas('kategori', function ($query) use ($slug) {
+                return $query->where('slug', $slug);
+            })->active()->orderBy('id', 'desc')->paginate(16);
 
             if ($products) {
-                return view('web.category',compact('products'));
+                return view('web.category', compact('products'));
             }
-            
+
             abort(404);
-        
         } catch (Exception $e) {
-            Log::error('By Kategori :'. $e->getMessage());
+            Log::error('By Kategori :' . $e->getMessage());
         }
     }
 
     public function page($slug)
     {
         // ... (sisa kode Anda tetap sama) ...
-        $validator = Validator::make(['slug'=>$slug], [
-            'slug'=>['required','exists:posts,slug']
+        $validator = Validator::make(['slug' => $slug], [
+            'slug' => ['required', 'exists:posts,slug']
         ]);
-        
+
         //jika tidak ada redirect ke halaman 404
         if ($validator->fails()) {
             abort('404');
         }
 
         try {
-            
-            $page = Posts::where('slug',$slug)->first();
-            
-            if ($page) {
-                return view('web.page',compact('page'));
-            }
-            
-            abort(404);
 
+            $page = Posts::where('slug', $slug)->first();
+
+            if ($page) {
+                return view('web.page', compact('page'));
+            }
+
+            abort(404);
         } catch (Exception $e) {
-            Log::error('Page :'. $e->getMessage());
+            Log::error('Page :' . $e->getMessage());
         }
     }
-    
+
     public function search(Request $request)
-    { 
-      // ... (sisa kode Anda tetap sama) ...
-      try {
-    
-      $q = $request->input('q');
+    {
+        // ... (sisa kode Anda tetap sama) ...
+        try {
 
-      $validator = Validator::make(['q'=>$q], ['q'=>['required','string','min:1','max:90']
-      ]);
+            $q = $request->input('q');
 
-      if ($validator->fails()) {
-        
-      return redirect()->route('home'); 
-      }
+            $validator = Validator::make(['q' => $q], [
+                'q' => ['required', 'string', 'min:1', 'max:90']
+            ]);
+
+            if ($validator->fails()) {
+
+                return redirect()->route('home');
+            }
 
 
-      $products = Products::active()->where('title', 'LIKE', "%$q%")->paginate(16);
-      $products->appends(['q' => $q]);
-    
-      return view('web.search', compact('q', 'products'));
-    
-      } catch (Exception $e) {
-      Log::error('Search :'. $e->getMessage());
-      }
+            $products = Products::active()->where('title', 'LIKE', "%$q%")->paginate(16);
+            $products->appends(['q' => $q]);
+
+            return view('web.search', compact('q', 'products'));
+        } catch (Exception $e) {
+            Log::error('Search :' . $e->getMessage());
+        }
     }
 
-    public function galeriKami()
+    public function perusahaan()
     {
-        return view('web.galeri-kami');
+        return view('web.tentang.perusahaan');
+    }
+    public function tim()
+    {
+        return view('web.tentang.tim');
     }
 
     public function seniman($slug)
     {
         // ... (sisa kode Anda tetap sama) ...
         //cek data is exist
-        $validator = Validator::make(['slug'=>$slug], [
-            'slug'=>['required','exists:karya,slug']
+        $validator = Validator::make(['slug' => $slug], [
+            'slug' => ['required', 'exists:karya,slug']
         ]);
         //jika tidak ada redirect ke halaman 404
         if ($validator->fails()) {
             abort('404');
         }
-        
+
         try {
-            
-            $products = Products::whereHas('karya',function($query) use ($slug){
-                return $query->where('slug',$slug);
-            })->active()->orderBy('id','desc')->paginate(16);
+
+            $products = Products::whereHas('karya', function ($query) use ($slug) {
+                return $query->where('slug', $slug);
+            })->active()->orderBy('id', 'desc')->paginate(16);
 
             if ($products) {
-                return view('web.seniman',compact('products'));
+                return view('web.seniman', compact('products'));
             }
-            
+
             abort(404);
-        
         } catch (Exception $e) {
-            Log::error('By Seniman :'. $e->getMessage());
+            Log::error('By Seniman :' . $e->getMessage());
         }
     }
 }
