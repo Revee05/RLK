@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Validator;
 use Exception;
+use Carbon\Carbon; // Pastikan ini ada
 
 class getDetail extends Controller
 {
@@ -28,7 +29,7 @@ class getDetail extends Controller
         }
 
         try {
-            // 2. Ambil Data Produk beserta Relasi
+            // 2. Ambil Data Produk
             $product = Products::where('slug', $slug)
                 ->with(['imageUtama', 'images', 'kategori', 'karya', 'kelengkapans'])
                 ->first();
@@ -37,41 +38,62 @@ class getDetail extends Controller
                 return abort(404);
             }
 
-            // 3. Ambil Semua History Bidding (Urutkan dari Terbaru)
+            // 3. Ambil History Bidding
             $bids = Bid::with('user')
                 ->where('product_id', $product->id)
                 ->orderBy('created_at', 'desc') 
                 ->get();
 
             // ---------------------------------------------------------
-            // PERBAIKAN PENTING: FORMAT DATA KHUSUS UNTUK VUE JS
+            // PERBAIKAN: FORMAT DATA "SUPER SAFE MODE"
             // ---------------------------------------------------------
-            // Kita mapping data agar strukturnya sesuai dengan props 'messages' di Vue
             $initialMessages = $bids->map(function ($item) {
+                
+                // A. Penanganan Tanggal (Anti Error String/Null)
+                try {
+                    if ($item->created_at) {
+                        // Paksa parse ke Carbon dulu, baru format
+                        $tanggal = Carbon::parse($item->created_at)->format('Y-m-d H:i:s');
+                    } else {
+                        // Jika null, pakai waktu sekarang
+                        $tanggal = Carbon::now()->format('Y-m-d H:i:s');
+                    }
+                } catch (\Throwable $e) {
+                    // Jika parsing gagal total, fallback ke waktu sekarang
+                    $tanggal = Carbon::now()->format('Y-m-d H:i:s');
+                }
+
+                // B. Penanganan User (Anti Error User Terhapus)
+                $userId = 0;
+                $userName = 'Pengguna';
+                $userEmail = '-';
+
+                // Cek apakah user ada (tidak null)
+                if ($item->user) {
+                    $userId = $item->user->id ?? 0;
+                    $userName = $item->user->name ?? 'Pengguna';
+                    $userEmail = $item->user->email ?? '-';
+                }
+
                 return [
                     'user' => [
-                        'id' => $item->user->id ?? 0,
-                        'name' => $item->user->name ?? 'Pengguna',
-                        'email' => $item->user->email ?? '-'
+                        'id' => $userId,
+                        'name' => $userName,
+                        'email' => $userEmail
                     ],
-                    // Message harus berisi HARGA (integer), bukan string format
                     'message' => $item->price,
-                    // Tanggal format ISO/String
-                    'tanggal' => $item->created_at->format('Y-m-d H:i:s'),
+                    'tanggal' => $tanggal,
                 ];
             });
 
-            // Data terbaru harus di atas (descending by created_at)
             $initialMessages = $initialMessages->values();
 
 
             // 4. Hitung Highest Bid
-            // Jika ada bid, ambil yang pertama (tertinggi). Jika tidak, pakai harga awal produk.
             $highestBid = $bids->first() ? $bids->first()->price : $product->price;
 
 
-            // 5. Hitung Pilihan Nominal (Kelipatan)
-            // Cek ketersediaan kolom kelipatan_bid atau kelipatan
+            // 5. Hitung Pilihan Nominal
             $step = 0;
             if (isset($product->kelipatan_bid)) {
                 $step = intval($product->kelipatan_bid);
@@ -79,14 +101,12 @@ class getDetail extends Controller
                 $step = intval($product->kelipatan);
             }
 
-            // Buat opsi dropdown (misal: 5 opsi kenaikan)
             $nominals = [];
             if ($step > 0) {
                 for ($i = 1; $i <= 5; $i++) {
                     $nominals[] = $highestBid + ($step * $i);
                 }
             } else {
-                // Fallback jika kelipatan 0/null, misal naik 10rb per bid (optional)
                 $defaultStep = 10000;
                 for ($i = 1; $i <= 5; $i++) {
                     $nominals[] = $highestBid + ($defaultStep * $i);
@@ -106,16 +126,17 @@ class getDetail extends Controller
             // 7. Return ke View
             return view('web.detail_lelang.detail', [
                 'product'    => $product,
-                'bids'       => $bids,            // Data raw untuk user Guest (foreach biasa)
-                'initialMessages' => $initialMessages, // Data JSON untuk user Login (Vue JS)
+                'bids'       => $bids,            
+                'initialMessages' => $initialMessages, 
                 'highestBid' => $highestBid,
                 'nominals'   => $nominals,
                 'related'    => $related
             ]);
 
         } catch (Exception $e) {
-            Log::error('Detail Lelang Product Error: ' . $e->getMessage());
-            return abort(500);
+            Log::error('Detail Lelang Error: ' . $e->getMessage());
+            // Tampilkan error biar jelas (Hanya saat development)
+            return response()->json(['error' => $e->getMessage(), 'line' => $e->getLine()], 500);
         }
     }
 }

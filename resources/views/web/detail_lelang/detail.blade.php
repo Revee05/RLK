@@ -92,34 +92,70 @@
                                 </div>
 
                                 {{-- HISTORY / REALTIME --}}
-                                <div class="history-box"
-                                    style="background:#f8f9fa; border:1px solid #ddd; border-radius:8px; padding:16px;">
-                                    <div class="history-head"
-                                        style="background:#20c997; color:#fff; padding:8px 12px; border-radius:6px 6px 0 0; font-weight:bold;">
-                                        Riwayat Bidding</div>
+                                <div class="history-box" style="background:#f8f9fa; border:1px solid #ddd; border-radius:8px; padding:16px;">
+                                    <div class="history-head" style="background:#20c997; color:#fff; padding:8px 12px; border-radius:6px 6px 0 0; font-weight:bold;">
+                                        Riwayat Bidding
+                                    </div>
 
-                                    @if (Auth::check())
-                                    <div id="chat-container" class="history-body"
-                                        style="overflow-y:auto; max-height:400px; min-height:120px; background:#fff; border:1px solid #eee; border-radius:6px; margin-bottom:12px; padding:8px;">
-                                        <chat-messages :messages="messages"></chat-messages>
-                                    </div>
-                                    <chat-form ref="bidForm" :user='@json(Auth::user())'
-                                        :produk="{{ intval($product->id) }}"
-                                        :kelipatan="{{ intval($product->kelipatan_bid ?? $product->kelipatan) }}"
-                                        :price="{{ intval($product->price) }}" v-on:messagesent="addMessage">
-                                    </chat-form>
-                                    @else
-                                    <div class="history-body"
-                                        style="overflow-y:auto; max-height:400px; min-height:120px; background:#fff; border:1px solid #eee; border-radius:6px; margin-bottom:12px; padding:8px;">
-                                        @foreach ($bids as $b)
-                                        <div class="history-item">
-                                            <strong>{{ $b->user->name }}</strong>
-                                            <span>Rp {{ number_format($b->price, 0, ',', '.') }}</span>
+                                    {{-- LOGIKA BARU: Cek Status Dulu --}}
+                                    @if($product->status == 1)
+                                        {{-- KONDISI 1: LELANG MASIH JALAN (STATUS 1) --}}
+                                        
+                                        @if (Auth::check())
+                                            {{-- User Login: Tampilkan Chat & Form Bid --}}
+                                            <div id="chat-container" class="history-body" style="overflow-y:auto; max-height:400px; min-height:120px; background:#fff; border:1px solid #eee; border-radius:6px; margin-bottom:12px; padding:8px;">
+                                                <chat-messages :messages="messages"></chat-messages>
+                                            </div>
+                                            <chat-form ref="bidForm" 
+                                                :user='@json(Auth::user())'
+                                                :produk="{{ intval($product->id) }}"
+                                                :kelipatan="{{ intval($product->kelipatan_bid ?? $product->kelipatan) }}"
+                                                :price="{{ intval($product->price) }}" 
+                                                v-on:messagesent="addMessage">
+                                            </chat-form>
+                                        @else
+                                            {{-- User Guest: Tampilkan List Bid Saja --}}
+                                            <div class="history-body" style="overflow-y:auto; max-height:400px; min-height:120px; background:#fff; border:1px solid #eee; border-radius:6px; margin-bottom:12px; padding:8px;">
+                                                @foreach ($bids as $b)
+                                                <div class="history-item">
+                                                    <strong>{{ $b->user->name }}</strong>
+                                                    <span>Rp {{ number_format($b->price, 0, ',', '.') }}</span>
+                                                </div>
+                                                @endforeach
+                                            </div>
+                                            <a href="{{ url('/login') }}" class="btn btn-outline-secondary mt-2 w-100">Login untuk ikut bidding</a>
+                                        @endif
+
+                                    @elseif($product->status == 2)
+                                        {{-- KONDISI 2: SOLD / TERJUAL --}}
+                                        <div class="alert alert-success mt-3 text-center">
+                                            <h4><i class="fa fa-trophy"></i> TERJUAL!</h4>
+                                            <p>Lelang ini telah dimenangkan.</p>
+                                            {{-- Menampilkan Pemenang Terakhir --}}
+                                            @if($bids->count() > 0)
+                                                <div class="mt-2 p-2 bg-white rounded border">
+                                                    Pemenang: <strong>{{ $bids->first()->user->name ?? 'User' }}</strong><br>
+                                                    Harga Akhir: <strong>Rp {{ number_format($bids->first()->price, 0, ',', '.') }}</strong>
+                                                </div>
+                                            @endif
                                         </div>
-                                        @endforeach
-                                    </div>
-                                    <a href="{{ url('/login') }}" class="btn btn-outline-secondary mt-2 w-100">Login
-                                        untuk ikut bidding</a>
+                                        
+                                        {{-- Tetap tampilkan riwayat chat/bid tapi read-only (tanpa form) --}}
+                                        <div class="history-body mt-2" style="overflow-y:auto; max-height:200px; background:#fff; border:1px solid #eee; border-radius:6px; padding:8px; opacity: 0.7;">
+                                            @foreach ($bids as $b)
+                                            <div class="history-item text-muted">
+                                                <small>{{ $b->created_at->format('d M H:i') }}</small> - 
+                                                <strong>{{ $b->user->name }}</strong>: Rp {{ number_format($b->price, 0, ',', '.') }}
+                                            </div>
+                                            @endforeach
+                                        </div>
+
+                                    @else
+                                        {{-- KONDISI 3: EXPIRED / GAGAL --}}
+                                        <div class="alert alert-danger mt-3 text-center">
+                                            <h4><i class="fa fa-times-circle"></i> WAKTU HABIS</h4>
+                                            <p>Lelang ini berakhir tanpa pemenang.</p>
+                                        </div>
                                     @endif
                                 </div>
 
@@ -463,11 +499,32 @@ if (typeof Echo !== 'undefined') {
         }
         const now = new Date();
         let s = Math.floor((endDate - now) / 1000);
+
+        // --- BAGIAN INI YANG DIUBAH (LOGIKA WAKTU HABIS) ---
         if (s <= 0) {
             elNow.innerText = '00:00:00:00';
             clearInterval(interval);
+
+            // 1. Matikan Tombol Bid
+            const btnBid = document.getElementById('btnBidNow');
+            if (btnBid) {
+                btnBid.disabled = true; // Kunci tombol
+                btnBid.innerText = "Waktu Habis"; // Ubah tulisan
+                btnBid.style.backgroundColor = "#6c757d"; // Ubah warna jadi abu-abu
+                btnBid.style.borderColor = "#6c757d";
+                btnBid.style.cursor = "not-allowed";
+            }
+
+            // 2. Matikan Dropdown Pilihan Harga
+            const selectBid = document.getElementById('bidSelect');
+            if (selectBid) {
+                selectBid.disabled = true; // Kunci dropdown
+            }
+
             return;
         }
+        // --- SELESAI PERUBAHAN ---
+
         const d = Math.floor(s / 86400);
         s %= 86400;
         const h = Math.floor(s / 3600);
