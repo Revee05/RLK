@@ -38496,17 +38496,22 @@ module.exports = function(module) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
-/* WEBPACK VAR INJECTION */(function(process) {/* harmony import */ var vue__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! vue */ "./node_modules/vue/dist/vue.common.js");
-/* harmony import */ var vue__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(vue__WEBPACK_IMPORTED_MODULE_0__);
+/* WEBPACK VAR INJECTION */(function(process) {/* harmony import */ var _lelang_helper__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./lelang/helper */ "./resources/js/lelang/helper.js");
+/* harmony import */ var _lelang_helper__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_lelang_helper__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var vue__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! vue */ "./node_modules/vue/dist/vue.common.js");
+/* harmony import */ var vue__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(vue__WEBPACK_IMPORTED_MODULE_1__);
 // === Load konfigurasi awal aplikasi (bootstrap Laravel Mix) ===
 __webpack_require__(/*! ./bootstrap */ "./resources/js/bootstrap.js");
 
+// === Import helper lelang yang menempelkan fungsi ke window (formatRp, updateNominalDropdown, ...) ===
+
+
 // === Expose Vue ke window agar komponen dapat diakses global ===
-window.Vue = vue__WEBPACK_IMPORTED_MODULE_0___default.a;
+window.Vue = vue__WEBPACK_IMPORTED_MODULE_1___default.a;
 
 // === Registrasi komponen global untuk form chat dan daftar message ===
-vue__WEBPACK_IMPORTED_MODULE_0___default.a.component("chat-form", __webpack_require__(/*! ./components/ChatForm.vue */ "./resources/js/components/ChatForm.vue")["default"]);
-vue__WEBPACK_IMPORTED_MODULE_0___default.a.component("chat-messages", __webpack_require__(/*! ./components/ChatMessages.vue */ "./resources/js/components/ChatMessages.vue")["default"]);
+vue__WEBPACK_IMPORTED_MODULE_1___default.a.component("chat-form", __webpack_require__(/*! ./components/ChatForm.vue */ "./resources/js/components/ChatForm.vue")["default"]);
+vue__WEBPACK_IMPORTED_MODULE_1___default.a.component("chat-messages", __webpack_require__(/*! ./components/ChatMessages.vue */ "./resources/js/components/ChatMessages.vue")["default"]);
 
 // === Menunggu window.productSlug sampai tersedia sebelum inisialisasi Vue ===
 function waitForSlug(callback) {
@@ -38537,7 +38542,7 @@ function isDebugEnv() {
 // === Mulai inisialisasi Vue setelah slug terdeteksi ===
 waitForSlug(function () {
   if (isDebugEnv()) console.log("Vue initialized. slug =", window.productSlug);
-  window.app = new vue__WEBPACK_IMPORTED_MODULE_0___default.a({
+  window.app = new vue__WEBPACK_IMPORTED_MODULE_1___default.a({
     el: "#app",
     data: {
       // === Set data awal messages berdasarkan existingBids jika tersedia ===
@@ -38953,6 +38958,66 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "staticRenderFns", function() { return _node_modules_babel_loader_lib_index_js_ref_4_0_node_modules_vue_loader_lib_loaders_templateLoader_js_ref_6_node_modules_vue_loader_lib_index_js_vue_loader_options_ChatMessages_vue_vue_type_template_id_e422daa2___WEBPACK_IMPORTED_MODULE_0__["staticRenderFns"]; });
 
 
+
+/***/ }),
+
+/***/ "./resources/js/lelang/helper.js":
+/*!***************************************!*\
+  !*** ./resources/js/lelang/helper.js ***!
+  \***************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+/**
+ * Safe bidding helpers — attach ke window jika belum ada.
+ * Dipanggil dari app.js (Vue) dan blade (inline scripts).
+ */
+(function () {
+  'use strict';
+
+  if (typeof window.formatRp !== 'function') {
+    window.formatRp = function (n) {
+      if (n === null || n === undefined) return '';
+      var num = Number(n);
+      if (isNaN(num)) return String(n);
+      return String(num).replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+    };
+  }
+  if (typeof window.updateNominalDropdown !== 'function') {
+    window.updateNominalDropdown = function (highest, nominalsArray, stepOverride, stepDefault) {
+      var defaultStep = Number(stepDefault) || 10000;
+      var h = Number(highest);
+      var select = document.getElementById('bidSelect');
+      if (!select || isNaN(h)) return;
+      select.innerHTML = '<option value="">Pilih Nominal Bid</option>';
+      if (Array.isArray(nominalsArray) && nominalsArray.length) {
+        nominalsArray.forEach(function (val) {
+          var v = Number(val);
+          if (isNaN(v)) return;
+          var opt = document.createElement('option');
+          opt.value = v;
+          opt.textContent = 'Rp ' + window.formatRp(v);
+          select.appendChild(opt);
+        });
+        return;
+      }
+      var step = Number(stepOverride) || defaultStep;
+      for (var i = 1; i <= 5; i++) {
+        var val = h + step * i;
+        var opt = document.createElement('option');
+        opt.value = val;
+        opt.textContent = 'Rp ' + window.formatRp(val);
+        select.appendChild(opt);
+      }
+    };
+  }
+  if (typeof window.refreshStateImmediate !== 'function') {
+    window.refreshStateImmediate = function () {
+      // no-op fallback — bisa di-overwrite oleh app.js jika perlu
+      console.info('[helpers] refreshStateImmediate noop');
+    };
+  }
+})();
 
 /***/ }),
 

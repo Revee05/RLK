@@ -1,6 +1,9 @@
 // === Load konfigurasi awal aplikasi (bootstrap Laravel Mix) ===
 require("./bootstrap");
 
+// === Import helper lelang yang menempelkan fungsi ke window (formatRp, updateNominalDropdown, ...) ===
+import './lelang/helper';
+
 import Vue from "vue";
 // === Expose Vue ke window agar komponen dapat diakses global ===
 window.Vue = Vue;

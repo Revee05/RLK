@@ -228,49 +228,8 @@
 
     {{-- Script untuk update dropdown & fungsi bidding --}}
     <script>
-        /**
-         * Fungsi formatRp: Format angka ke format rupiah (Rp).
-         * Fungsi updateNominalDropdown: Update pilihan nominal bid pada dropdown sesuai harga tertinggi.
-         * Fungsi setupBidButtonListener: Integrasi tombol bid dengan Vue instance.
-         * Fungsi waitForVueAndSetupBidBtn: Menunggu Vue siap sebelum mengaktifkan tombol bid.
-         */
-        window.formatRp = function (n) {
-            return n.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
-        };
-
-        window.updateNominalDropdown = function (highest, nominalsArray, stepOverride) {
-            const rawStepDefault = {{ intval($product->kelipatan) }};
-            const stepDefault = Number(rawStepDefault) || 10000;
-            const h = Number(highest);
-            const select = document.getElementById('bidSelect');
-            if (!select) return;
-            if (isNaN(h)) return;
-
-            select.innerHTML = '<option value="">Pilih Nominal Bid</option>';
-
-            // Jika server sudah kirim array nominals, gunakan langsung
-            if (Array.isArray(nominalsArray) && nominalsArray.length) {
-                nominalsArray.forEach(val => {
-                    const v = Number(val);
-                    if (isNaN(v)) return;
-                    const opt = document.createElement('option');
-                    opt.value = v;
-                    opt.textContent = 'Rp ' + window.formatRp(v);
-                    select.appendChild(opt);
-                });
-                return;
-            }
-
-            // fallback: hitung dari stepOverride atau default
-            const step = Number(stepOverride) || stepDefault;
-            for (let i = 1; i <= 5; i++) {
-                const val = h + (step * i);
-                const opt = document.createElement('option');
-                opt.value = val;
-                opt.textContent = 'Rp ' + window.formatRp(val);
-                select.appendChild(opt);
-            }
-        };
+        // Hanya menyimpan behaviour tombol bid dan inisialisasi; helper (formatRp, updateNominalDropdown)
+        // sekarang dipasang oleh bundled helper yang di-import di `app.js`.
 
         function setupBidButtonListener() {
             var btn = document.getElementById('btnBidNow');
@@ -319,6 +278,8 @@
             console.log('[Init] Setting initial dropdown with highest:', initialHighest);
             if (typeof window.updateNominalDropdown === 'function') {
                 window.updateNominalDropdown(initialHighest);
+            } else {
+                console.warn('[Init] updateNominalDropdown not available yet');
             }
         });
     </script>
@@ -346,20 +307,33 @@
                 });
 
                 channel.listen('BidSent', (e) => {
-                    // update highest
+                    // update highest (guarded formatter)
                     const highestEl = document.getElementById('highestPrice');
-                    if (highestEl && e.price) highestEl.innerText = 'Rp ' + formatRp(Number(e.price));
+                    if (highestEl && typeof e.price !== 'undefined') {
+                        const fmt = (typeof window.formatRp === 'function') ? window.formatRp : (v => String(v));
+                        highestEl.innerText = 'Rp ' + fmt(Number(e.price));
+                    }
 
-                    // kalau server kirim nominals, rebuild select langsung
+                    // kalau server kirim nominals, rebuild select langsung — prefer helper if present
                     const select = document.getElementById('bidSelect');
-                    if (select && Array.isArray(e.nominals)) {
-                        select.innerHTML = '<option value="">Pilih Nominal Bid</option>';
-                        e.nominals.forEach(v => {
-                            const opt = document.createElement('option');
-                            opt.value = Number(v);
-                            opt.textContent = 'Rp ' + formatRp(Number(v));
-                            select.appendChild(opt);
-                        });
+                    if (select) {
+                        if (typeof window.updateNominalDropdown === 'function') {
+                            try {
+                                window.updateNominalDropdown(Number(e.price) || 0, e.nominals || null, e.step || null);
+                            } catch (err) {
+                                console.error('[Echo] updateNominalDropdown threw', err);
+                            }
+                        } else if (Array.isArray(e.nominals)) {
+                            // fallback manual build using guarded formatter
+                            const fmt = (typeof window.formatRp === 'function') ? window.formatRp : (v => String(v));
+                            select.innerHTML = '<option value="">Pilih Nominal Bid</option>';
+                            e.nominals.forEach(v => {
+                                const opt = document.createElement('option');
+                                opt.value = Number(v);
+                                opt.textContent = 'Rp ' + fmt(Number(v));
+                                select.appendChild(opt);
+                            });
+                        }
                     }
                 });
 
