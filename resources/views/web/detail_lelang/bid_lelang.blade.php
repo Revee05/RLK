@@ -94,7 +94,6 @@ window.updateNominalDropdown = function(highest, nominalsArray, stepOverride) {
 
     select.innerHTML = '<option value="">Pilih Nominal Bid</option>';
 
-    // Jika server sudah kirim array nominals, gunakan langsung
     if (Array.isArray(nominalsArray) && nominalsArray.length) {
         nominalsArray.forEach(val => {
             const v = Number(val);
@@ -107,7 +106,6 @@ window.updateNominalDropdown = function(highest, nominalsArray, stepOverride) {
         return;
     }
 
-    // fallback: hitung dari stepOverride atau default
     const step = Number(stepOverride) || stepDefault;
     for (let i = 1; i <= 5; i++) {
         const val = h + (step * i);

@@ -131,8 +131,24 @@ export default {
                     });
                 } else {
                     // tolak pengiriman dan beri tahu user
+                    // refresh ajax form supaya dropdown menggunakan kelipatan terbaru
+                    if (typeof window.refreshStateImmediate === 'function') {
+                        window.refreshStateImmediate();
+                    } else if (typeof window.updateNominalDropdown === 'function') {
+                        // fallback: rebuild from fetched data (we already built arr above)
+                        if (Array.isArray(nominals) && nominals.length) {
+                            window.updateNominalDropdown(highest, nominals, step);
+                        } else {
+                            const arr = buildNominalsFromStep(highest, step);
+                            window.updateNominalDropdown(highest, arr, step);
+                        }
+                    }
+
                     alert("Kelipatan harga sudah berubah. Silakan pilih nominal terbaru.");
                     console.warn("[Bid] Rejected stale bid", { attempted: value, highest, step, nominals });
+                    // fokus ke select agar user segera pilih opsi baru
+                    const sel = document.getElementById('bidSelect');
+                    if (sel) sel.focus();
                 }
             }).catch(err => {
                 // jika fetch state gagal, jangan kirim blindly — berikan peringatan atau fallback

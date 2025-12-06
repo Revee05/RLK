@@ -230,7 +230,7 @@ window.formatRp = function(n) {
     return n.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
 }
 
-window.updateNominalDropdown = function(highest, stepOverride, nominalsArray) {
+window.updateNominalDropdown = function(highest, nominalsArray, stepOverride) {
     const rawStepDefault = {{ intval($product->kelipatan) }};
     const stepDefault = Number(rawStepDefault) || 10000;
     const h = Number(highest);
