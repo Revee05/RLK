@@ -57,7 +57,19 @@ class MessageSent implements ShouldBroadcastNow
             'productId' => $this->productId,
             'channel' => 'product.' . $this->productId
         ]);
-        
+
+        // ambil produk untuk compute step/nominals (safe-check)
+        $product = \App\Products::find($this->productId);
+        $step = 0;
+        if ($product) {
+            $step = intval($product->kelipatan_bid ?? $product->kelipatan ?? 0);
+        }
+        $useStep = $step > 0 ? $step : 10000;
+        $nominals = [];
+        for ($i = 1; $i <= 5; $i++) {
+            $nominals[] = intval($this->bid) + ($useStep * $i);
+        }
+
         return [
             'user' => [
                 'id' => $this->user->id,
@@ -67,7 +79,9 @@ class MessageSent implements ShouldBroadcastNow
             'bid' => $this->bid,
             'message' => $this->bid,
             'tanggal' => $this->tanggal,
-            'productId' => $this->productId
+            'productId' => $this->productId,
+            'step' => $step,
+            'nominals' => $nominals,
         ];
     }
 

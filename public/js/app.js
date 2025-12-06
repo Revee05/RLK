@@ -1925,8 +1925,14 @@ __webpack_require__.r(__webpack_exports__);
     // === Mendengarkan update realtime harga tertinggi via Echo ===
     Echo["private"]("product.".concat(this.produk)).listen("BidSent", function (e) {
       var highest = Number(e.price);
-      // === Update bid berikutnya berdasarkan harga tertinggi + kelipatan ===
-      _this.newMessage = highest + Number(_this.kelipatan);
+      // jika server mengirim daftar nominals gunakan nilai pertama
+      if (Array.isArray(e.nominals) && e.nominals.length) {
+        _this.newMessage = Number(e.nominals[0]);
+        return;
+      }
+      // fallback menggunakan step dari event atau prop kelipatan
+      var step = Number(e.step) || Number(_this.kelipatan) || 10000;
+      _this.newMessage = highest + step;
     });
   },
   methods: {
@@ -1946,21 +1952,83 @@ __webpack_require__.r(__webpack_exports__);
       });
     },
     /* === DIPANGGIL DARI TOMBOL BID MANUAL (dropdown) === */sendBidFromButton: function sendBidFromButton(val) {
-      // === Set bid sesuai nominal yang dipilih lalu kirim ===
+      // === Set bid sesuai nominal yang dipilih lalu validasi & kirim ===
       this.newMessage = Number(val);
-      this.sendMessage();
+      this.validateAndSend(this.newMessage);
     },
     /* === KIRIM BID KE PARENT COMPONENT === */sendMessage: function sendMessage() {
-      // === Membuat timestamp manual (YYYY-MM-DD HH:mm:ss) ===
+      // membuat timestamp (tetap seperti sebelumnya)
       var today = new Date();
       var timestamp = today.getFullYear() + "-" + String(today.getMonth() + 1).padStart(2, "0") + "-" + String(today.getDate()).padStart(2, "0") + " " + today.getHours() + ":" + today.getMinutes() + ":" + today.getSeconds();
 
-      // === Emit event ke parent agar bid diproses backend ===
-      this.$emit("messagesent", {
-        user: this.user,
-        message: this.newMessage,
-        produk: this.produk,
-        tanggal: timestamp
+      // gunakan validateAndSend sehingga selalu sinkron dengan state server
+      this.validateAndSend(this.newMessage, timestamp);
+    },
+    // === NEW: validasi terhadap state server sebelum emit ===
+    validateAndSend: function validateAndSend(value) {
+      var _this3 = this;
+      var timestamp = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
+      var slug = window.productSlug;
+      if (!slug) {
+        // fallback: langsung kirim jika slug tidak tersedia (seharusnya tidak terjadi)
+        this.$emit("messagesent", {
+          user: this.user,
+          message: value,
+          produk: this.produk,
+          tanggal: timestamp || new Date().toISOString().slice(0, 19).replace('T', ' ')
+        });
+        return;
+      }
+
+      // ambil state terbaru dari server
+      axios.get("/bid/state/".concat(slug)).then(function (res) {
+        var data = res.data || {};
+        var highest = Number(data.highest) || 0;
+        var nominals = data.nextNominals || data.nominals || null;
+        var step = Number(data.step) || null;
+
+        // fungsi bantu untuk membangun daftar nominal apabila hanya step tersedia
+        var buildNominalsFromStep = function buildNominalsFromStep(h, s) {
+          var arr = [];
+          var useStep = s && s > 0 ? s : Number(_this3.kelipatan) || 10000;
+          for (var i = 1; i <= 5; i++) arr.push(h + useStep * i);
+          return arr;
+        };
+        var valid = false;
+        if (Array.isArray(nominals) && nominals.length) {
+          // jika server kirim list nominal, cek keanggotaan
+          valid = nominals.map(Number).includes(Number(value));
+          // juga rebuild dropdown agar sinkron
+          window.updateNominalDropdown(highest, nominals, step);
+        } else {
+          // jika tidak ada array, hitung dari step
+          var arr = buildNominalsFromStep(highest, step);
+          valid = arr.includes(Number(value));
+          // rebuild dropdown dari perhitungan server
+          window.updateNominalDropdown(highest, arr, step);
+        }
+        if (valid) {
+          // emit ke parent untuk dikirim ke server
+          _this3.$emit("messagesent", {
+            user: _this3.user,
+            message: Number(value),
+            produk: _this3.produk,
+            tanggal: timestamp || new Date().toISOString().slice(0, 19).replace('T', ' ')
+          });
+        } else {
+          // tolak pengiriman dan beri tahu user
+          alert("Kelipatan harga sudah berubah. Silakan pilih nominal terbaru.");
+          console.warn("[Bid] Rejected stale bid", {
+            attempted: value,
+            highest: highest,
+            step: step,
+            nominals: nominals
+          });
+        }
+      })["catch"](function (err) {
+        // jika fetch state gagal, jangan kirim blindly — berikan peringatan atau fallback
+        console.warn("[Bid] Failed to fetch state before sending:", err);
+        alert("Gagal memeriksa status terkini. Silakan coba lagi.");
       });
     }
   }
@@ -38473,17 +38541,25 @@ waitForSlug(function () {
       .listen("BidSent", function (e) {
         var price = Number(e.price);
         if (!isNaN(price)) {
-          // === Update elemen harga tertinggi di UI ===
+          // update highest price UI
           var highestEl = document.getElementById("highestPrice");
           if (highestEl) highestEl.innerText = "Rp " + window.formatRp(price);
 
-          // === Update dropdown kelipatan nominal ===
-          window.updateNominalDropdown(price);
+          // prefer nominals from event, fallback to step
+          var nominals = e.nominals || e.nextNominals || null;
+          var step = typeof e.step !== "undefined" ? e.step : null;
+          window.updateNominalDropdown(price, nominals, step);
         }
       })
       // === Listener untuk update riwayat bid ===
       .listen("MessageSent", function (e) {
-        // === Tambahkan message baru ke awal daftar ===
+        // update dropdown from message event too
+        var bid = Number(e.bid || e.message);
+        var nominals = e.nominals || e.nextNominals || null;
+        var step = typeof e.step !== "undefined" ? e.step : null;
+        if (!isNaN(bid)) window.updateNominalDropdown(bid, nominals, step);
+
+        // add message to list
         window.app.messages.unshift({
           user: e.user,
           message: e.bid || e.message,
@@ -38517,7 +38593,7 @@ waitForSlug(function () {
             var highestEl = document.getElementById("highestPrice");
             if (highestEl) highestEl.innerText = "Rp " + window.formatRp(highest);
             if (typeof updateNominalDropdown === "function") {
-              updateNominalDropdown(highest);
+              updateNominalDropdown(highest, data.nextNominals || data.nominals || null, data.step || null);
             }
           }
 
@@ -38581,7 +38657,8 @@ waitForSlug(function () {
             if (!isNaN(highest)) {
               var highestEl = document.getElementById("highestPrice");
               if (highestEl) highestEl.innerText = "Rp " + window.formatRp(highest);
-              window.updateNominalDropdown(highest);
+              // pass server nominals / step when available
+              window.updateNominalDropdown(highest, data.nextNominals || data.nominals || null, data.step || null);
             }
 
             // === Sinkronisasi riwayat bid jika ada yang lebih baru ===
@@ -38628,7 +38705,9 @@ waitForSlug(function () {
 
               // === Update dropdown kelipatan nominal ===
               if (typeof updateNominalDropdown === "function") {
-                updateNominalDropdown(displayPrice);
+                // prefer server-provided nominals if present in response.data.data
+                var sd = res.data && res.data.data || {};
+                updateNominalDropdown(displayPrice, sd.nextNominals || sd.nominals || null, sd.step || null);
               }
             }
             if (isDebugEnv()) console.log("[addMessage] ✓ UI updated immediately for bidder");

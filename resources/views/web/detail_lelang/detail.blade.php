@@ -230,15 +230,31 @@ window.formatRp = function(n) {
     return n.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
 }
 
-window.updateNominalDropdown = function(highest) {
-    const rawStep = {{ intval($product->kelipatan) }};
-    const step = Number(rawStep) || 10000;
+window.updateNominalDropdown = function(highest, stepOverride, nominalsArray) {
+    const rawStepDefault = {{ intval($product->kelipatan) }};
+    const stepDefault = Number(rawStepDefault) || 10000;
     const h = Number(highest);
     const select = document.getElementById('bidSelect');
     if (!select) return;
     if (isNaN(h)) return;
 
     select.innerHTML = '<option value="">Pilih Nominal Bid</option>';
+
+    // Jika server sudah kirim array nominals, gunakan langsung
+    if (Array.isArray(nominalsArray) && nominalsArray.length) {
+        nominalsArray.forEach(val => {
+            const v = Number(val);
+            if (isNaN(v)) return;
+            const opt = document.createElement('option');
+            opt.value = v;
+            opt.textContent = 'Rp ' + window.formatRp(v);
+            select.appendChild(opt);
+        });
+        return;
+    }
+
+    // fallback: hitung dari stepOverride atau default
+    const step = Number(stepOverride) || stepDefault;
     for (let i = 1; i <= 5; i++) {
         const val = h + (step * i);
         const opt = document.createElement('option');
@@ -322,30 +338,21 @@ if (typeof Echo !== 'undefined') {
     });
 
     channel.listen('BidSent', (e) => {
-        console.log('[BidSent] Event diterima:', e);
-        const price = Number(e.price || e);
-        if (isNaN(price)) {
-            console.error('[BidSent] Invalid price:', e);
-            return;
-        }
-        // Update harga tertinggi di sidebar kanan
+        // update highest
         const highestEl = document.getElementById('highestPrice');
-        if (highestEl) {
-            highestEl.innerText = 'Rp ' + window.formatRp(price);
-            highestEl.style.transition = 'all 0.3s ease';
-            highestEl.style.backgroundColor = '#fef3c7';
-            setTimeout(() => {
-                highestEl.style.backgroundColor = 'transparent';
-            }, 800);
+        if (highestEl && e.price) highestEl.innerText = 'Rp ' + formatRp(Number(e.price));
+
+        // kalau server kirim nominals, rebuild select langsung
+        const select = document.getElementById('bidSelect');
+        if (select && Array.isArray(e.nominals)) {
+            select.innerHTML = '<option value="">Pilih Nominal Bid</option>';
+            e.nominals.forEach(v => {
+                const opt = document.createElement('option');
+                opt.value = Number(v);
+                opt.textContent = 'Rp ' + formatRp(Number(v));
+                select.appendChild(opt);
+            });
         }
-        // Update dropdown nominal bid
-        window.updateNominalDropdown(price);
-        // Update nilai next bid di Vue ChatForm
-        if (window.app && window.app.$refs && window.app.$refs.bidForm) {
-            const kelipatan = {{ intval($product->kelipatan_bid ?? $product->kelipatan) }};
-            window.app.$refs.bidForm.newMessage = price + kelipatan;
-        }
-        console.log('[BidSent] ✓ UI berhasil diupdate dengan harga:', price);
     });
 
     channel.listen('MessageSent', (e) => {

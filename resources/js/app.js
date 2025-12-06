@@ -71,26 +71,32 @@ waitForSlug(() => {
                 .listen("BidSent", (e) => {
                     const price = Number(e.price);
                     if (!isNaN(price)) {
-                        // === Update elemen harga tertinggi di UI ===
-                        const highestEl =
-                            document.getElementById("highestPrice");
-                        if (highestEl)
-                            highestEl.innerText =
-                                "Rp " + window.formatRp(price);
+                        // update highest price UI
+                        const highestEl = document.getElementById("highestPrice");
+                        if (highestEl) highestEl.innerText = "Rp " + window.formatRp(price);
 
-                        // === Update dropdown kelipatan nominal ===
-                        window.updateNominalDropdown(price);
+                        // prefer nominals from event, fallback to step
+                        const nominals = e.nominals || e.nextNominals || null;
+                        const step = typeof e.step !== "undefined" ? e.step : null;
+                        window.updateNominalDropdown(price, nominals, step);
                     }
                 })
                 // === Listener untuk update riwayat bid ===
                 .listen("MessageSent", (e) => {
-                    // === Tambahkan message baru ke awal daftar ===
+                    // update dropdown from message event too
+                    const bid = Number(e.bid || e.message);
+                    const nominals = e.nominals || e.nextNominals || null;
+                    const step = typeof e.step !== "undefined" ? e.step : null;
+                    if (!isNaN(bid)) window.updateNominalDropdown(bid, nominals, step);
+
+                    // add message to list
                     window.app.messages.unshift({
                         user: e.user,
                         message: e.bid || e.message,
                         tanggal: e.tanggal,
                     });
                 });
+
         },
 
         methods: {
@@ -123,7 +129,11 @@ waitForSlug(() => {
                             const highestEl = document.getElementById("highestPrice");
                             if (highestEl) highestEl.innerText = "Rp " + window.formatRp(highest);
                             if (typeof updateNominalDropdown === "function") {
-                                updateNominalDropdown(highest);
+                                updateNominalDropdown(
+                                    highest,
+                                    data.nextNominals || data.nominals || null,
+                                    data.step || null
+                                );
                             }
                         }
 
@@ -204,7 +214,12 @@ waitForSlug(() => {
                                 if (highestEl)
                                     highestEl.innerText =
                                         "Rp " + window.formatRp(highest);
-                                window.updateNominalDropdown(highest);
+                                // pass server nominals / step when available
+                                window.updateNominalDropdown(
+                                    highest,
+                                    data.nextNominals || data.nominals || null,
+                                    data.step || null
+                                );
                             }
 
                             // === Sinkronisasi riwayat bid jika ada yang lebih baru ===
@@ -281,7 +296,13 @@ waitForSlug(() => {
                                 if (
                                     typeof updateNominalDropdown === "function"
                                 ) {
-                                    updateNominalDropdown(displayPrice);
+                                    // prefer server-provided nominals if present in response.data.data
+                                    const sd = (res.data && res.data.data) || {};
+                                    updateNominalDropdown(
+                                        displayPrice,
+                                        sd.nextNominals || sd.nominals || null,
+                                        sd.step || null
+                                    );
                                 }
                             }
 
