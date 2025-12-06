@@ -1920,7 +1920,12 @@ __webpack_require__.r(__webpack_exports__);
   created: function created() {
     var _this = this;
     // === Ambil riwayat bid dan tentukan bid berikutnya ===
-    this.fetchMessages();
+    // Guard against duplicate initial fetches when the root Vue instance
+    // or other components also call the same endpoint.
+    if (!window.__bid_fetch_called) {
+      this.fetchMessages();
+      window.__bid_fetch_called = true;
+    }
 
     // === Mendengarkan update realtime harga tertinggi via Echo ===
     Echo["private"]("product.".concat(this.produk)).listen("BidSent", function (e) {
@@ -38601,6 +38606,10 @@ waitForSlug(function () {
         axios.get("/bid/messages/".concat(window.productSlug)).then(function (res) {
           // === Backend sudah mengurutkan: terbaru di atas ===
           _this.messages = res.data;
+          // mark that an initial fetch has been performed to avoid duplicates
+          try {
+            window.__bid_fetch_called = true;
+          } catch (e) {}
         })["catch"](function (err) {
           if (isDebugEnv()) console.error("Gagal ambil messages:", err);
         });
@@ -38630,12 +38639,25 @@ waitForSlug(function () {
             }
           }
 
-          // If the state endpoint already returned a full messages array, use it directly
-          // to avoid an extra request. Otherwise fall back to fetchMessages().
+          // If the state endpoint returned a messages array, it may only include
+          // the latest bid (optimized response). Do NOT replace the whole
+          // client-side history with that small array — instead merge the
+          // newest item into the existing `this.messages` to preserve history.
           if (msgs.length > 0) {
-            // assume backend returns messages newest-first (same shape as fetchMessages)
-            _this2.messages = msgs;
+            var latest = msgs[0];
+            // If we don't have any messages yet, use server-provided list
+            if (!_this2.messages || _this2.messages.length === 0) {
+              _this2.messages = msgs;
+            } else {
+              // Prevent duplicates: compare by message value and timestamp
+              var existingNewest = _this2.messages[0] || null;
+              var isDuplicate = existingNewest && (String(existingNewest.message) === String(latest.message) || String(existingNewest.tanggal) === String(latest.tanggal));
+              if (!isDuplicate) {
+                _this2.messages.unshift(latest);
+              }
+            }
           } else {
+            // No condensed messages returned — fetch full list as fallback
             _this2.fetchMessages();
           }
           if (isDebugEnv()) console.log('[refreshStateImmediate] done', {

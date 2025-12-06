@@ -17,7 +17,14 @@ export default {
 
     created() {
         // === Ambil riwayat bid dan tentukan bid berikutnya ===
-        this.fetchMessages();
+        // Guard against duplicate initial fetches when the root Vue instance
+        // or other components also call the same endpoint. Set the flag
+        // immediately before initiating the fetch to avoid a race condition
+        // where both components start requests before the flag is set.
+        if (!window.__bid_fetch_called) {
+            try { window.__bid_fetch_called = true; } catch (e) {}
+            this.fetchMessages();
+        }
 
         // === Mendengarkan update realtime harga tertinggi via Echo ===
         Echo.private(`product.${this.produk}`)

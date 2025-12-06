@@ -111,6 +111,8 @@ waitForSlug(() => {
         methods: {
             // === Mengambil seluruh message untuk productSlug dari server ===
             fetchMessages() {
+                // mark that an initial fetch has been started to avoid duplicates
+                try { window.__bid_fetch_called = true; } catch (e) {}
                 axios
                     .get(`/bid/messages/${window.productSlug}`)
                     .then((res) => {
@@ -153,12 +155,28 @@ waitForSlug(() => {
                             }
                         }
 
-                        // If the state endpoint already returned a full messages array, use it directly
-                        // to avoid an extra request. Otherwise fall back to fetchMessages().
+                        // If the state endpoint returned a messages array, it may only include
+                        // the latest bid (optimized response). Do NOT replace the whole
+                        // client-side history with that small array — instead merge the
+                        // newest item into the existing `this.messages` to preserve history.
                         if (msgs.length > 0) {
-                            // assume backend returns messages newest-first (same shape as fetchMessages)
-                            this.messages = msgs;
+                            const latest = msgs[0];
+                            // If we don't have any messages yet, use server-provided list
+                            if (!this.messages || this.messages.length === 0) {
+                                this.messages = msgs;
+                            } else {
+                                // Prevent duplicates: compare by message value and timestamp
+                                const existingNewest = this.messages[0] || null;
+                                const isDuplicate = existingNewest && (
+                                    String(existingNewest.message) === String(latest.message) ||
+                                    String(existingNewest.tanggal) === String(latest.tanggal)
+                                );
+                                if (!isDuplicate) {
+                                    this.messages.unshift(latest);
+                                }
+                            }
                         } else {
+                            // No condensed messages returned — fetch full list as fallback
                             this.fetchMessages();
                         }
 
