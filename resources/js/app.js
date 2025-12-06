@@ -1,6 +1,9 @@
 // === Load konfigurasi awal aplikasi (bootstrap Laravel Mix) ===
 require("./bootstrap");
 
+// === Import helper lelang yang menempelkan fungsi ke window (formatRp, updateNominalDropdown, ...) ===
+import './lelang/helper';
+
 import Vue from "vue";
 // === Expose Vue ke window agar komponen dapat diakses global ===
 window.Vue = Vue;
@@ -71,31 +74,45 @@ waitForSlug(() => {
                 .listen("BidSent", (e) => {
                     const price = Number(e.price);
                     if (!isNaN(price)) {
-                        // === Update elemen harga tertinggi di UI ===
-                        const highestEl =
-                            document.getElementById("highestPrice");
-                        if (highestEl)
-                            highestEl.innerText =
-                                "Rp " + window.formatRp(price);
+                        // update highest price UI
+                        const highestEl = document.getElementById("highestPrice");
+                        if (highestEl) highestEl.innerText = "Rp " + window.formatRp(price);
 
-                        // === Update dropdown kelipatan nominal ===
-                        window.updateNominalDropdown(price);
+                        // prefer nominals from event, fallback to step
+                        const nominals = e.nominals || e.nextNominals || null;
+                        const step = typeof e.step !== "undefined" ? e.step : null;
+                        window.updateNominalDropdown(price, nominals, step);
                     }
                 })
                 // === Listener untuk update riwayat bid ===
                 .listen("MessageSent", (e) => {
-                    // === Tambahkan message baru ke awal daftar ===
+                    // update dropdown from message event too
+                    const bid = Number(e.bid || e.message);
+                    const nominals = e.nominals || e.nextNominals || null;
+                    const step = typeof e.step !== "undefined" ? e.step : null;
+                    if (!isNaN(bid)) window.updateNominalDropdown(bid, nominals, step);
+
+                    // add message to list
                     window.app.messages.unshift({
                         user: e.user,
                         message: e.bid || e.message,
                         tanggal: e.tanggal,
                     });
                 });
+
+            // Expose refresh helper globally so other scripts/components can call it
+            try {
+                window.refreshStateImmediate = this.refreshStateImmediate.bind(this);
+            } catch (e) {
+                if (isDebugEnv()) console.warn('[created] failed to expose refreshStateImmediate', e);
+            }
         },
 
         methods: {
             // === Mengambil seluruh message untuk productSlug dari server ===
             fetchMessages() {
+                // mark that an initial fetch has been started to avoid duplicates
+                try { window.__bid_fetch_called = true; } catch (e) {}
                 axios
                     .get(`/bid/messages/${window.productSlug}`)
                     .then((res) => {
@@ -112,24 +129,56 @@ waitForSlug(() => {
             refreshStateImmediate() {
                 const url = `/bid/state/${window.productSlug}`;
                 if (isDebugEnv()) console.log('[refreshStateImmediate] fetch', url);
-                axios.get(url)
+                axios
+                    .get(url)
                     .then((res) => {
                         const data = res.data || {};
                         const highest = Number(data.highest);
                         const msgs = Array.isArray(data.messages) ? data.messages : [];
 
-                        // Update highest & dropdown
+                        // Update highest UI
                         if (!isNaN(highest)) {
-                            const highestEl = document.getElementById("highestPrice");
-                            if (highestEl) highestEl.innerText = "Rp " + window.formatRp(highest);
-                            if (typeof updateNominalDropdown === "function") {
-                                updateNominalDropdown(highest);
+                            const highestEl = document.getElementById('highestPrice');
+                            if (highestEl) highestEl.innerText = 'Rp ' + window.formatRp(highest);
+
+                            // call dropdown updater but guard against exceptions so we still sync messages
+                            try {
+                                if (typeof updateNominalDropdown === 'function') {
+                                    updateNominalDropdown(
+                                        highest,
+                                        data.nextNominals || data.nominals || null,
+                                        data.step || null
+                                    );
+                                }
+                            } catch (e) {
+                                if (isDebugEnv()) console.error('[refreshStateImmediate] updateNominalDropdown threw', e);
                             }
                         }
 
-                        // Sinkronisasi riwayat penuh dari server (ambil messages lengkap)
-                        // Lebih aman memanggil fetchMessages agar daftar penuh tersinkronisasi.
-                        this.fetchMessages();
+                        // If the state endpoint returned a messages array, it may only include
+                        // the latest bid (optimized response). Do NOT replace the whole
+                        // client-side history with that small array — instead merge the
+                        // newest item into the existing `this.messages` to preserve history.
+                        if (msgs.length > 0) {
+                            const latest = msgs[0];
+                            // If we don't have any messages yet, use server-provided list
+                            if (!this.messages || this.messages.length === 0) {
+                                this.messages = msgs;
+                            } else {
+                                // Prevent duplicates: compare by message value and timestamp
+                                const existingNewest = this.messages[0] || null;
+                                const isDuplicate = existingNewest && (
+                                    String(existingNewest.message) === String(latest.message) ||
+                                    String(existingNewest.tanggal) === String(latest.tanggal)
+                                );
+                                if (!isDuplicate) {
+                                    this.messages.unshift(latest);
+                                }
+                            }
+                        } else {
+                            // No condensed messages returned — fetch full list as fallback
+                            this.fetchMessages();
+                        }
 
                         if (isDebugEnv()) console.log('[refreshStateImmediate] done', { highest, msgs_count: msgs.length });
                     })
@@ -204,7 +253,12 @@ waitForSlug(() => {
                                 if (highestEl)
                                     highestEl.innerText =
                                         "Rp " + window.formatRp(highest);
-                                window.updateNominalDropdown(highest);
+                                // pass server nominals / step when available
+                                window.updateNominalDropdown(
+                                    highest,
+                                    data.nextNominals || data.nominals || null,
+                                    data.step || null
+                                );
                             }
 
                             // === Sinkronisasi riwayat bid jika ada yang lebih baru ===
@@ -281,7 +335,13 @@ waitForSlug(() => {
                                 if (
                                     typeof updateNominalDropdown === "function"
                                 ) {
-                                    updateNominalDropdown(displayPrice);
+                                    // prefer server-provided nominals if present in response.data.data
+                                    const sd = (res.data && res.data.data) || {};
+                                    updateNominalDropdown(
+                                        displayPrice,
+                                        sd.nextNominals || sd.nominals || null,
+                                        sd.step || null
+                                    );
                                 }
                             }
 

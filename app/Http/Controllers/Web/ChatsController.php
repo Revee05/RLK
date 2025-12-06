@@ -63,7 +63,8 @@ class ChatsController extends Controller
     {
         $product = Products::where('slug',$slug)->firstOrFail();
         // Ambil nilai tertinggi (MAX) dari bids — lebih aman untuk sinkronisasi
-        $highestFromBids = (int) Bid::where('product_id', $product->id)->max('price');
+        // Pastikan max dihitung secara numerik (hindari max string yang lexicographic)
+        $highestFromBids = (int) Bid::where('product_id', $product->id)->max(\DB::raw('price+0'));
         $highest = $highestFromBids > 0 ? $highestFromBids : (int) $product->price;
         $step = (int) ($product->kelipatan ?? 10000);
         if ($step <= 0) { $step = 10000; }
@@ -126,15 +127,15 @@ class ChatsController extends Controller
                 }
 
                 // Transaksi untuk mencegah tabrakan bid (race condition)
-                $result = DB::transaction(function () use ($user, $productID, $priceBid) {
+                $result = DB::transaction(function() use ($request, $user, $productID, &$newHighest, $priceBid) {
                     // Kunci baris product untuk update agar serial per product
                     $product = Products::where('id', $productID)->lockForUpdate()->first();
                     if (!$product) {
                         return response()->json(['status' => 'error', 'message' => 'Produk tidak ditemukan'], 404);
                     }
 
-                    // Ambil highest terbaru dari DB
-                    $currentHighest = (int) Bid::where('product_id', $productID)->max('price');
+                    // Ambil highest secara numerik untuk validasi kelipatan
+                    $currentHighest = (int) Bid::where('product_id', $productID)->max(\DB::raw('price+0'));
                     if ($currentHighest <= 0) {
                         $currentHighest = (int) $product->price;
                     }
@@ -160,26 +161,26 @@ class ChatsController extends Controller
                         return response()->json(['status' => 'error', 'message' => 'Harga bid ini sudah diambil user lain'], 409);
                     }
 
-                    // Simpan
-                    $bids = $user->bid()->create([
-                        'price' => $priceBid,
+                    // Simpan bid ke DB dan gunakan model hasil simpan
+                    $bid = Bid::create([
                         'product_id' => $productID,
+                        'user_id'    => $user->id,
+                        'price'      => $priceBid,
                     ]);
-
-                    // Hitung ulang highest setelah insert untuk memastikan sinkronisasi
-                    $newHighest = (int) Bid::where('product_id', $productID)->max('price');
 
                     Log::info('[BID] New bid created', [
                         'user_id' => $user->id,
                         'user_name' => $user->name,
-                        'price' => $bids->price,
+                        'price' => $bid->price,
                         'product_id' => $productID,
-                        'current_highest_after' => $newHighest,
                     ]);
 
-                    // Broadcast (Echo will notify other clients). We still return highest to caller.
-                    broadcast(new MessageSent($user, $bids->price, $bids->created_at, $productID))->toOthers();
-                    broadcast(new BidSent($bids->price, $productID));
+                    // Broadcast — lakukan sebagai aksi, jangan assign hasilnya
+                    broadcast(new MessageSent($user, $bid->price, $bid->created_at, $productID))->toOthers();
+                    broadcast(new BidSent($bid->price, $productID))->toOthers();
+
+                    // Tetapkan highest menggunakan hasil simpan
+                    $newHighest = (int) $bid->price;
 
                     return [
                         'status' => 'Message Sent!',
@@ -189,9 +190,9 @@ class ChatsController extends Controller
                                 'name' => $user->name,
                                 'email' => $user->email,
                             ],
-                            'message' => $bids->price,
-                            'produk' => $bids->product_id,
-                            'tanggal' => Carbon::parse($bids->created_at)->format('Y-m-d H:i:s'),
+                            'message' => $bid->price,
+                            'produk' => $bid->product_id,
+                            'tanggal' => Carbon::parse($bid->created_at)->format('Y-m-d H:i:s'),
                             'highest' => $newHighest,
                         ],
                     ];

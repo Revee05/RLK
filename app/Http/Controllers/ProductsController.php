@@ -14,6 +14,7 @@ use Illuminate\Support\Str;
 use App\Product\Uploads as Upload;
 use App\Kelengkapan;
 use App\Bid;
+use Illuminate\Support\Facades\DB;
 
 class ProductsController extends Controller
 {
@@ -394,12 +395,19 @@ class ProductsController extends Controller
     public function resetBid($id)
     {
         try {
-            $cekBid = Bid::where('product_id',$id)->first();
-            if($cekBid) {
-                Bid::where('product_id',$id)->delete();
-                return back()->with('message', 'Data Bid berhasil direset');
-            }
-            return back()->with('message', 'Data Bid belum ada!');
+            DB::transaction(function() use ($id) {
+                $product = Products::findOrFail($id);
+
+                // hapus semua bid terkait
+                Bid::where('product_id', $id)->delete();
+
+                // reset status dan winner_id ke default (winner_id => NULL)
+                $product->status = '1';
+                $product->winner_id = null;
+                $product->save();
+            });
+
+            return back()->with('message', 'Data Bid berhasil direset dan status produk dikembalikan ke default.');
         } catch (Exception $e) {
             $this->logException('Reset Bid error', $e, ['product_id' => $id]);
         }

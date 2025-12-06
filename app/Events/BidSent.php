@@ -47,10 +47,24 @@ class BidSent implements ShouldBroadcastNow
             'productId' => $this->productId,
             'channel' => 'product.' . $this->productId
         ]);
-        
+
+        // ambil product untuk hitung kelipatan (safe-check)
+        $product = \App\Products::find($this->productId);
+        $step = 0;
+        if ($product) {
+            $step = intval($product->kelipatan_bid ?? $product->kelipatan ?? 0);
+        }
+        $useStep = $step > 0 ? $step : 10000;
+        $nominals = [];
+        for ($i = 1; $i <= 5; $i++) {
+            $nominals[] = intval($this->price) + ($useStep * $i);
+        }
+
         return [
             'price' => $this->price,
-            'productId' => $this->productId
+            'productId' => $this->productId,
+            'step' => $step,
+            'nominals' => $nominals,
         ];
     }
 
