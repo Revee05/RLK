@@ -97,6 +97,12 @@ waitForSlug(() => {
                     });
                 });
 
+            // Expose refresh helper globally so other scripts/components can call it
+            try {
+                window.refreshStateImmediate = this.refreshStateImmediate.bind(this);
+            } catch (e) {
+                if (isDebugEnv()) console.warn('[created] failed to expose refreshStateImmediate', e);
+            }
         },
 
         methods: {
@@ -118,28 +124,40 @@ waitForSlug(() => {
             refreshStateImmediate() {
                 const url = `/bid/state/${window.productSlug}`;
                 if (isDebugEnv()) console.log('[refreshStateImmediate] fetch', url);
-                axios.get(url)
+                axios
+                    .get(url)
                     .then((res) => {
                         const data = res.data || {};
                         const highest = Number(data.highest);
                         const msgs = Array.isArray(data.messages) ? data.messages : [];
 
-                        // Update highest & dropdown
+                        // Update highest UI
                         if (!isNaN(highest)) {
-                            const highestEl = document.getElementById("highestPrice");
-                            if (highestEl) highestEl.innerText = "Rp " + window.formatRp(highest);
-                            if (typeof updateNominalDropdown === "function") {
-                                updateNominalDropdown(
-                                    highest,
-                                    data.nextNominals || data.nominals || null,
-                                    data.step || null
-                                );
+                            const highestEl = document.getElementById('highestPrice');
+                            if (highestEl) highestEl.innerText = 'Rp ' + window.formatRp(highest);
+
+                            // call dropdown updater but guard against exceptions so we still sync messages
+                            try {
+                                if (typeof updateNominalDropdown === 'function') {
+                                    updateNominalDropdown(
+                                        highest,
+                                        data.nextNominals || data.nominals || null,
+                                        data.step || null
+                                    );
+                                }
+                            } catch (e) {
+                                if (isDebugEnv()) console.error('[refreshStateImmediate] updateNominalDropdown threw', e);
                             }
                         }
 
-                        // Sinkronisasi riwayat penuh dari server (ambil messages lengkap)
-                        // Lebih aman memanggil fetchMessages agar daftar penuh tersinkronisasi.
-                        this.fetchMessages();
+                        // If the state endpoint already returned a full messages array, use it directly
+                        // to avoid an extra request. Otherwise fall back to fetchMessages().
+                        if (msgs.length > 0) {
+                            // assume backend returns messages newest-first (same shape as fetchMessages)
+                            this.messages = msgs;
+                        } else {
+                            this.fetchMessages();
+                        }
 
                         if (isDebugEnv()) console.log('[refreshStateImmediate] done', { highest, msgs_count: msgs.length });
                     })

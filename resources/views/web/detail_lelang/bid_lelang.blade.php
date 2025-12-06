@@ -82,37 +82,3 @@
         </div>
     </div>
 </div>
-
-<script>
-window.updateNominalDropdown = function(highest, nominalsArray, stepOverride) {
-    const rawStepDefault = {{ intval($product->kelipatan) }};
-    const stepDefault = Number(rawStepDefault) || 10000;
-    const h = Number(highest);
-    const select = document.getElementById('bidSelect');
-    if (!select) return;
-    if (isNaN(h)) return;
-
-    select.innerHTML = '<option value="">Pilih Nominal Bid</option>';
-
-    if (Array.isArray(nominalsArray) && nominalsArray.length) {
-        nominalsArray.forEach(val => {
-            const v = Number(val);
-            if (isNaN(v)) return;
-            const opt = document.createElement('option');
-            opt.value = v;
-            opt.textContent = 'Rp ' + window.formatRp(v);
-            select.appendChild(opt);
-        });
-        return;
-    }
-
-    const step = Number(stepOverride) || stepDefault;
-    for (let i = 1; i <= 5; i++) {
-        const val = h + (step * i);
-        const opt = document.createElement('option');
-        opt.value = val;
-        opt.textContent = 'Rp ' + window.formatRp(val);
-        select.appendChild(opt);
-    }
-}
-</script>

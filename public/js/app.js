@@ -1941,10 +1941,10 @@ __webpack_require__.r(__webpack_exports__);
       var _this2 = this;
       axios.get("/bid/messages/".concat(window.productSlug)).then(function (res) {
         if (res.data.length > 0) {
-          // === Ambil bid terakhir (paling besar/terakhir diajukan) ===
-          var last = res.data[res.data.length - 1];
-          // === Bid selanjutnya = bid terakhir + kelipatan ===
-          _this2.newMessage = Number(last.message) + Number(_this2.kelipatan);
+          // server mengembalikan daftar terurut DESC (index 0 = terbaru)
+          var latest = res.data[0];
+          // Bid selanjutnya = bid terakhir (terbaru) + kelipatan
+          _this2.newMessage = Number(latest.message) + Number(_this2.kelipatan);
         } else {
           // === Jika belum ada bid, pakai harga awal sebagai bid ===
           _this2.newMessage = Number(_this2.price);
@@ -38581,6 +38581,13 @@ waitForSlug(function () {
           tanggal: e.tanggal
         });
       });
+
+      // Expose refresh helper globally so other scripts/components can call it
+      try {
+        window.refreshStateImmediate = this.refreshStateImmediate.bind(this);
+      } catch (e) {
+        if (isDebugEnv()) console.warn('[created] failed to expose refreshStateImmediate', e);
+      }
     },
     methods: {
       // === Mengambil seluruh message untuk productSlug dari server ===
@@ -38603,18 +38610,29 @@ waitForSlug(function () {
           var highest = Number(data.highest);
           var msgs = Array.isArray(data.messages) ? data.messages : [];
 
-          // Update highest & dropdown
+          // Update highest UI
           if (!isNaN(highest)) {
-            var highestEl = document.getElementById("highestPrice");
-            if (highestEl) highestEl.innerText = "Rp " + window.formatRp(highest);
-            if (typeof updateNominalDropdown === "function") {
-              updateNominalDropdown(highest, data.nextNominals || data.nominals || null, data.step || null);
+            var highestEl = document.getElementById('highestPrice');
+            if (highestEl) highestEl.innerText = 'Rp ' + window.formatRp(highest);
+
+            // call dropdown updater but guard against exceptions so we still sync messages
+            try {
+              if (typeof updateNominalDropdown === 'function') {
+                updateNominalDropdown(highest, data.nextNominals || data.nominals || null, data.step || null);
+              }
+            } catch (e) {
+              if (isDebugEnv()) console.error('[refreshStateImmediate] updateNominalDropdown threw', e);
             }
           }
 
-          // Sinkronisasi riwayat penuh dari server (ambil messages lengkap)
-          // Lebih aman memanggil fetchMessages agar daftar penuh tersinkronisasi.
-          _this2.fetchMessages();
+          // If the state endpoint already returned a full messages array, use it directly
+          // to avoid an extra request. Otherwise fall back to fetchMessages().
+          if (msgs.length > 0) {
+            // assume backend returns messages newest-first (same shape as fetchMessages)
+            _this2.messages = msgs;
+          } else {
+            _this2.fetchMessages();
+          }
           if (isDebugEnv()) console.log('[refreshStateImmediate] done', {
             highest: highest,
             msgs_count: msgs.length
