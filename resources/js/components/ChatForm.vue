@@ -39,10 +39,10 @@ export default {
         fetchMessages() {
             axios.get(`/bid/messages/${window.productSlug}`).then((res) => {
                 if (res.data.length > 0) {
-                    // === Ambil bid terakhir (paling besar/terakhir diajukan) ===
-                    let last = res.data[res.data.length - 1];
-                    // === Bid selanjutnya = bid terakhir + kelipatan ===
-                    this.newMessage = Number(last.message) + Number(this.kelipatan);
+                    // server mengembalikan daftar terurut DESC (index 0 = terbaru)
+                    let latest = res.data[0];
+                    // Bid selanjutnya = bid terakhir (terbaru) + kelipatan
+                    this.newMessage = Number(latest.message) + Number(this.kelipatan);
                 } else {
                     // === Jika belum ada bid, pakai harga awal sebagai bid ===
                     this.newMessage = Number(this.price);
