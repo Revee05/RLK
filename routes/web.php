@@ -106,6 +106,7 @@ Route::group(['middleware' => ['auth']], function () {
     Route::post('/cart/add-merch', 'Web\CartController@addMerchToCart')->name('cart.addMerch');
     Route::post('/cart/update/{cartItem}', 'Web\CartController@updateQuantity')->name('cart.update');
     Route::delete('/cart/{cartItem}', 'Web\CartController@destroy')->name('cart.destroy');
+    Route::post('/cart/update-option/{id}', 'Web\CartController@updateOption')->name('cart.updateOption');
 });
 
 // =============================

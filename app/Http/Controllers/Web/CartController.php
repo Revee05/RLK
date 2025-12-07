@@ -147,6 +147,87 @@ class CartController extends Controller
         ]);
     }
 
+
+    public function updateOption(\Illuminate\Http\Request $request, $id)
+    {
+        $cartItem = \App\CartItem::find($id); 
+        
+        if (!$cartItem) {
+            return response()->json(['success' => false, 'message' => 'Item tidak ditemukan'], 404);
+        }
+
+        // --- LOGIC GANTI VARIAN ---
+        if ($request->has('variant_id')) {
+            $newVariantId = $request->input('variant_id');
+            $cartItem->merch_product_variant_id = $newVariantId;
+
+            // Reset Size ke size pertama dari varian baru
+            $newVariant = \App\models\MerchProductVariant::find($newVariantId);
+            
+            if ($newVariant && $newVariant->sizes->count() > 0) {
+                $cartItem->merch_product_variant_size_id = $newVariant->sizes->first()->id;
+            } else {
+                $cartItem->merch_product_variant_size_id = null;
+            }
+        }
+
+        // --- LOGIC GANTI SIZE ---
+        if ($request->has('size_id')) {
+            $cartItem->merch_product_variant_size_id = $request->input('size_id');
+        }
+
+        $cartItem->save();
+
+        // --- HITUNG DATA BARU UNTUK DIKIRIM KE FRONTEND ---
+        
+        // 1. Ambil Varian & Size Terbaru
+        $currentVariant = \App\models\MerchProductVariant::find($cartItem->merch_product_variant_id);
+        $currentSize    = \App\models\MerchProductVariantSize::find($cartItem->merch_product_variant_size_id);
+
+        // 2. Tentukan Harga (Prioritas: Harga Size > Harga Varian > Harga Produk)
+        // Sesuaikan dengan logic harga di aplikasi kamu
+        $price = 0;
+        if ($currentSize) {
+            $price = $currentSize->price; 
+        } elseif ($currentVariant) {
+            $price = $currentVariant->price;
+        } else {
+            $price = $cartItem->merchProduct->price;
+        }
+
+        // 3. Update Harga di Cart Item (Opsional, jika kamu simpan harga statis di tabel cart)
+        $cartItem->price = $price;
+        $cartItem->save();
+
+        // 4. Tentukan Gambar Baru
+        $newImageUrl = 'https://via.placeholder.com/100'; // Default
+        if ($currentVariant && $currentVariant->images && $currentVariant->images->count() > 0) {
+            $newImageUrl = asset($currentVariant->images->first()->image_path);
+        } elseif ($cartItem->merchProduct->images && $cartItem->merchProduct->images->count() > 0) {
+            $newImageUrl = asset($cartItem->merchProduct->images->first()->image_path);
+        }
+
+        // 5. Siapkan List Size Baru (Jika varian berubah, list size di dropdown harus berubah)
+        $availableSizes = [];
+        if ($currentVariant && $currentVariant->sizes) {
+            foreach($currentVariant->sizes as $size) {
+                $availableSizes[] = [
+                    'id' => $size->id,
+                    'size' => $size->size
+                ];
+            }
+        }
+
+        return response()->json([
+            'success' => true,
+            'new_price' => $price,
+            'new_total' => $price * $cartItem->quantity,
+            'new_image' => $newImageUrl,
+            'new_size_id' => $cartItem->merch_product_variant_size_id, // Size ID yang terpilih otomatis
+            'available_sizes' => $availableSizes // List size baru untuk dropdown
+        ]);
+    }
+
     public function destroy(CartItem $cartItem)
     {
         if ($cartItem->user_id !== Auth::id()) {
