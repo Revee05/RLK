@@ -1,5 +1,14 @@
+<!-- Mobile-only profile quick view -->
+<div class="col-12 d-block d-md-none text-center mb-4">
+    <img src="{{ Auth::user()->foto ? asset(Auth::user()->foto) : asset('assets/img/default-profile-picture.webp') }}"
+        alt="avatar" class="rounded-circle img-fluid mb-3" style="width:120px; height:120px; object-fit:cover;">
+    <h1 class="profile-name mb-0">{{ Auth::user()->name }}</h1>
+    <a href="#" class="profile-view-link" data-bs-toggle="modal" data-bs-target="#modalProfilePicture">Lihat
+        Profil</a>
+</div>
+
 <!-- Left sidebar -->
-<div class="col-md-3">
+<div class="col-md-3 d-none d-md-block">
     <div class="text-center mb-4">
         <img src="{{ Auth::user()->foto ? asset(Auth::user()->foto) : asset('assets/img/default-profile-picture.webp') }}"
             alt="avatar" class="rounded-circle img-fluid mb-3" style="width:200px; height:200px; object-fit:cover;">
