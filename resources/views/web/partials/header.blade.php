@@ -58,10 +58,21 @@
                         @endif
                     </a>
                     <div class="dropdown-menu" id="profileDropdownMenu">
+
                         @if (Auth::user()->access == 'admin')
                             <a class="dropdown-item" href="{{ route('admin.dashboard') }}">Dashboard</a>
                         @else
                             <a class="dropdown-item" href="{{ route('account.dashboard') }}">Profile</a>
+                            <div class="d-md-none"> <!-- show nav list only on mobile -->
+                                <a class="dropdown-item" href="{{ route('account.katasandi') }}">Ubah Password</a>
+                                <a class="dropdown-item" href="{{ route('account.address.index') }}">Alamat</a>
+                                <a class="dropdown-item" href="#">Favorit</a>
+                                <a class="dropdown-item" href="{{ route('account.auction_history') }}">Riwayat Lelang</a>
+                                <a class="dropdown-item" href="{{ route('account.purchase.history') }}">Riwayat
+                                    Pembelian</a>
+                                <a class="dropdown-item" href="{{ route('account.notifications') }}">Pengaturan
+                                    Notifikasi</a>
+                            </div>
                         @endif
                         <a class="dropdown-item" href="{{ route('logout') }}"
                             onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
