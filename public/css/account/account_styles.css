@@ -163,6 +163,13 @@
     margin-right: auto;
 }
 
+@media (max-width: 768px) {
+    #pp-current {
+        width: 150px;
+        height: 150px;
+    }
+}
+
 .pp-preview-wrap {
     border-radius: 8px;
     overflow: hidden;
