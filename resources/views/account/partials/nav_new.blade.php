@@ -1,5 +1,5 @@
 <!-- Left sidebar -->
-<div class="col-md-3">
+<div class="col-md-3 account-left d-flex flex-column"><!-- pastikan sidebar juga flex-column sehingga tinggi sejajar -->
     <div class="text-center mb-4">
 
 

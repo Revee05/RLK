@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Account;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Favorite;
+use App\Product;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 
@@ -37,13 +38,14 @@ class FavoriteController extends Controller
             $productId = $request->product_id;
             $userId = Auth::id();
 
-            // cek jika sudah ada favorit
             $favorite = Favorite::where('user_id', $userId)
                 ->where('product_id', $productId)
                 ->first();
 
             if ($favorite) {
                 $favorite->delete();
+
+                Log::info("Favorite removed - user_id: $userId, product_id: $productId");
 
                 return response()->json([
                     'status' => 'removed',
@@ -56,6 +58,8 @@ class FavoriteController extends Controller
                 'product_id' => $productId,
             ]);
 
+            Log::info("Favorite added - user_id: $userId, product_id: $productId");
+
             return response()->json([
                 'status' => 'added',
                 'message' => 'Produk berhasil ditambahkan ke favorit'
@@ -63,6 +67,7 @@ class FavoriteController extends Controller
 
         } catch (\Exception $e) {
             Log::error('Favorite Toggle Error: ' . $e->getMessage());
+
             return response()->json([
                 'status' => 'error',
                 'message' => 'Terjadi kesalahan'
@@ -71,7 +76,7 @@ class FavoriteController extends Controller
     }
 
     /**
-     * Menghapus dari daftar favorit (dipakai di halaman favorites)
+     * Menghapus dari daftar favorit (halaman favorites)
      */
     public function remove($id)
     {
@@ -84,10 +89,13 @@ class FavoriteController extends Controller
 
             $favorite->delete();
 
+            Log::info("Favorite removed from list view - id: $id");
+
             return redirect()->back()->with('success', 'Produk dihapus dari favorit.');
 
         } catch (\Exception $e) {
             Log::error('Error removing favorite: ' . $e->getMessage());
+
             return redirect()->back()->with('error', 'Gagal menghapus dari favorit.');
         }
     }
