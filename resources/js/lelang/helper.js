@@ -19,11 +19,26 @@
             const defaultStep = Number(stepDefault) || 10000;
             const h = Number(highest);
             const select = document.getElementById('bidSelect');
-            if (!select || isNaN(h)) return;
+            
+            // DEBUG LOG
+            console.log('[updateNominalDropdown] Called with:', {
+                highest: h,
+                nominalsArray: nominalsArray,
+                stepOverride: stepOverride,
+                stepDefault: stepDefault,
+                defaultStep: defaultStep
+            });
+            
+            if (!select || isNaN(h)) {
+                console.warn('[updateNominalDropdown] Select not found or highest is NaN');
+                return;
+            }
 
             select.innerHTML = '<option value="">Pilih Nominal Bid</option>';
 
+            // Jika nominalsArray ada dan valid, gunakan itu (dari server)
             if (Array.isArray(nominalsArray) && nominalsArray.length) {
+                console.log('[updateNominalDropdown] Using nominals from server:', nominalsArray);
                 nominalsArray.forEach(val => {
                     const v = Number(val);
                     if (isNaN(v)) return;
@@ -35,7 +50,9 @@
                 return;
             }
 
+            // Fallback: hitung dari step
             const step = Number(stepOverride) || defaultStep;
+            console.log('[updateNominalDropdown] Fallback: building from step:', step);
             for (let i = 1; i <= 5; i++) {
                 const val = h + (step * i);
                 const opt = document.createElement('option');
