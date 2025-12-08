@@ -46,6 +46,8 @@ class Kernel extends ConsoleKernel
 
         // Cleanup produk yang tak diambil (biarkan jika masih perlu)
         $schedule->command('auction:expire')->daily();
+
+        $schedule->command('cart:cleanup-auction')->hourly();
     }
 
     /**
