@@ -47,9 +47,64 @@ class PanduanAdminController extends Controller
             unlink(public_path($panduan->file_path));
         }
 
-        // Set file_path = null
-        $panduan->update(['file_path' => null]);
+        // Hapus seluruh record dari database
+        $panduan->delete();
 
-        return back()->with('success', 'File panduan berhasil dihapus.');
+        return back()->with('success', 'Panduan berhasil dihapus.');
     }
+
+    public function create()
+    {
+        return view('admin.panduan.create');
+    }
+
+    public function store(Request $request)
+    {
+        $request->validate([
+            'title' => 'required|unique:panduan,title',
+            'slug'  => 'required|unique:panduan,slug',
+            'pdf'   => 'nullable|mimes:pdf|max:5000',
+        ], [
+            'title.unique' => 'Judul panduan sudah ada. Silahkan upload ulang file pada panduan tersebut.',
+        ]);
+
+        $panduan = new Panduan();
+        $panduan->title = $request->title;
+        $panduan->slug = $request->slug;
+
+        if ($request->hasFile('pdf')) {
+            $file = $request->file('pdf');
+            $filename = time() . '_' . $file->getClientOriginalName();
+            $file->move('uploads/panduan/', $filename);
+            $panduan->file_path = 'uploads/panduan/' . $filename;
+        }
+
+        $panduan->save();
+
+        return redirect()->route('admin.panduan.index')->with('success', 'Panduan baru berhasil ditambahkan.');
+    }
+    
+    public function edit($id)
+    {
+        $panduan = Panduan::findOrFail($id);
+        return view('admin.panduan.edit', compact('panduan'));
+    }
+
+    public function update(Request $request, $id)
+    {
+        $panduan = Panduan::findOrFail($id);
+
+        $request->validate([
+            'title' => 'required|unique:panduan,title,' . $panduan->id,
+        ]);
+
+        $panduan->title = $request->title;
+
+        $panduan->save();
+
+        return redirect()->route('admin.panduan.index')
+                        ->with('success', 'Panduan berhasil diperbarui.');
+    }
+
+
 }
