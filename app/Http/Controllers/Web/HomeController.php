@@ -76,10 +76,10 @@ class HomeController extends Controller
                 ->with(['imageUtama', 'images', 'kategori', 'karya', 'kelengkapans'])
                 ->firstOrFail();
 
-            // Ambil semua bidding
+            // Ambil semua bidding - PENTING: sort numeric bukan string
             $bidList = Bid::where('product_id', $product->id)
                 ->with('user')
-                ->orderBy('price', 'desc')
+                ->orderByRaw('CAST(price AS UNSIGNED) DESC')
                 ->get();
 
             // Highest bidding

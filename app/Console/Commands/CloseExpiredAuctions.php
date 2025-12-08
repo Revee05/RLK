@@ -39,9 +39,10 @@ class CloseExpiredAuctions extends Command
         foreach ($expiredProducts as $product) {
             DB::beginTransaction();
             try {
-                // Cari Bid Tertinggi
+                // Cari bid tertinggi untuk produk ini
+                // PENTING: Gunakan orderByRaw untuk cast price ke integer agar sorting benar
                 $winningBid = Bid::where('product_id', $product->id)
-                                 ->orderBy('price', 'desc')
+                                 ->orderByRaw('CAST(price AS UNSIGNED) DESC')
                                  ->first();
 
                 if ($winningBid) {

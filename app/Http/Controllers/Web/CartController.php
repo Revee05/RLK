@@ -9,6 +9,8 @@ use App\CartItem;
 use App\models\MerchProduct;
 use App\models\MerchProductVariant;
 use App\models\MerchProductVariantSize;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Auth;
 
 class CartController extends Controller
 {
@@ -81,8 +83,30 @@ class CartController extends Controller
             $msg = "Stok tidak mencukupi. Tersisa: {$availableStock}";
             
             if ($request->ajax() || $request->wantsJson()) {
+                $this->logResponse('addMerchToCart', [
+                    'status' => 'error',
+                    'reason' => 'stock_insufficient',
+                    'message' => $msg,
+                    'availableStock' => $availableStock,
+                    'requestedQty' => $qty,
+                    'merch_product_id' => $request->merch_product_id,
+                    'variant_id' => $request->variant_id,
+                    'size_id' => $request->size_id,
+                ]);
+
                 return response()->json(['success' => false, 'message' => $msg], 422);
             }
+            $this->logResponse('addMerchToCart', [
+                'status' => 'error',
+                'reason' => 'stock_insufficient',
+                'message' => $msg,
+                'availableStock' => $availableStock,
+                'requestedQty' => $qty,
+                'merch_product_id' => $request->merch_product_id,
+                'variant_id' => $request->variant_id,
+                'size_id' => $request->size_id,
+            ]);
+
             return back()->with('error', $msg);
         }
 
@@ -98,8 +122,28 @@ class CartController extends Controller
             if ($newTotalQty > $availableStock) {
                 $msg = "Total pesanan melebihi stok ({$availableStock}).";
                 if ($request->ajax() || $request->wantsJson()) {
+                    $this->logResponse('addMerchToCart', [
+                        'status' => 'error',
+                        'reason' => 'stock_exceeded_total',
+                        'message' => $msg,
+                        'availableStock' => $availableStock,
+                        'existingQty' => $existingItem->quantity,
+                        'requestedQty' => $qty,
+                        'merch_product_id' => $request->merch_product_id,
+                    ]);
+
                     return response()->json(['success' => false, 'message' => $msg], 422);
                 }
+                $this->logResponse('addMerchToCart', [
+                    'status' => 'error',
+                    'reason' => 'stock_exceeded_total',
+                    'message' => $msg,
+                    'availableStock' => $availableStock,
+                    'existingQty' => $existingItem->quantity,
+                    'requestedQty' => $qty,
+                    'merch_product_id' => $request->merch_product_id,
+                ]);
+
                 return back()->with('error', $msg);
             }
             $existingItem->quantity = $newTotalQty;
@@ -115,6 +159,17 @@ class CartController extends Controller
                 'price' => $finalPrice,
             ]);
         }
+
+        // RESPON SUKSES
+        $this->logResponse('addMerchToCart', [
+            'status' => 'success',
+            'message' => 'Produk berhasil ditambahkan ke keranjang.',
+            'merch_product_id' => $request->merch_product_id,
+            'variant_id' => $request->variant_id,
+            'size_id' => $request->size_id,
+            'quantity' => $qty,
+            'price' => $finalPrice,
+        ]);
 
         if ($request->ajax() || $request->wantsJson()) {
             return response()->json([
@@ -132,6 +187,12 @@ class CartController extends Controller
     public function updateQuantity(Request $request, CartItem $cartItem)
     {
         if ($cartItem->user_id !== Auth::id()) {
+            $this->logResponse('updateQuantity', [
+                'status' => 'error',
+                'reason' => 'unauthorized',
+                'cart_item_id' => $cartItem->id,
+            ]);
+
             return response()->json(['success' => false, 'message' => 'Unauthorized'], 403);
         }
 
@@ -150,6 +211,14 @@ class CartController extends Controller
 
         // Jika request melebihi stok
         if ($newQuantity > $maxStock) {
+            $this->logResponse('updateQuantity', [
+                'status' => 'error',
+                'reason' => 'stock_exceeded',
+                'maxStock' => $maxStock,
+                'requested' => $newQuantity,
+                'cart_item_id' => $cartItem->id,
+            ]);
+
             return response()->json([
                 'success' => false,
                 'message' => "Stok maksimal hanya {$maxStock}",
@@ -159,6 +228,12 @@ class CartController extends Controller
 
         $cartItem->quantity = $newQuantity;
         $cartItem->save();
+
+        $this->logResponse('updateQuantity', [
+            'status' => 'success',
+            'newQuantity' => $cartItem->quantity,
+            'cart_item_id' => $cartItem->id,
+        ]);
 
         return response()->json([
             'success' => true,
@@ -174,6 +249,12 @@ class CartController extends Controller
         $cartItem = CartItem::find($id); 
         
         if (!$cartItem) {
+            $this->logResponse('updateOption', [
+                'status' => 'error',
+                'reason' => 'not_found',
+                'id' => $id,
+            ]);
+
             return response()->json(['success' => false, 'message' => 'Item tidak ditemukan'], 404);
         }
 
@@ -249,6 +330,7 @@ class CartController extends Controller
             'new_size_id'   => $cartItem->merch_product_variant_size_id, 
             'available_sizes' => $availableSizes
         ]);
+
     }
 
     // ==========================================
@@ -258,14 +340,31 @@ class CartController extends Controller
     {
         if ($cartItem->user_id !== Auth::id()) {
             if (request()->ajax() || request()->wantsJson()) {
+                $this->logResponse('destroy', [
+                    'status' => 'error',
+                    'reason' => 'unauthorized',
+                    'cart_item_id' => $cartItem->id,
+                ]);
+
                 return response()->json(['success' => false, 'message' => 'Unauthorized'], 403);
             }
+            $this->logResponse('destroy', [
+                'status' => 'error',
+                'reason' => 'unauthorized',
+                'cart_item_id' => $cartItem->id,
+            ]);
+
             abort(403);
         }
         
         $cartItem->delete();
         
-        // Return JSON khusus request AJAX (tombol hapus di cart)
+        $this->logResponse('destroy', [
+            'status' => 'success',
+            'message' => 'Item dihapus',
+            'cart_item_id' => $cartItem->id,
+        ]);
+
         if (request()->ajax() || request()->wantsJson()) {
             return response()->json([
                 'success' => true,
@@ -274,5 +373,25 @@ class CartController extends Controller
         }
         
         return back()->with('success', 'Item dihapus.');
+    }
+
+    /**
+     * Conditional logger for local/development environment.
+     *
+     * @param string $method
+     * @param array $data
+     * @return void
+     */
+    private function logResponse(string $method, array $data = [])
+    {
+        if (app()->environment('local') || app()->environment('development')) {
+            $payload = array_merge([
+                'method' => $method,
+                'env' => app()->environment(),
+                'timestamp' => now()->toDateTimeString(),
+            ], $data);
+
+            Log::info('CartController response', $payload);
+        }
     }
 }

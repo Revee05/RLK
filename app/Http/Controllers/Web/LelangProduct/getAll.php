@@ -41,8 +41,8 @@ class getAll extends Controller
 
                 // DATA HARGA TERTINGGI
                 // Kita ambil dari kolom virtual 'highest_bid_amount' yang dibuat di buildQuery
-                // Jika null (belum ada bid), kita set ke 0
-                $highestBid = $p->highest_bid_amount ?? 0;
+                // Jika null (belum ada bid), kita set ke 0. Cast ke int untuk konsistensi.
+                $highestBid = (int) ($p->highest_bid_amount ?? 0);
 
                 return [
                     'title' => $p->title,
@@ -81,11 +81,9 @@ class getAll extends Controller
 
     private function buildQuery(string $type, ?string $search, ?string $category, string $sort)
     {
-        // --- OPTIMASI SUBQUERY (SOLUSI AGAR TIDAK BOROS) ---
-        // Kita siapkan perintah untuk mencari MAX price dari tabel bid
-        // Pastikan nama tabel 'bid' sesuai dengan model App\Bid
-        $highestBidQuery = \App\Bid::selectRaw('MAX(price)')
-            ->whereColumn('product_id', 'products.id');
+        $highestBidQuery = \App\Bid::selectRaw(
+            "MAX(CAST(REPLACE(REPLACE(REPLACE(price, 'Rp ', ''), '.', ''), ',', '') AS UNSIGNED))"
+        )->whereColumn('product_id', 'products.id');
 
         // Masukkan subquery ke dalam query utama
         $query = Products::with(['imageUtama', 'kategori'])

@@ -25,7 +25,7 @@ class AuctionProcess extends Command
 
         foreach ($products as $product) {
             $bid = Bid::where('product_id', $product->id)
-                      ->orderBy('price', 'desc')
+                      ->orderByRaw('CAST(price AS UNSIGNED) DESC')
                       ->first();
 
             if (!$bid) {
