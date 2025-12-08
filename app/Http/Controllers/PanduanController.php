@@ -7,38 +7,32 @@ use App\Panduan;
 
 class PanduanController extends Controller
 {
-    // 1. Panduan Pembelian Produk (Sudah ada)
-    public function pembelian()
+    public function index()
     {
-        return view('web.panduan.pembelian');
-    }
+        $semuaPanduan = Panduan::orderBy('title')->get();
 
-    // 2. Panduan Peserta Lelang (Baru)
-    public function lelangPeserta()
-    {
-        // Pastikan file view: resources/views/web/panduan/lelang_peserta.blade.php ada
-        return view('web.panduan.lelang_peserta');
-    }
+        // Jika database masih kosong
+        if ($semuaPanduan->count() == 0) {
+            return view('web.panduan.index', [
+                'panduan' => null,
+                'semuaPanduan' => []
+            ]);
+        }
 
-    // 3. Panduan Penjualan Karya Lelang (Baru)
-    public function penjualanKarya()
-    {
-        // Pastikan file view: resources/views/web/panduan/penjualan_karya.blade.php ada
-        return view('web.panduan.penjualan_karya');
-    }
+        // Jika ada data, tampilkan data pertama
+        $panduan = $semuaPanduan->first();
 
-    // 4. Panduan Penjualan Produk (Baru)
-    public function penjualanProduk()
-    {
-        // Pastikan file view: resources/views/web/panduan/penjualan_produk.blade.php ada
-        return view('web.panduan.penjualan_produk');
-    }
+        return view('web.panduan.index', compact('panduan', 'semuaPanduan'));
+}
 
-    public function show($slug)
+
+    public function loadPanduan($slug)
     {
-        // Ambil data dari DB sesuai slug
         $panduan = Panduan::where('slug', $slug)->firstOrFail();
 
-        return view('web.panduan.show', compact('panduan'));
+        return response()->json([
+            'title'     => $panduan->title,
+            'file_path' => $panduan->file_path ? asset($panduan->file_path) : null
+        ]);
     }
 }

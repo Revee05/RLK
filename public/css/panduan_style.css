@@ -1,110 +1,87 @@
-/* Styling khusus halaman Panduan */
+/* Container */
 .panduan-container {
     padding-top: 50px;
     padding-bottom: 80px;
 }
 
-/* 1. Container Utama (Kotak Luar) */
+/* Sidebar */
 .panduan-sidebar {
     display: flex;
     flex-direction: column;
-    border: 1px solid #051a36; /* Border luar warna biru gelap */
-    border-radius: 10px;       /* Sudut melengkung untuk seluruh kotak */
-    overflow: hidden;          /* Agar anak elemen tidak menembus sudut melengkung */
-    background-color: #fff;
-}
-
-/* 2. Styling untuk Setiap Item Link */
-.panduan-sidebar .nav-link {
-    display: block;
-    padding: 20px 15px;        /* Padding lebih besar agar terlihat luas */
-    margin: 0;                 /* Hapus jarak antar elemen */
-    border-radius: 0;          /* Hapus radius per item */
-    border: none;              /* Reset border default */
-    border-bottom: 1px solid #051a36; /* Garis pemisah antar item */
-    
-    background-color: #fff;
-    color: #051a36;
-    text-align: center;        /* Teks rata tengah sesuai gambar */
-    font-weight: 500;
-    text-decoration: none;
-    transition: all 0.3s ease;
-}
-
-/* 3. Menghapus border bawah pada item terakhir */
-.panduan-sidebar .nav-link:last-child {
-    border-bottom: none;
-}
-
-/* 4. State Hover (Saat kursor diarahkan) */
-.panduan-sidebar .nav-link:hover {
-    background-color: #f4f4f4;
-    color: #051a36;
-}
-
-/* 5. State Active (Item yang sedang dipilih - Seperti Header) */
-.panduan-sidebar .nav-link.active {
-    background-color: #051a36 !important; /* Latar biru gelap */
-    color: #fff !important;               /* Teks putih */
-    font-weight: bold;
-    border-bottom: 1px solid #051a36;     /* Menjaga border tetap rapi */
-}
-
-/* Opsional: Efek hover khusus untuk yang active agar tidak berubah warna */
-.panduan-sidebar .nav-link.active:hover {
-    background-color: #051a36; 
-    color: #fff;
-}
-
-
-
-
-/* --- Styling Container Utama (Card) --- */
-.panduan-card {
-    background-color: #fff;
-    border: 1px solid #000000;       /* Border abu-abu halus untuk kotak luar */
-    border-radius: 8px;           /* Sudut melengkung */
-    box-shadow: 0 2px 6px rgba(0,0,0,0.05); /* Sedikit bayangan agar elegan */
-    overflow: hidden;             /* Agar isi tidak menembus sudut melengkung */
-    margin-bottom: 20px;
-}
-
-/* --- Styling Header Judul (Bagian Atas) --- */
-.panduan-card-header {
-    padding: 20px 25px;           /* Jarak teks dari pinggir */
-    border-bottom: 1px solid #000000; /* Garis pemisah horizontal di bawah judul */
-    background-color: #fff;
-}
-
-.panduan-content-title {
-    font-size: 20px;
-    font-weight: 700;             /* Huruf tebal */
-    color: #000;
-    margin: 0;                    /* Reset margin default */
-    padding: 0;                   /* Reset padding default */
-    border: none;                 /* Hapus border lama jika ada */
-}
-
-/* --- Styling Body (Area Pembungkus PDF) --- */
-.panduan-card-body {
-    padding: 25px;                /* Memberikan jarak (gap) antara garis pinggir dan PDF */
-}
-
-/* --- Styling PDF Viewer --- */
-.pdf-viewer-container {
-    width: 100%;
-    height: 600px;                /* Tinggi area PDF */
-    border: 1px solid #ccc;       /* Border langsung pada PDF viewer */
-    border-radius: 4px;
-    background-color: #f8f9fa;    /* Warna background saat loading */
+    border: 1px solid #051a36;
+    border-radius: 10px;
     overflow: hidden;
+    background: #fff;
 }
 
+.panduan-sidebar .nav-link {
+    padding: 20px 15px;
+    border-bottom: 1px solid #051a36;
+    text-align: center;
+    color: #051a36;
+    background: #fff;
+    transition: 0.3s;
+}
+
+.panduan-sidebar .nav-link:hover {
+    background: #f4f4f4;
+}
+
+.panduan-sidebar .nav-link.active {
+    background: #051a36;
+    color: #fff !important;
+    font-weight: bold;
+}
+
+/* Card Utama */
+.panduan-card {
+    border: 1px solid #000;
+    border-radius: 8px;
+    background: #fff;
+}
+
+/* Header */
+.panduan-card-header {
+    border-bottom: 1px solid #000;
+    padding: 20px;
+}
+
+#panduanTitle {
+    font-family: Helvetica;
+    font-weight: 700;
+    font-style: Bold;
+    font-size: 28px;
+    line-height: 100%;
+    letter-spacing: 0%;
+}
+
+/* PDF Container */
+#pdfContainer {
+    width: 100%;
+    height: 600px;
+    border: 1px solid #ccc;
+    background: #f8f9fa;
+    overflow: hidden;
+    border-radius: 4px;
+}
+
+/* Frame */
 .pdf-frame {
     width: 100%;
     height: 100%;
     border: none;
-    display: block;
+
+    /* FIX: iframe tidak menutupi sidebar */
+    position: relative;
+    z-index: 1;
 }
 
-
+/* Alert Ketika File Tidak Ada */
+#noPdfMessage {
+    margin: 0;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
