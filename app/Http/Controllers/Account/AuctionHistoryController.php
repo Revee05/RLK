@@ -7,90 +7,102 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
 
-// --- IMPORT MODEL SESUAI NAMESPACE KAMU ---
+// Import Model
 use App\Bid;      
 use App\Products; 
 
 class AuctionHistoryController extends Controller
 {
-    public function index(Request $request) // Tambahkan Request $request
+    public function index(Request $request)
     {
         // 1. Ambil User ID
         $userId = Auth::id();
 
-        // 2. Query Data (SAMA SEPERTI SEBELUMNYA)
+        // 2. Query Data
         $myBids = Bid::with('product')
                     ->where('user_id', $userId)
                     ->orderBy('created_at', 'desc')
                     ->get();
 
         // 3. Siapkan Variabel Statistik Awal
-        $totalBids = $myBids->count();
         $itemsWon = 0;
         $highestBidUser = 0;
 
-        // 4. Looping Logic (SAMA SEPERTI SEBELUMNYA)
+        // 4. Looping Logic (Menentukan Status & Statistik)
         $history = $myBids->map(function ($bid) use (&$itemsWon, &$highestBidUser) {
             $product = $bid->product;
             
-            // Menggunakan Opsi 1 (Function bid() singular sesuai model kamu)
+            // Cek harga tertinggi global saat ini di produk tersebut
             $globalHighestPrice = $product->bid()->max('price');
 
             $now = Carbon::now();
-            $endDate = $product->end_date; 
+            $endDate = Carbon::parse($product->end_date); // Pastikan jadi object Carbon
             $hasEnded = $now->greaterThan($endDate);
             
             $statusLabel = '';
+            $badgeClass = ''; // Tambahan untuk styling CSS (opsional)
 
+            // Logika Status
             if (!$hasEnded) {
-                $statusLabel = 'Dalam Proses';
+                // Lelang Masih Berjalan
+                if ($bid->price >= $globalHighestPrice) {
+                    $statusLabel = 'Memimpin'; // Bid kita paling tinggi sementara
+                    $badgeClass = 'bg-warning text-dark';
+                } else {
+                    $statusLabel = 'Tertimpa'; // Ada yang ngebid lebih tinggi
+                    $badgeClass = 'bg-secondary';
+                }
             } else {
+                // Lelang Sudah Berakhir
                 if ($bid->price >= $globalHighestPrice) {
                     $statusLabel = 'Menang';
-                    $itemsWon++; 
+                    $badgeClass = 'bg-success';
+                    $itemsWon++; // Tambah counter kemenangan
                 } else {
                     $statusLabel = 'Kalah';
+                    $badgeClass = 'bg-danger';
                 }
             }
 
+            // Update Highest Bid Pribadi (untuk statistik kartu)
             if ($bid->price > $highestBidUser) {
                 $highestBidUser = $bid->price;
             }
 
+            // Simpan data tambahan ke object $bid agar mudah dipanggil di View
             $bid->highest_global = $globalHighestPrice;
             $bid->status_label = $statusLabel;
+            $bid->badge_class = $badgeClass; // Opsional
             
             return $bid;
         });
 
-        // ==========================================
-        //  MODIFIKASI BAGIAN RETURN DI BAWAH INI
-        // ==========================================
+        // Hitung total setelah loop
+        $totalBids = $myBids->count();
 
-        // Jika request datang dari AJAX (JavaScript)
+        // ==========================================
+        //  BAGIAN RESPON JSON (AJAX)
+        // ==========================================
         if ($request->ajax()) {
-            // Render file partial yang baru kita buat jadi string HTML
+            
+            // Render file partial khusus baris tabel (TR)
+            // Pastikan kamu sudah membuat file: resources/views/account/auction/_table_rows.blade.php
             $tableHtml = view('account.auction._table_rows', ['history' => $history])->render();
 
-            // Return data dalam format JSON
             return response()->json([
+                'status' => 'success',
                 'html' => $tableHtml,
                 'stats' => [
                     'totalBids' => $totalBids,
                     'itemsWon'  => $itemsWon,
-                    'highestBid'=> number_format($highestBidUser, 0, ',', '.')
-                ],
-
-                'debug_data' => [
-                    'message' => 'Data berhasil diambil dari server',
-                    'raw_history' => $history, // Kita kirim data asli history buat dicek
-                    'user_id' => $userId,
-                    'waktu_server' => Carbon::now()->toDateTimeString()
+                    'highestBid'=> 'Rp ' . number_format($highestBidUser, 0, ',', '.')
                 ]
             ]);
         }
 
-        // Jika request biasa (Buka halaman pertama kali)
+        // ==========================================
+        //  BAGIAN RESPON HALAMAN BIASA (NON-AJAX)
+        // ==========================================
         return view('account.auction.auction_history', [
             'history' => $history,
             'totalBids' => $totalBids,

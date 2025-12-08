@@ -5,49 +5,28 @@ namespace App\Console\Commands;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
-
-/**
- * PENTING: Pastikan namespace model di bawah ini sesuai dengan struktur folder kamu.
- * Jika Laravel versi 8 ke atas, biasanya ada di App\Models.
- * Jika versi lama, mungkin langsung di App.
- * (Pilih salah satu dan hapus komentar pada baris yang sesuai)
- */
-use App\Products; 
-use App\Bid;
-// use App\Products;
-// use App\Bid;
 use Illuminate\Support\Facades\Mail;
-use App\Mail\OrderShipped;
-use App\Mail\BidNotification;
+
+// --- MODEL ---
+use App\Products; 
+use App\Bid;      
+use App\CartItem; 
+
+// --- MAIL ---
+use App\Mail\OrderShipped;    // Email Pemenang
+use App\Mail\BidNotification; // Email Kalah
 
 class CloseExpiredAuctions extends Command
 {
-    /**
-     * Nama perintah console.
-     * Jalankan dengan: php artisan lelang:close-expired
-     */
     protected $signature = 'lelang:close-expired';
+    protected $description = 'Cek lelang berakhir, tentukan pemenang, masuk cart, dan kirim email.';
 
-    /**
-     * Deskripsi perintah.
-     */
-    protected $description = 'Mengecek lelang expired, update status ke 2 (sold) atau 3 (expired), dan set winner_id.';
-
-    public function __construct()
-    {
-        parent::__construct();
-    }
-
-    /**
-     * Eksekusi perintah.
-     */
     public function handle()
     {
         $this->info('--- Memulai Pengecekan Lelang ---');
-
         $now = Carbon::now();
 
-        // 1. Cari Produk: Status Aktif (1) TAPI Waktu Habis (< Now)
+        // 1. Cari Produk Aktif (status 1) yang waktunya sudah habis
         $expiredProducts = Products::where('status', 1)
                                    ->where('end_date', '<', $now)
                                    ->get();
@@ -57,10 +36,8 @@ class CloseExpiredAuctions extends Command
             return;
         }
 
-        $count = 0;
-
         foreach ($expiredProducts as $product) {
-            DB::beginTransaction(); // Mulai transaksi database
+            DB::beginTransaction();
             try {
                 // Cari bid tertinggi untuk produk ini
                 // PENTING: Gunakan orderByRaw untuk cast price ke integer agar sorting benar
@@ -69,30 +46,44 @@ class CloseExpiredAuctions extends Command
                                  ->first();
 
                 if ($winningBid) {
-                    // --- SKENARIO A: ADA PEMENANG (SOLD) ---
+                    // ==========================================
+                    // SKENARIO A: ADA PEMENANG
+                    // ==========================================
                     
-                    // 1. Update Status Produk jadi 2 (Sold)
+                    // 1. Update Status Produk -> 2 (Sold/Waiting Payment)
                     $product->status = 2;
-
-                    // 2. [PERBAIKAN] Simpan ID User pemenang ke kolom winner_id
                     $product->winner_id = $winningBid->user_id;
-
-                    // 3. Simpan perubahan ke database
                     $product->save();
 
-                    $this->info("✅ [SOLD] Product ID {$product->id} - Pemenang User ID: {$winningBid->user_id} (Data Disimpan).");
+                    // 2. Masukkan ke Keranjang Pemenang (Logika Baru)
+                    $existingCart = CartItem::where('user_id', $winningBid->user_id)
+                                            ->where('product_id', $product->id)
+                                            ->first();
 
-                    // Kirim email ke pemenang
+                    if (!$existingCart) {
+                        CartItem::create([
+                            'user_id'          => $winningBid->user_id,
+                            'product_id'       => $product->id,    
+                            'merch_product_id' => null, 
+                            'type'             => 'lelang', 
+                            'quantity'         => 1,
+                            'price'            => $winningBid->price,
+                            'expires_at'       => Carbon::now()->addDays(7), // Expired 7 hari
+                        ]);
+                        $this->info("🛒 Product {$product->id} masuk cart User ID {$winningBid->user_id}.");
+                    }
+
+                    // 3. Kirim Email ke Pemenang (Logika Lama)
                     try {
                         if ($winningBid->user && !empty($winningBid->user->email)) {
                             Mail::to($winningBid->user->email)->send(new OrderShipped($winningBid));
-                            $this->info("✉️ Email dikirim ke pemenang: {$winningBid->user->email}");
+                            $this->info("✉️ Email MENANG dikirim ke: {$winningBid->user->email}");
                         }
                     } catch (\Exception $mailEx) {
-                        $this->error("Gagal mengirim email ke pemenang ({$product->id}): " . $mailEx->getMessage());
+                        $this->error("Gagal kirim email pemenang: " . $mailEx->getMessage());
                     }
 
-                    // Kirim notifikasi ke peserta lain (losers)
+                    // 4. Kirim Email ke Peserta Kalah (Logika Lama)
                     try {
                         $loserBids = Bid::where('product_id', $product->id)
                                         ->where('user_id', '!=', $winningBid->user_id)
@@ -100,42 +91,34 @@ class CloseExpiredAuctions extends Command
                                         ->groupBy('user_id');
 
                         foreach ($loserBids as $userId => $bids) {
-                            // Ambil bid tertinggi dari user tersebut untuk konteks email
+                            // Ambil bid tertinggi user tersebut untuk konteks email
                             $highestUserBid = $bids->sortByDesc('price')->first();
+                            
                             if ($highestUserBid && $highestUserBid->user && !empty($highestUserBid->user->email)) {
-                                // Kirim juga data bid pemenang supaya view bisa menampilkan harga pemenang yang benar
+                                // Kirim notifikasi kalah
                                 Mail::to($highestUserBid->user->email)->send(new BidNotification($highestUserBid, $winningBid));
-                                $this->info("✉️ Email kalah dikirim ke: {$highestUserBid->user->email}");
+                                $this->info("✉️ Email KALAH dikirim ke: {$highestUserBid->user->email}");
                             }
                         }
                     } catch (\Exception $mailEx) {
-                        $this->error("Gagal mengirim email notifikasi kalah untuk produk {$product->id}: " . $mailEx->getMessage());
+                        $this->error("Gagal kirim email kalah: " . $mailEx->getMessage());
                     }
-                } else {
-                    // --- SKENARIO B: TIDAK ADA YANG BID (HANGUS) ---
-                    
-                    // Update Status Produk jadi 3 (Expired/Hangus)
-                    $product->status = 3;
-                    
-                    // Pastikan winner_id null (opsional, untuk menjaga data bersih)
-                    $product->winner_id = null;
-                    
-                    $product->save();
 
-                    // Tidak ada penawar — tidak ada email pemenang / kalah.
-                    $this->info("❌ [EXPIRED] Product ID {$product->id} tidak ada penawaran.");
-                    $this->info("(No emails) Produk {$product->id} tidak ada penawaran — tidak ada email dikirim.");
+                } else {
+                    // ==========================================
+                    // SKENARIO B: TIDAK ADA BID (HANGUS)
+                    // ==========================================
+                    $product->status = 3; // Expired/Hangus
+                    $product->winner_id = null;
+                    $product->save();
+                    $this->info("❌ Product {$product->id} hangus (tidak ada bid).");
                 }
 
-                DB::commit(); // Komit perubahan jika tidak ada error
-                $count++;
-
+                DB::commit();
             } catch (\Exception $e) {
-                DB::rollback(); // Batalkan perubahan jika terjadi error
-                $this->error("Error pada Product ID {$product->id}: " . $e->getMessage());
+                DB::rollback();
+                $this->error("Error ID {$product->id}: " . $e->getMessage());
             }
         }
-
-        $this->info("--- Selesai. Total diproses: {$count} lelang ---");
     }
 }
