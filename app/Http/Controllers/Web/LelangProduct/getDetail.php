@@ -89,8 +89,9 @@ class getDetail extends Controller
             $initialMessages = $initialMessages->values();
 
 
-            // 4. Hitung Highest Bid
-            $highestBid = $bids->first() ? $bids->first()->price : $product->price;
+            // 4. Hitung Highest Bid - PENTING: Ambil MAX numerik, bukan first by created_at
+            $highestBidValue = (int) Bid::where('product_id', $product->id)->max(\DB::raw('price+0'));
+            $highestBid = $highestBidValue > 0 ? $highestBidValue : $product->price;
 
 
             // 5. Hitung Pilihan Nominal

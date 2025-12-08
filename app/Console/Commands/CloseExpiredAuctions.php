@@ -63,8 +63,9 @@ class CloseExpiredAuctions extends Command
             DB::beginTransaction(); // Mulai transaksi database
             try {
                 // Cari bid tertinggi untuk produk ini
+                // PENTING: Gunakan orderByRaw untuk cast price ke integer agar sorting benar
                 $winningBid = Bid::where('product_id', $product->id)
-                                 ->orderBy('price', 'desc')
+                                 ->orderByRaw('CAST(price AS UNSIGNED) DESC')
                                  ->first();
 
                 if ($winningBid) {
