@@ -52,7 +52,7 @@ class BidSent implements ShouldBroadcastNow
         $product = \App\Products::find($this->productId);
         $step = 0;
         if ($product) {
-            $step = intval($product->kelipatan_bid ?? $product->kelipatan ?? 0);
+            $step = intval($product->kelipatan ?? 0);
         }
         $useStep = $step > 0 ? $step : 10000;
         $nominals = [];
