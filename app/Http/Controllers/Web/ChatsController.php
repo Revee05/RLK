@@ -140,8 +140,8 @@ class ChatsController extends Controller
                         $currentHighest = (int) $product->price;
                     }
 
-                    // Kelipatan
-                    $step = (int) ($product->kelipatan_bid ?? $product->kelipatan ?? 10000);
+                    // Kelipatan - gunakan field 'kelipatan' bukan accessor 'kelipatan_bid'
+                    $step = (int) ($product->kelipatan ?? 10000);
                     if ($step <= 0) { $step = 10000; }
 
                     // Tolak jika sama dengan harga yang sudah ada (duplicate), atau lebih kecil/sama dari highest
@@ -182,6 +182,12 @@ class ChatsController extends Controller
                     // Tetapkan highest menggunakan hasil simpan
                     $newHighest = (int) $bid->price;
 
+                    // Hitung nextNominals untuk response (agar frontend update dropdown dengan benar)
+                    $nextNominals = [];
+                    for ($i = 1; $i <= 5; $i++) {
+                        $nextNominals[] = $newHighest + ($step * $i);
+                    }
+
                     return [
                         'status' => 'Message Sent!',
                         'data' => [
@@ -194,6 +200,8 @@ class ChatsController extends Controller
                             'produk' => $bid->product_id,
                             'tanggal' => Carbon::parse($bid->created_at)->format('Y-m-d H:i:s'),
                             'highest' => $newHighest,
+                            'step' => $step,                    // Kirim step ke frontend
+                            'nextNominals' => $nextNominals,    // Kirim nextNominals ke frontend
                         ],
                     ];
                 });

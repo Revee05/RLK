@@ -23,19 +23,37 @@ use App\Event; // <-- 1. TAMBAHKAN INI
 
 class HomeController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-
+        // 1. QUERY DATA
         $products = Products::active()->orderBy('id', 'desc')->take(5)->get();
         $sliders = Sliders::active()->get();
         $blogs = Posts::Blog()->orderBy('id', 'desc')->where('status', 'PUBLISHED')->take(3)->get();
-
-        // 2. TAMBAHKAN INI (Mengambil 1 event aktif terbaru)
+        
         $featuredEvent = Event::whereIn('status', ['active', 'coming_soon'])
             ->latest()
             ->first();
 
-        // 3. MODIFIKASI INI (Tambahkan 'featuredEvent' ke compact)
+        // 2. LOGIKA RESPON JSON (Dual Mode)
+        // Jika request datang dari AJAX atau meminta JSON (misal dari Postman/Mobile App)
+        if ($request->ajax() || $request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Data Home berhasil diambil',
+                'data' => [
+                    'sliders' => $sliders,
+                    'featured_event' => $featuredEvent,
+                    'products' => $products,
+                    'blogs' => $blogs,
+                ],
+                'meta' => [
+                    'total_products' => $products->count(),
+                    'timestamp' => now()->toDateTimeString()
+                ]
+            ]);
+        }
+
+        // 3. RESPON VIEW BIASA (Untuk Browser)
         return view('web.home', compact('products', 'sliders', 'blogs', 'featuredEvent'));
     }
 
@@ -58,10 +76,10 @@ class HomeController extends Controller
                 ->with(['imageUtama', 'images', 'kategori', 'karya', 'kelengkapans'])
                 ->firstOrFail();
 
-            // Ambil semua bidding
+            // Ambil semua bidding - PENTING: sort numeric bukan string
             $bidList = Bid::where('product_id', $product->id)
                 ->with('user')
-                ->orderBy('price', 'desc')
+                ->orderByRaw('CAST(price AS UNSIGNED) DESC')
                 ->get();
 
             // Highest bidding

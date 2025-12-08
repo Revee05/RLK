@@ -1921,10 +1921,14 @@ __webpack_require__.r(__webpack_exports__);
     var _this = this;
     // === Ambil riwayat bid dan tentukan bid berikutnya ===
     // Guard against duplicate initial fetches when the root Vue instance
-    // or other components also call the same endpoint.
+    // or other components also call the same endpoint. Set the flag
+    // immediately before initiating the fetch to avoid a race condition
+    // where both components start requests before the flag is set.
     if (!window.__bid_fetch_called) {
+      try {
+        window.__bid_fetch_called = true;
+      } catch (e) {}
       this.fetchMessages();
-      window.__bid_fetch_called = true;
     }
 
     // === Mendengarkan update realtime harga tertinggi via Echo ===
@@ -38603,13 +38607,13 @@ waitForSlug(function () {
       // === Mengambil seluruh message untuk productSlug dari server ===
       fetchMessages: function fetchMessages() {
         var _this = this;
+        // mark that an initial fetch has been started to avoid duplicates
+        try {
+          window.__bid_fetch_called = true;
+        } catch (e) {}
         axios.get("/bid/messages/".concat(window.productSlug)).then(function (res) {
           // === Backend sudah mengurutkan: terbaru di atas ===
           _this.messages = res.data;
-          // mark that an initial fetch has been performed to avoid duplicates
-          try {
-            window.__bid_fetch_called = true;
-          } catch (e) {}
         })["catch"](function (err) {
           if (isDebugEnv()) console.error("Gagal ambil messages:", err);
         });
@@ -39010,9 +39014,24 @@ __webpack_require__.r(__webpack_exports__);
       var defaultStep = Number(stepDefault) || 10000;
       var h = Number(highest);
       var select = document.getElementById('bidSelect');
-      if (!select || isNaN(h)) return;
+
+      // DEBUG LOG
+      console.log('[updateNominalDropdown] Called with:', {
+        highest: h,
+        nominalsArray: nominalsArray,
+        stepOverride: stepOverride,
+        stepDefault: stepDefault,
+        defaultStep: defaultStep
+      });
+      if (!select || isNaN(h)) {
+        console.warn('[updateNominalDropdown] Select not found or highest is NaN');
+        return;
+      }
       select.innerHTML = '<option value="">Pilih Nominal Bid</option>';
+
+      // Jika nominalsArray ada dan valid, gunakan itu (dari server)
       if (Array.isArray(nominalsArray) && nominalsArray.length) {
+        console.log('[updateNominalDropdown] Using nominals from server:', nominalsArray);
         nominalsArray.forEach(function (val) {
           var v = Number(val);
           if (isNaN(v)) return;
@@ -39023,7 +39042,10 @@ __webpack_require__.r(__webpack_exports__);
         });
         return;
       }
+
+      // Fallback: hitung dari step
       var step = Number(stepOverride) || defaultStep;
+      console.log('[updateNominalDropdown] Fallback: building from step:', step);
       for (var i = 1; i <= 5; i++) {
         var val = h + step * i;
         var opt = document.createElement('option');

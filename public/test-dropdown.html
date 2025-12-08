@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Update Dropdown</title>
+    <style>
+        body { font-family: Arial; padding: 20px; }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; }
+        #console { background: #f5f5f5; padding: 10px; margin-top: 10px; max-height: 300px; overflow-y: auto; }
+        select { padding: 8px; font-size: 14px; width: 300px; }
+        button { padding: 10px 20px; margin: 5px; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <h1>Test Helper.js - updateNominalDropdown</h1>
+    
+    <div class="test-section">
+        <h3>Dropdown Bid:</h3>
+        <select id="bidSelect">
+            <option value="">Pilih Nominal Bid</option>
+        </select>
+    </div>
+
+    <div class="test-section">
+        <h3>Test Cases:</h3>
+        <button onclick="testCase1()">Test 1: Server Nominals (100k step)</button>
+        <button onclick="testCase2()">Test 2: Manual Step 100k</button>
+        <button onclick="testCase3()">Test 3: Default 10k (bug simulation)</button>
+    </div>
+
+    <div class="test-section">
+        <h3>Console Output:</h3>
+        <div id="console"></div>
+    </div>
+
+    <script src="{{ asset('js/app.js') }}"></script>
+    <script>
+        // Override console.log untuk menampilkan di halaman
+        const originalLog = console.log;
+        console.log = function(...args) {
+            originalLog.apply(console, args);
+            const consoleDiv = document.getElementById('console');
+            const msg = args.map(a => typeof a === 'object' ? JSON.stringify(a, null, 2) : String(a)).join(' ');
+            consoleDiv.innerHTML += '<div>' + msg + '</div>';
+            consoleDiv.scrollTop = consoleDiv.scrollHeight;
+        };
+
+        function testCase1() {
+            console.log('\n=== TEST CASE 1: Server Nominals (kelipatan 100k) ===');
+            const highest = 700000;
+            const nominals = [800000, 900000, 1000000, 1100000, 1200000];
+            const step = 100000;
+            
+            if (typeof window.updateNominalDropdown === 'function') {
+                window.updateNominalDropdown(highest, nominals, step);
+            } else {
+                console.error('Helper not loaded!');
+            }
+        }
+
+        function testCase2() {
+            console.log('\n=== TEST CASE 2: Manual Step 100k (tanpa nominals array) ===');
+            const highest = 700000;
+            const step = 100000;
+            
+            if (typeof window.updateNominalDropdown === 'function') {
+                window.updateNominalDropdown(highest, null, step);
+            } else {
+                console.error('Helper not loaded!');
+            }
+        }
+
+        function testCase3() {
+            console.log('\n=== TEST CASE 3: Default 10k (BUG - seharusnya tidak terjadi) ===');
+            const highest = 700000;
+            // Tidak kirim nominals dan step
+            
+            if (typeof window.updateNominalDropdown === 'function') {
+                window.updateNominalDropdown(highest);
+            } else {
+                console.error('Helper not loaded!');
+            }
+        }
+
+        // Auto-run test case 1 saat load
+        window.addEventListener('DOMContentLoaded', () => {
+            setTimeout(() => {
+                console.log('Page loaded. Running test...');
+                testCase1();
+            }, 500);
+        });
+    </script>
+</body>
+</html>

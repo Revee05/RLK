@@ -89,28 +89,33 @@ class getDetail extends Controller
             $initialMessages = $initialMessages->values();
 
 
-            // 4. Hitung Highest Bid
-            $highestBid = $bids->first() ? $bids->first()->price : $product->price;
+            // 4. Hitung Highest Bid - PENTING: Ambil MAX numerik, bukan first by created_at
+            $highestBidValue = (int) Bid::where('product_id', $product->id)->max(\DB::raw('price+0'));
+            $highestBid = $highestBidValue > 0 ? $highestBidValue : $product->price;
 
 
             // 5. Hitung Pilihan Nominal
-            $step = 0;
-            if (isset($product->kelipatan_bid)) {
-                $step = intval($product->kelipatan_bid);
-            } elseif (isset($product->kelipatan)) {
-                $step = intval($product->kelipatan);
+            // Ambil kelipatan dari field 'kelipatan' (bukan 'kelipatan_bid' yang merupakan accessor)
+            $step = intval($product->kelipatan ?? 0);
+            
+            // Jika step masih 0 atau negatif, gunakan default
+            if ($step <= 0) {
+                $step = 10000;
             }
 
+            // DEBUG LOG
+            Log::info('[getDetail] Kelipatan check:', [
+                'product_id' => $product->id,
+                'kelipatan_raw' => $product->kelipatan,
+                'kelipatan_type' => gettype($product->kelipatan),
+                'step_computed' => $step,
+                'highestBid' => $highestBid
+            ]);
+
+            // Hitung nominals berdasarkan step yang sudah valid
             $nominals = [];
-            if ($step > 0) {
-                for ($i = 1; $i <= 5; $i++) {
-                    $nominals[] = $highestBid + ($step * $i);
-                }
-            } else {
-                $defaultStep = 10000;
-                for ($i = 1; $i <= 5; $i++) {
-                    $nominals[] = $highestBid + ($defaultStep * $i);
-                }
+            for ($i = 1; $i <= 5; $i++) {
+                $nominals[] = $highestBid + ($step * $i);
             }
 
 
@@ -126,10 +131,11 @@ class getDetail extends Controller
             // 7. Return ke View
             return view('web.detail_lelang.detail', [
                 'product'    => $product,
-                'bids'       => $bids,            
-                'initialMessages' => $initialMessages, 
+                'bids'       => $bids,
+                'initialMessages' => $initialMessages,
                 'highestBid' => $highestBid,
                 'nominals'   => $nominals,
+                'step'       => $step,  // PENTING: kirim step ke view!
                 'related'    => $related
             ]);
 

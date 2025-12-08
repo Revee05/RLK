@@ -50,28 +50,54 @@
             @if($hasItems)
                 @foreach($cartItems as $item)
                     @php 
-                        $product = $item->merchProduct;
-                        if (!$product) continue; 
-
-                        // --- DATA LOGIC ---
-                        $availableVariants = $product->variants ?? collect([]); 
-                        $currentVariantId = $item->merch_product_variant_id;
-                        $currentVariant = $currentVariantId ? \App\models\MerchProductVariant::find($currentVariantId) : null;
-
-                        $availableSizes = ($currentVariant) ? $currentVariant->sizes : collect([]);
-                        $currentSizeId = $item->merch_product_variant_size_id;
-
-                        // Gambar Logic
+                        // --- LOGIKA PENENTUAN TIPE ---
+                        $isAuction = $item->isAuction(); // Pakai helper dari Model
+                        $product = null;
                         $imgUrl = 'https://via.placeholder.com/100';
-                        if ($currentVariant && $currentVariant->images->count() > 0) {
-                            $imgUrl = asset($currentVariant->images->first()->image_path);
-                        } elseif ($product->images->count() > 0) {
-                            $imgUrl = asset($product->images->first()->image_path);
-                        }
-
-                        $price = $item->price; 
+                        $price = $item->price;
                         $quantity = $item->quantity;
-                        $total = $price * $quantity; 
+                        $total = $price * $quantity;
+
+                        // Variabel khusus Merch
+                        $availableVariants = collect([]);
+                        $availableSizes = collect([]);
+                        $currentVariantId = null;
+                        $currentSizeId = null;
+
+                        if ($isAuction) {
+                            // --- KONDISI LELANG ---
+                            $product = $item->auctionProduct;
+                            if (!$product) continue; // Skip jika produk terhapus
+
+                            // Gambar Lelang (Sesuaikan kolom DB kamu, misal: image, images, atau relasi)
+                            // Asumsi tabel products punya kolom 'image_path' atau ambil dari relasi images
+                            if (!empty($product->image_path)) { 
+                                $imgUrl = asset($product->image_path);
+                            }
+                            // Atau jika pakai relasi images:
+                            // if($product->images && $product->images->count() > 0) $imgUrl = asset($product->images->first()->image_path);
+
+                            $title = $product->title ?? 'Produk Lelang'; // Sesuaikan kolom title/name
+
+                        } else {
+                            // --- KONDISI MERCHANDISE (Kode Lama) ---
+                            $product = $item->merchProduct;
+                            if (!$product) continue;
+
+                            $title = $product->name;
+                            $availableVariants = $product->variants ?? collect([]); 
+                            $currentVariantId = $item->merch_product_variant_id;
+                            $currentVariant = $currentVariantId ? \App\models\MerchProductVariant::find($currentVariantId) : null;
+                            $availableSizes = ($currentVariant) ? $currentVariant->sizes : collect([]);
+                            $currentSizeId = $item->merch_product_variant_size_id;
+
+                            // Gambar Merch
+                            if ($currentVariant && $currentVariant->images->count() > 0) {
+                                $imgUrl = asset($currentVariant->images->first()->image_path);
+                            } elseif ($product->images->count() > 0) {
+                                $imgUrl = asset($product->images->first()->image_path);
+                            }
+                        }
                     @endphp
 
                     {{-- A. DESKTOP VIEW --}}
@@ -82,51 +108,68 @@
                         <div class="col-md-4 d-flex align-items-center">
                             <img src="{{ $imgUrl }}" class="rounded me-3 img-product-{{ $item->id }}" style="width: 70px; height: 70px; object-fit: cover; border: 1px solid #f8f9fa;">
                             <div class="w-100 pe-3">
-                                <h6 class="mb-1 fw-bold text-dark text-truncate">{{ $product->name }}</h6>
+                                <h6 class="mb-1 fw-bold text-dark text-truncate">{{ $title }}</h6>
                                 
-                                <div class="d-flex flex-wrap gap-2 mt-2">
-                                    {{-- Dropdown Varian Compact --}}
-                                    @if($availableVariants->count() > 0)
-                                        <select class="custom-select-compact option-selector" 
-                                                data-id="{{ $item->id }}" data-type="variant_id" title="Pilih Varian">
-                                            @foreach($availableVariants as $v)
-                                                <option value="{{ $v->id }}" {{ $currentVariantId == $v->id ? 'selected' : '' }}>{{ $v->name }}</option>
-                                            @endforeach
-                                        </select>
+                                @if($isAuction)
+                                    {{-- TAMPILAN KHUSUS LELANG --}}
+                                    <span class="badge bg-warning text-dark mb-1" style="font-size: 10px;">Lelang Winner</span>
+                                    @if($item->expires_at)
+                                        <div class="text-danger small fw-bold mt-1" style="font-size: 11px;">
+                                            <i class="bi bi-clock"></i> Hangus: {{ \Carbon\Carbon::parse($item->expires_at)->format('d M H:i') }}
+                                        </div>
                                     @endif
-
-                                    {{-- Dropdown Size Compact --}}
-                                    <select class="custom-select-compact option-selector size-selector-{{ $item->id }}" 
-                                            data-id="{{ $item->id }}" data-type="size_id" 
-                                            {{ $availableSizes->isEmpty() ? 'disabled' : '' }} 
-                                            title="Pilih Ukuran" style="min-width: 60px;">
-                                        @if($availableSizes->count() > 0)
-                                            @foreach($availableSizes as $s)
-                                                <option value="{{ $s->id }}" {{ $currentSizeId == $s->id ? 'selected' : '' }}>{{ $s->size }}</option>
-                                            @endforeach
-                                        @else
-                                            <option value="">-</option>
+                                @else
+                                    {{-- TAMPILAN KHUSUS MERCH (Dropdown) --}}
+                                    <div class="d-flex flex-wrap gap-2 mt-2">
+                                        @if($availableVariants->count() > 0)
+                                            <select class="custom-select-compact option-selector" data-id="{{ $item->id }}" data-type="variant_id" title="Pilih Varian">
+                                                @foreach($availableVariants as $v)
+                                                    <option value="{{ $v->id }}" {{ $currentVariantId == $v->id ? 'selected' : '' }}>{{ $v->name }}</option>
+                                                @endforeach
+                                            </select>
                                         @endif
-                                    </select>
-                                </div>
+
+                                        <select class="custom-select-compact option-selector size-selector-{{ $item->id }}" 
+                                                data-id="{{ $item->id }}" data-type="size_id" 
+                                                {{ $availableSizes->isEmpty() ? 'disabled' : '' }} title="Pilih Ukuran" style="min-width: 60px;">
+                                            @if($availableSizes->count() > 0)
+                                                @foreach($availableSizes as $s)
+                                                    <option value="{{ $s->id }}" {{ $currentSizeId == $s->id ? 'selected' : '' }}>{{ $s->size }}</option>
+                                                @endforeach
+                                            @else
+                                                <option value="">-</option>
+                                            @endif
+                                        </select>
+                                    </div>
+                                @endif
                             </div>
                         </div>
                         <div class="col-md-2">
                             <span class="fw-semibold price-display-{{ $item->id }}" data-price="{{ $price }}">Rp{{ number_format($price, 0, ',', '.') }}</span>
                         </div>
                         <div class="col-md-3 text-center">
-                            <div class="input-group input-group-sm mx-auto" style="width: 100px;">
-                                <button class="btn btn-outline-secondary btn-quantity" type="button" data-action="decrease" data-id="{{ $item->id }}">-</button>
-                                <input type="text" class="form-control text-center bg-white quantity-display-{{ $item->id }}" value="{{ $quantity }}" readonly>
-                                <button class="btn btn-outline-secondary btn-quantity" type="button" data-action="increase" data-id="{{ $item->id }}">+</button>
-                            </div>
+                            @if($isAuction)
+                                {{-- QTY LELANG FIX 1 --}}
+                                <input type="text" class="form-control text-center bg-light mx-auto" style="width: 60px;" value="1" readonly title="Item lelang hanya bisa 1">
+                            @else
+                                {{-- QTY MERCH --}}
+                                <div class="input-group input-group-sm mx-auto" style="width: 100px;">
+                                    <button class="btn btn-outline-secondary btn-quantity" type="button" data-action="decrease" data-id="{{ $item->id }}">-</button>
+                                    <input type="text" class="form-control text-center bg-white quantity-display-{{ $item->id }}" value="{{ $quantity }}" readonly>
+                                    <button class="btn btn-outline-secondary btn-quantity" type="button" data-action="increase" data-id="{{ $item->id }}">+</button>
+                                </div>
+                            @endif
                         </div>
                         <div class="col-md-2 text-end">
                             <strong class="fs-6 text-primary d-block mb-2 text-dark total-display-{{ $item->id }}">Rp{{ number_format($total, 0, ',', '.') }}</strong>
-                            <button type="button" class="btn btn-link text-danger p-0 small text-decoration-none btn-delete-item" 
-                                    data-id="{{ $item->id }}" data-url="{{ route('cart.destroy', $item->id) }}">
-                                <i class="bi bi-trash"></i> Hapus
-                            </button>
+                            
+                            {{-- LOGIC: Tombol Hapus hanya muncul jika BUKAN lelang --}}
+                            @if(!$isAuction)
+                                <button type="button" class="btn btn-link text-danger p-0 small text-decoration-none btn-delete-item" 
+                                        data-id="{{ $item->id }}" data-url="{{ route('cart.destroy', $item->id) }}">
+                                    <i class="bi bi-trash"></i> Hapus
+                                </button>
+                            @endif
                         </div>
                     </div>
 
@@ -139,46 +182,62 @@
                             <div class="d-flex align-items-start">
                                 <img src="{{ $imgUrl }}" class="rounded border me-3 flex-shrink-0 img-product-{{ $item->id }}" style="width: 75px; height: 75px; object-fit: cover;">
                                 <div class="flex-grow-1" style="min-width: 0;">
-                                    <h6 class="mobile-product-title text-truncate">{{ $product->name }}</h6>
+                                    <h6 class="mobile-product-title text-truncate">{{ $title }}</h6>
                                     
-                                    <div class="d-flex flex-wrap gap-2 mt-2">
-                                        @if($availableVariants->count() > 0)
-                                            <select class="custom-select-compact option-selector" data-id="{{ $item->id }}" data-type="variant_id">
-                                                @foreach($availableVariants as $v)
-                                                    <option value="{{ $v->id }}" {{ $currentVariantId == $v->id ? 'selected' : '' }}>{{ $v->name }}</option>
-                                                @endforeach
-                                            </select>
-                                        @endif
-
-                                        <select class="custom-select-compact option-selector size-selector-{{ $item->id }}" 
-                                                data-id="{{ $item->id }}" data-type="size_id" 
-                                                {{ $availableSizes->isEmpty() ? 'disabled' : '' }} style="min-width: 50px;">
-                                            @if($availableSizes->count() > 0)
-                                                @foreach($availableSizes as $s)
-                                                    <option value="{{ $s->id }}" {{ $currentSizeId == $s->id ? 'selected' : '' }}>{{ $s->size }}</option>
-                                                @endforeach
-                                            @else
-                                                <option value="">-</option>
+                                    @if($isAuction)
+                                         <span class="badge bg-warning text-dark" style="font-size: 9px;">Lelang</span>
+                                         @if($item->expires_at)
+                                            <div class="text-danger fw-bold mt-1" style="font-size: 10px;">
+                                                Hangus: {{ \Carbon\Carbon::parse($item->expires_at)->format('d/m H:i') }}
+                                            </div>
+                                         @endif
+                                    @else
+                                        <div class="d-flex flex-wrap gap-2 mt-2">
+                                            {{-- Dropdown Mobile Merch (Sama seperti sebelumnya) --}}
+                                            @if($availableVariants->count() > 0)
+                                                <select class="custom-select-compact option-selector" data-id="{{ $item->id }}" data-type="variant_id">
+                                                    @foreach($availableVariants as $v)
+                                                        <option value="{{ $v->id }}" {{ $currentVariantId == $v->id ? 'selected' : '' }}>{{ $v->name }}</option>
+                                                    @endforeach
+                                                </select>
                                             @endif
-                                        </select>
-                                    </div>
+                                            <select class="custom-select-compact option-selector size-selector-{{ $item->id }}" 
+                                                    data-id="{{ $item->id }}" data-type="size_id" {{ $availableSizes->isEmpty() ? 'disabled' : '' }} style="min-width: 50px;">
+                                                @if($availableSizes->count() > 0)
+                                                    @foreach($availableSizes as $s)
+                                                        <option value="{{ $s->id }}" {{ $currentSizeId == $s->id ? 'selected' : '' }}>{{ $s->size }}</option>
+                                                    @endforeach
+                                                @else
+                                                    <option value="">-</option>
+                                                @endif
+                                            </select>
+                                        </div>
+                                    @endif
                                 </div>
                             </div>
                         </div>
                         <div class="d-flex flex-column justify-content-between align-items-end ms-2" style="height: 75px;">
                             <div class="mobile-qty-pill">
-                                <button class="mobile-qty-btn btn-quantity" type="button" data-action="decrease" data-id="{{ $item->id }}">-</button>
-                                <input type="text" class="mobile-qty-input quantity-display-{{ $item->id }}" value="{{ $quantity }}" readonly>
-                                <button class="mobile-qty-btn btn-quantity" type="button" data-action="increase" data-id="{{ $item->id }}">+</button>
+                                @if($isAuction)
+                                    <input type="text" class="mobile-qty-input bg-light" value="1" readonly style="width: 100%; text-align: center;">
+                                @else
+                                    <button class="mobile-qty-btn btn-quantity" type="button" data-action="decrease" data-id="{{ $item->id }}">-</button>
+                                    <input type="text" class="mobile-qty-input quantity-display-{{ $item->id }}" value="{{ $quantity }}" readonly>
+                                    <button class="mobile-qty-btn btn-quantity" type="button" data-action="increase" data-id="{{ $item->id }}">+</button>
+                                @endif
                             </div>
                             <div class="fw-bold text-dark" style="font-size: 13px;">
                                  <span id="price-per-item-{{ $item->id }}" data-price="{{ $price }}" class="d-none"></span> 
                                  <span class="total-display-{{ $item->id }}">Rp{{ number_format($total, 0, ',', '.') }}</span>
                             </div>
-                            <a href="#" class="text-danger small text-decoration-none fw-bold btn-delete-item" 
-                               data-id="{{ $item->id }}" data-url="{{ route('cart.destroy', $item->id) }}" style="font-size: 11px;">
-                                Hapus
-                            </a>
+
+                            {{-- LOGIC: Tombol Hapus Mobile hanya muncul jika BUKAN lelang --}}
+                            @if(!$isAuction)
+                                <a href="#" class="text-danger small text-decoration-none fw-bold btn-delete-item" 
+                                   data-id="{{ $item->id }}" data-url="{{ route('cart.destroy', $item->id) }}" style="font-size: 11px;">
+                                    Hapus
+                                </a>
+                            @endif
                         </div>
                     </div>
                 @endforeach

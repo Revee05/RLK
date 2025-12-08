@@ -121,7 +121,7 @@
                                         ref="bidForm"
                                         :user='@json(Auth::user())'
                                         :produk="{{ intval($product->id) }}"
-                                        :kelipatan="{{ intval($product->kelipatan_bid ?? $product->kelipatan) }}"
+                                        :kelipatan="{{ intval($product->kelipatan ?? 10000) }}"
                                         :price="{{ intval($product->price) }}"
                                         v-on:messagesent="addMessage">
                                     </chat-form>
@@ -219,10 +219,22 @@
          * - productId: ID produk yang sedang ditampilkan
          * - productSlug: slug produk
          * - initialHighest: harga bid tertinggi saat ini
+         * - serverStep: kelipatan dari database
+         * - serverNominals: daftar nominal bid dari server
          */
         window.productId = {{ intval($product->id) }};
         window.productSlug = "{{ $product->slug }}";
         window.initialHighest = {{ intval($highestBid) }};
+        window.serverStep = {{ intval($step ?? 10000) }};
+        window.serverNominals = @json($nominals ?? []);
+        
+        console.log('[INIT] Global vars:', {
+            productId: window.productId,
+            slug: window.productSlug,
+            highest: window.initialHighest,
+            step: window.serverStep,
+            nominals: window.serverNominals
+        });
     </script>
     <script src="{{ asset('js/app.js') }}"></script>
 
@@ -275,9 +287,18 @@
         document.addEventListener('DOMContentLoaded', waitForVueAndSetupBidBtn);
         document.addEventListener('DOMContentLoaded', function () {
             const initialHighest = {{ intval($highestBid) }};
-            console.log('[Init] Setting initial dropdown with highest:', initialHighest);
+            const serverStep = window.serverStep || {{ intval($step ?? 10000) }};
+            const serverNominals = window.serverNominals || @json($nominals ?? []);
+            
+            console.log('[Init] Setting initial dropdown', {
+                highest: initialHighest,
+                step: serverStep,
+                nominals: serverNominals
+            });
+            
             if (typeof window.updateNominalDropdown === 'function') {
-                window.updateNominalDropdown(initialHighest);
+                // Kirim nominals dan step dari server agar sinkron dengan database
+                window.updateNominalDropdown(initialHighest, serverNominals, serverStep);
             } else {
                 console.warn('[Init] updateNominalDropdown not available yet');
             }
