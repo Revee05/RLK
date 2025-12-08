@@ -82,4 +82,15 @@ Jika badge MENANG tidak tampil meski user adalah pemenang:
 •	Apakah tipe data cocok? (String vs Integer — gunakan == atau lakukan konversi)
 ________________________________________
 
+jangan lupa jalan kan php artisan migrate
 
+
+Test Hapus Otomatis (Hangus):
+
+Edit manual salah satu data di tabel cart_items (yang tipe lelang).
+
+Ubah kolom expires_at jadi kemarin (waktu lampau).
+
+Jalankan: php artisan cart:cleanup-auction
+
+Cek: Item harusnya hilang dari tabel cart_items, dan di tabel products statusnya jadi 3 (Hangus).

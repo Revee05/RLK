@@ -20,12 +20,23 @@ class CartController extends Controller
         $cartItems = CartItem::with([
                 'merchProduct.categories',
                 'merchVariant.images',
-                'merchSize'
+                'merchSize',
+                'auctionProduct' 
             ])
             ->where('user_id', Auth::id())
-            ->whereNotNull('merch_product_id')
+            // ->whereNotNull('merch_product_id') // <--- Baris ini sudah benar dikomentari
             ->orderBy('created_at', 'desc')
             ->get();
+
+        // ======================================================
+        // TAMBAHAN: LOG DATA CART (JSON FORMAT)
+        // ======================================================
+        // Ini akan mencatat data ke file: storage/logs/laravel.log
+        \Illuminate\Support\Facades\Log::info('--- LOAD CART USER ID: ' . Auth::id() . ' ---');
+        \Illuminate\Support\Facades\Log::info($cartItems->toJson(JSON_PRETTY_PRINT));
+
+        // Opsi Alternatif: Jika ingin melihat JSON langsung di Browser (Debugging Cepat)
+        // return response()->json($cartItems); 
 
         return view('web.cart', compact('cartItems'));
     }
