@@ -1,6 +1,9 @@
 <?php
 
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 
 class UserSeeder extends Seeder
 {
@@ -11,30 +14,76 @@ class UserSeeder extends Seeder
      */
     public function run()
     {
-        //users seeder
-        DB::table('users')->truncate();
+        $csvPath = database_path('seeds/data/users.csv');
+        if (!file_exists($csvPath)) {
+            $this->command->error("CSV file not found: {$csvPath}");
+            return;
+        }
 
-            $data = [
+        // Set true hanya jika ingin hapus semua user dulu (HATI-HATI)
+        $truncate = false;
+        if ($truncate) {
+            DB::table('users')->truncate();
+            $this->command->info('Truncated users table.');
+        }
+
+        $handle = fopen($csvPath, 'r');
+        $header = fgetcsv($handle);
+        if ($header === false) {
+            fclose($handle);
+            $this->command->error('CSV is empty');
+            return;
+        }
+
+        while (($row = fgetcsv($handle)) !== false) {
+            $data = array_combine($header, $row);
+
+            $name  = trim($data['name'] ?? 'User');
+            $email = trim($data['email'] ?? '');
+            if ($email === '') {
+                $this->command->error("Skipping row without email (name: {$name})");
+                continue;
+            }
+
+            $username = trim($data['username'] ?? '');
+            if ($username === '') {
+                // create username from email if kosong
+                $username = preg_replace('/@.*$/', '', $email);
+            }
+
+            $rawPassword = trim($data['password'] ?? '');
+            if ($rawPassword === '') {
+                // generate random password if tidak disediakan
+                $rawPassword = Str::random(12);
+                $this->command->info("Generated password for {$email}: {$rawPassword}");
+            }
+
+            $passwordHash = Hash::make($rawPassword);
+
+            $access = trim($data['access'] ?? 'member');
+            // set email verification time always to now()
+            $emailVerifiedAt = now();
+            $createdAt = !empty($data['created_at']) ? $data['created_at'] : now();
+            $updatedAt = !empty($data['updated_at']) ? $data['updated_at'] : $createdAt;
+            
+            // idempotent: updateOrInsert by email
+            DB::table('users')->updateOrInsert(
+                ['email' => $email],
                 [
-                    'name' => 'Admin',
-                    'email' => 'admin@gmail.com',
-                    'username' => 'admin',
-                    'password' => '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', // password,
-                    'access' => 'admin',
-                    'email_verified_at' => now(),
+                    'name' => $name,
+                    'username' => $username,
+                    'password' => $passwordHash,
+                    'access' => $access,
+                    'email_verified_at' => $emailVerifiedAt,
                     'remember_token' => Str::random(10),
-                ],
-                [
-                    'name' => 'Member',
-                    'email' => 'member@gmail.com',
-                    'username' => 'member',
-                    'password' => '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', // password,
-                    'access' => 'member',
-                    'email_verified_at' => now(),
-                    'remember_token' => Str::random(10),
-                ],
-                
-            ];
-            DB::table('users')->insert($data);
+                    'created_at' => $createdAt,
+                    'updated_at' => $updatedAt,
+                ]
+            );
+
+            $this->command->info("Upserted user: {$email}");
+        }
+
+        fclose($handle);
     }
 }
