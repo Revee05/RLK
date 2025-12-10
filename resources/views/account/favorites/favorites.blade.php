@@ -2,20 +2,20 @@
 
 @section('content')
     <div class="container" style="max-width:1200px; margin-top:40px; margin-bottom:80px;">
-        <div class="row">
+    <div class="row g-4" style="display:flex; align-items:stretch; height:100%;">
+<!-- gunakan bootstrap align-items-stretch -->
 
-            @include('account.partials.nav_new')
+        @include('account.partials.nav_new')
 
-            <div class="col-sm-9">
-                <div class="card content-border">
-                    <div class="card-head border-bottom border-darkblue ps-4 d-flex align-items-center justify-content-between">
-                        <h3 class="mb-0 fw-bolder">Favorit</h3>
-                    </div>
+        <div class="col-sm-9 account-right d-flex flex-column "style="height:100%;">
+            <div class="card content-border h-100 d-flex flex-column"><!-- card mengisi tinggi kolom -->
+                <div class="card-head border-bottom border-darkblue ps-4 d-flex align-items-center justify-content-between">
+                    <h3 class="mb-0 fw-bolder">Favorit</h3>
+                </div>
 
-                    <div class="card-body">
-
-                        <div class="row">
-
+                <!-- card-body jadi area scrollable -->
+                <div class="card-body overflow-auto mt-3 mb-3" style="max-height: calc(100vh - 240px); overflow-y:auto;">
+                  <div class="row">
                             @forelse($favorites as $fav)
 @php
     $product = $fav->product;
