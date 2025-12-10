@@ -649,6 +649,12 @@ document.addEventListener('DOMContentLoaded', function() {
             bsImgModal.show();
         });
     }
+
+    // Ensure close button hides modal even if data-bs-dismiss doesn't work
+    if (imgModalEl && bsImgModal) {
+        const imgCloseBtn = imgModalEl.querySelector('.btn-close');
+        if (imgCloseBtn) imgCloseBtn.addEventListener('click', () => bsImgModal.hide());
+    }
 });
 document.querySelectorAll('.qty-btn').forEach(btn => {
     btn.addEventListener('click', function() {
@@ -672,7 +678,8 @@ document.querySelectorAll('.qty-btn').forEach(btn => {
 <!-- Image Preview Modal -->
 <div class="modal fade" id="imageModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-xl">
-        <div class="modal-content bg-transparent border-0">
+        <div class="modal-content bg-transparent border-0 position-relative">
+            <button type="button" class="btn-close btn-close-white position-absolute top-0 end-0 m-2" data-bs-dismiss="modal" aria-label="Close"></button>
             <div class="modal-body p-2 text-center">
                 <img id="modal-image-el" src="" alt="Preview" class="img-fluid">
             </div>

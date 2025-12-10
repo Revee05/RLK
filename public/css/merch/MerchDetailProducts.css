@@ -387,6 +387,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
+    /* border: 1px solid crimson; */
 }
 #modal-image-el {
     max-width: 100%;
