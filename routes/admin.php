@@ -98,6 +98,10 @@ Route::group(['prefix' => '/panduan'], function () {
         Route::get('/', 'PanduanAdminController@index')->name('admin.panduan.index');
         Route::post('/upload/{id}', 'PanduanAdminController@upload')->name('admin.panduan.upload');
         Route::delete('/hapus/{id}', 'PanduanAdminController@hapus')->name('admin.panduan.hapus');
+        Route::get('/create', 'PanduanAdminController@create')->name('admin.panduan.create');
+        Route::post('/store', 'PanduanAdminController@store')->name('admin.panduan.store');
+        Route::get('/edit/{id}', 'PanduanAdminController@edit')->name('admin.panduan.edit');
+        Route::post('/update/{id}', 'PanduanAdminController@update')->name('admin.panduan.update');
 });
 
 });
