@@ -20,7 +20,10 @@ class PanduanSeeder extends Seeder
         ];
 
         foreach ($data as $item) {
-            Panduan::create($item);
+            Panduan::updateOrCreate(
+                ['slug' => $item['slug']],
+                $item
+            );
         }
     }
 }

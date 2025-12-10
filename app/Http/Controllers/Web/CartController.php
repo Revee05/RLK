@@ -11,7 +11,6 @@ use App\models\MerchProductVariant;
 use App\models\MerchProductVariantSize;
 use Illuminate\Support\Facades\Log;
 
-
 class CartController extends Controller
 {
     // ==========================================
