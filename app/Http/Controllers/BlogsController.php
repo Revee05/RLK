@@ -261,4 +261,23 @@ class BlogsController extends Controller
         DB::table('posts')->where('id', $blogId)->update(['image' => $img->filename]);
         return response()->json(['success' => true]);
     }
+
+    /** =======================
+     *  SET / TOGGLE STATUS
+     *  ======================= */
+    public function status($id)
+    {
+        $post = DB::table('posts')->find($id);
+        if (!$post) {
+            return back()->with('error', 'Blog tidak ditemukan.');
+        }
+
+        $newStatus = ($post->status === 'PUBLISHED') ? 'DRAFT' : 'PUBLISHED';
+        DB::table('posts')->where('id', $id)->update([
+            'status'     => $newStatus,
+            'updated_at' => now(),
+        ]);
+
+        return back()->with('message', 'Status blog diperbarui!');
+    }
 }

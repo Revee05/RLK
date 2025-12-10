@@ -33,15 +33,7 @@
 
             <a href="{{ route('seniman.index') }}" class="@yield('seniman')">Seniman</a>
 
-            <div class="dropdown-menu-nav">
-                <a href="#" class="dropdown-toggle" id="panduanDropdown">
-                    Panduan <span class="fa fa-caret-down caret-icon"></span>
-                </a>
-                <div class="dropdown-menu" id="panduanDropdownMenu">
-                    <a class="dropdown-item" href="{{ route('panduan.show', 'peserta-lelang') }}">Panduan Beli</a>
-                    <a class="dropdown-item" href="#">Panduan Jual</a>
-                </div>
-            </div>
+            <a href="{{ route('panduan.index') }}" class="@yield('panduan')">Panduan</a>
         </nav>
         <!-- Action & Hamburger (sejajar kanan) -->
         <div class="header-action">
