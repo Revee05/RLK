@@ -3,33 +3,98 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-
 use Carbon\Carbon;
 use App\Products;
 use App\User;
 use App\Karya;
 use App\Order;
+use App\Models\MerchProduct;
+use App\Posts;
+use App\Bid;
 
 class DashboardController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $now = Carbon::now()->format('Y-m-d H:i:s');
+        /* ============================================================
+         *  DASHBOARD COUNTERS
+         * ============================================================ */
+        $dashboard = [
+            'member'        => User::where('access', 'member')->count(),
+            'seniman'       => Karya::count(),
+            'products'      => Products::count(),
+            'merchandise'   => MerchProduct::count(),
+        ];
 
-        //All
-        $dashboard['product'] = Products::count(); 
-        $dashboard['seniman'] = Karya::count(); 
-        $dashboard['users'] = User::count();
-        $dashboard['member'] = User::member()->count();
+        /* ============================================================
+         *  PRODUK LELANG TERBARU
+         * ============================================================ */
+        $produkAktif = Products::with(['imageUtama', 'karya'])
+            ->where('status', 1)
+            ->orderBy('created_at', 'desc')
+            ->take(5)
+            ->get();
 
-        //Produk
-        $lelang['aktiv'] = Products::active()->count();
-        $lelang['expired'] = Products::where('end_date','<',$now)->count();
-        $lelang['expired'] = Products::where('end_date','<',$now)->count();
+        /* ============================================================
+         *  LIST TRANSAKSI & BLOG TERBARU
+         * ============================================================ */
+        $daftar = [
+            'transaksi' => Order::latest()->take(5)->get(),
+            'blog'      => Posts::with('author')->latest()->take(5)->get(),
+        ];
 
-        //Table
-        $daftar['produk'] = Products::orderBy('id','desc')->take('5')->get();
-        $daftar['transaksi'] = Order::orderBy('id','desc')->take('5')->get();
-        return view('admin.dashboard',compact('dashboard','lelang','daftar'));
+        /* ============================================================
+         *  BID CHART — per bulan
+         * ============================================================ */
+        $selectedYear = $request->year ?? Carbon::now()->year;
+
+        $bidRaw = Bid::selectRaw('MONTH(created_at) as bulan, COUNT(*) as total')
+            ->whereYear('created_at', $selectedYear)
+            ->groupBy('bulan')
+            ->orderBy('bulan')
+            ->get();
+
+        $labels = [];
+        $bidData = [];
+
+        for ($i = 1; $i <= 12; $i++) {
+            $labels[] = Carbon::create()->month($i)->format('M');
+            $bidData[] = $bidRaw->firstWhere('bulan', $i)->total ?? 0;
+        }
+
+        $chart = [
+            'labels' => $labels,
+            'data'   => $bidData,
+        ];
+
+        $years = Bid::selectRaw('YEAR(created_at) as year')
+            ->distinct()->orderBy('year','desc')
+            ->pluck('year');
+
+        $totalBidYear = array_sum($bidData);
+
+        /* ============================================================
+         *  TRANSAKSI — Informasi Tambahan
+         * ============================================================ */
+
+        $trxSummary = [
+            'expired_total' => Order::where('payment_status', 3)->sum('total_tagihan'),
+            'pending_total' => Order::where('payment_status', 1)->sum('total_tagihan'),
+            'paid_total'    => Order::where('payment_status', 2)->sum('total_tagihan'),
+        ];
+
+        /* ============================================================
+         *  RETURN VIEW
+         * ============================================================ */
+        return view('admin.dashboard', compact(
+            'dashboard',
+            'produkAktif',
+            'daftar',
+            'chart',
+            'years',
+            'selectedYear',
+            'totalBidYear',
+            'trxSummary'
+        ));
     }
 }
