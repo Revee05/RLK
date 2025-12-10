@@ -67,13 +67,12 @@ $totalStock = $product->variants->sum(fn($variant) => ($variant->sizes && $varia
     {{-- =========================
         4. PRODUCT DETAIL SECTION
     ========================= --}}
-    <div class="row">
-        <div class="row">
+    <div class="row g-3 p-3">
 
-            {{-- =========================
-                4A. PRODUCT IMAGE LEFT SIDE
-            ========================= --}}
-            <div class="col-lg-5">
+        {{-- =========================
+            4A. PRODUCT IMAGE LEFT SIDE
+        ========================= --}}
+        <div class="col-lg-6 col-md-12 mb-3 mb-lg-0 px-3 px-lg-2">
 
                 {{-- 4A.1 Main Image --}}
                 <div class="main-image">
@@ -102,12 +101,12 @@ $totalStock = $product->variants->sum(fn($variant) => ($variant->sizes && $varia
                 </div>
             </div>
 
-            {{-- =========================
-                4B. PRODUCT INFO RIGHT SIDE
-            ========================= --}}
-            <div class="col-lg-7">
+        {{-- =========================
+            4B. PRODUCT INFO RIGHT SIDE
+        ========================= --}}
+        <div class="col-lg-6 col-md-12 px-3 px-lg-2">
 
-                {{-- 4B.1 Title --}}
+            {{-- 4B.1 Title --}}
                 <h2 class="product-title mb-2">{{ $product->name }}</h2>
 
                 {{-- 4B.2 Categories --}}
@@ -677,10 +676,10 @@ document.querySelectorAll('.qty-btn').forEach(btn => {
 
 <!-- Image Preview Modal -->
 <div class="modal fade" id="imageModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered modal-xl">
+    <div class="modal-dialog modal-dialog-centered modal-xl modal-fullscreen-sm-down">
         <div class="modal-content bg-transparent border-0 position-relative">
-            <button type="button" class="btn-close btn-close-white position-absolute top-0 end-0 m-2" data-bs-dismiss="modal" aria-label="Close"></button>
-            <div class="modal-body p-2 text-center">
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            <div class="modal-body text-center">
                 <img id="modal-image-el" src="" alt="Preview" class="img-fluid">
             </div>
         </div>
