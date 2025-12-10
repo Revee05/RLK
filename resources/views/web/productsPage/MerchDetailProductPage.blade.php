@@ -630,6 +630,25 @@ document.addEventListener('DOMContentLoaded', function() {
                 `<span id="toggle-desc-icon">${descVisible ? '▲' : '▼'}</span> ${descVisible ? 'Sembunyikan' : 'Tampilkan'}`;
         });
     }
+
+    // =========================
+    // Image preview modal (open when main image clicked)
+    // =========================
+    const imgModalEl = document.getElementById('imageModal');
+    const modalImageEl = document.getElementById('modal-image-el');
+    let bsImgModal = null;
+    if (imgModalEl && typeof bootstrap !== 'undefined') {
+        bsImgModal = new bootstrap.Modal(imgModalEl);
+    }
+
+    if (mainImageEl && bsImgModal && modalImageEl) {
+        mainImageEl.style.cursor = 'zoom-in';
+        mainImageEl.addEventListener('click', () => {
+            modalImageEl.src = mainImageEl.src;
+            modalImageEl.classList.remove('zoomed');
+            bsImgModal.show();
+        });
+    }
 });
 document.querySelectorAll('.qty-btn').forEach(btn => {
     btn.addEventListener('click', function() {
@@ -649,3 +668,14 @@ document.querySelectorAll('.qty-btn').forEach(btn => {
 </script>
 
 @endsection
+
+<!-- Image Preview Modal -->
+<div class="modal fade" id="imageModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-xl">
+        <div class="modal-content bg-transparent border-0">
+            <div class="modal-body p-2 text-center">
+                <img id="modal-image-el" src="" alt="Preview" class="img-fluid">
+            </div>
+        </div>
+    </div>
+</div>
