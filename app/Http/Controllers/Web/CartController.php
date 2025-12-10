@@ -10,7 +10,7 @@ use App\models\MerchProduct;
 use App\models\MerchProductVariant;
 use App\models\MerchProductVariantSize;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Auth;
+
 
 class CartController extends Controller
 {
