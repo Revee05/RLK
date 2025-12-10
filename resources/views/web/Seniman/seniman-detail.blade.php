@@ -111,11 +111,15 @@
                         @php
                             $imagePath = $product['image_utama'] ?? 'assets/img/default.jpg';
                         @endphp
-                        <img src="{{ asset($imagePath) }}" class="card-img-top" alt="{{ $product['title'] }}" onerror="this.src='{{ asset('assets/img/default.jpg') }}'">
+                        <a href="{{ route('detail', ['slug' => $product['slug']]) }}" class="text-decoration-none text-reset">
+                            <img src="{{ asset($imagePath) }}" class="card-img-top" alt="{{ $product['title'] }}" onerror="this.src='{{ asset('assets/img/default.jpg') }}'">
+                        </a>
                         <div class="card-body">
-                            <h5 class="card-title">{{ $product['title'] }}</h5>
+                            <h5 class="card-title">
+                                <a href="{{ route('detail', ['slug' => $product['slug']]) }}" class="text-decoration-none text-dark">{{ $product['title'] }}</a>
+                            </h5>
                             <p class="card-text">Rp {{ number_format($product['price'], 0, ',', '.') }}</p>
-                            <a href="{{ route('detail', $product['slug']) }}" class="btn btn-primary btn-sm">Lihat Detail</a>
+                            <a href="{{ route('detail', ['slug' => $product['slug']]) }}" class="btn btn-primary btn-sm">Lihat Detail</a>
                         </div>
                     </div>
                 </div>
