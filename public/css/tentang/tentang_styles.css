@@ -51,11 +51,48 @@
     justify-content: center;
 }
 
-/* Team Member Photo */
-.tentang-team-photo {
+/* Team card with absolute avatar that overflows half above the card */
+.team-card {
+    position: relative;
+    overflow: visible;
+    box-shadow: 0 2px 8px 0 rgba(0, 0, 0, 0.25) !important;
+}
+.team-card .about-avatar-abs {
+    position: absolute;
+    top: -50px; /* half of avatar height (100px) to overflow half above */
+    left: 50%;
+    transform: translateX(-50%);
     width: 100px;
     height: 100px;
     object-fit: cover;
+    border-radius: 50%;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12);
+}
+.team-card .card-body {
+    padding-top: 3.5rem;
+    /* make room for the overlapping avatar */
+}
+
+/* Team Member Photo */
+.tentang-team-photo {
+    width: 230px;
+    height: 230px;
+    object-fit: cover;
+}
+
+/* Cyan horizontal rule for the Tentang page */
+hr.tentang-hr-cyan {
+    border: 0;
+    height: 4px;
+    background: #58bcc2;
+    max-width: 190px;
+    margin: 1.25rem auto;
+    border-radius: 2px;
+}
+
+/* Utility: larger bottom margin than Bootstrap's `mb-5` */
+.mb-6 {
+    margin-bottom: 5rem !important; /* slightly larger than mb-5 (3rem) */
 }
 
 /* CTA Button */
@@ -79,12 +116,39 @@
     border-color: rgba(88, 188, 194, 0.25);
 }
 
-.accordion-button::after {
+.accordion-button:not(.collapsed)::after {
     filter: brightness(0) invert(1);
 }
 
-.accordion-button:not(.collapsed)::after {
-    filter: brightness(0) invert(1);
+/* Center accordion titles */
+.accordion .accordion-button {
+    position: relative; /* allow absolute positioning of chevron */
+    justify-content: center; /* centers label */
+    text-align: center;
+    padding-left: 1rem; /* ensure some horizontal padding remains */
+    padding-right: 1rem;
+}
+
+/* Place Bootstrap's chevron to the right so the button label stays centered */
+.accordion .accordion-button::after {
+    position: absolute;
+    right: 1rem;
+    left: auto;
+    margin: 0;
+}
+
+/* Give each accordion item a rounded white card look with drop shadow */
+.accordion .accordion-item {
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px 0 rgba(0, 0, 0, 0.25) !important;
+    overflow: hidden; /* ensure rounded corners clip children */
+}
+
+/* Keep inner accordion-button visually full-width but remove default item border if present */
+.accordion .accordion-item .accordion-button {
+    border: 0;
+    border-radius: 0; /* let item control rounding */
 }
 
 /* Responsive media queries (kept at bottom as project convention) */
@@ -93,5 +157,27 @@
         width: 100%;
         height: auto;
         aspect-ratio: 1 / 1;
+    }
+}
+
+/* Mobile tweaks: keep avatar overlapping but add space above the card so it doesn't touch previous element */
+@media (max-width: 767.98px) {
+    .team-card .about-avatar-abs {
+        position: absolute !important;
+        top: -40px !important; /* overlap half above, adjusted for smaller avatar */
+        left: 50% !important;
+        transform: translateX(-50%) !important;
+        width: 80px !important;
+        height: 80px !important;
+        margin: 0 !important;
+        display: block;
+    }
+
+    .team-card .card-body {
+        padding-top: 3rem; /* room for the smaller overlapping avatar */
+    }
+
+    .mb-sm-down-5 {
+        margin-bottom: 3rem !important; /* mirrors Bootstrap's mb-5 */
     }
 }
