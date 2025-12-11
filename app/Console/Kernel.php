@@ -15,6 +15,12 @@ class Kernel extends ConsoleKernel
     protected $commands = [
          Commands\SendEmails::class,
          Commands\EndDate::class,
+         Commands\SyncRajaOngkir::class,
+         Commands\AuctionProcess::class,
+         Commands\AuctionExpire::class,
+         // --- TAMBAHAN BARU ---
+         // Daftarkan command robot lelang baru kita di sini
+         Commands\CloseExpiredAuctions::class,
     ];
 
     /**
@@ -25,10 +31,23 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule)
     {
-        // $schedule->command('inspire')
-        //          ->hourly();
-        $schedule->command('checkout:send')->everyMinute();
-        $schedule->command('bid:expired')->everyMinute();
+        // --- LOGIKA UTAMA (ROBOT LELANG BARU) ---
+        // Menjalankan pengecekan pemenang & expired setiap menit.
+        // Ini adalah command yang baru saja kita buat.
+        $schedule->command('lelang:close-expired')->everyMinute();
+
+
+        // --- CATATAN PENTING UNTUK KODE LAMA ---
+        // Saya sarankan baris 'auction:process' di bawah ini di-KOMEN (//) 
+        // jika fungsinya mirip dengan robot baru kita, supaya tidak bentrok (double proses).
+        // Tapi kalau fungsinya beda, silakan nyalakan lagi.
+        
+        // $schedule->command('auction:process')->everyMinute(); 
+
+        // Cleanup produk yang tak diambil (biarkan jika masih perlu)
+        $schedule->command('auction:expire')->daily();
+
+        $schedule->command('cart:cleanup-auction')->hourly();
     }
 
     /**

@@ -2,7 +2,7 @@
 
 namespace Database\Seeders; // Pastikan namespace-nya benar, biasanya ini
 
-use Illuminate-Database\Seeder;
+use Illuminate\Database\Seeder;
 use App\Order;
 use Illuminate\Support\Facades\DB; // <--- TAMBAHKAN BARIS INI
 
@@ -23,6 +23,7 @@ class DatabaseSeeder extends Seeder
         $this->call(ProdukSeeder::class);
         $this->call(KelengkapanSeeder::class);
         $this->call(AdminUserSeeder::class); // Ini seeder dari yang kita buat tadi 👍
+        $this->call(PanduanSeeder::class);
         
         // import provinsi
         $provinsi = base_path('database/seeds/provinsi.sql');

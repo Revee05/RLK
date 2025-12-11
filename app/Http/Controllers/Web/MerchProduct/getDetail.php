@@ -30,7 +30,21 @@ class getDetail extends Controller
         // BLOCK: Return View
         return view('web.productsPage.MerchDetailProductPage', [
             'product' => $product,
-            'relatedProducts' => $relatedProducts,
+            'relatedProducts' => $relatedProducts->map(function($rel) {
+                $variant = $rel->variants->firstWhere('is_default', 1) ?: $rel->variants->first();
+                $img = ($variant && $variant->images->count())
+                    ? asset($variant->images->first()->image_path)
+                    : 'https://placehold.co/300x250?text=No+Image';
+
+                return [
+                    'id' => $rel->id,
+                    'slug' => $rel->slug,
+                    'name' => $rel->name,
+                    'display_price' => $rel->display_price,
+                    'display_discount' => $rel->display_discount,
+                    'image' => $img,
+                ];
+            }),
         ]);
     }
 
@@ -39,7 +53,7 @@ class getDetail extends Controller
      */
     private function fetchProductWithRelations(string $slug): MerchProduct
     {
-        return MerchProduct::select('id', 'name', 'slug', 'description', 'status', 'type')
+        return MerchProduct::select('id', 'name', 'slug', 'description', 'status', 'type', 'size_guide_content', 'size_guide_image', 'guide_button_label')
             ->with([
                 'categories:id,name',
                 'variants' => function ($q) {
@@ -122,7 +136,25 @@ class getDetail extends Controller
         if (!app()->environment(['local', 'development', 'dev'])) {
             return;
         }
+        // Log detail product (boleh tetap full jika ingin)
         \Log::info('Detail Product:', $product->toArray());
-        \Log::info('Related Products:', $relatedProducts->toArray());
+
+        // Log related products SESUAI dengan yang dikirim ke Blade/browser
+        $mappedRelated = $relatedProducts->map(function($rel) {
+            $variant = $rel->variants->firstWhere('is_default', 1) ?: $rel->variants->first();
+            $img = ($variant && $variant->images->count())
+                ? asset($variant->images->first()->image_path)
+                : 'https://placehold.co/300x250?text=No+Image';
+
+            return [
+                'id' => $rel->id,
+                'slug' => $rel->slug,
+                'name' => $rel->name,
+                'display_price' => $rel->display_price,
+                'display_discount' => $rel->display_discount,
+                'image' => $img,
+            ];
+        });
+        \Log::info('Related Products:', $mappedRelated->toArray());
     }
 }

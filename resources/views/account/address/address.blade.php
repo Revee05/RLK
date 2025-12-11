@@ -22,7 +22,10 @@
                                                 <div>
                                                     <div class="mb-1">
                                                         <span
-                                                            class="address-badge mb-1">{{ ucwords($ua->label_address) }}</span>
+                                                            class="small text-cyan fw-bold">{{ ucwords($ua->label_address) }}</span>
+                                                        @if (!empty($ua->is_primary) && $ua->is_primary)
+                                                            <span class="address-badge mb-1">Utama</span>
+                                                        @endif
                                                         <div class="d-flex align-items-center">
                                                             <strong class="me-2 mb-0">{{ $ua->name }}</strong>
                                                             <span class="address-divider text-muted">|</span>
@@ -31,9 +34,9 @@
                                                     </div>
                                                     <div class="address-street text-muted">{{ $ua->address }}</div>
                                                     <div class="address-location text-muted small">
-                                                        {{ $ua->provinsi->nama_provinsi }},
-                                                        {{ $ua->kabupaten->nama_kabupaten }},
-                                                        {{ $ua->kecamatan->nama_kecamatan }}</div>
+                                                        {{ $ua->province->name }},
+                                                        {{ $ua->city->name }},
+                                                        {{ $ua->district->name }}</div>
                                                 </div>
                                                 <div class="address-actions d-flex align-items-center">
                                                     <a href="#" class="btn-icon icon-edit open-update-address"

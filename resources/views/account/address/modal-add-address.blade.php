@@ -27,29 +27,37 @@
 
                     <div class="form-group mb-3">
                         <input type="text" class="form-control input-cyan" name="label_address"
-                            placeholder="Label Alamat">
+                            placeholder="Label Alamat (rumah / kantor / apartemen)" required>
                     </div>
 
                     <div class="form-group mb-3">
-                        <select class="form-control input-cyan" id="provinsi" name="provinsi_id" required>
+                        <select class="form-control input-cyan" id="provinsi" name="province_id" required>
                             <option value="">Pilih Provinsi</option>
                         </select>
                     </div>
 
                     <div class="form-group mb-3">
-                        <select class="form-control input-cyan" id="kabupaten" name="kabupaten_id" disabled required>
+                        <select class="form-control input-cyan" id="kabupaten" name="city_id" disabled required>
                             <option value="">Pilih Kabupaten/Kota</option>
                         </select>
                     </div>
 
                     <div class="form-group mb-3">
-                        <select class="form-control input-cyan" id="kecamatan" name="kecamatan_id" disabled required>
+                        <select class="form-control input-cyan" id="kecamatan" name="district_id" disabled required>
                             <option value="">Pilih Kecamatan</option>
                         </select>
                     </div>
 
                     <div class="form-group mb-3">
                         <textarea class="form-control input-cyan" name="address" rows="2" placeholder="Alamat Lengkap" required></textarea>
+                    </div>
+
+                    <div class="form-group mb-3">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="is_primary" name="is_primary"
+                                value="1">
+                            <label class="form-check-label" for="is_primary">Jadikan alamat utama</label>
+                        </div>
                     </div>
 
                 </div>
@@ -75,71 +83,61 @@
         let kec = document.getElementById('kecamatan');
 
         // === Saat Modal Dibuka ===
-        document.getElementById("addAddressModal").addEventListener("show.bs.modal", function() {
+        const populateSelect = (select, placeholder) => {
+            select.innerHTML = `<option value="">${placeholder}</option>`;
+        };
 
-            prov.innerHTML = '<option value="">Pilih Provinsi</option>';
-            kab.innerHTML = '<option value="">Pilih Kabupaten</option>';
-            kec.innerHTML = '<option value="">Pilih Kecamatan</option>';
+        const fetchOptions = (url) => fetch(url).then(res => res.json());
+
+        document.getElementById("addAddressModal").addEventListener("show.bs.modal", function() {
+            populateSelect(prov, 'Pilih Provinsi');
+            populateSelect(kab, 'Pilih Kabupaten');
+            populateSelect(kec, 'Pilih Kecamatan');
             kab.disabled = true;
             kec.disabled = true;
 
-            // use absolute path fallback to ensure fetch works when route() isn't available
-            let provUrl = "{{ route('lokasi.provinsi') }}" || "/lokasi/provinsi";
-            fetch(provUrl)
-                .then(res => res.json())
+            fetchOptions("{{ route('lokasi.province') }}")
                 .then(data => {
-                    data.forEach(p => {
-                        prov.innerHTML +=
-                            `<option value="${p.id}">${p.nama_provinsi}</option>`;
-                    });
+                    data.forEach(p => prov.innerHTML +=
+                        `<option value="${p.id}">${p.name}</option>`);
                 })
-                .catch(err => {
-                    console.error('Error fetching provinsi:', err);
-                    // try fallback
-                    fetch('/lokasi/provinsi')
-                        .then(res => res.json())
-                        .then(data => {
-                            data.forEach(p => prov.innerHTML +=
-                                `<option value="${p.id}">${p.nama_provinsi}</option>`);
-                        })
-                        .catch(err2 => console.error('Fallback failed:', err2));
-                });
+                .catch(() => populateSelect(prov, 'Pilih Provinsi'));
         });
 
-        // === Provinsi → Kabupaten ===
-        prov.addEventListener("change", function() {
-            kab.innerHTML = '<option value="">Pilih Kabupaten</option>';
-            kec.innerHTML = '<option value="">Pilih Kecamatan</option>';
+        const loadCityOptions = (provinceId) => {
+            populateSelect(kab, 'Pilih Kabupaten');
+            populateSelect(kec, 'Pilih Kecamatan');
             kab.disabled = true;
             kec.disabled = true;
+            if (!provinceId) return;
 
-            if (!this.value) return;
-
-            fetch("/lokasi/kabupaten/" + this.value)
-                .then(res => res.json())
+            fetchOptions("/lokasi/city/" + provinceId)
                 .then(data => {
                     kab.disabled = false;
                     data.forEach(k => kab.innerHTML +=
-                        `<option value="${k.id}">${k.nama_kabupaten}</option>`);
-                })
-                .catch(err => console.error('Error fetching kabupaten:', err));
-        });
+                        `<option value="${k.id}">${k.name}</option>`);
+                });
+        };
 
-        // === Kabupaten → Kecamatan ===
-        kab.addEventListener("change", function() {
-            kec.innerHTML = '<option value="">Pilih Kecamatan</option>';
+        const loadDistrictOptions = (cityId) => {
+            populateSelect(kec, 'Pilih Kecamatan');
             kec.disabled = true;
+            if (!cityId) return;
 
-            if (!this.value) return;
-
-            fetch("/lokasi/kecamatan/" + this.value)
-                .then(res => res.json())
+            fetchOptions("/lokasi/district/" + cityId)
                 .then(data => {
                     kec.disabled = false;
                     data.forEach(k => kec.innerHTML +=
-                        `<option value="${k.id}">${k.nama_kecamatan}</option>`);
-                })
-                .catch(err => console.error('Error fetching kecamatan:', err));
+                        `<option value="${k.id}">${k.name}</option>`);
+                });
+        };
+
+        prov.addEventListener("change", function() {
+            loadCityOptions(this.value);
+        });
+
+        kab.addEventListener("change", function() {
+            loadDistrictOptions(this.value);
         });
 
         // Submission will be handled by the server via normal form POST.

@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Log;
 use Auth; 
 use Illuminate\Support\Str;
 use App\Bid;
+use App\OrderMerch;
 class OrderController extends Controller
 {
     /**
@@ -119,23 +120,12 @@ class OrderController extends Controller
      */
     public function show(Order $order)
     {
-        
-        $snapToken = $order->snap_token;
-        if (empty($snapToken)) {
-            // Jika snap token masih NULL, buat token snap dan simpan ke database
-            try {
-                
-                $midtrans = new CreateSnapTokenService($order);
-                $snapToken = $midtrans->getSnapToken(); 
-                $order->snap_token = $snapToken;
-                $order->save();
-            
-            } catch (Exception $e) {
-                Log::error("ONGKRI".$e->getMessage()); 
-            }
+        // Check if user owns this order
+        if ($order->user_id !== Auth::user()->id) {
+            return abort(403);
         }
- 
-        return view('account.checkout.order', compact('order', 'snapToken'));
+        
+        return view('account.orders.show', compact('order'));
     }
 
     /**

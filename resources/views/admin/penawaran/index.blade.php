@@ -1,7 +1,7 @@
 @extends('admin.partials._layout')
 {{-- @section('title','Daftar Product') --}}
 {{-- @section('collapseMaster','show') --}}
-{{-- @section('product','active') --}}
+@section('penawaran','active')
 @section('css')
 <!-- Custom styles for this page -->
 <link href="{{asset('assets/vendor/datatables/dataTables.bootstrap4.min.css')}}" rel="stylesheet">
@@ -53,8 +53,8 @@
                                     <img src="{{asset($bid->product->imageUtama->path ?? 'assets/img/default.jpg')}}">
                                 </div>
                             </td>
-                            <td>{{ucfirst($bid->product->title)}}</td>
-                            <td>{{$bid->product->karya->name}}</td>
+                            <td>{{ucfirst($bid->product->title ?? '-')}}</td>
+                            <td>{{$bid->product->karya->name ?? '-' }}</td>
                             <td>{{$bid->total}}</td>
                             <td class="text-center">
                                 <a href="{{route('admin.daftar-penawaran.show',$bid->id)}}" class="btn btn-sm btn-warning rounded-0" title="RESET BID">

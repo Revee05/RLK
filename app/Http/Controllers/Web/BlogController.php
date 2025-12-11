@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Posts;
 use Validator;
+use Illuminate\Support\Facades\Log;
+use Exception;
 class BlogController extends Controller
 {
     public function index(Request $request)
@@ -67,18 +69,15 @@ class BlogController extends Controller
 
     public function detail($slug)
     {
-
         $validator = Validator::make(['slug'=>$slug], [
             'slug'=>['required','exists:posts,slug']
         ]);
         
-        //jika tidak ada redirect ke halaman 404
         if ($validator->fails()) {
-            abort('404');
+            abort(404);
         }
 
         try {
-            
             $blog = Posts::Blog()
                 ->with('images')
                 ->where('slug',$slug)
@@ -87,11 +86,11 @@ class BlogController extends Controller
             
             if ($blog) {
                 $relatedBlogs = Posts::Blog()
-                ->where('id', '!=', $blog->id)
-                ->where('status', 'PUBLISHED')
-                ->latest()
-                ->take(3)
-                ->get();
+                    ->where('id', '!=', $blog->id)
+                    ->where('status', 'PUBLISHED')
+                    ->latest()
+                    ->take(3)
+                    ->get();
 
                 return view('web.blog-detail',compact('blog', 'relatedBlogs'));
             }

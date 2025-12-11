@@ -28,6 +28,7 @@ class Products extends Model
         'width',
         'status',
         'kondisi',
+        'type',
         'kelipatan',
         'end_date',
     ];
@@ -70,7 +71,9 @@ class Products extends Model
     }
     public function bid()
     {
-      return $this->hasMany(Bid::class);
+     
+
+      return $this->hasMany('App\Bid', 'product_id');
     }
     function kelengkapans()
     {

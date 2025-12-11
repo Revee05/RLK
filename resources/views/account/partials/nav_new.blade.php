@@ -1,12 +1,16 @@
+<!-- Mobile-only profile quick view -->
+<div class="col-12 d-block d-md-none text-center mb-4">
+    <img src="{{ Auth::user()->foto ? asset(Auth::user()->foto) : asset('assets/img/default-profile-picture.webp') }}"
+        alt="avatar" class="rounded-circle img-fluid mb-3" style="width:120px; height:120px; object-fit:cover;">
+    <h1 class="profile-name mb-0">{{ Auth::user()->name }}</h1>
+    <a href="#" class="profile-view-link" data-bs-toggle="modal" data-bs-target="#modalProfilePicture">Lihat
+        Profil</a>
+</div>
+
 <!-- Left sidebar -->
-<div class="col-md-3 account-left d-flex flex-column"><!-- pastikan sidebar juga flex-column sehingga tinggi sejajar -->
+<div class="col-md-3 d-none d-md-block">
     <div class="text-center mb-4">
-
-
-        <!-- <img src="{{ asset(Auth::user()->foto) ?? 'https://www.figma.com/api/mcp/asset/1bcfd75e-90c9-43bf-8586-79d92d395def' }}" -->
-
-        <img src="{{ asset('images/default-avatar.png') }}"
-
+        <img src="{{ Auth::user()->foto ? asset(Auth::user()->foto) : asset('assets/img/default-profile-picture.webp') }}"
             alt="avatar" class="rounded-circle img-fluid mb-3" style="width:200px; height:200px; object-fit:cover;">
         <h1 class="profile-name mb-0">{{ Auth::user()->name }}</h1>
         <a href="#" class="profile-view-link" data-bs-toggle="modal" data-bs-target="#modalProfilePicture">Lihat
@@ -30,10 +34,15 @@
         Favorit
         </a>
 
-        <a href="#" class="list-group-item list-group-item-action border-nav-middle py-2">Riwayat Lelang</a>
-        <a href="#" class="list-group-item list-group-item-action border-nav-middle py-2">Riwayat
+        <a href="{{ route('account.auction_history') }}"
+            class="list-group-item list-group-item-action border-nav-middle py-2 {{ request()->routeIs('account.auction_history') ? 'active' : '' }}">
+            Riwayat Lelang
+        </a>
+        <a href="{{ route('account.purchase.history') }}"
+            class="list-group-item list-group-item-action border-nav-middle py-2 {{ request()->routeIs('account.purchase.history') ? 'active' : '' }}">Riwayat
             Pembelian</a>
-        <a href="#" class="list-group-item list-group-item-action border-nav-middle  py-2">Pengaturan
+        <a href="{{ route('account.notifications') }}"
+            class="list-group-item list-group-item-action border-nav-middle  py-2 {{ request()->routeIs('account.notifications') ? 'active' : '' }}">Pengaturan
             Notifikasi</a>
         <a class="list-group-item list-group-item-action border-nav-bottom text-danger py-2"
             href="{{ route('logout') }}"

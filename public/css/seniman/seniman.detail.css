@@ -1,0 +1,351 @@
+body {
+	background: #f7f8fa;
+}
+
+.container {
+	background: #fff;
+	border-radius: 18px;
+	box-shadow: 0 4px 24px rgba(0,0,0,0.07);
+	padding: 2.5rem 2rem 2rem 2rem;
+	margin-top: 2rem;
+	margin-bottom: 2rem;
+}
+
+/* Section: Profile Seniman */
+.seniman-profile-section {
+	margin-bottom: 2rem;
+}
+
+.seniman-profile {
+	display: flex;
+	gap: 2.5rem;
+	align-items: flex-start;
+}
+
+.seniman-image-container {
+	flex-shrink: 0;
+}
+
+.seniman-image-container img {
+	border-radius: 16px;
+	box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+	width: 280px;
+	height: 350px;
+	object-fit: cover;
+	background: #f0f0f0;
+	border: 3px solid #e2e8f0;
+}
+
+.default-avatar {
+	border-radius: 16px;
+	background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+	width: 280px;
+	height: 350px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	color: #fff;
+}
+
+.seniman-info-container {
+	flex: 1;
+}
+
+.seniman-name {
+	font-size: 2.5rem;
+	font-weight: 700;
+	color: #1a202c;
+	margin-bottom: 1rem;
+	border-bottom: 3px solid #3182ce;
+	padding-bottom: 0.5rem;
+	display: inline-block;
+}
+
+.seniman-stats {
+	display: flex;
+	gap: 2rem;
+	margin-bottom: 1.5rem;
+	padding: 1rem;
+	background: linear-gradient(135deg, #667eea15 0%, #764ba215 100%);
+	border-radius: 12px;
+}
+
+.stat-item {
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+	font-size: 1rem;
+	font-weight: 600;
+	color: #2d3748;
+}
+
+.stat-item i {
+	color: #3182ce;
+	font-size: 1.2rem;
+}
+
+.info-item {
+	margin-bottom: 1.2rem;
+	padding: 0.8rem;
+	background: #f7fafc;
+	border-left: 4px solid #3182ce;
+	border-radius: 8px;
+	display: flex;
+	align-items: flex-start;
+	gap: 0.8rem;
+}
+
+.info-item i {
+	color: #3182ce;
+	font-size: 1.1rem;
+	margin-top: 0.2rem;
+}
+
+.info-label {
+	font-weight: 600;
+	color: #2d3748;
+	min-width: 100px;
+}
+
+.info-value {
+	color: #4a5568;
+	flex: 1;
+}
+
+.info-bio, .info-description {
+	color: #4a5568;
+	line-height: 1.7;
+	word-break: break-word;
+	flex: 1;
+	margin: 0;
+}
+
+.info-bio p, .info-description p {
+	margin-bottom: 0.7em;
+}
+
+.info-bio ul, .info-description ul {
+	padding-left: 1.2em;
+	margin-bottom: 0.7em;
+}
+
+.info-bio img, .info-description img {
+	max-width: 100%;
+	height: auto;
+	border-radius: 8px;
+}
+
+.info-value .btn {
+	background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+	border: none;
+	border-radius: 8px;
+	font-weight: 600;
+	padding: 0.4rem 0.9rem;
+	transition: all 0.2s;
+	color: #fff;
+	text-decoration: none;
+}
+
+.info-value .btn:hover {
+	transform: translateY(-2px);
+	box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+hr {
+	border-top: 2px solid #e2e8f0;
+	margin: 2.5rem 0;
+}
+
+/* Section: Products */
+.products-section {
+	margin-top: 2rem;
+}
+
+.section-header {
+	margin-bottom: 2rem;
+	text-align: center;
+}
+
+.section-header h4 {
+	color: #2b6cb0;
+	font-weight: 700;
+	font-size: 1.8rem;
+	margin-bottom: 0.5rem;
+	letter-spacing: 0.5px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 0.5rem;
+}
+
+.section-header h4 i {
+	color: #3182ce;
+}
+
+.section-subtitle {
+	color: #718096;
+	font-size: 1rem;
+	margin: 0;
+}
+
+.card {
+	border: none;
+	border-radius: 16px;
+	box-shadow: 0 2px 12px rgba(44, 62, 80, 0.07);
+	transition: transform 0.18s, box-shadow 0.18s;
+	background: #f9fafb;
+}
+.card:hover {
+	transform: translateY(-6px) scale(1.03);
+	box-shadow: 0 8px 32px rgba(44, 62, 80, 0.13);
+}
+.card-img-top {
+	border-radius: 16px 16px 0 0;
+	height: 180px;
+	object-fit: cover;
+	background: #e2e8f0;
+}
+.card-title {
+	font-size: 1.1rem;
+	font-weight: 600;
+	color: #2d3748;
+	margin-bottom: 0.3rem;
+}
+.card-text {
+	color: #3182ce;
+	font-weight: 500;
+	font-size: 1rem;
+	margin-bottom: 0.7rem;
+}
+.btn-primary.btn-sm {
+	background: linear-gradient(90deg, #3182ce 0%, #63b3ed 100%);
+	border: none;
+	border-radius: 8px;
+	font-weight: 600;
+	padding: 0.4rem 1.1rem;
+	transition: background 0.18s;
+}
+.btn-primary.btn-sm:hover {
+	background: linear-gradient(90deg, #2563eb 0%, #4299e1 100%);
+}
+
+@media (max-width: 768px) {
+	.seniman-profile {
+		flex-direction: column;
+		align-items: center;
+		gap: 1.5rem;
+	}
+	.seniman-image-container {
+		width: 100%;
+		display: flex;
+		justify-content: center;
+	}
+	.seniman-image-container img,
+	.default-avatar {
+		width: 100%;
+		max-width: 220px;
+		height: 280px;
+	}
+	.seniman-info-container {
+		width: 100%;
+		text-align: left;
+	}
+	.seniman-name {
+		font-size: 1.8rem;
+		display: block;
+		border-bottom: none;
+		padding-bottom: 0.3rem;
+		margin-bottom: 1rem;
+	}
+	.seniman-stats {
+		flex-direction: row;
+		gap: 1rem;
+		justify-content: center;
+		padding: 0.8rem;
+		margin-bottom: 1rem;
+	}
+	.stat-item {
+		font-size: 0.9rem;
+		flex-direction: column;
+		text-align: center;
+		gap: 0.3rem;
+	}
+	.stat-item i {
+		font-size: 1.5rem;
+	}
+	.info-item {
+		flex-direction: column;
+		align-items: flex-start;
+		gap: 0.5rem;
+		padding: 1rem;
+		margin-bottom: 1rem;
+	}
+	.info-item i {
+		font-size: 1.3rem;
+	}
+	.info-label {
+		font-size: 1rem;
+		min-width: auto;
+		font-weight: 700;
+		color: #2b6cb0;
+	}
+	.info-value {
+		font-size: 0.95rem;
+	}
+	.info-bio, .info-description {
+		font-size: 0.95rem;
+		line-height: 1.8;
+	}
+	.info-value .btn {
+		padding: 0.5rem 1rem;
+		font-size: 0.85rem;
+		margin-bottom: 0.5rem;
+	}
+	.container {
+		padding: 1.2rem 0.8rem;
+		margin-top: 0.5rem;
+		margin-bottom: 1rem;
+		border-radius: 12px;
+	}
+	.seniman-profile-section {
+		margin-bottom: 1.5rem;
+	}
+	hr {
+		margin: 1.5rem 0;
+	}
+	.section-header {
+		margin-bottom: 1.5rem;
+	}
+	.section-header h4 {
+		font-size: 1.4rem;
+		flex-direction: column;
+	}
+	.section-subtitle {
+		font-size: 0.9rem;
+	}
+	.card {
+		margin-bottom: 1rem;
+	}
+	.card-img-top {
+		height: 180px;
+	}
+	.card-title {
+		font-size: 1rem;
+	}
+	.card-text {
+		font-size: 0.95rem;
+	}
+	.row {
+		display: flex;
+		flex-wrap: wrap;
+		margin-left: -8px;
+		margin-right: -8px;
+	}
+	.row > .col-md-3 {
+		width: 50%;
+		max-width: 50%;
+		flex: 0 0 50%;
+		padding-left: 8px;
+		padding-right: 8px;
+	}
+}

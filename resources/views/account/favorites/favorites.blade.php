@@ -1,4 +1,8 @@
 @extends('account.partials.layout')
+@section('css')
+<link rel="stylesheet" href="{{ asset('css/account/favorites.css') }}">
+@endsection
+
 
 @section('content')
     <div class="container" style="max-width:1200px; margin-top:40px; margin-bottom:80px;">
@@ -8,13 +12,13 @@
         @include('account.partials.nav_new')
 
         <div class="col-sm-9 account-right d-flex flex-column "style="height:100%;">
-            <div class="card content-border h-100 d-flex flex-column"><!-- card mengisi tinggi kolom -->
+            <div class="card fav-card-body content-border h-100 d-flex flex-column"><!-- card mengisi tinggi kolom -->
                 <div class="card-head border-bottom border-darkblue ps-4 d-flex align-items-center justify-content-between">
                     <h3 class="mb-0 fw-bolder">Favorit</h3>
                 </div>
 
                 <!-- card-body jadi area scrollable -->
-                <div class="card-body overflow-auto mt-3 mb-3" style="max-height: calc(100vh - 240px); overflow-y:auto;">
+                <div class="card-body main-fav-container overflow-auto mt-3 mb-3" style="max-height: calc(100vh - 240px); overflow-y:auto;">
                   <div class="row">
                             @forelse($favorites as $fav)
 @php
@@ -34,7 +38,7 @@
     $checkoutUrl = route('merch.products.detail', $product->slug);
 @endphp
 
-<div class="col-md-4 mb-4">
+<div class="col-6 col-md-4 mb-4">
     <a href="{{ $checkoutUrl }}" style="text-decoration:none; color:inherit;">
         <div class="card shadow-sm border-0" style="border-radius:10px;">
             {{-- WRAPPER GAMBAR + ICON FAVORIT --}}
@@ -57,23 +61,23 @@
 
                 {{-- GAMBAR --}}
                 <img src="{{ asset($imagePath ?? 'images/no-image.png') }}"
-                     class="card-img-top"
+                     class="card-img-top fav-img"
                      style="height:230px; object-fit:cover; border-radius:8px;"
                      alt="{{ $product->name }}">
             </div>
 
             {{-- PRODUCT TEXT --}}
-            <div class="card-body" style="font-family: Helvetica, sans-serif;">
+            <div class="card-body " style="font-family: Helvetica, sans-serif;">
 
-                <h5 style="font-size:18px; font-weight:400; line-height:150%; margin:0 0 4px 0;">
+                <h5  class="fav-title"style="font-size:18px; font-weight:400; line-height:150%; margin:0 0 4px 0;">
                     {{ $product->name }}
                 </h5>
 
-                <p style="font-size:14px; font-weight:400; line-height:150%; margin:0;">
+                <p class="fav-stock" style="font-size:14px; font-weight:400; line-height:150%; margin:0;">
                     Stok: {{ $displayStock }}
                 </p>
 
-                <p style="font-size:20px; font-weight:700; line-height:150%; margin:4px 0 0 0;">
+                <p class="fav-price" style="font-size:20px; font-weight:700; line-height:150%; margin:4px 0 0 0;">
                     Rp {{ number_format($displayPrice, 0, ',', '.') }}
                 </p>
 
