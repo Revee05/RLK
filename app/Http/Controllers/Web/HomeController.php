@@ -29,7 +29,7 @@ class HomeController extends Controller
         $products = Products::active()->orderBy('id', 'desc')->take(5)->get();
         $sliders = Sliders::active()->get();
         $blogs = Posts::Blog()->orderBy('id', 'desc')->where('status', 'PUBLISHED')->take(3)->get();
-        
+
         $featuredEvent = Event::whereIn('status', ['active', 'coming_soon'])
             ->latest()
             ->first();
@@ -198,7 +198,7 @@ class HomeController extends Controller
 
     public function perusahaan()
     {
-        return view('web.tentang.perusahaan');
+        return view('web.tentang.tentang');
     }
     public function tim()
     {

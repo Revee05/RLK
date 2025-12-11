@@ -1,44 +1,97 @@
-.border-darkblue {
-    border-color: #051a36 !important;
+/* Container Width */
+.tentang-container {
+    max-width: 1140px;
+    margin-left: auto;
+    margin-right: auto;
 }
 
-.card.content-border {
-    background-color: #fff !important;
+/* Wider container used only for the small image row */
+.tentang-small-wider {
+    max-width: 1320px;
+    margin-left: auto;
+    margin-right: auto;
 }
 
-.card-head {
-    padding: 1rem 1rem;
-    margin-bottom: 0;
+/* Brand Color */
+.tentang-brand-color {
+    color: #58bcc2;
 }
 
-.card-head {
-    vertical-align: bottom;
+/* Text Alignment */
+.tentang-text-justify {
+    text-align: justify;
 }
 
-.content-border {
-    border: 1px solid #051a36 !important;
-    border-radius: 1rem !important;
+/* Body typography utility for Tentang page */
+.tentang-body-typography {
+    font-size: 20px;
+    line-height: 28px;
 }
 
-.border-nav-top {
-    border-top: 1px solid #051a36 !important;
-    border-right: 1px solid #051a36 !important;
-    border-left: 1px solid #051a36 !important;
-    border-top-left-radius: 0.5rem !important;
-    border-top-right-radius: 0.5rem !important;
-}
-.border-nav-middle {
-    border-top: 1px solid #051a36 !important;
-    border-right: 1px solid #051a36 !important;
-    border-left: 1px solid #051a36 !important;
-}
-.border-nav-bottom {
-    border: 1px solid #051a36 !important;
-    border-bottom-left-radius: 0.5rem !important;
-    border-bottom-right-radius: 0.5rem !important;
+/* Images */
+.tentang-img-full {
+    width: 100%;
+    height: auto;
 }
 
-.list-group-item.list-group-item-action.active {
-    background-color: #051a36 !important;
-    color: #fff !important;
+/* Main square photo (desktop: 430x430px, responsive on smaller devices) */
+.tentang-main-photo {
+    width: 550px;
+    height: 550px;
+    object-fit: cover;
+    display: block;
+    margin-left: auto;
+}
+
+/* Team Card Placeholder */
+.tentang-team-placeholder {
+    height: 200px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Team Member Photo */
+.tentang-team-photo {
+    width: 100px;
+    height: 100px;
+    object-fit: cover;
+}
+
+/* CTA Button */
+.tentang-cta-btn {
+    background-color: #58bcc2;
+    border-radius: 50px;
+}
+
+.tentang-cta-btn:hover {
+    background-color: #47a5ab;
+}
+
+/* Accordion Styles */
+.accordion-button:not(.collapsed) {
+    background-color: #58bcc2;
+    color: white;
+}
+
+.accordion-button:focus {
+    box-shadow: none;
+    border-color: rgba(88, 188, 194, 0.25);
+}
+
+.accordion-button::after {
+    filter: brightness(0) invert(1);
+}
+
+.accordion-button:not(.collapsed)::after {
+    filter: brightness(0) invert(1);
+}
+
+/* Responsive media queries (kept at bottom as project convention) */
+@media (max-width: 767.98px) {
+    .tentang-main-photo {
+        width: 100%;
+        height: auto;
+        aspect-ratio: 1 / 1;
+    }
 }
