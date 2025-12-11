@@ -102,8 +102,8 @@ class HomeController extends Controller
                 ->with('imageUtama')
                 ->get();
 
-            // Pass to view
-            return view('web.detail', [
+            // Pass to view (gunakan template detail lelang yang ada)
+            return view('web.detail_lelang.detail', [
                 'product'     => $product,
                 'bids'        => $bidList,
                 'highestBid'  => $highestBid,
