@@ -22,10 +22,10 @@
     text-align: justify;
 }
 
-/* Body typography utility for Tentang page */
-.tentang-body-typography {
-    font-size: 20px;
-    line-height: 28px;
+/* Responsive font-size utility: desktop = Bootstrap `fs-5`, smaller on mobile */
+.tentang-responsive-fs {
+    font-size: 1.25rem; /* same as Bootstrap fs-5 */
+    line-height: 1.6;
 }
 
 /* Images */
@@ -158,10 +158,12 @@ hr.tentang-hr-cyan {
         height: auto;
         aspect-ratio: 1 / 1;
     }
-}
 
-/* Mobile tweaks: keep avatar overlapping but add space above the card so it doesn't touch previous element */
-@media (max-width: 767.98px) {
+    .tentang-responsive-fs {
+        font-size: 1rem; /* smaller on small devices */
+    }
+
+    /* Mobile tweaks: keep avatar overlapping but add space above the card so it doesn't touch previous element */
     .team-card .about-avatar-abs {
         position: absolute !important;
         top: -40px !important; /* overlap half above, adjusted for smaller avatar */

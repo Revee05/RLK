@@ -22,18 +22,18 @@
             <div class="row g-4">
                 <div class="col-md-6">
                     <div class="pe-lg-4">
-                        <p class="mb-4 tentang-text-justify fs-5">
+                        <p class="mb-4 tentang-text-justify tentang-responsive-fs">
                             Rasanya Lelang Karya merupakan platform lelang karya seni bagi seniman pemula. Bagian unit usaha
                             dari PT Rasa Kreasi Karya ini berfokus untuk mewadahi para penikmat seni untuk mengoleksi karya.
                             Rasanya Lelang Karya menjadi wadah yang mempertemukan para pemula dengan para pecinta karya seni
                             yang ingin menjadi kolektor muda.
                         </p>
-                        <p class="mb-4 tentang-text-justify fs-5">
+                        <p class="mb-4 tentang-text-justify tentang-responsive-fs">
                             Di samping menyelenggarakan lelang, unit ini turut memperkenalkan beragam produk merchandise
                             sebagai bentuk dukungan terhadap pertumbuhan kreativitas baru sekaligus membuka ruang bagi
                             publik untuk membawa pulang karya seni dalam bentuk yang lebih personal.
                         </p>
-                        <p class="mb-3 tentang-text-justify fs-5">
+                        <p class="mb-3 tentang-text-justify tentang-responsive-fs">
                             Rasanya Lelang Karya pertama kali diinisiasi oleh Amanda Rizqyana yang bekerjasama dengan Arief
                             Hadinata dari Hokgstudio yang hampir 2 dekade berkecimpung di dunia kesenian. Berbekal
                             pengetahuan
@@ -71,7 +71,7 @@
 
         <div class="row mt-4 tentang-container">
             <div class="col-12">
-                <p class="tentang-text-justify fs-5">
+                <p class="tentang-text-justify tentang-responsive-fs">
                     Dalam prosesnya, Rasanya Lelang Karya membantu Anda untuk memilih karya seni yang cocok untuk kebutuhan
                     estetika dan hobi koleksi karya. Kami memastikan bahwa Anda dapat dengan mudah melakukan transaksi
                     dengan metode yang aman dan terpercaya. Selain itu, dalam proses penyerahan karya, kami akan mengawal
@@ -90,7 +90,7 @@
                 <h2 class="display-5 fw-bold">
                     Tim <span class="tentang-brand-color">Rasanya Lelang Karya</span>
                 </h2>
-                <p class="text-center tentang-body-typography">
+                <p class="text-center tentang-responsive-fs">
                     Kombinasi Visi Tentang Nilai Keberagaman Dan Kreativitas<br>
                     Tercakup Dalam Di Dalam Indah (Visi), Yang Memberikan Dasar Pengembangan
                 </p>
@@ -191,7 +191,7 @@
     <!-- Activities Section -->
     <section class="py-5">
         <div class="container tentang-container">
-            <div class="text-center mb-5">
+            <div class="text-center mb-4">
                 <h2 class="display-5 fw-bold">
                     Aktivitas <span class="tentang-brand-color">Rasanya Lelang Karya</span>
                 </h2>
