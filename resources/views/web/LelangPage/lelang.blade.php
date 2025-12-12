@@ -12,7 +12,8 @@
 </style>
 @endsection
 @section('content')
-<section class="py-4">
+<section class="py-5">
+    <h2 class="text-center fw-bold mb-4">General Auction</h2>
     <div class="container">
         <div class="products-grid-header mb-4 d-flex align-items-center gap-2 flex-wrap">
             <form id="search-form" class="position-relative flex-grow-1 d-flex" style="max-width:600px;">
