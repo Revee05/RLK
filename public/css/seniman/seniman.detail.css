@@ -8,7 +8,7 @@ body {
 
 .container {
 	/* background: #fff; */
-	box-shadow: 0 10px 40px rgba(0,0,0,0.08);
+	/* box-shadow: 0 10px 40px rgba(0,0,0,0.08); */
 	padding: 3rem 2.5rem;
 	margin-top: 2.5rem;
 	margin-bottom: 2.5rem;
@@ -131,8 +131,7 @@ body {
 	flex: 1;
 	display: flex;
 	flex-direction: column;
-	gap: 1.2rem;
-	/* prevent the right column from becoming too wide on large screens */
+	gap: 1rem;
 	width: 730px;
 }
 
@@ -594,6 +593,20 @@ hr {
 		max-width: 350px;
 		margin: 0 auto;
 	}
+
+	/* Make profile image smaller on tablet/mobile while keeping aspect ratio */
+	.profile-image {
+		display: flex;
+		justify-content: center;
+	}
+
+	.profile-image img,
+	.default-avatar {
+		width: 260px;
+		max-width: 60%;
+		height: auto;
+		aspect-ratio: 3/4;
+	}
 	
 	.seniman-right-column {
 		width: 100%;
@@ -720,6 +733,15 @@ hr {
 	.seniman-left-column {
 		max-width: 100%;
 	}
+
+	/* Further reduce profile image size on small phones */
+	.profile-image img,
+	.default-avatar {
+		width: 200px;
+		max-width: 50%;
+		height: auto;
+		aspect-ratio: 3/4;
+	}
 	
 	.seniman-name {
 		font-size: 1.5rem;
@@ -741,12 +763,73 @@ hr {
 	.row > .col-lg-3,
 	.row > .col-md-4,
 	.row > .col-sm-6 {
-		width: 100%;
-		max-width: 100%;
-		flex: 0 0 100%;
+		width: 50%;
+		max-width: 50%;
+		flex: 0 0 50%;
+		padding-left: 8px;
+		padding-right: 8px;
 	}
 	
 	.contact-profile-box {
 		max-width: 100%;
+	}
+
+	/* Mobile: show only icons for contact items and arrange in a single horizontal row */
+	.contact-profile-box {
+		display: flex;
+		align-items: center;
+		gap: 0.6rem;
+		padding: 0.6rem;
+		overflow-x: auto;
+		-webkit-overflow-scrolling: touch;
+	}
+
+	.contact-profile-box h6 {
+		display: flex;
+		align-items: center;
+		margin: 0;
+		margin-right: 0.5rem;
+		font-size: 0.85rem;
+		font-weight: 700;
+		color: #fff;
+		white-space: nowrap;
+		flex: 0 0 auto;
+		max-width: 90px;
+		overflow: hidden;
+		text-overflow: ellipsis;
+	}
+
+	.contact-profile-box .contact-item {
+		padding: 0.25rem 0.5rem;
+		border-bottom: none;
+		border-right: 1px solid rgba(255,255,255,0.12);
+		display: inline-flex;
+		align-items: center;
+		gap: 0.45rem;
+		white-space: nowrap;
+		flex: 0 0 auto;
+	}
+
+	.contact-profile-box .contact-item:last-child {
+		border-right: none;
+	}
+
+	/* hide the username/text on mobile, leaving only the icon/logo visible */
+	.contact-profile-box .contact-item span {
+		display: none;
+	}
+
+	.contact-profile-box .contact-item i {
+		font-size: 1.05rem;
+		min-width: auto;
+	}
+
+	/* Scrollbar styling for better affordance on mobile */
+	.contact-profile-box::-webkit-scrollbar {
+		height: 6px;
+	}
+	.contact-profile-box::-webkit-scrollbar-thumb {
+		background: rgba(0,0,0,0.12);
+		border-radius: 6px;
 	}
 }

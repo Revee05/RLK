@@ -25,14 +25,32 @@
                 </div>
 
                 {{-- Contact Profile Box --}}
-                @if($seniman->social && is_array($seniman->social))
+                @php
+                    $socials = [];
+                    if (!empty($seniman->social)) {
+                        if (is_string($seniman->social)) {
+                            $decoded = json_decode($seniman->social, true);
+                            $socials = is_array($decoded) ? $decoded : [];
+                        } elseif (is_array($seniman->social)) {
+                            $socials = $seniman->social;
+                        } elseif (is_object($seniman->social)) {
+                            $socials = (array) $seniman->social;
+                        }
+                    }
+                @endphp
+                @if(!empty($socials))
                 <div class="contact-profile-box">
-                    <h6><i class="fas fa-address-card"></i> Contact Person:</h6>
-                    @foreach($seniman->social as $key => $url)
+                    <h6><i class="fas fa-address-card"></i> Contact:</h6>
+                    @foreach($socials as $key => $url)
                         @if($url)
-                            <a href="{{ $url }}" target="_blank" class="contact-item">
-                                <i class="fab fa-{{ $key }}\"></i>
-                                <span>{{ '@' . basename(parse_url($url, PHP_URL_PATH)) }}</span>
+                            @php
+                                $path = parse_url($url, PHP_URL_PATH);
+                                $host = parse_url($url, PHP_URL_HOST);
+                                $username = $path ? trim($path, '/') : ($host ? preg_replace('/^www\\./', '', $host) : $url);
+                            @endphp
+                            <a href="{{ $url }}" target="_blank" rel="noopener noreferrer" class="contact-item">
+                                <i class="fab fa-{{ $key }}"></i>
+                                <span>{{ '@' . $seniman->name }}</span>
                             </a>
                         @endif
                     @endforeach
@@ -169,7 +187,7 @@
                                 <h5 class="card-title">
                                     <a href="{{ route('detail', ['slug' => $product['slug']]) }}" class="text-decoration-none text-dark">{{ $product['title'] }}</a>
                                 </h5>
-                                <p class="card-text">Rp {{ number_format($product['price'], 0, ',', '.') }}</p>
+                                <!--<p class="card-text">Rp {{ number_format($product['price'], 0, ',', '.') }}</p>-->
                                 <a href="{{ route('detail', ['slug' => $product['slug']]) }}" class="btn btn-primary btn-sm">
                                     <i class="fas fa-shopping-cart"></i> Lihat Detail
                                 </a>
@@ -178,9 +196,12 @@
                     </div>
                 @endforeach
             </div>
-            <div class="d-flex justify-content-center mt-4">
-                {{ $products->links() }}
-            </div>
+            @php $paginator = $products ?? $productsData ?? null; @endphp
+            @if($paginator && method_exists($paginator, 'links'))
+                <div class="d-flex justify-content-center mt-4">
+                    {{ $paginator->links() }}
+                </div>
+            @endif
         @else
             <div class="empty-state">
                 <div class="empty-state-icon">
