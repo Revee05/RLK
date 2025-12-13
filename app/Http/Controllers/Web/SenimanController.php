@@ -5,12 +5,15 @@ namespace App\Http\Controllers\Web;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Karya;
+use App\Province;
+use App\City;
+use App\District;
 
 class SenimanController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Karya::query();
+        $query = Karya::with(['province', 'city', 'district']);
 
         // Filter berdasarkan pencarian
         if ($request->filled('search')) {
@@ -18,7 +21,16 @@ class SenimanController extends Controller
             $query->where(function ($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
                   ->orWhere('bio', 'like', "%{$search}%")
-                  ->orWhere('address', 'like', "%{$search}%");
+                  ->orWhere('address', 'like', "%{$search}%")
+                  ->orWhereHas('province', function($query) use ($search) {
+                      $query->where('name', 'like', "%{$search}%");
+                  })
+                  ->orWhereHas('city', function($query) use ($search) {
+                      $query->where('name', 'like', "%{$search}%");
+                  })
+                  ->orWhereHas('district', function($query) use ($search) {
+                      $query->where('name', 'like', "%{$search}%");
+                  });
             });
         }
 
@@ -49,6 +61,9 @@ class SenimanController extends Controller
                 'address' => $item->address,
                 'bio' => $item->bio,
                 'image' => $item->image,
+                'province' => $item->province ? $item->province->name : null,
+                'city' => $item->city ? $item->city->name : null,
+                'district' => $item->district ? $item->district->name : null,
             ];
         });
 
@@ -67,7 +82,9 @@ class SenimanController extends Controller
 
     public function detail($slug)
     {
-        $seniman = Karya::where('slug', $slug)->firstOrFail();
+        $seniman = Karya::with(['province', 'city', 'district'])
+            ->where('slug', $slug)
+            ->firstOrFail();
 
         // Ambil produk dari seniman ini dengan eager load imageUtama
         $products = $seniman->product()->with('imageUtama')->paginate(12);
@@ -85,6 +102,9 @@ class SenimanController extends Controller
             'description' => $seniman->description,
             'social' => $seniman->social,
             'image' => $seniman->image,
+            'province' => $seniman->province,
+            'city' => $seniman->city,
+            'district' => $seniman->district,
             'total_products' => $totalProducts,
             'created_at' => $seniman->created_at,
         ];
