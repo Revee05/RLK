@@ -9,6 +9,7 @@ class Karya extends Model
     protected $table = "karya";
     protected $fillable = [
         'name',
+        'julukan',
         'slug',
         'profession',
         'description',

@@ -61,7 +61,12 @@
             {{-- Right Column: Name + Bio + Info + Accordions --}}
             <div class="seniman-right-column">
                 {{-- Name & Subtitle --}}
-                <h1 class="seniman-name">Hi, I'm {{ $seniman->name }}</h1>
+                <h1 class="seniman-name">
+                    Hi, I'm {{ $seniman->name }}
+                    @if(!empty($seniman->julukan))
+                        <small class="seniman-aka" style="color:#666; font-style:italic; margin-left:8px;">aka {{ $seniman->julukan }}</small>
+                    @endif
+                </h1>
                 <p class="seniman-subtitle">{{ $seniman->profession ?? 'Visual Artist' }}</p>
 
                 {{-- Bio Box --}}

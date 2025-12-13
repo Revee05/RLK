@@ -49,6 +49,7 @@ class KaryaController extends Controller
         }
         $request->validate([
             'name'=>'required|string|max:255',
+            'julukan'=>'nullable|string|max:255',
             'profession'=>'required|string|max:255',
             'description'=>'nullable|string',
             'bio'=>'nullable|string',
@@ -58,6 +59,7 @@ class KaryaController extends Controller
         ],[
             'name.required' => 'Nama seniman wajib diisi',
             'name.max' => 'Nama seniman maksimal 255 karakter',
+            'julukan.max' => 'Julukan maksimal 255 karakter',
             'profession.required' => 'Profesi wajib diisi',
             'profession.max' => 'Profesi maksimal 255 karakter',
             'address.max' => 'Alamat maksimal 500 karakter',
@@ -83,6 +85,7 @@ class KaryaController extends Controller
             
             Karya::create([
                 'name'=> $request->name,
+                'julukan'=> $request->julukan,
                 'slug'=> Str::slug($request->name, '-'),
                 'profession'=> $request->profession,
                 'description'=> $request->description,
@@ -138,6 +141,7 @@ class KaryaController extends Controller
         }
         $request->validate([
             'name'=>'required|string|max:255',
+            'julukan'=>'nullable|string|max:255',
             'profession'=>'required|string|max:255',
             'description'=>'nullable|string',
             'bio'=>'nullable|string',
@@ -147,6 +151,7 @@ class KaryaController extends Controller
         ],[
             'name.required' => 'Nama seniman wajib diisi',
             'name.max' => 'Nama seniman maksimal 255 karakter',
+            'julukan.max' => 'Julukan maksimal 255 karakter',
             'profession.required' => 'Profesi wajib diisi',
             'profession.max' => 'Profesi maksimal 255 karakter',
             'address.max' => 'Alamat maksimal 500 karakter',
@@ -181,6 +186,7 @@ class KaryaController extends Controller
 
             $karya->update([
                 'name'=> $request->name,
+                'julukan'=> $request->julukan,
                 'slug'=> Str::slug($request->name, '-'),
                 'profession'=> $request->profession,
                 'description'=> $request->description,

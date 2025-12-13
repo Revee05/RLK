@@ -72,7 +72,14 @@
                                     </div>
                                     
                                     <div class="seniman-info">
-                                        <div class="seniman-name">{{ $seniman->name }}</div>
+                                        <div class="seniman-name">
+                                            {{ $seniman->name }}
+                                            @if($seniman->julukan)
+                                                <span style="font-size: 0.85em; color: #888; font-style: italic; font-weight: normal;">
+                                                    "{{ $seniman->julukan }}"
+                                                </span>
+                                            @endif
+                                        </div>
                                         <div class="seniman-location">
                                             {{ Str::contains($seniman->address, ',') ? trim(Str::afterLast($seniman->address, ',')) : $seniman->address }}
                                         </div>

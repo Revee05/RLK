@@ -57,6 +57,7 @@ class SenimanController extends Controller
             return (object)[
                 'id' => $item->id,
                 'name' => $item->name,
+                'julukan' => $item->julukan,
                 'slug' => $item->slug,
                 'address' => $item->address,
                 'bio' => $item->bio,
@@ -96,6 +97,7 @@ class SenimanController extends Controller
         $senimanData = [
             'id' => $seniman->id,
             'name' => $seniman->name,
+            'julukan' => $seniman->julukan,
             'slug' => $seniman->slug,
             'address' => $seniman->address,
             'profession' => $seniman->profession,

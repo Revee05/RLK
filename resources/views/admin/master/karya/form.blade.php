@@ -11,6 +11,15 @@
         </div>
 
         <div class="form-group">
+            {{ Form::label('julukan', 'Julukan / Alias') }}
+            {{ Form::text('julukan', null, array('class' => 'form-control form-control-sm '.($errors->has('julukan') ? 'is-invalid' : ''),'placeholder' => 'Contoh: Si Pelukis Handal')) }}
+            <small class="form-text text-muted">Julukan atau nama panggilan seniman (opsional)</small>
+            @error('julukan')
+                <div class="invalid-feedback">{{ $message }}</div>
+            @enderror
+        </div>
+
+        <div class="form-group">
             {{ Form::label('profession', 'Profesi / Subtitle') }}
             <span class="text-danger">*</span>
             {{ Form::text('profession', null, array('class' => 'form-control form-control-sm '.($errors->has('profession') ? 'is-invalid' : ''),'placeholder' => 'Contoh: I\'m a Visual Artist, Illustrator, and Mural Painter', 'required' => true)) }}
