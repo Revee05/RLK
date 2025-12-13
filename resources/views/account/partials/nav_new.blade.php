@@ -29,7 +29,11 @@
             Password</a>
         <a href="{{ route('account.address.index') }}"
             class="list-group-item list-group-item-action border-nav-middle py-2 {{ request()->routeIs('account.address.*') ? 'active' : '' }}">Alamat</a>
-        <a href="#" class="list-group-item list-group-item-action border-nav-middle py-2">Favorit</a>
+        <a href="{{ route('account.favorites') }}"
+        class="list-group-item list-group-item-action border-nav-middle py-2 {{ request()->routeIs('account.favorites') ? 'active' : '' }}">
+        Favorit
+        </a>
+
         <a href="{{ route('account.auction_history') }}"
             class="list-group-item list-group-item-action border-nav-middle py-2 {{ request()->routeIs('account.auction_history') ? 'active' : '' }}">
             Riwayat Lelang
