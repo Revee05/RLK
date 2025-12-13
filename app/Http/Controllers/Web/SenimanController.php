@@ -98,6 +98,7 @@ class SenimanController extends Controller
             'name' => $seniman->name,
             'slug' => $seniman->slug,
             'address' => $seniman->address,
+            'profession' => $seniman->profession,
             'bio' => $seniman->bio,
             'description' => $seniman->description,
             'social' => $seniman->social,

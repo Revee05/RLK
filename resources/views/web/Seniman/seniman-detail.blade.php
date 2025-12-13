@@ -1,6 +1,8 @@
 @extends('web.partials.layout')
 
 @section('css')
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="{{ asset('css/seniman/seniman.detail.css') }}">
 @endsection
 
@@ -41,8 +43,8 @@
             {{-- Right Column: Name + Bio + Info + Accordions --}}
             <div class="seniman-right-column">
                 {{-- Name & Subtitle --}}
-                <h1 class="seniman-name">{{ $seniman->name }}</h1>
-                <p class="seniman-subtitle">I'm a Visual Artist, Illustrator, and Mural Painter</p>
+                <h1 class="seniman-name">Hi, I'm {{ $seniman->name }}</h1>
+                <p class="seniman-subtitle">{{ $seniman->profession ?? 'Visual Artist' }}</p>
 
                 {{-- Bio Box --}}
                 @if($seniman->bio)

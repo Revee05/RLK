@@ -11,6 +11,16 @@
         </div>
 
         <div class="form-group">
+            {{ Form::label('profession', 'Profesi / Subtitle') }}
+            <span class="text-danger">*</span>
+            {{ Form::text('profession', null, array('class' => 'form-control form-control-sm '.($errors->has('profession') ? 'is-invalid' : ''),'placeholder' => 'Contoh: I\'m a Visual Artist, Illustrator, and Mural Painter', 'required' => true)) }}
+            <small class="form-text text-muted">Akan ditampilkan sebagai subtitle di halaman detail seniman</small>
+            @error('profession')
+                <div class="invalid-feedback">{{ $message }}</div>
+            @enderror
+        </div>
+
+        <div class="form-group">
             {{ Form::label('address', 'Address') }}
             <small style="margin-left:4px; color: #e3342f;">Tulis nama kota di paling akhir alamat setelah koma ( , ) (contoh: isi alamat lengkap, nama kota) </small>
             {{ Form::text('address', null, array('class' => 'form-control form-control-sm '.($errors->has('address') ? 'is-invalid' : ''),'placeholder' => 'Jl. Contoh No. 123, Yogyakarta')) }}

@@ -10,6 +10,7 @@ class Karya extends Model
     protected $fillable = [
         'name',
         'slug',
+        'profession',
         'description',
         'bio',
         'social',

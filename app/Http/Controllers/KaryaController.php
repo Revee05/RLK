@@ -41,9 +41,15 @@ class KaryaController extends Controller
      */
     public function store(Request $request)
     {
-        // dd($request->all());
+        // Temporary log incoming request for debugging profession persistence
+        try {
+            Log::info('Karya.store payload', $request->all());
+        } catch (Exception $e) {
+            // ignore logging errors
+        }
         $request->validate([
             'name'=>'required|string|max:255',
+            'profession'=>'required|string|max:255',
             'description'=>'nullable|string',
             'bio'=>'nullable|string',
             'address'=>'nullable|string|max:500',
@@ -52,6 +58,8 @@ class KaryaController extends Controller
         ],[
             'name.required' => 'Nama seniman wajib diisi',
             'name.max' => 'Nama seniman maksimal 255 karakter',
+            'profession.required' => 'Profesi wajib diisi',
+            'profession.max' => 'Profesi maksimal 255 karakter',
             'address.max' => 'Alamat maksimal 500 karakter',
             'fotoseniman.image' => 'File harus berupa gambar',
             'fotoseniman.mimes' => 'Format gambar harus jpeg, jpg, png, atau webp',
@@ -76,6 +84,7 @@ class KaryaController extends Controller
             Karya::create([
                 'name'=> $request->name,
                 'slug'=> Str::slug($request->name, '-'),
+                'profession'=> $request->profession,
                 'description'=> $request->description,
                 'bio'=> $request->bio,
                 'social'=> $request->social,
@@ -121,8 +130,15 @@ class KaryaController extends Controller
      */
     public function update(Request $request, $id)
     {
+        // Temporary log incoming request for debugging profession persistence
+        try {
+            Log::info('Karya.update payload', $request->all());
+        } catch (Exception $e) {
+            // ignore logging errors
+        }
         $request->validate([
             'name'=>'required|string|max:255',
+            'profession'=>'required|string|max:255',
             'description'=>'nullable|string',
             'bio'=>'nullable|string',
             'address'=>'nullable|string|max:500',
@@ -131,6 +147,8 @@ class KaryaController extends Controller
         ],[
             'name.required' => 'Nama seniman wajib diisi',
             'name.max' => 'Nama seniman maksimal 255 karakter',
+            'profession.required' => 'Profesi wajib diisi',
+            'profession.max' => 'Profesi maksimal 255 karakter',
             'address.max' => 'Alamat maksimal 500 karakter',
             'fotoseniman.image' => 'File harus berupa gambar',
             'fotoseniman.mimes' => 'Format gambar harus jpeg, jpg, png, atau webp',
@@ -164,6 +182,7 @@ class KaryaController extends Controller
             $karya->update([
                 'name'=> $request->name,
                 'slug'=> Str::slug($request->name, '-'),
+                'profession'=> $request->profession,
                 'description'=> $request->description,
                 'bio'=> $request->bio,
                 'address'=> $request->address,
