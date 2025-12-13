@@ -13,7 +13,11 @@ class SenimanController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Karya::with(['province', 'city', 'district']);
+        // eager load relations and product count
+        $query = Karya::with(['province', 'city', 'district'])->withCount('product');
+
+        // Ambil daftar kota untuk filter dropdown
+        $cities = City::orderBy('name')->get();
 
         // Filter berdasarkan pencarian
         if ($request->filled('search')) {
@@ -32,6 +36,14 @@ class SenimanController extends Controller
                       $query->where('name', 'like', "%{$search}%");
                   });
             });
+        }
+
+        // Filter berdasarkan kota (pastikan integer dan bukan empty)
+        if ($request->filled('city')) {
+            $cityId = (int) $request->city;
+            if ($cityId > 0) {
+                $query->where('city_id', $cityId);
+            }
         }
 
         // Sorting
@@ -65,6 +77,7 @@ class SenimanController extends Controller
                 'province' => $item->province ? $item->province->name : null,
                 'city' => $item->city ? $item->city->name : null,
                 'district' => $item->district ? $item->district->name : null,
+                'total_products' => $item->product_count ?? 0,
             ];
         });
 
@@ -78,7 +91,7 @@ class SenimanController extends Controller
             ],
         ]);
 
-        return view('web.Seniman.seniman', compact('senimans', 'request'));
+        return view('web.Seniman.seniman', compact('senimans', 'request', 'cities'));
     }
 
     public function detail($slug)
