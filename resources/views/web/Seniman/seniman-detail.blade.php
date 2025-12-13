@@ -20,7 +20,15 @@
             </div>
             <div class="seniman-info-container">
                 <h1 class="seniman-name">{{ $seniman->name }}</h1>
+
+                @if($seniman->bio)
+                <div class="info-item">
+                    <i class="fas fa-info-circle"></i>
+                    <span class="info-label">Bio:</span>
+                    <div class="info-bio">{!! $seniman->bio !!}</div>
+                </div>
                 
+                @endif
                 <div class="seniman-stats">
                     <div class="stat-item">
                         <i class="fas fa-palette"></i>
@@ -39,14 +47,6 @@
                     <i class="fas fa-map-marker-alt"></i>
                     <span class="info-label">Alamat:</span>
                     <span class="info-value">{{ $seniman->address }}</span>
-                </div>
-                @endif
-
-                @if($seniman->bio)
-                <div class="info-item">
-                    <i class="fas fa-info-circle"></i>
-                    <span class="info-label">Bio:</span>
-                    <div class="info-bio">{!! $seniman->bio !!}</div>
                 </div>
                 @endif
 
