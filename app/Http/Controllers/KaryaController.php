@@ -30,7 +30,8 @@ class KaryaController extends Controller
      */
     public function create()
     {
-        return view('admin.master.karya.create');
+        $provinces = \App\Province::orderBy('name', 'asc')->get();
+        return view('admin.master.karya.create', compact('provinces'));
     }
 
     /**
@@ -54,6 +55,9 @@ class KaryaController extends Controller
             'description'=>'nullable|string',
             'bio'=>'nullable|string',
             'address'=>'nullable|string|max:500',
+            'province_id'=>'nullable|exists:provinces,id',
+            'city_id'=>'nullable|exists:cities,id',
+            'district_id'=>'nullable|exists:districts,id',
             'social'=>'nullable|array',
             'fotoseniman'=>'nullable|image|mimes:jpeg,jpg,png,webp|max:2048',
         ],[
@@ -63,6 +67,9 @@ class KaryaController extends Controller
             'profession.required' => 'Profesi wajib diisi',
             'profession.max' => 'Profesi maksimal 255 karakter',
             'address.max' => 'Alamat maksimal 500 karakter',
+            'province_id.exists' => 'Provinsi yang dipilih tidak valid',
+            'city_id.exists' => 'Kota yang dipilih tidak valid',
+            'district_id.exists' => 'Kecamatan yang dipilih tidak valid',
             'fotoseniman.image' => 'File harus berupa gambar',
             'fotoseniman.mimes' => 'Format gambar harus jpeg, jpg, png, atau webp',
             'fotoseniman.max' => 'Ukuran gambar maksimal 2MB',
@@ -95,6 +102,9 @@ class KaryaController extends Controller
                 'bio'=> $request->bio,
                 'social'=> $request->social,
                 'address'=> $request->address,
+                'province_id'=> $request->province_id,
+                'city_id'=> $request->city_id,
+                'district_id'=> $request->district_id,
                 'image'=> $imageName,
             ]);
             return redirect()->route('master.karya.index')->with('message', 'Data seniman berhasil ditambahkan');
@@ -124,7 +134,10 @@ class KaryaController extends Controller
     public function edit($id)
     {
         $karya = Karya::findOrFail($id);
-        return view('admin.master.karya.edit',compact('karya'));
+        $provinces = \App\Province::orderBy('name', 'asc')->get();
+        $cities = $karya->province_id ? \App\City::where('province_id', $karya->province_id)->orderBy('name', 'asc')->get() : collect();
+        $districts = $karya->city_id ? \App\District::where('city_id', $karya->city_id)->orderBy('name', 'asc')->get() : collect();
+        return view('admin.master.karya.edit',compact('karya', 'provinces', 'cities', 'districts'));
     }
 
     /**
@@ -152,6 +165,9 @@ class KaryaController extends Controller
             'exhibition'=>'nullable|string',
             'bio'=>'nullable|string',
             'address'=>'nullable|string|max:500',
+            'province_id'=>'nullable|exists:provinces,id',
+            'city_id'=>'nullable|exists:cities,id',
+            'district_id'=>'nullable|exists:districts,id',
             'social'=>'nullable|array',
             'fotoseniman'=>'nullable|image|mimes:jpeg,jpg,png,webp|max:2048',
         ], [
@@ -161,6 +177,9 @@ class KaryaController extends Controller
             'profession.required' => 'Profesi wajib diisi',
             'profession.max' => 'Profesi maksimal 255 karakter',
             'address.max' => 'Alamat maksimal 500 karakter',
+            'province_id.exists' => 'Provinsi yang dipilih tidak valid',
+            'city_id.exists' => 'Kota yang dipilih tidak valid',
+            'district_id.exists' => 'Kecamatan yang dipilih tidak valid',
             'fotoseniman.image' => 'File harus berupa gambar',
             'fotoseniman.mimes' => 'Format gambar harus jpeg, jpg, png, atau webp',
             'fotoseniman.max' => 'Ukuran gambar maksimal 2MB',
@@ -201,6 +220,9 @@ class KaryaController extends Controller
                 'exhibition'=> $request->exhibition,
                 'bio'=> $request->bio,
                 'address'=> $request->address,
+                'province_id'=> $request->province_id,
+                'city_id'=> $request->city_id,
+                'district_id'=> $request->district_id,
                 'social'=> $request->social,
                 'image'=> $imageName,
             ]);

@@ -30,9 +30,58 @@
         </div>
 
         <div class="form-group">
-            {{ Form::label('address', 'Address') }}
-            <small style="margin-left:4px; color: #e3342f;">Tulis nama kota di paling akhir alamat setelah koma ( , ) (contoh: isi alamat lengkap, nama kota) </small>
-            {{ Form::text('address', null, array('class' => 'form-control form-control-sm '.($errors->has('address') ? 'is-invalid' : ''),'placeholder' => 'Jl. Contoh No. 123, Yogyakarta')) }}
+            {{ Form::label('province_id', 'Provinsi') }}
+            <select name="province_id" id="province_id" class="form-control form-control-sm {{ $errors->has('province_id') ? 'is-invalid' : '' }}">
+                <option value="">-- Pilih Provinsi --</option>
+                @foreach($provinces as $province)
+                    <option value="{{ $province->id }}" {{ old('province_id', isset($karya) ? $karya->province_id : '') == $province->id ? 'selected' : '' }}>
+                        {{ $province->name }}
+                    </option>
+                @endforeach
+            </select>
+            @error('province_id')
+                <div class="invalid-feedback">{{ $message }}</div>
+            @enderror
+        </div>
+
+        <div class="form-group">
+            {{ Form::label('city_id', 'Kota/Kabupaten') }}
+            <select name="city_id" id="city_id" class="form-control form-control-sm {{ $errors->has('city_id') ? 'is-invalid' : '' }}">
+                <option value="">-- Pilih Kota/Kabupaten --</option>
+                @if(isset($cities))
+                    @foreach($cities as $city)
+                        <option value="{{ $city->id }}" {{ old('city_id', isset($karya) ? $karya->city_id : '') == $city->id ? 'selected' : '' }}>
+                            {{ $city->name }}
+                        </option>
+                    @endforeach
+                @endif
+            </select>
+            @error('city_id')
+                <div class="invalid-feedback">{{ $message }}</div>
+            @enderror
+        </div>
+
+        <div class="form-group">
+            {{ Form::label('district_id', 'Kecamatan') }}
+            <select name="district_id" id="district_id" class="form-control form-control-sm {{ $errors->has('district_id') ? 'is-invalid' : '' }}">
+                <option value="">-- Pilih Kecamatan --</option>
+                @if(isset($districts))
+                    @foreach($districts as $district)
+                        <option value="{{ $district->id }}" {{ old('district_id', isset($karya) ? $karya->district_id : '') == $district->id ? 'selected' : '' }}>
+                            {{ $district->name }}
+                        </option>
+                    @endforeach
+                @endif
+            </select>
+            @error('district_id')
+                <div class="invalid-feedback">{{ $message }}</div>
+            @enderror
+        </div>
+
+        <div class="form-group">
+            {{ Form::label('address', 'Alamat Detail (Jalan, Nomor, RT/RW, dll)') }}
+            {{ Form::text('address', null, array('class' => 'form-control form-control-sm '.($errors->has('address') ? 'is-invalid' : ''),'placeholder' => 'Contoh: Jl. Malioboro No. 123, RT 02/RW 05')) }}
+            <small class="form-text text-muted">Masukkan detail alamat seperti nama jalan, nomor, RT/RW, dll</small>
             @error('address')
                 <div class="invalid-feedback">{{ $message }}</div>
             @enderror

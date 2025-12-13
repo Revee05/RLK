@@ -164,20 +164,59 @@
             $('#preview-name').text($(this).val() || 'Nama Seniman');
         });
         
-        // Live preview untuk address (extract city from end)
-        $('input[name="address"]').on('input', function(){
-            var address = $(this).val();
-            var city = '';
-            if(address) {
-                var parts = address.split(',');
-                city = parts.length > 0 ? parts[parts.length - 1].trim() : address;
+        // Live preview untuk address (extract city from dropdown)
+        $('#city_id').on('change', function(){
+            var selectedText = $(this).find('option:selected').text();
+            var city = selectedText !== '-- Pilih Kota/Kabupaten --' ? selectedText : '';
+            if(city) {
+                $('#preview-location').html('<i class="fas fa-map-marker-alt" style="font-size: 0.8rem;"></i> ' + city);
+            } else {
+                $('#preview-location').html('<i class="fas fa-map-marker-alt" style="font-size: 0.8rem;"></i> Nama kota muncul di sini...');
             }
-            $('#preview-location').text(city || 'Nama kota muncul di sini...');
         });
         
         // Live preview untuk bio singkat (summernote)
         $('#bio-singkat').on('summernote.change', function(we, contents) {
             $('#preview-bio').html(contents || 'Bio singkat akan muncul di sini...');
+        });
+        
+        // Cascade dropdown: Province -> City
+        $('#province_id').on('change', function(){
+            var provinceId = $(this).val();
+            $('#city_id').html('<option value="">-- Pilih Kota/Kabupaten --</option>');
+            $('#district_id').html('<option value="">-- Pilih Kecamatan --</option>');
+            
+            if(provinceId) {
+                $.ajax({
+                    url: '/api/cities/' + provinceId,
+                    type: 'GET',
+                    dataType: 'json',
+                    success: function(data) {
+                        $.each(data, function(key, city) {
+                            $('#city_id').append('<option value="'+ city.id +'">'+ city.name +'</option>');
+                        });
+                    }
+                });
+            }
+        });
+        
+        // Cascade dropdown: City -> District
+        $('#city_id').on('change', function(){
+            var cityId = $(this).val();
+            $('#district_id').html('<option value="">-- Pilih Kecamatan --</option>');
+            
+            if(cityId) {
+                $.ajax({
+                    url: '/api/districts/' + cityId,
+                    type: 'GET',
+                    dataType: 'json',
+                    success: function(data) {
+                        $.each(data, function(key, district) {
+                            $('#district_id').append('<option value="'+ district.id +'">'+ district.name +'</option>');
+                        });
+                    }
+                });
+            }
         });
       });
     </script>

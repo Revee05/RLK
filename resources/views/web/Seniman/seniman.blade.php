@@ -220,7 +220,11 @@
                                             @endif
                                         </div>
                                         <div class="seniman-location">
-                                            {{ Str::contains($seniman->address, ',') ? trim(Str::afterLast($seniman->address, ',')) : $seniman->address }}
+                                            @if(isset($seniman->city) && $seniman->city)
+                                                {{ $seniman->city }}
+                                            @else
+                                                {{ Str::contains($seniman->address, ',') ? trim(Str::afterLast($seniman->address, ',')) : $seniman->address }}
+                                            @endif
                                         </div>
                                         <div class="seniman-bio bio-clamp">{!! $seniman->bio !!}</div>
                                     </div>
