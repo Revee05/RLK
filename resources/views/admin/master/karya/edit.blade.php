@@ -78,6 +78,42 @@
             height: 150
         });
         
+        $('#art_projects').summernote({
+            placeholder: 'Tulis tentang proyek seni...',
+            toolbar: [
+                ['style', ['bold', 'italic', 'underline', 'clear']],
+                ['font', ['strikethrough']],
+                ['fontsize', ['fontsize']],
+                ['para', ['ul', 'ol', 'paragraph']],
+                ['height', ['height']],
+            ],
+            height: 150
+        });
+        
+        $('#achievement').summernote({
+            placeholder: 'Tulis tentang pencapaian...',
+            toolbar: [
+                ['style', ['bold', 'italic', 'underline', 'clear']],
+                ['font', ['strikethrough']],
+                ['fontsize', ['fontsize']],
+                ['para', ['ul', 'ol', 'paragraph']],
+                ['height', ['height']],
+            ],
+            height: 150
+        });
+        
+        $('#exhibition').summernote({
+            placeholder: 'Tulis tentang pameran...',
+            toolbar: [
+                ['style', ['bold', 'italic', 'underline', 'clear']],
+                ['font', ['strikethrough']],
+                ['fontsize', ['fontsize']],
+                ['para', ['ul', 'ol', 'paragraph']],
+                ['height', ['height']],
+            ],
+            height: 150
+        });
+        
         $('#bio-singkat').summernote({
             placeholder: 'Tulis bio singkat...',
             toolbar: [

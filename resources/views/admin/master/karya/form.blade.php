@@ -56,10 +56,10 @@
             <i class="fas fa-eye"></i> Preview Card Seniman
         </label>
         <small class="d-block mb-2 text-muted">Tampilan card ini akan muncul di halaman daftar seniman</small>
-        <div class="card mb-3 border shadow-sm" id="preview-card" style="border-radius: 16px; overflow: hidden; transition: all 0.3s ease;">
+        <div class="card mb-3 border shadow-sm" id="preview-card" style="width: 620px; border-radius: 16px; overflow: hidden; transition: all 0.3s ease;">
             <div class="card-body p-0">
                 <div style="display: flex; align-items: flex-start; padding: 15px;">
-                    <div style="width: 100px; min-width: 100px; height: 165px; border-radius: 12px; overflow: hidden; background: linear-gradient(135deg, #667eea15 0%, #764ba215 100%); margin-right: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                    <div style="width: 140px; min-width: 140px; height: 165px; border-radius: 12px; overflow: hidden; background: linear-gradient(135deg, #667eea15 0%, #764ba215 100%); margin-right: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
                         <img id="preview-image" src="{{ isset($karya) && $karya->image ? asset('uploads/senimans/'.$karya->image) : asset('assets/img/default.jpg') }}" style="width: 100%; height: 100%; object-fit: cover;">
                     </div>
                     <div style="flex: 1; display: flex; flex-direction: column; justify-content: center; padding-top: 5px;">
@@ -70,7 +70,7 @@
                             $address = old('address', isset($karya) ? $karya->address : '');
                             $city = trim(Str::afterLast($address, ',')) ?: '';
                         @endphp
-                        <div id="preview-location" style="font-size: 0.9rem; font-style: italic; color: #667eea; margin-bottom: 8px; font-weight: 500;">
+                        <div id="preview-location" style= "font-size: 0.9rem; font-style: italic; color: #667eea; margin-bottom: 8px; font-weight: 500;">
                             <i class="fas fa-map-marker-alt" style="font-size: 0.8rem;"></i>
                             {{ $city ? $city : 'Nama kota muncul di sini...' }}
                         </div>
@@ -99,6 +99,39 @@
                 <small class="text-muted d-block mb-2">Deskripsi lengkap tentang seniman yang akan ditampilkan di halaman detail</small>
                 {{ Form::textarea('description', null, array('class' => 'form-control form-control-sm '.($errors->has('description') ? 'is-invalid' : ''),'id'=> 'biografi', 'rows' => 4)) }}
                 @error('description')
+                    <div class="invalid-feedback">{{ $message }}</div>
+                @enderror
+            </div>
+        </div>
+
+        <div class="form-group row">
+            {{ Form::label('art_projects', 'Art Projects',['class'=>'col-sm-12 col-form-label']) }}
+            <div class="col-sm-12">
+                <small class="text-muted d-block mb-2">Proyek seni yang pernah dikerjakan oleh seniman</small>
+                {{ Form::textarea('art_projects', null, array('class' => 'form-control form-control-sm summernote '.($errors->has('art_projects') ? 'is-invalid' : ''),'id'=> 'art_projects', 'rows' => 4)) }}
+                @error('art_projects')
+                    <div class="invalid-feedback">{{ $message }}</div>
+                @enderror
+            </div>
+        </div>
+
+        <div class="form-group row">
+            {{ Form::label('achievement', 'Achievement',['class'=>'col-sm-12 col-form-label']) }}
+            <div class="col-sm-12">
+                <small class="text-muted d-block mb-2">Pencapaian atau penghargaan yang diterima seniman</small>
+                {{ Form::textarea('achievement', null, array('class' => 'form-control form-control-sm summernote '.($errors->has('achievement') ? 'is-invalid' : ''),'id'=> 'achievement', 'rows' => 4)) }}
+                @error('achievement')
+                    <div class="invalid-feedback">{{ $message }}</div>
+                @enderror
+            </div>
+        </div>
+
+        <div class="form-group row">
+            {{ Form::label('exhibition', 'Exhibition',['class'=>'col-sm-12 col-form-label']) }}
+            <div class="col-sm-12">
+                <small class="text-muted d-block mb-2">Pameran yang pernah diikuti oleh seniman</small>
+                {{ Form::textarea('exhibition', null, array('class' => 'form-control form-control-sm summernote '.($errors->has('exhibition') ? 'is-invalid' : ''),'id'=> 'exhibition', 'rows' => 4)) }}
+                @error('exhibition')
                     <div class="invalid-feedback">{{ $message }}</div>
                 @enderror
             </div>

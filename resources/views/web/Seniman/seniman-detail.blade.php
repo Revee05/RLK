@@ -125,6 +125,7 @@
                     </div>
                     @endif
 
+                    @if($seniman->art_projects)
                     <div class="accordion-item">
                         <button class="accordion-header" type="button" data-toggle="collapse" data-target="#artProjectsSection">
                             <span>Art Projects</span>
@@ -132,11 +133,13 @@
                         </button>
                         <div id="artProjectsSection" class="accordion-content collapse">
                             <div class="accordion-body">
-                                <p>Lihat karya-karya terbaik di bawah ini.</p>
+                                {!! $seniman->art_projects !!}
                             </div>
                         </div>
                     </div>
+                    @endif
 
+                    @if($seniman->achievement)
                     <div class="accordion-item">
                         <button class="accordion-header" type="button" data-toggle="collapse" data-target="#achievementSection">
                             <span>Achievement</span>
@@ -144,11 +147,13 @@
                         </button>
                         <div id="achievementSection" class="accordion-content collapse">
                             <div class="accordion-body">
-                                <p>{{ $seniman->total_products ?? 0 }} karya telah dibuat dan dipublikasikan.</p>
+                                {!! $seniman->achievement !!}
                             </div>
                         </div>
                     </div>
+                    @endif
 
+                    @if($seniman->exhibition)
                     <div class="accordion-item">
                         <button class="accordion-header" type="button" data-toggle="collapse" data-target="#exhibitionSection">
                             <span>Exhibition</span>
@@ -156,10 +161,11 @@
                         </button>
                         <div id="exhibitionSection" class="accordion-content collapse">
                             <div class="accordion-body">
-                                <p>Informasi pameran akan ditampilkan di sini.</p>
+                                {!! $seniman->exhibition !!}
                             </div>
                         </div>
                     </div>
+                    @endif
                 </div>
             </div>
         </div>
