@@ -66,6 +66,8 @@
     let currentCategory = "";
     let currentSort = "";
 
+    let globalIndex = 0;
+
     // Fetch and populate lelang categories
     function fetchCategories() {
         fetch("{{ route('lelang.categories') }}")
@@ -171,18 +173,23 @@
             })
             .then(data => {
                 const grid = document.getElementById('products-grid');
-                if (batch === 1) grid.innerHTML = "";
-                if (data.products && data.products.length > 0) {
-                    data.products.forEach((product, idx) => {
-                        if (product) {
-                            grid.insertAdjacentHTML('beforeend', renderProduct(product, idx));
-                        }
-                    });
-                } else {
-                    if (batch === 1) {
-                        grid.innerHTML = '<div class="col-12 text-center text-muted">Tidak ada produk ditemukan.</div>';
+                if (batch === 1) {
+                grid.innerHTML = "";
+                globalIndex = 0; 
+            }
+
+            if (data.products && data.products.length > 0) {
+                data.products.forEach(product => {
+                    if (product) {
+                        grid.insertAdjacentHTML(
+                            'beforeend',
+                            renderProduct(product, globalIndex)
+                        );
+                        globalIndex++; 
                     }
-                }
+                });
+            }
+
                 if (!data.has_more_featured && !data.has_more_normal) {
                     document.getElementById('load-more').style.display = 'none';
                 } else {
