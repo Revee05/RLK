@@ -49,7 +49,7 @@
                                 $username = $path ? trim($path, '/') : ($host ? preg_replace('/^www\\./', '', $host) : $url);
                             @endphp
                             <a href="{{ $url }}" target="_blank" rel="noopener noreferrer" class="contact-item">
-                                <i class="fab fa-{{ $key }}"></i>
+                                <i class="fab fa-{{ $key }} social-icon social-{{ $key }}"></i>
                                 <span>{{ '@' . $seniman->name }}</span>
                             </a>
                         @endif
