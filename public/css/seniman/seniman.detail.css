@@ -6,6 +6,44 @@ body {
 	-moz-osx-font-smoothing: grayscale;
 }
 
+/* Social icon brand colors */
+.contact-item .social-icon {
+	font-size: 1.1rem;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	border-radius: 50%;
+	margin-right: 0.5rem;
+	transition: transform 0.15s ease, opacity 0.15s ease;
+	background: rgba(255,255,255,0.06);
+}
+
+.contact-item:hover .social-icon {
+	transform: scale(1.06);
+}
+
+/* Common brand colors (key names should match the $key used in Blade) */
+.social-facebook { color: #1877F2; }
+.social-instagram { color: #E1306C; }
+.social-twitter { color: #1DA1F2; }
+.social-youtube { color: #FF0000; }
+.social-linkedin { color: #0A66C2; }
+.social-whatsapp { color: #25D366; }
+.social-tiktok { color: #000000; }
+.social-github { color: #181717; }
+.social-dribbble { color: #EA4C89; }
+.social-behance { color: #1769FF; }
+.social-pinterest { color: #E60023; }
+.social-telegram { color: #26A5E4; }
+.social-reddit { color: #FF4500; }
+.social-medium { color: #00AB6C; }
+.social-yelp { color: #AF0606; }
+.social-snapchat { color: #FFFC00; }
+
+/* Fallback: if class not matched, keep white to ensure contrast */
+.contact-item .social-icon:not([class*="social-"]) { color: #fff; }
+
+
 .container {
 	/* background: #fff; */
 	/* box-shadow: 0 10px 40px rgba(0,0,0,0.08); */
@@ -192,6 +230,7 @@ body {
  	gap: 0.6rem;
  	font-size: 0.9rem;
  	color: #4a5568;
+	
 }
 
 .info-stat i {
@@ -202,9 +241,9 @@ body {
 
 .info-stat--box {
  	background: #fff;
- 	border-radius: 8px;
+	border: 1px solid rgba(88, 188, 194, 1);
+	border-radius: 8px;
  	padding: 0.7rem 1rem;
- 	border: 1px solid rgba(77,184,196,0.25);
  	box-shadow: 0 2px 8px rgba(77,184,196,0.08);
  	display: inline-flex;
  	align-items: center;
@@ -224,7 +263,7 @@ body {
 .accordion-item {
 	margin-bottom: 0;
 	border: 1px solid #e2e8f0;
-	border-radius: 8px;
+	/* border-radius: 8px; */
 	overflow: hidden;
 	background: #fff;
 }
@@ -233,7 +272,9 @@ body {
 	width: 100%;
 	padding: 0.9rem 1.2rem;
 	background: #fff;
-	border: none;
+	border: 1px solid #58BCC2;
+	border-radius: 8px;
+	box-shadow: 0px 0px 5.8px 0px #58BCC2;
 	display: flex;
 	justify-content: space-between;
 	align-items: center;
@@ -257,20 +298,38 @@ body {
 .accordion-content {
 	max-height: 0;
 	overflow: hidden;
-	transition: max-height 0.3s ease;
+	transition: max-height 0.28s ease;
 }
 
+/* When opened, limit the total expanded area so inner body can scroll if content is long */
 .accordion-content.show {
-	max-height: 1000px;
+	max-height: 680px;
 }
 
 .accordion-body {
 	padding: 1.2rem;
 	background: #f7fafc;
-	color: #4a5568;
+	border: 1px solid rgba(88, 188, 194, 1);
+	border-radius: 8px;
+	color: #343536;
 	line-height: 1.6;
-	border-top: 1px solid #e2e8f0;
 	font-size: 0.9rem;
+	max-height: 520px; /* cap height for inner scroll */
+	overflow: auto; /* enable scrolling when content exceeds the cap */
+	-webkit-overflow-scrolling: touch;
+}
+
+/* Scrollbar styling for modern browsers */
+.accordion-body::-webkit-scrollbar {
+	width: 10px;
+	height: 10px;
+}
+.accordion-body::-webkit-scrollbar-thumb {
+	background: rgba(77,184,196,0.25);
+	border-radius: 8px;
+}
+.accordion-body::-webkit-scrollbar-track {
+	background: transparent;
 }
 
 .info-item {
