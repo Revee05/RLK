@@ -38,22 +38,45 @@
                         }
                     }
                 @endphp
-                @if(!empty($socials))
+                @php
+                    $contactItems = [];
+                    if(!empty($socials['instagram'])) {
+                        $contactItems['instagram'] = $socials['instagram'];
+                    }
+                    if(!empty($socials['email'])) {
+                        $contactItems['email'] = $socials['email'];
+                    }
+                @endphp
+
+                @if(!empty($contactItems))
                 <div class="contact-profile-box">
                     <h6><i class="fas fa-address-card"></i> Contact:</h6>
-                    @foreach($socials as $key => $url)
-                        @if($url)
-                            @php
-                                $path = parse_url($url, PHP_URL_PATH);
-                                $host = parse_url($url, PHP_URL_HOST);
-                                $username = $path ? trim($path, '/') : ($host ? preg_replace('/^www\\./', '', $host) : $url);
-                            @endphp
-                            <a href="{{ $url }}" target="_blank" rel="noopener noreferrer" class="contact-item">
-                                <i class="fab fa-{{ $key }} social-icon social-{{ $key }}"></i>
-                                <span>{{ '@' . $seniman->name }}</span>
-                            </a>
-                        @endif
-                    @endforeach
+                    @if(isset($contactItems['email']))
+                        <a href="mailto:{{ $contactItems['email'] }}" class="contact-item">
+                            <i class="fa fa-envelope social-icon"></i>
+                            <span>{{ $contactItems['email'] }}</span>
+                        </a>
+                    @endif
+
+                    @if(isset($contactItems['instagram']))
+                        @php
+                            $instaUrl = $contactItems['instagram'];
+                            $instaHandle = '';
+                            $path = parse_url($instaUrl, PHP_URL_PATH);
+                            if($path) {
+                                $instaHandle = trim($path, '/');
+                            } else {
+                                // fallback: try to extract from url string
+                                $instaHandle = preg_replace('/^https?:\\/\\/((www|m)\\.)?instagram\\.com\\//', '', $instaUrl);
+                                $instaHandle = trim($instaHandle, '/');
+                            }
+                        @endphp
+                        <a href="{{ $instaUrl }}" target="_blank" rel="noopener noreferrer" class="contact-item">
+                            <i class="fab fa-instagram social-icon social-instagram"></i>
+                            <span>{{ $instaHandle ? ('@' . $instaHandle) : ('@' . $seniman->name) }}</span>
+                        </a>
+                    @endif
+
                 </div>
                 @endif
             </div>
