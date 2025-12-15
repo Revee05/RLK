@@ -44,7 +44,9 @@ class KaryaController extends Controller
     {
         // Temporary log incoming request for debugging profession persistence
         try {
-            Log::info('Karya.store payload', $request->all());
+            if (app()->environment(['local', 'testing', 'development'])) {
+                Log::info('Karya.store payload', $request->all());
+            }
         } catch (Exception $e) {
             // ignore logging errors
         }
@@ -151,7 +153,9 @@ class KaryaController extends Controller
     {
         // Temporary log incoming request for debugging profession persistence
         try {
-            Log::info('Karya.update payload', $request->all());
+            if (app()->environment(['local', 'testing', 'development'])) {
+                Log::info('Karya.update payload', $request->all());
+            }
         } catch (Exception $e) {
             // ignore logging errors
         }
