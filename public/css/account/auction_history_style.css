@@ -317,6 +317,21 @@ thead {
     cursor: default;
 }
 
+
+.badge-status.canceled {
+    background-color: #EC1F30 !important; /* Warna Merah Request */
+    color: #ffffff;
+    cursor: not-allowed; /* Menunjukkan tombol tidak bisa diklik */
+    opacity: 1;
+}
+
+/* Efek Hover (sedikit lebih gelap agar interaktif) */
+.badge-status.canceled:hover {
+    background-color: #c01926 !important; 
+    text-decoration: none;
+    color: #ffffff;
+}
+
 /* =========================================
    RESPONSIVE TABLE (MOBILE VIEW)
    ========================================= */
