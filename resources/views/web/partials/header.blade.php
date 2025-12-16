@@ -21,7 +21,7 @@
                 </div>
             </div>
 
-            <div class="dropdown-menu-nav">
+            {{-- <div class="dropdown-menu-nav">
                 <a href="#" class="dropdown-toggle" id="tentangDropdown">
                     Tentang <span class="fa fa-caret-down caret-icon"></span>
                 </a>
@@ -29,8 +29,8 @@
                     <a class="dropdown-item" href="{{ route('perusahaan') }}">Perusahaan</a>
                     <a class="dropdown-item" href="{{ route('tim') }}">Tim</a>
                 </div>
-            </div>
-
+            </div> --}}
+            <a class="@yield('tentang')" href="{{ route('perusahaan') }}">Tentang</a>
             <a href="{{ route('seniman.index') }}" class="@yield('seniman')">Seniman</a>
 
             <a href="{{ route('panduan.index') }}" class="@yield('panduan')">Panduan</a>

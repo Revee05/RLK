@@ -17,7 +17,7 @@
     </section>
 
     <!-- Introduction Section -->
-    <section class="py-4 mb-5">
+    <section class="pt-5 mb-5">
         <div class="container tentang-container">
             <div class="row g-4">
                 <div class="col-md-6">
@@ -84,15 +84,15 @@
     </section>
 
     <!-- Vision & Mission Section -->
-    <section class="py-5 mb-5">
+    <section class="py-5 mb-3">
         <div class="container tentang-container">
-            <div class="text-center mb-5 pb-3">
+            <div class="text-center mb-3">
                 <h2 class="display-5 fw-bold">
                     Tim <span class="tentang-brand-color">Rasanya Lelang Karya</span>
                 </h2>
                 <p class="text-center tentang-responsive-fs">
-                    Kombinasi Visi Tentang Nilai Keberagaman Dan Kreativitas<br>
-                    Tercakup Dalam Di Dalam Indah (Visi), Yang Memberikan Dasar Pengembangan
+                    Kekuatan kami terletak pada kebersamaan dan kolaborasi.
+                    Temukan kisah di balik setiap individu yang berkontribusi dalam perjalanan kami.
                 </p>
             </div>
 
@@ -132,9 +132,9 @@
     </section>
 
     <!-- Team Members Section -->
-    <section class="py-5 mb-5">
+    <section class="py-5 mb-2">
         <div class="container tentang-container">
-            <div class="text-center mb-6">
+            <div class="text-center mb-5">
                 <h2 class="display-5 fw-bold">
                     <span class="tentang-brand-color">Rasanya Lelang Karya</span> Melayani
                 </h2>
