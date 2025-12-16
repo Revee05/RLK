@@ -17,6 +17,7 @@ use App\Http\Controllers\PanduanController;
 use App\Http\Controllers\AdminPanduanController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Account\AuctionHistoryController;
+use App\Http\Controllers\UsersController;
 
 require_once  __DIR__ . "/admin.php";
 require_once  __DIR__ . "/account.php";
@@ -128,6 +129,14 @@ Route::get('/lokasi/district/{city_id}', 'LocationController@district')->name('l
 Route::post('/alamat/store', 'UserAddressController@store')->name('alamat.store');
 Route::get('/alamat/refresh', 'UserAddressController@refreshList')->name('alamat.refresh');
 
+Route::post('/favorite/toggle', [\App\Http\Controllers\Web\FavoriteController::class, 'toggle'])
+    ->name('favorite.toggle');
+
+
+   Route::get('/account/favorites', [UsersController::class, 'favorites'])->name('account.favorites');
+
+   Route::delete('/account/favorites/{id}', 'Account\FavoriteController@remove')
+    ->name('account.favorites.remove');
 // =============================
 // PANDUAN (GUIDE)
 // =============================

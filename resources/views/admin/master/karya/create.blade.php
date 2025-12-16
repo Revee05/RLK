@@ -1,5 +1,5 @@
 @extends('admin.partials._layout')
-@section('title','Create karya')
+@section('title','Tambah Seniman')
 @section('collapseMaster','show')
 @section('karya','active')
 @section('css')
@@ -10,6 +10,7 @@
     overflow: hidden;
     position: relative;
     border: 1px solid  #5a5c69;
+    border-radius: 8px;
 }
 .preview-cover img{
     height:100%;
@@ -17,7 +18,9 @@
     object-fit: cover;
     object-position: center;
 }
-
+.bg-gradient-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
 </style>
 <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote.min.css">
 @endsection
@@ -25,19 +28,33 @@
 <!-- Begin Page Content -->
 <div class="container-fluid">
     <!-- Page Heading -->
-    <h1 class="h5 mb-4 text-gray-800">Master
-    <small>Brand</small>
-    {{-- <a href="" class="btn btn-primary btn-sm float-right"><i class="fa fa-plus-circle"></i> Create</a> --}}
-    </h1>
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">
+            <i class="fas fa-user-plus"></i> Tambah Seniman Baru
+        </h1>
+        <a href="{{ route('master.karya.index') }}" class="d-none d-sm-inline-block btn btn-sm btn-secondary shadow-sm">
+            <i class="fas fa-arrow-left fa-sm text-white-50"></i> Kembali
+        </a>
+    </div>
     <div class="row">
         <div class="col-sm-12">
             
-            <div class="card shadow mb-4 rounded-0">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="fas fa-edit"></i> Form Data Seniman
+                    </h6>
+                </div>
                 <div class="card-body">
                     {{ Form::open(array('route' => 'master.karya.store','files'=>true)) }}
                     @include('admin.master.karya.form')
-                    <a href="{{ route('master.karya.index') }}" class="btn btn-primary btn-sm rounded-0">Kembali</a>
-                    {{ Form::submit('Simpan', array('class' => 'btn btn-primary btn-sm rounded-0')) }}
+                    <hr class="mt-4 mb-4">
+                    <div class="form-group mb-0">
+                        <a href="{{ route('master.karya.index') }}" class="btn btn-secondary">
+                            <i class="fas fa-times"></i> Batal
+                        </a>
+                        {{ Form::submit('Simpan', array('class' => 'btn btn-primary')) }}
+                    </div>
                     {{ Form::close() }}
 
                     {{-- Erors notification --}}
@@ -68,6 +85,42 @@
                 
         $('#biografi').summernote({
             placeholder: 'Tulis biografi...',
+            toolbar: [
+                ['style', ['bold', 'italic', 'underline', 'clear']],
+                ['font', ['strikethrough']],
+                ['fontsize', ['fontsize']],
+                ['para', ['ul', 'ol', 'paragraph']],
+                ['height', ['height']],
+            ],
+            height: 150
+        });
+        
+        $('#art_projects').summernote({
+            placeholder: 'Tulis tentang proyek seni...',
+            toolbar: [
+                ['style', ['bold', 'italic', 'underline', 'clear']],
+                ['font', ['strikethrough']],
+                ['fontsize', ['fontsize']],
+                ['para', ['ul', 'ol', 'paragraph']],
+                ['height', ['height']],
+            ],
+            height: 150
+        });
+        
+        $('#achievement').summernote({
+            placeholder: 'Tulis tentang pencapaian...',
+            toolbar: [
+                ['style', ['bold', 'italic', 'underline', 'clear']],
+                ['font', ['strikethrough']],
+                ['fontsize', ['fontsize']],
+                ['para', ['ul', 'ol', 'paragraph']],
+                ['height', ['height']],
+            ],
+            height: 150
+        });
+        
+        $('#exhibition').summernote({
+            placeholder: 'Tulis tentang pameran...',
             toolbar: [
                 ['style', ['bold', 'italic', 'underline', 'clear']],
                 ['font', ['strikethrough']],
@@ -115,14 +168,59 @@
             $('#preview-name').text($(this).val() || 'Nama Seniman');
         });
         
-        // Live preview untuk address
-        $('input[name="address"]').on('input', function(){
-            $('#preview-location').text($(this).val() || 'Kota Asal');
+        // Live preview untuk address (extract city from dropdown)
+        $('#city_id').on('change', function(){
+            var selectedText = $(this).find('option:selected').text();
+            var city = selectedText !== '-- Pilih Kota/Kabupaten --' ? selectedText : '';
+            if(city) {
+                $('#preview-location').html('<i class="fas fa-map-marker-alt" style="font-size: 0.8rem;"></i> ' + city);
+            } else {
+                $('#preview-location').html('<i class="fas fa-map-marker-alt" style="font-size: 0.8rem;"></i> Nama kota muncul di sini...');
+            }
         });
         
         // Live preview untuk bio singkat (summernote)
         $('#bio-singkat').on('summernote.change', function(we, contents) {
             $('#preview-bio').html(contents || 'Bio singkat akan muncul di sini...');
+        });
+        
+        // Cascade dropdown: Province -> City
+        $('#province_id').on('change', function(){
+            var provinceId = $(this).val();
+            $('#city_id').html('<option value="">-- Pilih Kota/Kabupaten --</option>');
+            $('#district_id').html('<option value="">-- Pilih Kecamatan --</option>');
+            
+            if(provinceId) {
+                $.ajax({
+                    url: '/api/cities/' + provinceId,
+                    type: 'GET',
+                    dataType: 'json',
+                    success: function(data) {
+                        $.each(data, function(key, city) {
+                            $('#city_id').append('<option value="'+ city.id +'">'+ city.name +'</option>');
+                        });
+                    }
+                });
+            }
+        });
+        
+        // Cascade dropdown: City -> District
+        $('#city_id').on('change', function(){
+            var cityId = $(this).val();
+            $('#district_id').html('<option value="">-- Pilih Kecamatan --</option>');
+            
+            if(cityId) {
+                $.ajax({
+                    url: '/api/districts/' + cityId,
+                    type: 'GET',
+                    dataType: 'json',
+                    success: function(data) {
+                        $.each(data, function(key, district) {
+                            $('#district_id').append('<option value="'+ district.id +'">'+ district.name +'</option>');
+                        });
+                    }
+                });
+            }
         });
       });
     </script>
