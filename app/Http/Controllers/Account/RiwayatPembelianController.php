@@ -34,7 +34,7 @@ class RiwayatPembelianController extends Controller
      */
     public function show($id)
     {
-        $order = OrderMerch::with(['address.provinsi', 'address.kabupaten', 'address.kecamatan', 'shipper'])
+        $order = OrderMerch::with(['address.province', 'address.city', 'address.district', 'shipper'])
                           ->where('id', $id)
                           ->where('user_id', Auth::user()->id)
                           ->firstOrFail();
