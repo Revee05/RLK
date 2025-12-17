@@ -6,8 +6,6 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
-
-// Import Model
 use App\Bid;      
 use App\Products; 
 
@@ -15,80 +13,98 @@ class AuctionHistoryController extends Controller
 {
     public function index(Request $request)
     {
-        // 1. Ambil User ID
         $userId = Auth::id();
 
-        // 2. Query Data
+        // Ambil data bid user
         $myBids = Bid::with('product')
                     ->where('user_id', $userId)
                     ->orderBy('created_at', 'desc')
                     ->get();
 
-        // 3. Siapkan Variabel Statistik Awal
         $itemsWon = 0;
         $highestBidUser = 0;
 
-        // 4. Looping Logic (Menentukan Status & Statistik)
+        // Proses Mapping Data
         $history = $myBids->map(function ($bid) use (&$itemsWon, &$highestBidUser) {
             $product = $bid->product;
             
-            // Cek harga tertinggi global saat ini di produk tersebut
+            // 1. Data Pendukung
             $globalHighestPrice = $product->bid()->max('price');
-
             $now = Carbon::now();
-            $endDate = Carbon::parse($product->end_date); // Pastikan jadi object Carbon
+            $endDate = Carbon::parse($product->end_date);
             $hasEnded = $now->greaterThan($endDate);
-            
-            $statusLabel = '';
-            $badgeClass = ''; // Tambahan untuk styling CSS (opsional)
+            $isWinnerCandidate = ($bid->price >= $globalHighestPrice);
 
-            // Logika Status
-            if (!$hasEnded) {
-                // Lelang Masih Berjalan
-                if ($bid->price >= $globalHighestPrice) {
-                    $statusLabel = 'Memimpin'; // Bid kita paling tinggi sementara
-                    $badgeClass = 'bg-warning text-dark';
+            // 2. Default Values
+            $statusLabel = '';
+            $badgeClass = '';
+            $actionUrl = '#'; 
+
+            // ====================================================
+            // LOGIKA UTAMA (URUTAN PENTING)
+            // ====================================================
+
+            // KONDISI 1: STATUS DIBATALKAN / HANGUS (Priority Tertinggi)
+            if ($product->status == 3) {
+                if ($isWinnerCandidate) {
+                    // Menang tapi batal/hangus
+                    $statusLabel = 'Dibatalkan'; 
+                    $badgeClass = 'badge-status canceled'; // Merah
+                    $actionUrl = '#'; // Link mati
                 } else {
-                    $statusLabel = 'Tertimpa'; // Ada yang ngebid lebih tinggi
-                    $badgeClass = 'bg-secondary';
+                    // Kalah & batal
+                    $statusLabel = 'Kalah';
+                    $badgeClass = 'badge-status lose';
+                    $actionUrl = route('lelang.detail', $product->slug);
                 }
-            } else {
-                // Lelang Sudah Berakhir
-                if ($bid->price >= $globalHighestPrice) {
+            }
+            
+            // KONDISI 2: LELANG MASIH BERJALAN
+            elseif (!$hasEnded) {
+                if ($isWinnerCandidate) {
+                    $statusLabel = 'Memimpin';
+                    $badgeClass = 'badge-status process'; 
+                    $actionUrl = route('lelang.detail', $product->slug);
+                } else {
+                    $statusLabel = 'Terlampaui'; 
+                    $badgeClass = 'badge-status lose';    
+                    $actionUrl = route('lelang.detail', $product->slug);
+                }
+            } 
+            
+            // KONDISI 3: LELANG BERAKHIR & NORMAL (Status 1 atau 2)
+            else {
+                if ($isWinnerCandidate) {
                     $statusLabel = 'Menang';
-                    $badgeClass = 'bg-success';
-                    $itemsWon++; // Tambah counter kemenangan
+                    $badgeClass = 'badge-status win';     
+                    $itemsWon++; 
+                    $actionUrl = route('cart.index'); // Masuk Keranjang
                 } else {
                     $statusLabel = 'Kalah';
-                    $badgeClass = 'bg-danger';
+                    $badgeClass = 'badge-status lose';
+                    $actionUrl = route('lelang.detail', $product->slug);
                 }
             }
 
-            // Update Highest Bid Pribadi (untuk statistik kartu)
+            // Update Statistik Highest Bid User
             if ($bid->price > $highestBidUser) {
                 $highestBidUser = $bid->price;
             }
 
-            // Simpan data tambahan ke object $bid agar mudah dipanggil di View
+            // Simpan data ke object untuk View
             $bid->highest_global = $globalHighestPrice;
             $bid->status_label = $statusLabel;
-            $bid->badge_class = $badgeClass; // Opsional
+            $bid->badge_class = $badgeClass;
+            $bid->action_url = $actionUrl;
             
             return $bid;
         });
 
-        // Hitung total setelah loop
         $totalBids = $myBids->count();
 
-        // ==========================================
-        //  BAGIAN RESPON JSON (AJAX)
-        // ==========================================
+        // RESPONSE
         if ($request->ajax()) {
-            
-            // Render file partial khusus baris tabel (TR)
-            // Pastikan kamu sudah membuat file: resources/views/account/auction/_table_rows.blade.php
             $tableHtml = view('account.auction._table_rows', ['history' => $history])->render();
-
             return response()->json([
                 'status' => 'success',
                 'html' => $tableHtml,
@@ -100,9 +116,6 @@ class AuctionHistoryController extends Controller
             ]);
         }
 
-        // ==========================================
-        //  BAGIAN RESPON HALAMAN BIASA (NON-AJAX)
-        // ==========================================
         return view('account.auction.auction_history', [
             'history' => $history,
             'totalBids' => $totalBids,

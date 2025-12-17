@@ -7,7 +7,7 @@
 @endsection
 
 @section('content')
-<div class="container" style="max-width:100%; margin-top:40px; margin-bottom:5px;">
+<div class="container" style="max-width:1200px; margin-top:40px; margin-bottom:5px;">
     <div class="row">
         @include('account.partials.nav_new')
 
