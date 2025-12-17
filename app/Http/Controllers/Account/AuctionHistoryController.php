@@ -67,7 +67,7 @@ class AuctionHistoryController extends Controller
                     $actionUrl = route('lelang.detail', $product->slug);
                 } else {
                     $statusLabel = 'Terlampaui'; 
-                    $badgeClass = 'badge-status lose';    
+                    $badgeClass = 'badge-status outbid';   
                     $actionUrl = route('lelang.detail', $product->slug);
                 }
             } 
