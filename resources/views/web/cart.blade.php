@@ -38,7 +38,7 @@
         <form action="{{ route('checkout.index') }}" method="GET" id="checkout-form">
             @csrf 
 
-            <div class="row g-3 text-muted mb-3 pb-2 border-bottom d-none d-md-flex">
+            <div class="row g-3 fw-bold text-black mb-3 pb-2 border-bottom border-black d-none d-md-flex">
                 <div class="col-1 text-center"></div>
                 <div class="col-md-4">Produk</div>
                 <div class="col-md-2">Harga</div>
@@ -101,7 +101,7 @@
                     @endphp
 
                     {{-- A. DESKTOP VIEW --}}
-                    <div class="row g-3 align-items-center my-3 py-2 border-bottom cart-item-row desktop-view d-none d-md-flex" id="item-row-desktop-{{ $item->id }}">
+                    <div class="row g-3 align-items-center my-3 py-2 border-bottom border-black cart-item-row desktop-view d-none d-md-flex" id="item-row-desktop-{{ $item->id }}">
                         <div class="col-1 text-center">
                             <input class="form-check-input item-checkbox" type="checkbox" name="cart_item_ids[]" value="{{ $item->id }}" data-item-total="{{ $total }}" onclick="syncCheckbox(this, {{ $item->id }})">
                         </div>
@@ -247,7 +247,7 @@
             <div class="row mt-4 mt-md-5 mb-5">
                 <div class="col-12 col-md-5 ms-auto">
                     <div class="card border-0 shadow-sm bg-white p-3 p-md-4 rounded-3">
-                        <div class="form-check mb-3 p-3 bg-light rounded">
+                        <div class="form-check mb-3">
                             <input class="form-check-input mt-1" type="checkbox" name="wrap_product" value="10000" id="wrapProductCheckbox">
                             <label class="form-check-label ms-2 lh-sm" for="wrapProductCheckbox">
                                 <span class="fw-bold d-block">For Rp. 10.000 please wrap the product</span>

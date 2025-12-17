@@ -266,7 +266,7 @@ thead {
 
 /* 2. MENANG (Tosca/Teal - Sesuai Gambar) */
 .badge-status.win {
-    background-color: #5abebc; /* Warna tosca lembut sesuai gambar */
+    background-color: #128EAA; /* Warna tosca lembut sesuai gambar */
     border-radius: 7px; /* Sudut lebih kotak sedikit dibanding proses */
 }
 
@@ -331,6 +331,22 @@ thead {
     text-decoration: none;
     color: #ffffff;
 }
+
+
+/* 4. TERLAMPAUI (Hijau Tua Request) */
+.badge-status.outbid {
+    background-color: #004F38; /* Warna yang Anda minta */
+    color: #ffffff;
+    border-radius: 7px; /* Menyamakan rounded dengan yang lain */
+}
+
+/* Optional: Efek Hover agar interaktif */
+.badge-status.outbid:hover {
+    background-color: #003828; /* Sedikit lebih gelap saat di-hover */
+    text-decoration: none;
+    color: #ffffff;
+}
+
 
 /* =========================================
    RESPONSIVE TABLE (MOBILE VIEW)
