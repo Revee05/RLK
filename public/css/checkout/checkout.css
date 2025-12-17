@@ -1,13 +1,13 @@
 .address-wrapper {
     width: 100%;
     max-width: 600px;
-    border: 1px solid #8A8A8A;
+    border: 1px solid #8a8a8a;
     border-radius: 10px;
     padding: 20px 25px;
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
-    background: #FFF;
+    background: #fff;
 }
 
 /* Left Section */
@@ -69,12 +69,12 @@
 .btn-change-address {
     width: 106px;
     height: 32px;
-    background: #051A36;
-    border: 1px solid #051A36;
+    background: #051a36;
+    border: 1px solid #051a36;
     border-radius: 10px;
     font-family: Helvetica;
     font-size: 14px;
-    color: #FFF;
+    color: #fff;
 }
 
 .shipping-box {
@@ -82,7 +82,7 @@
     margin-top: 10px;
     max-width: 600px;
     border-radius: 10px;
-    border: 1px solid #8A8A8A;
+    border: 1px solid #8a8a8a;
     padding: 20px;
 }
 
@@ -162,7 +162,7 @@
 .note-wrapper {
     width: 100%;
     max-width: 600px;
-    border: 1px solid #8A8A8A;
+    border: 1px solid #8a8a8a;
     border-radius: 10px;
     padding: 10px 28px;
     position: relative;
@@ -174,7 +174,7 @@
     margin-top: 10px;
 
     max-height: 50px;
-    transition: max-height .3s ease;
+    transition: max-height 0.3s ease;
 }
 
 .note-header {
@@ -215,7 +215,7 @@
 
     display: none;
     opacity: 0;
-    transition: opacity .2s ease-in-out;
+    transition: opacity 0.2s ease-in-out;
 }
 
 .note-input.show {
@@ -240,7 +240,7 @@
     padding: 10px;
     font-family: Helvetica;
     font-size: 12px;
-    color: #000; 
+    color: #000;
     outline: none;
 }
 
@@ -250,15 +250,15 @@
     max-width: 600px;
     height: 90px;
     border-radius: 10px;
-    border: 1px solid #8A8A8A;
+    border: 1px solid #8a8a8a;
     padding: 10px 15px;
     background: #fff;
 
     /* pengganti d-flex */
     display: flex;
-    justify-content: space-between; 
-    align-items: center;            
-    margin-bottom: 24px; 
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
 }
 
 /* LEFT AREA */
@@ -306,8 +306,8 @@
     height: 30px;
 
     border-radius: 10px;
-    border: 1px solid #051A36;
-    background: #051A36;
+    border: 1px solid #051a36;
+    background: #051a36;
 
     color: white;
     font-family: Helvetica, sans-serif;
@@ -321,11 +321,11 @@
     height: 50px;
     border: none;
     border-radius: 10px;
-    background: #051A36;
+    background: #051a36;
 
     box-shadow: 0 20px 35px rgba(0, 0, 0, 0.15);
 
-    color: #FFF;
+    color: #fff;
     font-family: Helvetica, sans-serif;
     font-size: 16px;
     font-weight: 400;
@@ -347,7 +347,7 @@
 
 .modal-alamat .modal-content {
     border-radius: 15px;
-    background: #FFF;
+    background: #fff;
     padding: 20px 25px;
 }
 
@@ -361,7 +361,7 @@
 }
 
 .modal-alamat .btn-close {
-    opacity: .4;
+    opacity: 0.4;
 }
 
 /* BUTTON TAMBAH ALAMAT */
@@ -369,13 +369,13 @@
     width: 100%;
     max-width: 485px;
     height: 40px;
-    align-items: center;      
+    align-items: center;
     justify-content: center;
     border-radius: 10px;
-    background: #051A36;
+    background: #051a36;
     border: none;
 
-    color: #FFF;
+    color: #fff;
     font-family: Helvetica;
     font-size: 16px;
 }
@@ -391,7 +391,7 @@
     width: 100%;
     max-width: 485px;
     border-radius: 10px;
-    border: 1px solid #8A8A8A;
+    border: 1px solid #8a8a8a;
     padding: 15px;
     cursor: pointer;
     display: flex !important;
@@ -400,13 +400,13 @@
 }
 
 .modal-alamat .address-card.active {
-    border: 2px solid #0EA5A5; /* warna biru seperti contoh */
+    border: 2px solid #0ea5a5; /* warna biru seperti contoh */
 }
 
 /* LABEL UTAMA */
-.modal-alamat .label-utama {
-    background: #0EA5A5;
-    color: #FFF;
+.label-utama {
+    background: #0ea5a5;
+    color: #fff;
     font-size: 10px;
     padding: 3px 10px;
     border-radius: 5px;
@@ -455,7 +455,7 @@
 .checkout-card {
     background: #fff;
     border-radius: 12px;
-    box-shadow: 0 3px 8px rgba(0,0,0,0.08);
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.08);
     padding: 20px;
     margin-bottom: 20px;
 }

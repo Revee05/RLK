@@ -40,22 +40,20 @@
             </span>
         </td>
 
-        {{-- KOLOM 5: STATUS --}}
+        {{-- KOLOM 5: STATUS (DIUBAH MENJADI LINK/TOMBOL) --}}
         <td data-label="Status" class="td-status" style="width: 15%; text-align: center;">
-            @php
-                $badgeClass = 'badge-status';
-                if ($log->status_label == 'Dalam Proses') {
-                    $badgeClass .= ' process';
-                } elseif ($log->status_label == 'Menang') {
-                    $badgeClass .= ' win';
-                } else {
-                    $badgeClass .= ' lose';
-                }
-            @endphp
-
-            <span class="{{ $badgeClass }}">
+            {{-- 
+                Menggunakan <a> agar bisa diklik.
+                - href: Diambil dari Controller ($log->action_url)
+                - class: Diambil dari Controller ($log->badge_class) -> agar warna sesuai CSS
+                - style: Menjaga agar teks tidak ada garis bawah & warna teks putih
+            --}}
+            <a href="{{ $log->action_url }}" 
+               class="{{ $log->badge_class }}" 
+               style="text-decoration: none; color: #fff; cursor: pointer;">
+               
                 {{ $log->status_label }}
-            </span>
+            </a>
         </td>
 
     </tr>
