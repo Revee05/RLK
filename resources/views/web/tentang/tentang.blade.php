@@ -97,34 +97,34 @@
             </div>
 
             <div class="row g-5 justify-content-center">
-                <div class="col-md-4 text-center">
+                <div class="col-6 col-md-4 text-center">
                     <img src="{{ asset('assets/img/tentang/tentang-1.webp') }}" alt="Arief Hadinata"
                         class="mb-4 tentang-team-photo">
-                    <h5 class="fw-bold my-0 py-0 tentang-brand-color">Arief Hadinata</h5>
+                    <p class="fw-bold my-0 py-0 tentang-brand-color tentang-team-name">Arief Hadinata</p>
                     <p class="my-0 py-0">Komisaris</p>
                 </div>
-                <div class="col-md-4 text-center">
+                <div class="col-6 col-md-4 text-center">
                     <img src="{{ asset('assets/img/tentang/tentang-1.webp') }}" alt="Amanda Rizqyana"
                         class="mb-4 tentang-team-photo">
-                    <h5 class="fw-bold my-0 py-0 tentang-brand-color">Amanda Rizqyana</h5>
+                    <p class="fw-bold my-0 py-0 tentang-brand-color tentang-team-name">Amanda Rizqyana</p>
                     <p class="my-0 py-0">Direktur Utama</p>
                 </div>
-                <div class="col-md-4 text-center">
+                <div class="col-6 col-md-4 text-center">
                     <img src="{{ asset('assets/img/tentang/tentang-1.webp') }}" alt="Bakhtiar Amrullah"
                         class="mb-4 tentang-team-photo">
-                    <h5 class="fw-bold my-0 py-0 tentang-brand-color">Bakhtiar Amrullah</h5>
+                    <p class="fw-bold my-0 py-0 tentang-brand-color tentang-team-name">Bakhtiar Amrullah</p>
                     <p class="my-0 py-0">Direktur</p>
                 </div>
-                <div class="col-md-4 text-center">
+                <div class="col-6 col-md-4 text-center">
                     <img src="{{ asset('assets/img/tentang/tentang-1.webp') }}" alt="Bramandita Iqbal N."
                         class="mb-4 tentang-team-photo">
-                    <h5 class="fw-bold my-0 py-0 tentang-brand-color">Bramandita Iqbal N.</h5>
+                    <p class="fw-bold my-0 py-0 tentang-brand-color tentang-team-name">Bramandita Iqbal N.</p>
                     <p class="my-0 py-0">Art Manager</p>
                 </div>
-                <div class="col-md-4 text-center">
+                <div class="col-6 col-md-4 text-center">
                     <img src="{{ asset('assets/img/tentang/tentang-1.webp') }}" alt="Restu Pamuji"
                         class="mb-4 tentang-team-photo">
-                    <h5 class="fw-bold my-0 py-0 tentang-brand-color">Restu Pamuji</h5>
+                    <p class="fw-bold my-0 py-0 tentang-brand-color tentang-team-name">Restu Pamuji</p>
                     <p class="my-0 py-0">Project Manager</p>
                 </div>
             </div>
