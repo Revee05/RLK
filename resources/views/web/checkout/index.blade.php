@@ -13,14 +13,26 @@
     <form action="{{ route('checkout.process') }}" method="POST">
         @csrf
 
-        {{-- 1. Mengirim ID barang mana saja yang dicentang user --}}
+        {{-- ID item yang dipilih --}}
         <input type="hidden" name="selected_item_ids" value="{{ json_encode($selectedItemIds) }}">
         
-        {{-- 2. Mengirim status apakah user memilih bungkus kado --}}
+        {{-- Gift wrap --}}
         <input type="hidden" name="is_gift_wrap" value="{{ $isGiftWrap ? '1' : '0' }}">
-
+    
+        {{-- District tujuan --}}
         <input type="hidden" name="selected_district_id" id="selected_district_id" value="{{ $selectedAddress->district_id ?? '' }}">
+        <input type="hidden" name="address_id" value="{{ $selectedAddress->id ?? '' }}">
 
+        {{-- Shipping --}}
+        <input type="hidden" name="selected_shipper_id" id="selected_shipper_id" value="">
+        <input type="hidden" name="total_ongkir" id="input_total_ongkir" value="0">
+        <input type="hidden" name="shipping_name" id="shipping_name">
+        <input type="hidden" name="shipping_service" id="shipping_service">
+        <input type="hidden" name="shipping_etd" id="shipping_etd">
+        <input type="hidden" name="shipping_code" id="shipping_code">
+        <input type="hidden" name="shipping_description" id="shipping_description">
+        <input type="hidden" name="total_ongkir" id="input_total_ongkir">
+        
         <div class="row">
 
             <!-- LEFT SIDE -->
@@ -107,15 +119,8 @@
                                 Pilih Kurir
                             </button>
 
-                            <div id="selected-shipper" class="selected-shipper">
-                                {{-- Input Hidden untuk menyimpan ID Kurir yang dipilih --}}
-                                <input type="hidden" name="selected_shipper_id" id="selected_shipper_id">
-                                {{-- Input Hidden untuk menyimpan harga ongkir (agar bisa ditangkap request) --}}
-                                <input type="hidden" name="total_ongkir" id="input_total_ongkir" value="0">
-                                <input type="hidden" name="jenis_ongkir" id="input_jenis_ongkir" value="Reguler">
-                            </div>
+                            <div id="selected-shipper" class="selected-shipper"></div>
                         </div>
-
                         <input type="radio" name="shipping_method" value="delivery" class="shipper-radio-custom" id="radioDelivery">
                     </label>
                 </div>
@@ -175,6 +180,11 @@
                             <span class="value">Rp {{ number_format($subtotal,0,',','.') }}</span>
                         </div>
 
+                        <div class="checkout-row gift-wrap-row" style="{{ $isGiftWrap ? '' : 'display:none;' }}">
+                            <span class="label">Gift Wrap</span>
+                            <span class="value" id="gift_wrap_price">Rp {{ $isGiftWrap ? number_format(10000,0,',','.') : 0 }}</span>
+                        </div>
+
                         <div class="checkout-row">
                             <span class="label">Pengiriman</span>
                             <span class="value" id="shipping_price">Rp 0</span>
@@ -182,7 +192,7 @@
 
                         <div class="checkout-row total">
                             <span class="label">Total</span>
-                            <span class="value" id="total_price">Rp {{ number_format($subtotal,0,',','.') }}</span>
+                            <span class="value" id="total_price">Rp {{ number_format($subtotal + ($isGiftWrap ? 10000 : 0),0,',','.') }}</span>
                         </div>
                     </div>
                 </div>
@@ -199,7 +209,7 @@
                     <button type="button" class="payment-btn" data-bs-toggle="modal" data-bs-target="#paymentModal">Ganti</button>
                 </div>
 
-                <button type="submit" class="paynow-btn" formaction="{{ route('checkout.pay') }}">
+                <button type="submit" class="paynow-btn">
                     Pay Now
                 </button>
             </div>
@@ -223,6 +233,24 @@ window.checkout.destination = {{ $selectedAddress->district_id ?? 'null' }};
 window.checkout.totalWeight = {{ collect($cart ?? [])->sum(fn($item)=>data_get($item,'weight',1000)*data_get($item,'quantity',1)) }};
 window.checkout.subtotal = {{ $subtotal }};
 
+window.checkout.giftWrap = {{ $isGiftWrap ? 'true' : 'false' }};
+window.checkout.giftWrapCost = {{ $isGiftWrap ? 10000 : 0 }};
+
+window.updateTotal = function(shippingCost, options = {}) {
+    const shippingEl = options.shippingEl || document.getElementById('shipping_price');
+    const giftWrapEl = options.giftWrapEl || document.getElementById('gift_wrap_price');
+    const totalEl = options.totalEl || document.getElementById('total_price');
+
+    const subtotal = window.checkout.subtotal;
+    const giftWrap = window.checkout.giftWrap ? window.checkout.giftWrapCost : 0;
+
+    if(shippingEl) shippingEl.innerText = 'Rp ' + Number(shippingCost).toLocaleString('id-ID');
+    if(giftWrapEl) giftWrapEl.innerText = 'Rp ' + giftWrap.toLocaleString('id-ID');
+
+    const total = subtotal + giftWrap + Number(shippingCost);
+    if(totalEl) totalEl.innerText = 'Rp ' + total.toLocaleString('id-ID');
+};
+
 // --- JS untuk toggle shipping, note, pilih kurir ---
 document.addEventListener("DOMContentLoaded", function () {
     const radioPickup = document.getElementById('radioPickup');
@@ -233,13 +261,14 @@ document.addEventListener("DOMContentLoaded", function () {
     const shippingPriceEl = document.getElementById('shipping_price');
     const totalPriceEl = document.getElementById('total_price');
     const subtotal = window.checkout.subtotal;
+    const giftWrapEl = document.getElementById('gift_wrap_price');
 
     radioPickup.addEventListener('change', function() {
         pickupInfo.style.display = 'block';
         btnPilihKurir.style.display = 'none';
         selectedShipperDiv.style.display = 'none';
         shippingPriceEl.innerText = 'Rp 0';
-        totalPriceEl.innerText = 'Rp ' + subtotal.toLocaleString('id-ID');
+        window.updateTotal(0);
     });
     radioDelivery.addEventListener('change', function() {
         pickupInfo.style.display = 'none';
@@ -255,32 +284,38 @@ document.addEventListener("DOMContentLoaded", function () {
         };
     });
 
-    window.selectShipper = function(name, price, id) {
-        const selectedShipperDiv = document.getElementById('selected-shipper');
+    window.selectShipper = function(name, code, service, description, cost, etd, id) {
         const shippingPriceEl = document.getElementById('shipping_price');
-        const totalPriceEl = document.getElementById('total_price');
-        const subtotal = window.checkout?.subtotal || 0;
+        shippingPriceEl.innerText = 'Rp ' + cost.toLocaleString('id-ID');
+        window.updateTotal(cost);
 
-        if(selectedShipperDiv){
-            selectedShipperDiv.innerHTML = `${name} – Rp ${price.toLocaleString('id-ID')}`;
-            selectedShipperDiv.style.display = "block";
-        }
+        const selectedShipperDiv = document.getElementById('selected-shipper');
+        selectedShipperDiv.innerText = `${name} – Rp ${cost.toLocaleString('id-ID')}`;
+        selectedShipperDiv.style.display = "block";
 
-        if(shippingPriceEl) shippingPriceEl.innerText = 'Rp ' + price.toLocaleString('id-ID');
-        if(totalPriceEl) totalPriceEl.innerText = 'Rp ' + (subtotal + Number(price)).toLocaleString('id-ID');
+        document.getElementById('radioDelivery').checked = true;
 
-        const radioDelivery = document.getElementById('radioDelivery');
-        if(radioDelivery) radioDelivery.checked = true;
-
-        const input = document.getElementById("selected_shipper_id");
-        if(input) input.value = id;
-
-        const inputOngkir = document.getElementById('input_total_ongkir');
-        if(inputOngkir) inputOngkir.value = price;
+        document.getElementById("selected_shipper_id").value = id;         // tiki-ECO, jne-REG, etc
+        document.getElementById('input_total_ongkir').value = cost;
+        document.getElementById('shipping_name').value = name;
+        document.getElementById('shipping_code').value = code;
+        document.getElementById('shipping_service').value = service;
+        document.getElementById('shipping_etd').value = etd;
+        document.getElementById('shipping_description').value = description;
 
         const modalEl = document.getElementById('shipperModal');
         bootstrap.Modal.getInstance(modalEl)?.hide();
     };
+
+    const giftWrapCheckbox = document.getElementById('giftWrapCheckbox');
+    giftWrapCheckbox?.addEventListener('change', function() {
+        const hiddenInput = document.querySelector('input[name="is_gift_wrap"]');
+        hiddenInput.value = this.checked ? '1' : '0';
+        window.checkout.giftWrap = this.checked;
+        window.checkout.giftWrapCost = this.checked ? 10000 : 0;
+        window.updateTotal(Number(document.getElementById('shipping_price').innerText.replace(/\D/g,'')));
+    });
+
 
     // NOTE textarea toggle
     const wrapper = document.getElementById('noteWrapper');
@@ -312,12 +347,18 @@ document.addEventListener("DOMContentLoaded", function () {
     document.addEventListener('alamatDipilih', function(e){
         window.checkout.destination = e.detail.districtId;
         document.getElementById('selected_district_id').value = e.detail.districtId || '';
+        
+        document.getElementById('selected_shipper_id').value = '';
+        document.getElementById('input_total_ongkir').value = 0;
+        document.getElementById('shipping_name').value = '';
+        document.getElementById('shipping_code').value = '';
+        document.getElementById('shipping_service').value = '';
+        document.getElementById('shipping_etd').value = '';
+        document.getElementById('shipping_description').value = '';
+
         selectedShipperDiv.style.display = 'none';
-        selectedShipperDiv.innerHTML = `<input type="hidden" name="selected_shipper_id" id="selected_shipper_id" value="">
-                                        <input type="hidden" name="total_ongkir" id="input_total_ongkir" value="0">
-                                        <input type="hidden" name="jenis_ongkir" id="input_jenis_ongkir" value="Reguler">`;
         shippingPriceEl.innerText = 'Rp 0';
-        totalPriceEl.innerText = 'Rp ' + subtotal.toLocaleString('id-ID');
+        window.updateTotal(0);
     });
 
     document.querySelectorAll('.payment-option').forEach(option => {

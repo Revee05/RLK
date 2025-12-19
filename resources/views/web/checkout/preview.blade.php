@@ -5,48 +5,105 @@
 @endsection
 
 @section('content')
-<div class="container py-5">
 
-    <h3>Ringkasan Pesanan</h3>
+<div class="preview-page">
 
-    <p><strong>Invoice:</strong> {{ $order->invoice }}</p>
-    <p><strong>Alamat:</strong> {{ $order->address->address }}, {{ $order->address->district->name }}, {{ $order->address->city->name }}, {{ $order->address->province->name }}</p>
-    <p><strong>Catatan:</strong> {{ $order->note ?? '-' }}</p>
-
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Produk</th>
-                <th>Qty</th>
-                <th>Harga</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach(json_decode($order->items) as $item)
-            <tr>
-                <td>{{ $item->name }} {{ $item->variant_name ?? '' }}</td>
-                <td>{{ $item->quantity }}</td>
-                <td>Rp {{ number_format($item->price,0,'','.') }}</td>
-            </tr>
-            @endforeach
-        </tbody>
-    </table>
-
-    <p><strong>Total Ongkir:</strong> Rp {{ number_format($order->total_ongkir,0,'','.') }}</p>
-    <p><strong>Total Tagihan:</strong> Rp {{ number_format($order->total_tagihan,0,'','.') }}</p>
-
-    <h5>Pilih Metode Pembayaran</h5>
-    <div class="payment-option mb-2 border rounded p-2" data-name="QRIS">
-        QRIS
-    </div>
-    <div class="payment-option mb-2 border rounded p-2" data-name="Bank Transfer">
-        Bank Transfer
+    {{-- ================= HEADER ================= --}}
+    <div class="preview-header">
+        <h2>Invoice Pembayaran</h2>
+        <p>Mohon periksa detail pesanan sebelum melanjutkan ke pembayaran</p>
     </div>
 
-    <form action="{{ route('checkout.pay.xendit', $order->invoice) }}" method="POST">
-        @csrf
-        <button type="submit" class="btn btn-primary mt-3">Bayar Sekarang</button>
-    </form>
+    {{-- ================= ORDER INFO ================= --}}
+    <h3 class="section-title">Informasi Pesanan</h3>
+
+    <div class="order-info-box">
+        <div class="info-item">
+            <h6>Invoice</h6>
+            <p>{{ $order->invoice }}</p>
+        </div>
+        <div class="info-item">
+            <h6>Status</h6>
+            <p>{{ $order->status }}</p>
+        </div>
+        <div class="info-item">
+            <h6>Tanggal</h6>
+            <p>{{ $order->created_at->format('d M Y') }}</p>
+        </div>
+        <div class="info-item">
+            <h6>Total</h6>
+            <p>Rp {{ number_format($order->total_tagihan,0,',','.') }}</p>
+        </div>
+    </div>
+
+    {{-- ================= ITEM DETAIL ================= --}}
+    <h3 class="section-title">Detail Produk</h3>
+
+    <div class="items-box">
+
+        @foreach($items as $item)
+        <div class="product-row">
+            <div class="product-left">
+                <img src="{{ asset($item['image']) }}" class="product-img" alt="">
+                <div>
+                    <div class="product-name">{{ $item['name'] }}</div>
+                    <div class="product-variant">{{ $item['variant'] ?? '-' }}</div>
+                    <div class="product-qty">Qty: {{ $item['qty'] }}</div>
+                </div>
+            </div>
+            <div class="product-price">
+                Rp {{ number_format($item['price'],0,',','.') }}
+            </div>
+        </div>
+        <div class="line"></div>
+        @endforeach
+
+        {{-- SUMMARY --}}
+        <div class="summary-row">
+            <span>Subtotal</span>
+            <span>Rp {{ number_format($subtotal,0,',','.') }}</span>
+        </div>
+
+        @if($giftWrapCost > 0)
+        <div class="summary-row">
+            <span>Bungkus Kado</span>
+            <span>Rp {{ number_format($giftWrapCost,0,',','.') }}</span>
+        </div>
+        @endif
+
+        @if(!$isPickup)
+        <div class="summary-row">
+            <span>Pengiriman</span>
+            <span>Rp {{ number_format($shippingCost,0,',','.') }}</span>
+        </div>
+        @endif
+
+        <div class="total-row">
+            <span class="label">Total</span>
+            <span class="amount">Rp {{ number_format($order->total_tagihan,0,',','.') }}</span>
+        </div>
+    </div>
+
+    {{-- ================= ACTION BUTTON ================= --}}
+    <div class="preview-action">
+
+        <form action="{{ route('checkout.pay.xendit', $order->invoice) }}" method="POST">
+            @csrf
+            <button type="submit" class="btn-primary">
+                Bayar Sekarang
+            </button>
+        </form>
+
+        <form action="{{ route('payment.cancel', $order->invoice) }}" method="POST"
+              onsubmit="return confirm('Yakin ingin membatalkan pesanan ini?')">
+            @csrf
+            <button type="submit" class="btn-primary btn-cancel">
+                Batalkan
+            </button>
+        </form>
+
+    </div>
 
 </div>
+
 @endsection

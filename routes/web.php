@@ -83,10 +83,15 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/cart', [CartController::class, 'index'])->name('cart.index');
     // ... route cart lainnya
     
-    Route::get('/checkout', [CheckoutMerchController::class, 'index'])->name('checkout.index');
-    Route::post('/checkout/process', [CheckoutMerchController::class, 'process'])->name('checkout.process');
+    Route::get('/checkout', 'Web\CheckoutMerchController@index')->name('checkout.index');
+    Route::post('/checkout/process', 'Web\CheckoutMerchController@process')->name('checkout.process');
     
-    Route::post('/checkout/pay', 'Web\PaymentController@payNow')->name('checkout.pay');
+    Route::get('/checkout/preview/{invoice}', 'Web\CheckoutMerchController@preview')->name('checkout.preview');
+
+    Route::post('checkout/pay/{invoice}', 'Web\PaymentController@payXendit')->name('checkout.pay.xendit');
+    Route::post('checkout/status/{invoice}', 'Web\PaymentController@cancel')->name('payment.cancel');
+    
+    
     Route::get('/checkout/success', function(){
         return "Pembayaran berhasil!";
     })->name('checkout.success');

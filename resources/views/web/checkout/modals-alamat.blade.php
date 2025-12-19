@@ -52,13 +52,6 @@
                 <p class="text-muted">Belum ada alamat.</p>
             @endif
         </div>
-                <!-- Tambah Alamat -->
-        <div class="address-item">
-            <button type="button" class="btn btn-dark w-100 py-2" id="btn-add-address">
-                Tambah Alamat
-            </button>
-        </div>
-
       </div>
 
       <div class="modal-footer">
@@ -117,9 +110,8 @@ document.addEventListener("DOMContentLoaded", function () {
                                                         <input type="hidden" name="total_ongkir" id="input_total_ongkir" value="0">
                                                         <input type="hidden" name="jenis_ongkir" id="input_jenis_ongkir" value="Reguler">`;
 
-                        document.getElementById('shipping_price').innerText = 'Rp 0';
-                        document.getElementById('total_price').innerText = 'Rp ' + window.checkout.subtotal.toLocaleString('id-ID');
-
+                        window.updateTotal(0);
+                        
                         bootstrap.Modal.getInstance(document.getElementById("addressModal"))?.hide();
                     }
                 });
