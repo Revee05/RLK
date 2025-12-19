@@ -196,19 +196,6 @@
                         </div>
                     </div>
                 </div>
-
-                {{-- PAYMENT METHOD --}}
-                <div class="payment-box">
-                    <div class="payment-left" id="selectedPayment">
-                        <img id="paymentIcon" src="/uploads/logos/qris.png" width="55" class="payment-logo">
-                        <div class="payment-text">
-                            <span id="paymentName" class="payment-title">Pilih Metode Pembayaran</span>
-                            <div id="paymentFee" class="payment-fee">Biaya: Rp -</div>
-                        </div>
-                    </div>
-                    <button type="button" class="payment-btn" data-bs-toggle="modal" data-bs-target="#paymentModal">Ganti</button>
-                </div>
-
                 <button type="submit" class="paynow-btn">
                     Pay Now
                 </button>

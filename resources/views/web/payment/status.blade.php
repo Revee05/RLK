@@ -1,14 +1,43 @@
 @extends('web.partials.layout')
 
-@section('title', 'Checkout Success')
+@section('title', 'Status Pembayaran')
 
 @section('content')
 <div class="container my-5">
 
+    @php
+        $status = $order->status;
+        $statusText = '';
+        $statusClass = '';
+
+        switch($status) {
+            case 'pending':
+                $statusText = 'Menunggu Pembayaran';
+                $statusClass = 'bg-warning text-dark';
+                break;
+            case 'success':
+                $statusText = 'Pembayaran Berhasil';
+                $statusClass = 'bg-success';
+                break;
+            case 'cancelled':
+                $statusText = 'Pesanan Dibatalkan';
+                $statusClass = 'bg-danger';
+                break;
+            case 'expired':
+                $statusText = 'Pembayaran Kadaluarsa';
+                $statusClass = 'bg-secondary';
+                break;
+            default:
+                $statusText = 'Status Tidak Diketahui';
+                $statusClass = 'bg-dark';
+                break;
+        }
+    @endphp
+
     <div class="text-center mb-4">
-        <h2 class="fw-bold">Terima kasih telah berbelanja!</h2>
-        <p>Pesanan Anda berhasil dibuat. Berikut ringkasan pesanan:</p>
-        <span class="badge bg-success">Invoice: {{ $order->invoice }}</span>
+        <h2 class="fw-bold">Status Pesanan Anda</h2>
+        <span class="badge {{ $statusClass }} fs-5">{{ $statusText }}</span>
+        <p class="mt-2">Invoice: <strong>{{ $order->invoice }}</strong></p>
     </div>
 
     <!-- RINGKASAN ITEM -->
@@ -25,24 +54,22 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @php
-                        $items = json_decode($order->items, true);
-                    @endphp
-
+                    @php $items = json_decode($order->items, true); @endphp
                     @foreach($items as $item)
                         <tr>
                             <td>
+                                <img src="{{ asset($item['image']) }}" class="product-img" alt="">
                                 <strong>{{ $item['name'] }}</strong>
-                                @if(isset($item['variant_name']))
+                                @if(!empty($item['variant_name']))
                                     <br><small>Varian: {{ $item['variant_name'] }}</small>
                                 @endif
-                                @if(isset($item['size_name']))
+                                @if(!empty($item['size_name']))
                                     <br><small>Size: {{ $item['size_name'] }}</small>
                                 @endif
                             </td>
                             <td>Rp {{ number_format($item['price'],0,'','.') }}</td>
-                            <td>{{ $item['quantity'] }}</td>
-                            <td>Rp {{ number_format($item['price'] * $item['quantity'],0,'','.') }}</td>
+                            <td>{{ $item['qty'] }}</td>
+                            <td>Rp {{ number_format($item['price'] * $item['qty'],0,'','.') }}</td>
                         </tr>
                     @endforeach
                 </tbody>
@@ -85,21 +112,28 @@
         </div>
     </div>
 
-    <!-- LANGKAH PEMBAYARAN -->
-    <div class="card mb-4">
-        <div class="card-header fw-bold">Langkah Pembayaran</div>
-        <div class="card-body">
-            <ol>
-                <li>Pilih metode pembayaran sesuai yang sudah Anda pilih sebelumnya.</li>
-                <li>Lakukan pembayaran sesuai jumlah total tagihan di atas.</li>
-                <li>Simpan bukti pembayaran jika menggunakan transfer bank atau QRIS.</li>
-                <li>Pesanan akan diproses setelah pembayaran terkonfirmasi.</li>
-            </ol>
-        </div>
-    </div>
-
-    <div class="text-center">
-        <a href="{{ route('home') }}" class="btn btn-primary">Kembali ke Beranda</a>
+    <!-- ACTION BUTTON / PESANAN BERHASIL -->
+    <div class="text-center mb-5">
+        @if($status === 'pending')
+            <p class="mb-3">Silakan lakukan pembayaran untuk memproses pesanan Anda.</p>
+            <form action="{{ route('checkout.pay.xendit', $order->invoice) }}" method="POST" class="d-inline">
+                @csrf
+                <button type="submit" class="btn btn-primary">Bayar Sekarang</button>
+            </form>
+            <form action="{{ route('payment.cancel', $order->invoice) }}" method="POST" class="d-inline ms-2" onsubmit="return confirm('Yakin ingin membatalkan pesanan ini?')">
+                @csrf
+                <button type="submit" class="btn btn-danger">Batalkan Pesanan</button>
+            </form>
+        @elseif($status === 'success')
+            <p class="mb-3 text-success fw-bold">Pembayaran Anda telah diterima. Pesanan sedang diproses.</p>
+            <a href="{{ route('home') }}" class="btn btn-primary">Kembali ke Beranda</a>
+        @elseif($status === 'cancelled')
+            <p class="mb-3 text-danger fw-bold">Pesanan Anda dibatalkan.</p>
+            <a href="{{ route('home') }}" class="btn btn-primary">Kembali ke Beranda</a>
+        @elseif($status === 'expired')
+            <p class="mb-3 text-secondary fw-bold">Pembayaran Anda telah kadaluarsa. Silakan lakukan pemesanan ulang.</p>
+            <a href="{{ route('home') }}" class="btn btn-primary">Kembali ke Beranda</a>
+        @endif
     </div>
 
 </div>

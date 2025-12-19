@@ -33,8 +33,6 @@ Route::get('/detail-products', function () {
 })->name('detail-products');
 
 Route::get('/pay', 'PaymentController@createInvoice')->name('pay');
-Route::post('/payment/callback', 'PaymentController@callback');
-
 
 // prod routes
 Route::get('/','Web\HomeController@index')->name('home');
@@ -89,16 +87,9 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/checkout/preview/{invoice}', 'Web\CheckoutMerchController@preview')->name('checkout.preview');
 
     Route::post('checkout/pay/{invoice}', 'Web\PaymentController@payXendit')->name('checkout.pay.xendit');
-    Route::post('checkout/status/{invoice}', 'Web\PaymentController@cancel')->name('payment.cancel');
+    Route::post('payment/cancel/{invoice}', 'Web\PaymentController@cancel')->name('payment.cancel');
     
-    
-    Route::get('/checkout/success', function(){
-        return "Pembayaran berhasil!";
-    })->name('checkout.success');
-
-    Route::get('/checkout/failed', function(){
-        return "Pembayaran gagal!";
-    })->name('checkout.failed');
+    Route::get('payment/status/{invoice}', 'Web\PaymentController@status')->name('payment.status');
 
     // ... route checkout lainnya
 });
