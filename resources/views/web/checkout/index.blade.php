@@ -25,7 +25,6 @@
 
         {{-- Shipping --}}
         <input type="hidden" name="selected_shipper_id" id="selected_shipper_id" value="">
-        <input type="hidden" name="total_ongkir" id="input_total_ongkir" value="0">
         <input type="hidden" name="shipping_name" id="shipping_name">
         <input type="hidden" name="shipping_service" id="shipping_service">
         <input type="hidden" name="shipping_etd" id="shipping_etd">
@@ -154,11 +153,11 @@
                                     </div>
                                     <div class="checkout-item-variant">
                                         @if (!empty($item['variant_name']))
-                                            {{ $item['variant_name'] }},
+                                            {{ $item['variant_name'] }}
                                         @endif
 
                                         @if (!empty($item['size_name']))
-                                            {{ $item['size_name'] }}
+                                            , {{ $item['size_name'] }}
                                         @endif    
                                     </div>
                                     <div class="checkout-item-row">

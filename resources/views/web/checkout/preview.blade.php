@@ -4,6 +4,13 @@
 <link rel="stylesheet" href="{{ asset('css/checkout/preview.css') }}">
 @endsection
 
+@php
+    $items    = json_decode($order->items, true);
+    $shipping = $order->shipping ? json_decode($order->shipping, true) : null;
+    $address  = $order->address;
+@endphp
+
+
 @section('content')
 
 <div class="preview-page">
@@ -14,30 +21,50 @@
         <p>Mohon periksa detail pesanan sebelum melanjutkan ke pembayaran</p>
     </div>
 
-    {{-- ================= ORDER INFO ================= --}}
+    {{-- ================= INFORMASI PEMBELI ================= --}}
     <h3 class="section-title">Informasi Pesanan</h3>
 
     <div class="order-info-box">
-        <div class="info-item">
-            <h6>Invoice</h6>
-            <p>{{ $order->invoice }}</p>
-        </div>
-        <div class="info-item">
-            <h6>Status</h6>
-            <p>{{ $order->status }}</p>
-        </div>
         <div class="info-item">
             <h6>Tanggal</h6>
             <p>{{ $order->created_at->format('d M Y') }}</p>
         </div>
         <div class="info-item">
-            <h6>Total</h6>
-            <p>Rp {{ number_format($order->total_tagihan,0,',','.') }}</p>
+            <h6>No Pesanan</h6>
+            <p>{{ $order->invoice }}</p>
         </div>
+        <div class="info-item">
+            <h6>Alamat Pengiriman</h6>
+            <p>
+                {{ Str::title($order->address->name) ?? '-' }} - 
+                {{ $order->address->phone ?? '-' }} <br>
+                {{ Str::title($address->address) ?? '-' }},
+                {{ Str::title($address->district->name) }} <br>
+                {{ Str::title($address->city->name) }},
+                {{ Str::title($address->province->name) }}
+                @if($address->kodepos)
+                    , ID {{ $address->kodepos }}
+                @endif
+            </p>
+        </div>
+        <div class="info-item">
+            <h6>Metode Pengiriman</h6>
+            <p>{{ $shipping['name'] ?? '-' }} </p>
+        </div>
+
+        
+    </div>
+    <div class="note-box">
+        {{-- ================= CATATAN ================= --}}
+        @if($order->note)
+            <div class="order-note">
+                <strong>Catatan Pembeli:</strong> {{ $order->note }}
+            </div>
+        @endif
     </div>
 
-    {{-- ================= ITEM DETAIL ================= --}}
-    <h3 class="section-title">Detail Produk</h3>
+    {{-- ================= RINCIAN PESANAN ================= --}}
+    <h3 class="section-title">Rincian Pesanan</h3>
 
     <div class="items-box">
 
@@ -47,7 +74,12 @@
                 <img src="{{ asset($item['image']) }}" class="product-img" alt="">
                 <div>
                     <div class="product-name">{{ $item['name'] }}</div>
-                    <div class="product-variant">{{ $item['variant'] ?? '-' }}</div>
+                    <div class="product-variant">
+                        {{ $item['variant_name'] ?? '-' }}
+                        @if(!empty($item['size_name']))
+                            , {{ $item['size_name'] }}
+                        @endif
+                    </div>
                     <div class="product-qty">Qty: {{ $item['qty'] }}</div>
                 </div>
             </div>
@@ -66,15 +98,15 @@
 
         @if($giftWrapCost > 0)
         <div class="summary-row">
-            <span>Bungkus Kado</span>
+            <span>Biaya Pengemasan Ekstra</span>
             <span>Rp {{ number_format($giftWrapCost,0,',','.') }}</span>
         </div>
         @endif
 
         @if(!$isPickup)
         <div class="summary-row">
-            <span>Pengiriman</span>
-            <span>Rp {{ number_format($shippingCost,0,',','.') }}</span>
+            <span>Biaya Pengiriman</span>
+            <span>Rp {{ number_format($order->total_ongkir,0,',','.') }}</span>
         </div>
         @endif
 
@@ -84,7 +116,7 @@
         </div>
     </div>
 
-    {{-- ================= ACTION BUTTON ================= --}}
+    {{-- ================= ACTION ================= --}}
     <div class="preview-action">
 
         <form action="{{ route('checkout.pay.xendit', $order->invoice) }}" method="POST">

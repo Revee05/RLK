@@ -57,7 +57,7 @@ class PaymentController extends Controller
                 'payer_email' => auth()->user()->email,
                 'description' => 'Pembayaran ' . $order->invoice,
                 'currency' => 'IDR',
-                'invoice_duration' => 60, //5 menit
+                'invoice_duration' => 60, //1 jam
 
                 // Redirect setelah bayar
                 'success_redirect_url' => url('/payment/status/' . $order->invoice),
@@ -174,7 +174,7 @@ class PaymentController extends Controller
 
                 foreach ($items as $item) {
 
-                    $qty = $item['quantity'];
+                    $qty = $item['qty'];
 
                     // =========================
                     // JIKA ADA SIZE → KURANGI SIZE

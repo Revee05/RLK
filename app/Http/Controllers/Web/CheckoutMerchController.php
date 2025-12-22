@@ -151,6 +151,8 @@ class CheckoutMerchController extends Controller
             'selected_item_ids' => 'required', // Wajib ada (dari input hidden)
         ]);
 
+        $shippingMethod = $request->shipping_method; // delivery | pickup
+
         // 1. Decode ID Item yang dipilih dari View
         //$selectedIds = json_decode($request->selected_item_ids, true);
         $selectedIds = session('checkout_selected_item_ids', []);
@@ -207,22 +209,49 @@ class CheckoutMerchController extends Controller
         $totalWeight = $cartItems->sum(fn($item) => ($item->merchVariant->weight ?? 0) * $item->quantity);
         $totalWeight = $totalWeight > 0 ? $totalWeight : 1000;
 
-        // 3. Handle Biaya-biaya
-        $totalOngkir = $request->total_ongkir ?? 0;
-        
+        $shipperId = null;
+
+        if ($shippingMethod === 'delivery') {
+            $request->validate([
+                'total_ongkir'     => 'required|numeric|min:1',
+                'shipping_name'    => 'required',
+                'shipping_code'    => 'required',
+                'shipping_service' => 'required',
+            ]);
+        }
+
+        $totalOngkir = $shippingMethod === 'delivery' ? (int) $request->input('total_ongkir', 0) : 0;
+    
         // Gift wrap
         $giftWrap = session('checkout_gift_wrap', false);
         $biayaGiftWrap = $giftWrap ? 10000 : 0;
 
-        $shipperId = null;
+        if ($shippingMethod === 'delivery') {
+            $shippingData = [
+                'type'    => 'delivery',
+                'name'    => $request->shipping_name,
+                'code'    => $request->shipping_code,
+                'service' => $request->shipping_service,
+                'cost'    => $totalOngkir,
+                'etd'     => $request->shipping_etd,
+            ];
+        } else {
+            // PICKUP
+            $shippingData = [
+                'type' => 'pickup',
+                'name' => 'Ambil di Toko',
+                'cost' => 0,
+                'etd'  => null,
+            ];
+        }
 
-        $shippingData = [
+       /* $shippingData = [
             'name'        => $request->shipping_name ?? null,
-            'code'        => $request->shipping_code ?? null,
-            'service'     => $request->shipping_service ?? null,
-            'cost'        => (int) $totalOngkir,
+            'code'        => in_array($request->shipping_code, ['undefined', null, '']) ? null : $request->shipping_code,
+            'service'     => in_array($request->shipping_service, ['undefined', null, '']) ? null : $request->shipping_service,
+            'cost'        => (int) $request->input('total_ongkir', 0),
             'etd'         => $request->shipping_etd ?? null,
-        ];
+        ]; */
 
         $totalTagihan = $totalBarang + $totalOngkir + $biayaGiftWrap;
 

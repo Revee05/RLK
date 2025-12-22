@@ -68,6 +68,8 @@ document.addEventListener("DOMContentLoaded", function(){
             data.forEach(ship=>{
                 const cost = ship.price ?? 0;
                 const div = document.createElement('div');
+                const [code, service] = ship.id.split('-')
+                
                 div.classList.add('border','rounded','p-3','mb-2','pointer');
                 div.innerHTML=`<div class="d-flex justify-content-between align-items-center">
                                 <div><strong>${ship.name}</strong><br><small class="text-muted">Estimasi: ${ship.eta ?? '-'}</small></div>
@@ -75,9 +77,9 @@ document.addEventListener("DOMContentLoaded", function(){
                                </div>`;
                 div.onclick=function(){window.selectShipper(
                     ship.name,       // name
-                    ship.code,       // code
-                    ship.service,    // service
-                    ship.description,// description
+                    code,       // code
+                    service,    // service
+                    '',// description
                     cost,            // cost
                     ship.eta,        // etd
                     ship.id 
