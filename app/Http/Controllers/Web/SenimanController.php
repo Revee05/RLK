@@ -5,12 +5,19 @@ namespace App\Http\Controllers\Web;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Karya;
+use App\Province;
+use App\City;
+use App\District;
 
 class SenimanController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Karya::query();
+        // eager load relations and product count
+        $query = Karya::with(['province', 'city', 'district'])->withCount('product');
+
+        // Ambil daftar kota untuk filter dropdown
+        $cities = City::orderBy('name')->get();
 
         // Filter berdasarkan pencarian
         if ($request->filled('search')) {
@@ -18,8 +25,25 @@ class SenimanController extends Controller
             $query->where(function ($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
                   ->orWhere('bio', 'like', "%{$search}%")
-                  ->orWhere('address', 'like', "%{$search}%");
+                  ->orWhere('address', 'like', "%{$search}%")
+                  ->orWhereHas('province', function($query) use ($search) {
+                      $query->where('name', 'like', "%{$search}%");
+                  })
+                  ->orWhereHas('city', function($query) use ($search) {
+                      $query->where('name', 'like', "%{$search}%");
+                  })
+                  ->orWhereHas('district', function($query) use ($search) {
+                      $query->where('name', 'like', "%{$search}%");
+                  });
             });
+        }
+
+        // Filter berdasarkan kota (pastikan integer dan bukan empty)
+        if ($request->filled('city')) {
+            $cityId = (int) $request->city;
+            if ($cityId > 0) {
+                $query->where('city_id', $cityId);
+            }
         }
 
         // Sorting
@@ -45,29 +69,38 @@ class SenimanController extends Controller
             return (object)[
                 'id' => $item->id,
                 'name' => $item->name,
+                'julukan' => $item->julukan,
                 'slug' => $item->slug,
                 'address' => $item->address,
                 'bio' => $item->bio,
                 'image' => $item->image,
+                'province' => $item->province ? $item->province->name : null,
+                'city' => $item->city ? $item->city->name : null,
+                'district' => $item->district ? $item->district->name : null,
+                'total_products' => $item->product_count ?? 0,
             ];
         });
 
-        \Log::info('SenimanController@index response', [
-            'senimans' => $senimans->items(),
-            'pagination' => [
-                'current_page' => $senimans->currentPage(),
-                'last_page' => $senimans->lastPage(),
-                'per_page' => $senimans->perPage(),
-                'total' => $senimans->total(),
-            ],
-        ]);
+        if (app()->environment(['local', 'testing', 'development'])) {
+            \Log::info('SenimanController@index response', [
+                'senimans' => $senimans->items(),
+                'pagination' => [
+                    'current_page' => $senimans->currentPage(),
+                    'last_page' => $senimans->lastPage(),
+                    'per_page' => $senimans->perPage(),
+                    'total' => $senimans->total(),
+                ],
+            ]);
+        }
 
-        return view('web.Seniman.seniman', compact('senimans', 'request'));
+        return view('web.Seniman.seniman', compact('senimans', 'request', 'cities'));
     }
 
     public function detail($slug)
     {
-        $seniman = Karya::where('slug', $slug)->firstOrFail();
+        $seniman = Karya::with(['province', 'city', 'district'])
+            ->where('slug', $slug)
+            ->firstOrFail();
 
         // Ambil produk dari seniman ini dengan eager load imageUtama
         $products = $seniman->product()->with('imageUtama')->paginate(12);
@@ -79,12 +112,20 @@ class SenimanController extends Controller
         $senimanData = [
             'id' => $seniman->id,
             'name' => $seniman->name,
+            'julukan' => $seniman->julukan,
             'slug' => $seniman->slug,
             'address' => $seniman->address,
+            'profession' => $seniman->profession,
             'bio' => $seniman->bio,
             'description' => $seniman->description,
+            'art_projects' => $seniman->art_projects,
+            'achievement' => $seniman->achievement,
+            'exhibition' => $seniman->exhibition,
             'social' => $seniman->social,
             'image' => $seniman->image,
+            'province' => $seniman->province,
+            'city' => $seniman->city,
+            'district' => $seniman->district,
             'total_products' => $totalProducts,
             'created_at' => $seniman->created_at,
         ];
@@ -101,16 +142,18 @@ class SenimanController extends Controller
             ];
         });
 
-        \Log::info('SenimanController@detail response', [
-            'seniman' => $senimanData,
-            'products' => $productsData,
-            'pagination' => [
-                'current_page' => $products->currentPage(),
-                'last_page' => $products->lastPage(),
-                'per_page' => $products->perPage(),
-                'total' => $products->total(),
-            ],
-        ]);
+        if (app()->environment(['local', 'testing', 'development'])) {
+            \Log::info('SenimanController@detail response', [
+                'seniman' => $senimanData,
+                'products' => $productsData,
+                'pagination' => [
+                    'current_page' => $products->currentPage(),
+                    'last_page' => $products->lastPage(),
+                    'per_page' => $products->perPage(),
+                    'total' => $products->total(),
+                ],
+            ]);
+        }
 
         // Kirim data ke view
         return view('web.Seniman.seniman-detail', [

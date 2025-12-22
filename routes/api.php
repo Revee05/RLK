@@ -18,3 +18,11 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
 });
 
 Route::post('payment/callback', 'Web\PaymentController@handle')->name('payment.callback');
+// API untuk cascade dropdown location
+Route::get('/cities/{province_id}', function($province_id) {
+    return \App\City::where('province_id', $province_id)->orderBy('name', 'asc')->get(['id', 'name']);
+});
+
+Route::get('/districts/{city_id}', function($city_id) {
+    return \App\District::where('city_id', $city_id)->orderBy('name', 'asc')->get(['id', 'name']);
+});

@@ -7,6 +7,7 @@ use App\User;
 use Carbon;
 use Auth; 
 use Illuminate\Support\Facades\Hash;
+use App\Favorite;
 
 class UsersController extends Controller
 {
@@ -146,4 +147,17 @@ class UsersController extends Controller
         $user->save();
         return back();
     }
+
+    
+
+public function favorites()
+{
+    $favorites = Favorite::with('product')
+        ->where('user_id', auth()->id())
+        ->get();
+
+    return view('account.favorites.favorites', compact('favorites'));
+}
+
+
 }

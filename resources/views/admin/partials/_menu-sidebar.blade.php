@@ -7,7 +7,7 @@
         <div class="sidebar-brand-text mx-3">Lelang</sup></div>
     </a>
     <hr class="sidebar-divider my-0">
-    <li class="nav-item">
+    <li class="nav-item @yield('dashboard')">
         <a class="nav-link" href="{{route('admin.dashboard')}}">
             <i class="fas fa-fw fa-tachometer-alt"></i>
             <span>Dashboard</span></a>
@@ -95,8 +95,14 @@
             <span>Sliders</span>
         </a>
     </li>
+    <li class="nav-item @yield('panduan')">
+        <a class="nav-link collapsed " href="{{ route('admin.panduan.index') }}">
+            <i class="fas fa-book-open"></i>
+            <span>Panduan Pengguna</span>
+        </a>
+    </li>
     <hr class="sidebar-divider">
-    <li class="nav-item @yield('post')">
+    <li class="nav-item @yield('penawaran')">
         <a class="nav-link collapsed" href="{{route('admin.daftar-penawaran.index')}}">
             <i class="fas fa-cart-plus"></i>
             <span>Daftar Penawaran</span>

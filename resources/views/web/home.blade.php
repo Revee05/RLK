@@ -99,7 +99,7 @@
                             <div class="card-body">
                                 <h5>{{ $produk->title }}</h5> 
                                 <p class="text-decoration-none text-dark" href="{{route('products.category',$produk->kategori->slug)}}">{{$produk->kategori->name}}</p>
-                                <a href="{{route('detail',$produk->slug)}}" class="btn btn-outline-custom">Bid Sekarang</a>
+                                <a href="{{route('lelang.detail',$produk->slug)}}" class="btn btn-outline-custom">Bid Sekarang</a>
                             </div>
 
                         </div>

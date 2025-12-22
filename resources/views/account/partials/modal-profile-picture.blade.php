@@ -10,7 +10,7 @@
             </div>
             <div class="modal-body text-center">
                 <img id="pp-current"
-                    src="{{ asset(Auth::user()->foto) ?? 'https://www.figma.com/api/mcp/asset/1bcfd75e-90c9-43bf-8586-79d92d395def' }}"
+                    src="{{ Auth::user()->foto ? asset(Auth::user()->foto) : asset('assets/img/default-profile-picture.webp') }}"
                     alt="avatar" class="mb-1">
 
                 <div class="text-center">

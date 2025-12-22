@@ -38,4 +38,7 @@ Route::group(['prefix' => '/account', 'middleware' => ['auth', 'verified', 'IsMe
     // Notification settings
     Route::get('/notifications', 'Account\NotificationController@index')->name('account.notifications');
     Route::post('/notifications', 'Account\NotificationController@update')->name('account.notifications.update');
+	Route::get('/check-winner', 'Account\NotificationController@checkWinner')
+        ->name('check.winner');
+
 });

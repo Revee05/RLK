@@ -88,9 +88,9 @@
                             <span class="info-label">Alamat Lengkap</span>
                             <span class="info-value" style="max-width: 60%; text-align: right;">
                                 {{ $order->address->address }}, 
-                                {{ $order->address->kecamatan->nama_kecamatan ?? '' }}, 
-                                {{ $order->address->kabupaten->nama_kabupaten ?? '' }}, 
-                                {{ $order->address->provinsi->nama_provinsi ?? '' }}
+                                {{ $order->address->district->name ?? '' }}, 
+                                {{ $order->address->city->name ?? '' }}, 
+                                {{ $order->address->province->name ?? '' }}
                             </span>
                         </div>
                         @else

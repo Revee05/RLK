@@ -1,0 +1,213 @@
+/* Container Width */
+.tentang-container {
+    max-width: 1140px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+/* Wider container used only for the small image row */
+.tentang-small-wider {
+    max-width: 1320px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+/* Brand Color */
+.tentang-brand-color {
+    color: #58bcc2;
+}
+
+/* Text Alignment */
+.tentang-text-justify {
+    text-align: justify;
+}
+
+/* Responsive font-size utility: desktop = Bootstrap `fs-5`, smaller on mobile */
+.tentang-responsive-fs {
+    font-size: 1.25rem; /* same as Bootstrap fs-5 */
+    line-height: 1.6;
+}
+
+/* Images */
+.tentang-img-full {
+    width: 100%;
+    height: auto;
+}
+
+/* Main square photo (desktop: 430x430px, responsive on smaller devices) */
+.tentang-main-photo {
+    width: 550px;
+    height: 550px;
+    object-fit: cover;
+    display: block;
+    margin-left: auto;
+}
+
+/* Team Card Placeholder */
+.tentang-team-placeholder {
+    height: 200px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Team card with absolute avatar that overflows half above the card */
+.team-card {
+    position: relative;
+    overflow: visible;
+    box-shadow: 0 2px 8px 0 rgba(0, 0, 0, 0.25) !important;
+}
+.team-card .about-avatar-abs {
+    position: absolute;
+    top: -50px; /* half of avatar height (100px) to overflow half above */
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100px;
+    height: 100px;
+    object-fit: cover;
+    border-radius: 50%;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12);
+}
+.team-card .card-body {
+    padding-top: 3.5rem;
+    /* make room for the overlapping avatar */
+}
+
+/* Team Member Photo */
+.tentang-team-photo {
+    width: 230px;
+    height: 230px;
+    object-fit: cover;
+}
+
+/* Team member name (responsive) */
+.tentang-team-name {
+    font-size: 1.25rem; /* default for tablet/desktop */
+    line-height: 1.2;
+    margin-bottom: 0;
+}
+
+/* Cyan horizontal rule for the Tentang page */
+hr.tentang-hr-cyan {
+    border: 0;
+    height: 4px;
+    background: #58bcc2;
+    max-width: 190px;
+    margin: 1.25rem auto;
+    border-radius: 2px;
+}
+
+/* Utility: larger bottom margin than Bootstrap's `mb-5` */
+.mb-6 {
+    margin-bottom: 5rem !important; /* slightly larger than mb-5 (3rem) */
+}
+
+/* CTA Button */
+.tentang-cta-btn {
+    background-color: #58bcc2;
+    border-radius: 50px;
+}
+
+.tentang-cta-btn:hover {
+    background-color: #47a5ab;
+}
+
+/* Accordion Styles */
+.accordion-button:not(.collapsed) {
+    background-color: #58bcc2;
+    color: white;
+}
+
+.accordion-button:focus {
+    box-shadow: none;
+    border-color: rgba(88, 188, 194, 0.25);
+}
+
+.accordion-button:not(.collapsed)::after {
+    filter: brightness(0) invert(1);
+}
+
+/* Center accordion titles */
+.accordion .accordion-button {
+    position: relative; /* allow absolute positioning of chevron */
+    justify-content: center; /* centers label */
+    text-align: center;
+    padding-left: 1rem; /* ensure some horizontal padding remains */
+    padding-right: 1rem;
+}
+
+/* Place Bootstrap's chevron to the right so the button label stays centered */
+.accordion .accordion-button::after {
+    position: absolute;
+    right: 1rem;
+    left: auto;
+    margin: 0;
+}
+
+/* Give each accordion item a rounded white card look with drop shadow */
+.accordion .accordion-item {
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px 0 rgba(0, 0, 0, 0.25) !important;
+    overflow: hidden; /* ensure rounded corners clip children */
+}
+
+/* Keep inner accordion-button visually full-width but remove default item border if present */
+.accordion .accordion-item .accordion-button {
+    border: 0;
+    border-radius: 0; /* let item control rounding */
+}
+
+/* Responsive media queries (kept at bottom as project convention) */
+@media (max-width: 767.98px) {
+    .tentang-main-photo {
+        width: 100%;
+        height: auto;
+        aspect-ratio: 1 / 1;
+    }
+
+    .tentang-responsive-fs {
+        font-size: 1rem; /* smaller on small devices */
+    }
+
+    /* Mobile tweaks: keep avatar overlapping but add space above the card so it doesn't touch previous element */
+    .team-card .about-avatar-abs {
+        position: absolute !important;
+        top: -40px !important; /* overlap half above, adjusted for smaller avatar */
+        left: 50% !important;
+        transform: translateX(-50%) !important;
+        width: 80px !important;
+        height: 80px !important;
+        margin: 0 !important;
+        display: block;
+    }
+
+    .team-card .card-body {
+        padding-top: 3rem; /* room for the smaller overlapping avatar */
+    }
+
+    .mb-sm-down-5 {
+        margin-bottom: 3rem !important; /* mirrors Bootstrap's mb-5 */
+    }
+
+    /* Make team photos smaller and centered on mobile */
+    .tentang-team-photo {
+        width: 120px;
+        height: 120px;
+        object-fit: cover;
+        display: block;
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    /* Team member name smaller on mobile */
+    .tentang-team-name {
+        font-size: 1rem; /* smaller on phones */
+    }
+}
+
+@media (min-width: 1200px) {
+    .tentang-team-name {
+        font-size: 1.3rem; /* slightly larger on wide screens */
+    }
+}
