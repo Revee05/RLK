@@ -14,6 +14,7 @@
             @csrf
 
 <<<<<<< HEAD
+<<<<<<< HEAD
         {{-- ID item yang dipilih --}}
         <input type="hidden" name="selected_item_ids" value="{{ json_encode($selectedItemIds) }}">
         
@@ -35,6 +36,8 @@
         
         <div class="row">
 =======
+=======
+>>>>>>> 43b45affe19788a50a895b18b1bc2b3dbadc8885
             {{-- 1. Mengirim ID barang mana saja yang dicentang user --}}
             <input type="hidden" name="selected_item_ids" value="{{ json_encode($selectedItemIds) }}">
 
@@ -43,7 +46,10 @@
 
             <input type="hidden" name="selected_district_id" id="selected_district_id"
                 value="{{ $selectedAddress->district_id ?? '' }}">
+<<<<<<< HEAD
 >>>>>>> 8d3c61b76e5d2177c0d7f5265badd763d88e6ec7
+=======
+>>>>>>> 43b45affe19788a50a895b18b1bc2b3dbadc8885
 
             <div class="row">
 
@@ -126,12 +132,15 @@
                         </div>
 
 <<<<<<< HEAD
+<<<<<<< HEAD
                             <div id="selected-shipper" class="selected-shipper"></div>
                         </div>
                         <input type="radio" name="shipping_method" value="delivery" class="shipper-radio-custom" id="radioDelivery">
                     </label>
                 </div>
 =======
+=======
+>>>>>>> 43b45affe19788a50a895b18b1bc2b3dbadc8885
                         {{-- Delivery Service --}}
                         <label class="shipping-item">
                             <div class="shipping-left">
@@ -159,7 +168,10 @@
                                 id="radioDelivery">
                         </label>
                     </div>
+<<<<<<< HEAD
 >>>>>>> 8d3c61b76e5d2177c0d7f5265badd763d88e6ec7
+=======
+>>>>>>> 43b45affe19788a50a895b18b1bc2b3dbadc8885
 
                     {{-- NOTE --}}
                     <div class="note-wrapper mb-4" id="noteWrapper">
@@ -247,6 +259,7 @@
                             </div>
 
 <<<<<<< HEAD
+<<<<<<< HEAD
                         <div class="checkout-row gift-wrap-row" style="{{ $isGiftWrap ? '' : 'display:none;' }}">
                             <span class="label">Gift Wrap</span>
                             <span class="value" id="gift_wrap_price">Rp {{ $isGiftWrap ? number_format(10000,0,',','.') : 0 }}</span>
@@ -267,6 +280,8 @@
                     Pay Now
                 </button>
 =======
+=======
+>>>>>>> 43b45affe19788a50a895b18b1bc2b3dbadc8885
                             <div class="checkout-row">
                                 <span class="label">Pengiriman</span>
                                 <span class="value" id="shipping_price">Rp 0</span>
@@ -298,7 +313,10 @@
                     </button>
                 </div>
 
+<<<<<<< HEAD
 >>>>>>> 8d3c61b76e5d2177c0d7f5265badd763d88e6ec7
+=======
+>>>>>>> 43b45affe19788a50a895b18b1bc2b3dbadc8885
             </div>
         </form>
     </div>
@@ -316,6 +334,7 @@
 @endsection
 
 @section('js')
+<<<<<<< HEAD
 <<<<<<< HEAD
 <script>
 window.checkout = window.checkout || {};
@@ -468,6 +487,8 @@ document.addEventListener("DOMContentLoaded", function () {
             const modal = bootstrap.Modal.getInstance(document.getElementById('paymentModal'));
             if(modal) modal.hide();
 =======
+=======
+>>>>>>> 43b45affe19788a50a895b18b1bc2b3dbadc8885
     <script>
         window.checkout = window.checkout || {};
         window.checkout.destination = {{ $selectedAddress->district_id ?? 'null' }};
@@ -594,7 +615,10 @@ document.addEventListener("DOMContentLoaded", function () {
                     if (modal) modal.hide();
                 });
             });
+<<<<<<< HEAD
 >>>>>>> 8d3c61b76e5d2177c0d7f5265badd763d88e6ec7
+=======
+>>>>>>> 43b45affe19788a50a895b18b1bc2b3dbadc8885
         });
 
         /* document.addEventListener("DOMContentLoaded", function () {

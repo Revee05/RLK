@@ -92,6 +92,9 @@ Route::get('/merch/categories', 'Web\MerchProduct\GetMerchCategory')->name('merc
 Route::get('/merch/{slug}', 'Web\MerchProduct\getDetail')->name('merch.products.detail');
 Route::get('/merch-products/json', 'Web\MerchProduct\GetMerchProduct')->name('merch.products.json');
 
+// =============================
+// SENIMAN
+// =============================
 Route::get('/pay', 'PaymentController@createInvoice')->name('pay');
 
 // prod routes

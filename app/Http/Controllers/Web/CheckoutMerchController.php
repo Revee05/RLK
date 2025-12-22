@@ -69,14 +69,20 @@ class CheckoutMerchController extends Controller
             // Logika Nama Produk
             $productName = $item->merchProduct->name ?? 'Unknown Product';
 <<<<<<< HEAD
+<<<<<<< HEAD
             
 =======
+=======
+>>>>>>> 43b45affe19788a50a895b18b1bc2b3dbadc8885
 
             /*if($item->merchSize) {
                 $productName .= ' (' . $item->merchSize->size . ')';
             }*/
 
+<<<<<<< HEAD
 >>>>>>> 8d3c61b76e5d2177c0d7f5265badd763d88e6ec7
+=======
+>>>>>>> 43b45affe19788a50a895b18b1bc2b3dbadc8885
             return [
                 'id'       => $item->id,
                 'name'     => $productName,
@@ -173,6 +179,7 @@ class CheckoutMerchController extends Controller
 
         // 2. Ambil Item dari Database (HANYA YANG DIPILIH)
 <<<<<<< HEAD
+<<<<<<< HEAD
         $cartItems = CartItem::with(['merchProduct', 'merchVariant.images', 'merchSize'])
                     ->where('user_id', auth()->id())
                     ->whereIn('id', $selectedIds) // <--- Ini perbaikan kuncinya
@@ -182,6 +189,11 @@ class CheckoutMerchController extends Controller
             ->whereIn('id', $selectedIds) // <--- Ini perbaikan kuncinya
             ->get();
 >>>>>>> 8d3c61b76e5d2177c0d7f5265badd763d88e6ec7
+=======
+        $cartItems = CartItem::where('user_id', auth()->id())
+            ->whereIn('id', $selectedIds) // <--- Ini perbaikan kuncinya
+            ->get();
+>>>>>>> 43b45affe19788a50a895b18b1bc2b3dbadc8885
 
         if ($cartItems->isEmpty()) {
             \Log::warning('Checkout PROCESS: item cart tidak ditemukan di DB');
@@ -232,6 +244,7 @@ class CheckoutMerchController extends Controller
 
         // Handle Bungkus Kado (Dari Input Hidden)
         $biayaLayanan = 0;
+<<<<<<< HEAD
 >>>>>>> 8d3c61b76e5d2177c0d7f5265badd763d88e6ec7
 
         if ($shippingMethod === 'delivery') {
@@ -249,6 +262,8 @@ class CheckoutMerchController extends Controller
         // Gift wrap
         $giftWrap = session('checkout_gift_wrap', false);
         $biayaGiftWrap = $giftWrap ? 10000 : 0;
+=======
+>>>>>>> 43b45affe19788a50a895b18b1bc2b3dbadc8885
 
         if ($shippingMethod === 'delivery') {
             $shippingData = [
@@ -277,11 +292,16 @@ class CheckoutMerchController extends Controller
             'etd'         => $request->shipping_etd ?? null,
         ]; */
 
+<<<<<<< HEAD
         $totalTagihan = $totalBarang + $totalOngkir + $biayaGiftWrap;
 =======
         $shipperId = $request->shipping_method == 'pickup' ? null : $request->selected_shipper_id;
         $totalTagihan = $totalBarang + $totalOngkir + $biayaLayanan;
 >>>>>>> 8d3c61b76e5d2177c0d7f5265badd763d88e6ec7
+=======
+        $shipperId = $request->shipping_method == 'pickup' ? null : $request->selected_shipper_id;
+        $totalTagihan = $totalBarang + $totalOngkir + $biayaLayanan;
+>>>>>>> 43b45affe19788a50a895b18b1bc2b3dbadc8885
 
         try {
             DB::beginTransaction();
@@ -290,16 +310,22 @@ class CheckoutMerchController extends Controller
                 'user_id'       => auth()->id(),
                 'address_id'    => $request->address_id,
 <<<<<<< HEAD
+<<<<<<< HEAD
                 'items'         => $orderItems->toJson(), 
                 'shipping'      => json_encode($shippingData),
                 'gift_wrap'     => $giftWrap,
                 'jenis_ongkir'  => $request->jenis_ongkir ?? 'Regular', 
 =======
+=======
+>>>>>>> 43b45affe19788a50a895b18b1bc2b3dbadc8885
                 // Simpan snapshot item sebagai JSON
                 'items'         => $cartItems->toJson(),
                 'shipper_id'    => $shipperId,
                 'jenis_ongkir'  => $request->jenis_ongkir ?? 'Regular',
+<<<<<<< HEAD
 >>>>>>> 8d3c61b76e5d2177c0d7f5265badd763d88e6ec7
+=======
+>>>>>>> 43b45affe19788a50a895b18b1bc2b3dbadc8885
                 'total_ongkir'  => $totalOngkir,
                 'total_tagihan' => $totalTagihan,
                 'invoice'       => 'INV-' . strtoupper(Str::random(10)),
@@ -312,6 +338,7 @@ class CheckoutMerchController extends Controller
 
             DB::commit();
 
+<<<<<<< HEAD
 <<<<<<< HEAD
             session()->forget([
                 'checkout_selected_item_ids',
@@ -329,6 +356,9 @@ class CheckoutMerchController extends Controller
 =======
             return redirect()->route('checkout.success', $order->invoice);
 >>>>>>> 8d3c61b76e5d2177c0d7f5265badd763d88e6ec7
+=======
+            return redirect()->route('checkout.success', $order->invoice);
+>>>>>>> 43b45affe19788a50a895b18b1bc2b3dbadc8885
         } catch (\Exception $e) {
             DB::rollBack();
             \Log::error('Checkout PROCESS: gagal menyimpan order', [
@@ -465,11 +495,15 @@ class CheckoutMerchController extends Controller
             }
 
 <<<<<<< HEAD
+<<<<<<< HEAD
             // URUTKAN DARI TERMURAH
             usort($result, fn ($a, $b) => $a['price'] <=> $b['price']);
 =======
             usort($result, fn($a, $b) => $a['price'] <=> $b['price']);
 >>>>>>> 8d3c61b76e5d2177c0d7f5265badd763d88e6ec7
+=======
+            usort($result, fn($a, $b) => $a['price'] <=> $b['price']);
+>>>>>>> 43b45affe19788a50a895b18b1bc2b3dbadc8885
 
             return response()->json($result);
         } catch (\Throwable $e) {
@@ -491,6 +525,7 @@ class CheckoutMerchController extends Controller
         $order = OrderMerch::where('invoice', $invoice)->firstOrFail();
         return view('web.checkout.success', compact('order'));
     }
+<<<<<<< HEAD
 <<<<<<< HEAD
 
     public function preview($invoice)
@@ -518,3 +553,6 @@ class CheckoutMerchController extends Controller
 =======
 }
 >>>>>>> 8d3c61b76e5d2177c0d7f5265badd763d88e6ec7
+=======
+}
+>>>>>>> 43b45affe19788a50a895b18b1bc2b3dbadc8885

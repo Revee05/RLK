@@ -11,6 +11,7 @@
             <div class="modal-body">
 
 <<<<<<< HEAD
+<<<<<<< HEAD
         <!-- Tambah Alamat -->
         <div class="address-item">
             <button type="button" class="btn-add-address w-100 py-2" id="btn-add-address">
@@ -55,6 +56,8 @@
         </div>
       </div>
 =======
+=======
+>>>>>>> 43b45affe19788a50a895b18b1bc2b3dbadc8885
                 <!-- Tambah Alamat -->
                 <div class="address-item">
                     <button type="button" class="btn-add-address w-100 py-2" id="btn-add-address">
@@ -104,7 +107,10 @@
                 </div>
 
             </div>
+<<<<<<< HEAD
 >>>>>>> 8d3c61b76e5d2177c0d7f5265badd763d88e6ec7
+=======
+>>>>>>> 43b45affe19788a50a895b18b1bc2b3dbadc8885
 
             <div class="modal-footer">
                 <button class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
@@ -174,6 +180,7 @@
                                                         <input type="hidden" name="total_ongkir" id="input_total_ongkir" value="0">
                                                         <input type="hidden" name="jenis_ongkir" id="input_jenis_ongkir" value="Reguler">`;
 
+<<<<<<< HEAD
 <<<<<<< HEAD
                         window.updateTotal(0);
                         
@@ -268,6 +275,8 @@
                         if (modal1) modal1.hide();
                     }
 =======
+=======
+>>>>>>> 43b45affe19788a50a895b18b1bc2b3dbadc8885
                                     document.getElementById('shipping_price').innerText =
                                         'Rp 0';
                                     document.getElementById('total_price').innerText = 'Rp ' +
@@ -278,7 +287,10 @@
                                 }
                             });
                     });
+<<<<<<< HEAD
 >>>>>>> 8d3c61b76e5d2177c0d7f5265badd763d88e6ec7
+=======
+>>>>>>> 43b45affe19788a50a895b18b1bc2b3dbadc8885
                 });
             }
 
