@@ -1,3 +1,26 @@
+/* Styles for Seniman filter/sort pills */
+.filter-sort-wrapper { display: flex; align-items: center; gap: 12px; }
+.pill-group { display:flex; gap:12px; align-items:center; }
+.filter-dropdown { position:relative; display:inline-block; }
+.pill { display: inline-flex; align-items: center; gap:8px; padding:10px 14px; border:1px solid #e6e6e6; border-radius:999px; background:#fff; box-shadow: 0 0 0 rgba(0,0,0,0); }
+.pill-icon { display:inline-flex; align-items:center; justify-content:center; width:20px; color:#666; }
+.pill-input { border:0; outline:0; background:transparent; padding:0; font-size:14px; color:#444; min-width:140px; }
+.pill-input::placeholder { color:#bdbdbd; }
+.pill-select { -webkit-appearance:none; -moz-appearance:none; appearance:none; border:0; outline:0; background:transparent; padding:0 18px 0 0; font-size:14px; color:#444; }
+.pill-sort { position:relative; padding-right:28px; }
+.pill-caret { position:absolute; right:10px; top:50%; transform:translateY(-50%); pointer-events:none; color:#666; }
+
+/* smaller / secondary variants */
+.pill.small { padding:8px 12px; }
+
+/* responsive */
+@media (max-width:576px){
+  .pill-input { min-width:80px; }
+  .filter-sort-wrapper { gap:8px; }
+}
+
+/* subtle focus */
+.pill:focus-within { box-shadow: 0 0 0 3px rgba(100,150,255,0.08); border-color:#c6dbff; }
 .seniman-main-container {
     max-width: 1200px;
     margin-left: auto;
@@ -112,6 +135,13 @@
 .sort-select:focus {
     outline: none;
     border-color: #666;
+}
+
+/* Hide the SVG caret for inputs (datalist search box) that reuse .sort-select
+   Keep the caret for true <select> elements. */
+input.sort-select {
+    background-image: none !important;
+    padding-right: 20px; /* reduce right padding since caret removed */
 }
 
 
@@ -321,4 +351,31 @@
     .seniman-bio {
         font-size: 0.8rem;
     }
+}
+
+/* Filter panel dropdown */
+.filter-panel { display:none; position:absolute; z-index:1200; width:260px; right:0; top:calc(100% + 8px); background:#fff; border-radius:12px; padding:14px; box-shadow:0 6px 30px rgba(0,0,0,0.18); border:1px solid rgba(0,0,0,0.06); }
+.filter-panel[aria-hidden="false"] { display:block; }
+.filter-panel-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; }
+.filter-panel-header h4 { margin:0; font-size:18px; }
+.filter-reset { color:#e33; font-weight:600; text-decoration:underline; font-size:13px; }
+.filter-panel-body { padding-top:6px; }
+.filter-available { display:block; margin-bottom:12px; font-size:14px; }
+.filter-section .filter-title { font-weight:700; margin-bottom:8px; }
+
+/* custom select */
+.custom-select { position:relative; }
+.custom-select-trigger { width:100%; text-align:left; padding:10px 12px; border-radius:8px; border:2px solid #111; background:#fff; font-size:14px; }
+.custom-select-trigger .caret { float:right; color:#444; }
+.custom-search { width:100%; border:0; outline:0; font-size:14px; padding:6px 4px; }
+.custom-select-trigger { display:flex; align-items:center; gap:8px; }
+.custom-options { display:none; position:absolute; left:0; right:0; top:calc(100% + 8px); background:#fff; border-radius:8px; box-shadow:0 6px 18px rgba(0,0,0,0.12); max-height:160px; overflow:auto; border:1px solid #eee; }
+.custom-option { padding:10px 12px; cursor:pointer; }
+.custom-option:hover { background:#f5f5f5; }
+.custom-options.open { display:block; }
+
+/* mobile adjustments: mimic attachment */
+@media (max-width:420px){
+    .filter-panel { width:320px; left:10px; right:10px; top:60px; }
+    .custom-select-trigger { border-radius:8px; }
 }

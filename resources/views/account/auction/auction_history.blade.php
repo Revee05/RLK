@@ -59,9 +59,9 @@
                         <thead>
                         <tr>
                             <th style="width: 20%; background-color: #051a36; color: white; padding: 0.8rem; border: none;">Item Lelang</th>
-                            <th style="width: 18%; background-color: #051a36; color: white; padding: 0.8rem; border: none;">Penutupan</th>
-                            <th style="width: 19%; background-color: #051a36; color: white; padding: 0.8rem; border: none;">Tawaran Saya</th>
-                            <th style="width: 23%; background-color: #051a36; color: white; padding: 0.8rem; border: none;">Tawaran Tertinggi</th>
+                            <th style="width: 18.5%; background-color: #051a36; color: white; padding: 0.8rem; border: none;">Penutupan</th>
+                            <th style="width: 18%; background-color: #051a36; color: white; padding: 0.8rem; border: none;">Tawaran Saya</th>
+                            <th style="width: 24%; background-color: #051a36; color: white; padding: 0.8rem; border: none;">Tawaran Tertinggi</th>
                             <th class="text-center" style="width: 15%; background-color: #051a36; color: white; padding: 0.8rem; border: none;">Status</th>
                         </tr>
                         </thead>
@@ -86,28 +86,60 @@
 <script>
     $(document).ready(function() {
         
-        // Fungsi untuk refresh data
+        // Console Log awal saat halaman dimuat
+        console.log("Halaman Riwayat Lelang Siap!"); 
+
         function refreshAuctionData() {
+            // Log penanda bahwa request sedang dikirim
+            console.log("⏳ Sedang meminta data terbaru ke server..."); 
+
             $.ajax({
-                url: "{{ route('account.auction_history') }}", // Pastikan nama route ini benar sesuai web.php kamu
+                url: "{{ route('account.auction_history') }}", 
                 type: "GET",
                 dataType: "json",
                 success: function(response) {
-                    // 1. Update Isi Tabel (HTML)
+                    // --- TAMBAHKAN LOG DI SINI (Saat Sukses) ---
+                    
+                    // 1. Log pesan sukses
+                    console.log("✅ Sukses menerima data!");
+
+                    // 2. Log Data Statistik (Lihat angkanya benar/tidak)
+                    console.log("📊 Data Statistik:", response.stats);
+
+                    // 3. Log Data Debug dari Controller (Yang kita tambah tadi)
+                    // Ini akan menampilkan array data lelang asli di console
+                    console.group("🔍 Debug Data Server"); // Biar rapi pakai group
+                        console.log("User ID:", response.debug_data.user_id);
+                        console.log("Waktu Server:", response.debug_data.waktu_server);
+                        console.log("Raw History Data:", response.debug_data.raw_history);
+                        
+                        // Contoh: Cek status item pertama (jika ada)
+                        if(response.debug_data.raw_history.length > 0){
+                            console.log("Status Item Terakhir:", response.debug_data.raw_history[0].status_label);
+                        }
+                    console.groupEnd();
+
+                    // -------------------------------------------
+
+                    // Update Isi Tabel
                     $('#auction-table-body').html(response.html);
 
-                    // 2. Update Statistik (Angka)
+                    // Update Statistik
                     $('#stat-total-bids').text(response.stats.totalBids);
                     $('#stat-items-won').text(response.stats.itemsWon);
                     $('#stat-highest-bid').text(response.stats.highestBid);
                 },
                 error: function(xhr, status, error) {
-                    console.error("Gagal memuat update lelang:", error);
+                    // --- LOG JIKA ERROR ---
+                    console.error("❌ Terjadi Kesalahan!");
+                    console.error("Status:", status);
+                    console.error("Error Detail:", error);
+                    console.warn("Respon Server:", xhr.responseText); // Lihat apa pesan error dari Laravel
                 }
             });
         }
 
-        // Jalankan fungsi refresh setiap 5 detik (5000 ms)
+        // Jalankan fungsi refresh setiap 5 detik
         setInterval(refreshAuctionData, 5000);
     });
 </script>

@@ -21,4 +21,9 @@ class Kategori extends Model
         return $query->where('cat_type','blog');
     }
     
+    public function products()
+    {
+        return $this->hasMany('App\Products', 'kategori_id');
+    }
+    
 }

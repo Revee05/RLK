@@ -21,27 +21,19 @@
                 </div>
             </div>
 
-            <div class="dropdown-menu-nav">
+            {{-- <div class="dropdown-menu-nav">
                 <a href="#" class="dropdown-toggle" id="tentangDropdown">
                     Tentang <span class="fa fa-caret-down caret-icon"></span>
                 </a>
                 <div class="dropdown-menu" id="tentangDropdownMenu">
-                    <a class="dropdown-item" href="{{ route('galeri.kami') }}">Perusahaan</a>
-                    <a class="dropdown-item" href="#">Tim</a>
+                    <a class="dropdown-item" href="{{ route('perusahaan') }}">Perusahaan</a>
+                    <a class="dropdown-item" href="{{ route('tim') }}">Tim</a>
                 </div>
-            </div>
-
+            </div> --}}
+            <a class="@yield('tentang')" href="{{ route('perusahaan') }}">Tentang</a>
             <a href="{{ route('seniman.index') }}" class="@yield('seniman')">Seniman</a>
 
-            <div class="dropdown-menu-nav">
-                <a href="#" class="dropdown-toggle" id="panduanDropdown">
-                    Panduan <span class="fa fa-caret-down caret-icon"></span>
-                </a>
-                <div class="dropdown-menu" id="panduanDropdownMenu">
-                    <a class="dropdown-item" href="#">Panduan Beli</a>
-                    <a class="dropdown-item" href="#">Panduan Jual</a>
-                </div>
-            </div>
+            <a href="{{ route('panduan.index') }}" class="@yield('panduan')">Panduan</a>
         </nav>
         <!-- Action & Hamburger (sejajar kanan) -->
         <div class="header-action">
@@ -58,10 +50,21 @@
                         @endif
                     </a>
                     <div class="dropdown-menu" id="profileDropdownMenu">
+
                         @if (Auth::user()->access == 'admin')
                             <a class="dropdown-item" href="{{ route('admin.dashboard') }}">Dashboard</a>
                         @else
                             <a class="dropdown-item" href="{{ route('account.dashboard') }}">Profile</a>
+                            <div class="d-md-none"> <!-- show nav list only on mobile -->
+                                <a class="dropdown-item" href="{{ route('account.katasandi') }}">Ubah Password</a>
+                                <a class="dropdown-item" href="{{ route('account.address.index') }}">Alamat</a>
+                                <a class="dropdown-item" href="#">Favorit</a>
+                                <a class="dropdown-item" href="{{ route('account.auction_history') }}">Riwayat Lelang</a>
+                                <a class="dropdown-item" href="{{ route('account.purchase.history') }}">Riwayat
+                                    Pembelian</a>
+                                <a class="dropdown-item" href="{{ route('account.notifications') }}">Pengaturan
+                                    Notifikasi</a>
+                            </div>
                         @endif
                         <a class="dropdown-item" href="{{ route('logout') }}"
                             onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
