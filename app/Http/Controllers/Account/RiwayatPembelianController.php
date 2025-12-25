@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\OrderMerch;
 use App\Order;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Auth;
 
 class RiwayatPembelianController extends Controller
@@ -27,7 +28,7 @@ class RiwayatPembelianController extends Controller
             }
 
             $lelangOrders = Order::where('user_id', Auth::user()->id)
-                           ->with('lelang.karya')
+                           ->with('product.karya')
                            ->get();
 
             foreach ($lelangOrders as $order) {
@@ -35,6 +36,16 @@ class RiwayatPembelianController extends Controller
             }
 
             $orders = $merchOrders->concat($lelangOrders)->sortByDesc('created_at');
+
+            if (app()->environment(['local', 'testing', 'development'])) {
+                Log::info('RiwayatPembelianController@index', [
+                    'user_id' => Auth::user()->id,
+                    'merch_count' => $merchOrders->count(),
+                    'lelang_count' => $lelangOrders->count(),
+                    'orders_count' => $orders->count(),
+                    'order_ids' => $orders->pluck('id')->values()->all(),
+                ]);
+            }
 
             return view('account.merch_history.purchase_history', compact('orders'));
         }
@@ -55,23 +66,48 @@ class RiwayatPembelianController extends Controller
                           ->firstOrFail();
         
         $order->order_type = 'merch';
-        
+
+        if (app()->environment(['local', 'testing', 'development'])) {
+            Log::info('RiwayatPembelianController@show', [
+                'user_id' => Auth::user()->id,
+                'order_id' => $order->id,
+                'order_type' => 'merch',
+            ]);
+        }
+
         return view('account.merch_history.history_detail', compact('order'));
     }
 
     public function showLelang($id)
     {
-        $order = Order::with('lelang.karya')
-                      ->where('id', $id)
-                      ->where('user_id', Auth::user()->id)
-                      ->firstOrFail();
-        
-        $order->order_type = 'lelang';
+        try {
+            $order = Order::with('product.karya')
+                          ->where('id', $id)
+                          ->where('user_id', Auth::user()->id)
+                          ->firstOrFail();
+            
+            $order->order_type = 'lelang';
 
-        // You might need a different detail view for auction orders
-        // For now, let's reuse or create a generic one.
-        // This assumes you have a route named 'account.lelang.order.show'
-        // and a corresponding view.
-        return view('account.lelang_history.history_detail', compact('order'));
+            if (app()->environment(['local', 'testing', 'development'])) {
+                Log::info('RiwayatPembelianController@showLelang', [
+                    'user_id' => Auth::user()->id,
+                    'order_id' => $order->id,
+                    'order_type' => 'lelang',
+                    'product_id' => $order->product_id,
+                ]);
+            }
+
+            return view('account.lelang_history.history_detail', compact('order'));
+        } catch (\Exception $e) {
+            if (app()->environment(['local', 'testing', 'development'])) {
+                Log::error('RiwayatPembelianController@showLelang Error', [
+                    'user_id' => Auth::user()->id,
+                    'order_id' => $id,
+                    'error' => $e->getMessage(),
+                    'trace' => $e->getTraceAsString(),
+                ]);
+            }
+            throw $e;
+        }
     }
 }

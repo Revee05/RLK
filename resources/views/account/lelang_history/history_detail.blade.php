@@ -33,9 +33,9 @@
                     <div class="order-content">
                         <div class="section-title">Produk yang Dimenangkan</div>
                         <div class="product-item">
-                            @if($order->lelang && $order->lelang->karya->image)
-                                <img src="{{ asset('storage/' . $order->lelang->karya->image) }}" 
-                                     alt="{{ $order->lelang->karya->nama_karya }}" 
+                            @if($order->product && $order->product->karya && $order->product->karya->image)
+                                <img src="{{ asset('storage/' . $order->product->karya->image) }}" 
+                                     alt="{{ $order->product->karya->nama_karya }}" 
                                      class="product-image">
                             @else
                                 <div class="product-image" style="background-color: #e0e0e0; display: flex; align-items: center; justify-content: center;">
@@ -43,7 +43,7 @@
                                 </div>
                             @endif
                             <div class="product-details">
-                                <div class="product-name">{{ $order->lelang->karya->nama_karya ?? 'Produk Lelang' }}</div>
+                                <div class="product-name">{{ $order->product->karya->nama_karya ?? 'Produk Lelang' }}</div>
                                 <div class="product-price">Harga Menang: Rp. {{ number_format($order->total_tagihan, 0, ',', '.') }}</div>
                             </div>
                         </div>

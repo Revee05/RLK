@@ -118,12 +118,12 @@
                             $productName = $items[0]['name'];
                             $totalProducts = collect($items)->sum('quantity');
                         }
-                    } elseif ($orderType === 'lelang' && isset($order->lelang) && isset($order->lelang->karya)) {
-                        $productName = $order->lelang->karya->nama_karya;
+                    } elseif ($orderType === 'lelang' && isset($order->product) && isset($order->product->karya)) {
+                        $productName = $order->product->karya->nama_karya;
                         $totalProducts = 1;
                     }
                 @endphp
-                <h4 class="product-name mt-1">Nama Barang: {{ $productName }}</h4>
+                <h4 class="product-name mt-1">{{ $productName }}</h4>
             </div>
             <div>
                 @if($order->status == 'pending')
