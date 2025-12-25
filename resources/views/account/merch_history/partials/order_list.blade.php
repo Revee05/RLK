@@ -11,10 +11,11 @@
     font-weight: bold;
 }
 .order-item-card {
-    border: 1px solid #e9ecef;
-    border-radius: .25rem;
+    border: 1.5px solid #d1d5db;
+    border-radius: .375rem;
     padding: 1.25rem;
     background-color: #fff;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
 .order-item-header {
     padding-bottom: 0.75rem;
@@ -45,6 +46,7 @@
 }
 .order-item-footer {
     margin-top: 1rem;
+    gap: 0.5rem;
 }
 .empty-state {
     color: #6c757d;
@@ -52,10 +54,46 @@
 .btn-beli-lagi {
     background-color: #58bcc2;
     color: #fff;
+    padding: 0.375rem 1rem;
+    border-radius: 0.25rem;
+    border: none;
+}
+.btn-beli-lagi:hover {
+    background-color: #4aa8ae;
+}
+.btn-bayar-sekarang {
+    background-color: #28a745;
+    color: #fff;
+    padding: 0.375rem 1rem;
+    border-radius: 0.25rem;
+    border: none;
+    text-decoration: none;
+    display: inline-block;
+}
+.btn-bayar-sekarang:hover {
+    background-color: #218838;
+    color: #fff;
+}
+.btn-batalkan {
+    border: 1.5px solid #dc3545;
+    color: #dc3545;
+    background-color: #fff;
+    padding: 0.375rem 1rem;
+    border-radius: 0.25rem;
+    text-decoration: none;
+    display: inline-block;
+}
+.btn-batalkan:hover {
+    background-color: #dc3545;
+    color: #fff;
 }
 .btn-lihat-detail {
-    border: 1px solid #58bcc2;
+    border: 1.5px solid #58bcc2;
     color: #58bcc2;
+    background-color: #fff;
+    padding: 0.375rem 1rem;
+    border-radius: 0.25rem;
+    text-decoration: none;
 }
 .btn-lihat-detail:hover {
     background-color: #58bcc2;
@@ -121,8 +159,8 @@
 
         <div class="order-item-footer d-flex justify-content-end align-items-center">
             @if($order->status == 'pending')
-                <a href="{{ $orderType === 'merch' ? route('checkout.success', $order->invoice) : route('lelang.payment.checkout', ['invoice' => $order->invoice]) }}" class="btn btn-sm btn-success me-2">Bayar Sekarang</a>
-                <a href="#" class="btn btn-sm btn-outline-danger">Batalkan Pesanan</a>
+                <a href="{{ $orderType === 'merch' ? route('checkout.success', $order->invoice) : route('lelang.payment.checkout', ['invoice' => $order->invoice]) }}" class="btn-bayar-sekarang">Bayar Sekarang</a>
+                <a href="#" class="btn-batalkan">Batalkan Pesanan</a>
             @elseif($order->status == 'paid' || $order->status == 'shipped')
                 {{-- No button for processing status based on image --}}
             @elseif($order->status == 'completed')
@@ -131,15 +169,9 @@
                  <a href="#" class="btn btn-beli-lagi me-2">Beli Lagi</a>
             @endif
             
-            <div class="dropdown">
-                <a href="#" class="btn btn-sm btn-lihat-detail dropdown-toggle" role="button" id="dropdownMenuLink-{{$order->id}}" data-bs-toggle="dropdown" aria-expanded="false">
-                    Lihat Detail
-                </a>
-                <ul class="dropdown-menu" aria-labelledby="dropdownMenuLink-{{$order->id}}">
-                    <li><a class="dropdown-item ajax-link" href="{{ $orderType === 'merch' ? route('account.merch.order.show', $order->id) : route('account.lelang.order.show', $order->id) }}">Detail Pesanan</a></li>
-                    {{-- Add other actions here if needed --}}
-                </ul>
-            </div>
+            <a href="{{ $orderType === 'merch' ? route('account.merch.order.show', $order->id) : route('account.lelang.order.show', $order->id) }}" class="btn-lihat-detail ajax-link ms-2">
+                Lihat Detail
+            </a>
         </div>
     </div>
     @endforeach

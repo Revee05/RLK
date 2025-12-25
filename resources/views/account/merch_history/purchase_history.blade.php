@@ -23,6 +23,9 @@
 }
 .tab-content {
     padding-top: 1rem;
+    max-height: 500px;
+    overflow-y: auto;
+    overflow-x: hidden;
 }
 </style>
 @endsection
