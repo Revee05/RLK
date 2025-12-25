@@ -28,7 +28,7 @@ class RiwayatPembelianController extends Controller
             }
 
             $lelangOrders = Order::where('user_id', Auth::user()->id)
-                           ->with('product.karya')
+                           ->with(['product.karya', 'product.kategori', 'bid.user'])
                            ->get();
 
             foreach ($lelangOrders as $order) {
@@ -81,7 +81,7 @@ class RiwayatPembelianController extends Controller
     public function showLelang($id)
     {
         try {
-            $order = Order::with('product.karya')
+            $order = Order::with(['product.karya', 'product.kategori', 'product.images', 'bid.user', 'provinsi', 'kabupaten', 'kecamatan'])
                           ->where('id', $id)
                           ->where('user_id', Auth::user()->id)
                           ->firstOrFail();
