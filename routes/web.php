@@ -54,16 +54,12 @@ Route::post('/payments/midtrans-notification', 'Account\PaymentCallbackControlle
 // =============================
 Route::get('/checkout', 'Web\CheckoutMerchController@index')->name('checkout.index');
 Route::post('/checkout/process', 'Web\CheckoutMerchController@process')->name('checkout.process');
-Route::get('/checkout/success/{invoice}', 'Web\CheckoutMerchController@success')->name('checkout.success');
+Route::get('/payment/status/{invoice}', 'Web\PaymentController@status')->name('payment.status');
 Route::post('/checkout/set-address', 'Web\CheckoutMerchController@setAddress')->name('checkout.set-address');
 Route::post('/checkout/shipping-cost', 'Web\CheckoutMerchController@getShippingCost')->name('checkout.shipping-cost');
-Route::post('/checkout/pay', 'Web\PaymentController@payNow')->name('checkout.pay');
-Route::get('/checkout/success', function () {
-    return 'Pembayaran berhasil!';
-})->name('checkout.success');
-Route::get('/checkout/failed', function () {
-    return 'Pembayaran gagal!';
-})->name('checkout.failed');
+Route::get('/checkout/preview/{invoice}', 'Web\CheckoutMerchController@preview')->name('checkout.preview');
+Route::post('/checkout/pay/xendit/{invoice}', 'Web\PaymentController@payXendit')->name('checkout.pay.xendit');
+Route::post('/payment/cancel/{invoice}', 'Web\PaymentController@cancel')->name('payment.cancel');
 
 // =============================
 // LELANG (AUCTION)

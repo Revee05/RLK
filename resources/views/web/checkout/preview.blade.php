@@ -33,34 +33,62 @@
             <h6>No Pesanan</h6>
             <p>{{ $order->invoice }}</p>
         </div>
+
+        {{-- ========================= --}}
+        {{-- ALAMAT / PICKUP INFO --}}
+        {{-- ========================= --}}
         <div class="info-item">
-            <h6>Alamat Pengiriman</h6>
-            <p>
-                {{ Str::title($order->address->name) ?? '-' }} - 
-                {{ $order->address->phone ?? '-' }} <br>
-                {{ Str::title($address->address) ?? '-' }},
-                {{ Str::title($address->district->name) }} <br>
-                {{ Str::title($address->city->name) }},
-                {{ Str::title($address->province->name) }}
-                @if($address->kodepos)
-                    , ID {{ $address->kodepos }}
-                @endif
-            </p>
-        </div>
-        <div class="info-item">
-            <h6>Metode Pengiriman</h6>
-            <p>{{ $shipping['name'] ?? '-' }} </p>
+            @if(($shipping['type'] ?? null) === 'pickup')
+
+                <h6>Pengambilan Pesanan</h6>
+                <p>
+                    <strong>Rasa Lelang Karya</strong><br>
+                    Griya Sekar Gading Blok C No.19<br>
+                    Jam Operasional: 09.00 – 21.00
+                </p>
+
+            @else
+
+                <h6>Alamat Pengiriman</h6>
+                <p>
+                    {{ Str::title($order->address->name ?? '-') }} -
+                    {{ $order->address->phone ?? '-' }} <br>
+
+                    {{ Str::title($address->address ?? '-') }},
+                    {{ Str::title($address->district->name ?? '-') }} <br>
+
+                    {{ Str::title($address->city->name ?? '-') }},
+                    {{ Str::title($address->province->name ?? '-') }}
+
+                    @if(!empty($address->kodepos))
+                        , ID {{ $address->kodepos }}
+                    @endif
+                </p>
+
+            @endif
         </div>
 
-        
+        {{-- ========================= --}}
+        {{-- METODE PENGIRIMAN --}}
+        {{-- ========================= --}}
+        <div class="info-item">
+            <h6>Metode Pengiriman</h6>
+
+            @if(($shipping['type'] ?? null) === 'pickup')
+                <p>Ambil di Toko</p>
+            @else
+                <p>
+                    {{ $shipping['name'] ?? '-' }}
+                    – {{ $shipping['service'] ?? '-' }}
+                </p>
+            @endif
+        </div>
     </div>
     <div class="note-box">
-        {{-- ================= CATATAN ================= --}}
-        @if($order->note)
-            <div class="order-note">
-                <strong>Catatan Pembeli:</strong> {{ $order->note }}
-            </div>
-        @endif
+        <div class="order-note">
+            <strong>Catatan Pembeli:</strong>
+            {{ !empty($order->note) ? $order->note : '-' }}
+        </div>
     </div>
 
     {{-- ================= RINCIAN PESANAN ================= --}}
@@ -69,26 +97,36 @@
     <div class="items-box">
 
         @foreach($items as $item)
-        <div class="product-row">
-            <div class="product-left">
-                <img src="{{ asset($item['image']) }}" class="product-img" alt="">
-                <div>
-                    <div class="product-name">{{ $item['name'] }}</div>
-                    <div class="product-variant">
-                        {{ $item['variant_name'] ?? '-' }}
-                        @if(!empty($item['size_name']))
-                            , {{ $item['size_name'] }}
-                        @endif
+            @php
+                $image = $item['image'] ?? 'img/default.png';
+                $name = $item['name'] ?? 'Unknown Product';
+                $variant = $item['variant_name'] ?? '';
+                $size = $item['size_name'] ?? '';
+                $quantity = $item['qty'] ?? 1;
+                $price = $item['price'] ?? 0;
+            @endphp
+
+            <div class="product-row">
+                <div class="product-left">
+                    <img src="{{ asset($image) }}" class="product-img" alt="{{ $name }}">
+                    <div>
+                        <div class="product-name">{{ $name }}</div>
+                        <div class="product-variant">
+                            {{ $variant }}
+                            @if($size)
+                                , {{ $size }}
+                            @endif
+                        </div>
+                        <div class="product-qty">Qty: {{ $quantity }}</div>
                     </div>
-                    <div class="product-qty">Qty: {{ $item['qty'] }}</div>
+                </div>
+                <div class="product-price">
+                    Rp {{ number_format($price,0,',','.') }}
                 </div>
             </div>
-            <div class="product-price">
-                Rp {{ number_format($item['price'],0,',','.') }}
-            </div>
-        </div>
-        <div class="line"></div>
+            <div class="line"></div>
         @endforeach
+
 
         {{-- SUMMARY --}}
         <div class="summary-row">

@@ -66,7 +66,7 @@
                             </div>
                             <div class="transaction-actions">
                                 @if($order->status == 'pending')
-                                <a href="{{ route('checkout.success', $order->invoice) }}"
+                                <a href="{{ route('payment.status', $order->invoice) }}"
                                     class="btn-action btn-bayar-sekarang">
                                     Bayar Sekarang
                                 </a>
