@@ -13,18 +13,27 @@ class OrderMerch extends Model
         'user_id',
         'address_id',
         'items',
+        'shipping',
+        'gift_wrap',
         'shipper_id',
         'jenis_ongkir',
         'total_ongkir',
         'total_tagihan',
         'invoice',
         'status',
+        'payment_method',
+        'payment_channel',
+        'payment_destination',
+        'stock_reduced',
         'snap_token',
         'note',
+        'email_sent',
     ];
 
     protected $casts = [
         'items' => 'array',
+        'shipping' => 'array',
+        'gift_wrap' => 'boolean',
     ];
 
     public function user()

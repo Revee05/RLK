@@ -65,18 +65,18 @@
 document.addEventListener("DOMContentLoaded", function () {
 
     const modalAdd = new bootstrap.Modal(document.getElementById("addAddressModal"));
-    
+
     let province = document.getElementById('province');
     let city     = document.getElementById('city');
     let district = document.getElementById('district');
 
     const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute("content");
 
-    // ==== LOAD PROVINSI SAAT MODAL 2 DIBUKA ====
+    // ================= LOAD PROVINSI =================
     document.getElementById("addAddressModal").addEventListener("show.bs.modal", function () {
 
         province.innerHTML = '<option value="">Pilih Provinsi</option>';
-        city.innerHTML = '<option value="">Pilih Kabupaten/Kota</option>';
+        city.innerHTML     = '<option value="">Pilih Kabupaten/Kota</option>';
         district.innerHTML = '<option value="">Pilih Kecamatan</option>';
 
         city.disabled = true;
@@ -85,18 +85,17 @@ document.addEventListener("DOMContentLoaded", function () {
         fetch("/lokasi/province")
             .then(res => res.json())
             .then(data => {
-
                 data.sort((a, b) => a.name.localeCompare(b.name));
-
                 data.forEach(p => {
                     province.innerHTML += `<option value="${p.id}">${p.name}</option>`;
                 });
             });
     });
 
-    // ==== PROVINSI -> CITY ====
+    // ================= PROVINSI → KOTA =================
     province.addEventListener("change", function () {
-        city.innerHTML = '<option value="">Pilih Kabupaten/Kota</option>';
+
+        city.innerHTML     = '<option value="">Pilih Kabupaten/Kota</option>';
         district.innerHTML = '<option value="">Pilih Kecamatan</option>';
 
         city.disabled = true;
@@ -107,9 +106,7 @@ document.addEventListener("DOMContentLoaded", function () {
         fetch("/lokasi/city/" + this.value)
             .then(res => res.json())
             .then(data => {
-
                 data.sort((a, b) => a.name.localeCompare(b.name));
-
                 city.disabled = false;
                 data.forEach(k => {
                     city.innerHTML += `<option value="${k.id}">${k.name}</option>`;
@@ -117,8 +114,9 @@ document.addEventListener("DOMContentLoaded", function () {
             });
     });
 
-    // ==== CITY -> DISTRICT ====
+    // ================= KOTA → KECAMATAN =================
     city.addEventListener("change", function () {
+
         district.innerHTML = '<option value="">Pilih Kecamatan</option>';
         district.disabled = true;
 
@@ -127,9 +125,7 @@ document.addEventListener("DOMContentLoaded", function () {
         fetch("/lokasi/district/" + this.value)
             .then(res => res.json())
             .then(data => {
-
                 data.sort((a, b) => a.name.localeCompare(b.name));
-
                 district.disabled = false;
                 data.forEach(k => {
                     district.innerHTML += `<option value="${k.id}">${k.name}</option>`;
@@ -137,58 +133,46 @@ document.addEventListener("DOMContentLoaded", function () {
             });
     });
 
-    // === SUBMIT FORM ===
+    // ================= SUBMIT FORM =================
     document.getElementById("formAddAddress").addEventListener("submit", function (e) {
-      e.preventDefault();
+        e.preventDefault();
 
-      let formData = new FormData(this);
+        let formData = new FormData(this);
 
-      fetch("{{ route('alamat.store') }}", {
-          method: "POST",
-          headers: {
-              "X-CSRF-TOKEN": document.querySelector('input[name=_token]').value,
-          },
-          body: formData
-      })
-      .then(async response => {
-          if (!response.ok) {
-              let error = await response.json();
-              alert(error.message || "Validasi gagal");
-              return;
-          }
-          return response.json();
-      })
-      .then(res => {
-          if (!res) return;
+        fetch("{{ route('alamat.store') }}", {
+            method: "POST",
+            headers: {
+                "X-CSRF-TOKEN": document.querySelector('input[name=_token]').value,
+            },
+            body: formData
+        })
+        .then(async response => {
+            if (!response.ok) {
+                let error = await response.json();
+                alert(error.message || "Validasi gagal");
+                return;
+            }
+            return response.json();
+        })
+        .then(res => {
+            if (!res) return;
 
-          alert("Alamat berhasil ditambahkan!");
-          
-          // tutup modal 2
-          modalAdd.hide();
-          this.reset();
+            alert("Alamat berhasil ditambahkan!");
 
-          // buka modal 1
-          const modal1El = document.getElementById("addressModal");
-          if (modal1El) {
-              const modal1 = new bootstrap.Modal(modal1El);
+            // ===== FLAG UNTUK BUKA MODAL ALAMAT SETELAH RELOAD =====
+            sessionStorage.setItem("openAddressModal", "1");
 
-              // lakukan refresh saat modal 1 sudah terbuka sepenuhnya
-              modal1El.addEventListener("shown.bs.modal", function () {
-                  reloadAddressList();
-              }, { once: true });
+            // ===== RELOAD HALAMAN =====
+            location.reload();
+        })
+        .catch(err => {
+            console.error(err);
+            alert("Terjadi kesalahan");
+        });
+    });
 
-              modal1.show();
-          }
-
-          // Reset form
-          document.getElementById("formAddAddress").reset();
-      })
-      .catch(err => {
-          console.error(err);
-          alert("Terjadi kesalahan");
-      });
-  });
 });
 </script>
+
 
 @endpush

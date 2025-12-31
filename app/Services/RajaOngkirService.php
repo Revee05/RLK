@@ -9,7 +9,6 @@ class RajaOngkirService
 
     public function __construct()
     {
-        // >>> FIX PENTING <<< //
         $endpoint = rtrim(env('RAJAONGKIR_ENDPOINT', 'https://rajaongkir.komerce.id/api/v1'), '/');
         
         $this->client = new Client([
@@ -27,34 +26,48 @@ class RajaOngkirService
             'courier' => $courier,
             'price' => $price
         ]);
-        $response = $this->client->post('calculate/district/domestic-cost', [
-            'headers' => [
-                'key'       => env('RAJAONGKIR_API_KEY'),
-                'Accept'    => 'application/json'
-            ],
-            'multipart' => [
-                [
-                    'name' => 'origin',
-                    'contents' => $origin
+
+        try{
+            $response = $this->client->post('calculate/district/domestic-cost', [
+                'headers' => [
+                    'key'       => env('RAJAONGKIR_API_KEY'),
+                    'Accept'    => 'application/json'
                 ],
-                [
-                    'name' => 'destination',
-                    'contents' => $destination
+                'form_params' => [
+                    'origin' => (int) $origin,
+                    'destination' => (int) $destination,
+                    'weight' => (int) $weight,
+                    'courier' => $courier,
+                    'price' => $price,
                 ],
-                [
-                    'name' => 'weight',
-                    'contents' => $weight
-                ],
-                [
-                    'name' => 'courier',
-                    'contents' => $courier
-                ],
-                [
-                    'name' => 'price',
-                    'contents' => $price
-                ]
-            ]
-        ]);
+            ]);
+            
+            $data = json_decode($response->getBody()->getContents(), true);
+
+            \Log::info('RAJAONGKIR RESPONSE', $data);
+
+            return [
+                'data' => collect($data['data'] ?? [])
+                    ->map(function ($item) {
+                        return [
+                            'service' => $item['service'],
+                            'cost'    => $item['cost'],
+                            'etd'     => $item['etd'] ?? '-',
+                        ];
+                    })
+                    ->toArray()
+            ];
+
+        } catch (\Throwable $e) {
+
+            \Log::error('RAJAONGKIR SERVICE ERROR', [
+                'message' => $e->getMessage(),
+                'file'    => $e->getFile(),
+                'line'    => $e->getLine(),
+            ]);
+
+            return [];
+        }
 
         return json_decode($response->getBody(), true);
     }
