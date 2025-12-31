@@ -54,16 +54,12 @@ Route::post('/payments/midtrans-notification', 'Account\PaymentCallbackControlle
 // =============================
 Route::get('/checkout', 'Web\CheckoutMerchController@index')->name('checkout.index');
 Route::post('/checkout/process', 'Web\CheckoutMerchController@process')->name('checkout.process');
-Route::get('/checkout/success/{invoice}', 'Web\CheckoutMerchController@success')->name('checkout.success');
+Route::get('/payment/status/{invoice}', 'Web\PaymentController@status')->name('payment.status');
 Route::post('/checkout/set-address', 'Web\CheckoutMerchController@setAddress')->name('checkout.set-address');
 Route::post('/checkout/shipping-cost', 'Web\CheckoutMerchController@getShippingCost')->name('checkout.shipping-cost');
-Route::post('/checkout/pay', 'Web\PaymentController@payNow')->name('checkout.pay');
-Route::get('/checkout/success', function () {
-    return 'Pembayaran berhasil!';
-})->name('checkout.success');
-Route::get('/checkout/failed', function () {
-    return 'Pembayaran gagal!';
-})->name('checkout.failed');
+Route::get('/checkout/preview/{invoice}', 'Web\CheckoutMerchController@preview')->name('checkout.preview');
+Route::post('/checkout/pay/xendit/{invoice}', 'Web\PaymentController@payXendit')->name('checkout.pay.xendit');
+Route::post('/payment/cancel/{invoice}', 'Web\PaymentController@cancel')->name('payment.cancel');
 
 // =============================
 // LELANG (AUCTION)
@@ -91,6 +87,21 @@ Route::get('/detail-products', function () {
 Route::get('/merch/categories', 'Web\MerchProduct\GetMerchCategory')->name('merch.categories');
 Route::get('/merch/{slug}', 'Web\MerchProduct\getDetail')->name('merch.products.detail');
 Route::get('/merch-products/json', 'Web\MerchProduct\GetMerchProduct')->name('merch.products.json');
+
+// =============================
+// SENIMAN
+// =============================
+Route::get('/pay', 'PaymentController@createInvoice')->name('pay');
+
+// prod routes
+Route::get('/','Web\HomeController@index')->name('home');
+Route::get('/lelang','Web\HomeController@lelang')->name('lelang');
+Route::get('/blogs','Web\BlogController@index')->name('blogs');
+Route::get('/galeri-kami','Web\HomeController@galeriKami')->name('galeri.kami');
+Route::post('/new/login', 'Auth\\LoginController@postLogin')->name('new.login');
+Route::get('/products/search','Web\HomeController@search')->name('web.search');
+Route::post('/bid/messages', 'Web\ChatsController@sendMessage');
+Route::get('/checkout', 'Web\CheckoutMerchController@index')->name('checkout.index');
 
 // =============================
 // SENIMAN
