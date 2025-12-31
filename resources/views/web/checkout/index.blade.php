@@ -348,9 +348,16 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // Event alamat dipilih
     document.addEventListener('alamatDipilih', function(e){
-        window.checkout.destination = e.detail.districtId;
-        document.getElementById('selected_district_id').value = e.detail.districtId || '';
+        const newDistrictId = e.detail.districtId;
+
+        // UPDATE DESTINATION
+        window.checkout.destination = newDistrictId;
+        document.getElementById('selected_district_id').value = newDistrictId || '';
         
+        // === RESET SHIPPING STATE ===
+        document.getElementById('radioDelivery').checked = false;
+        document.getElementById('radioPickup').checked = false;
+
         document.getElementById('selected_shipper_id').value = '';
         document.getElementById('input_total_ongkir').value = 0;
         document.getElementById('shipping_name').value = '';
@@ -361,6 +368,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
         selectedShipperDiv.style.display = 'none';
         shippingPriceEl.innerText = 'Rp 0';
+        
         window.updateTotal(0);
     });
 });

@@ -67,9 +67,7 @@
                     <strong>{{ $order->invoice }}</strong>
                     tidak dapat diproses.
                 </p>
-
         @endswitch
-
     </div>
 
     {{-- ================= INFO BOX ================= --}}
@@ -80,7 +78,22 @@
         </div>
         <div class="info-item">
             <div class="info-label">Metode Pembayaran</div>
-            <div class="info-value">{{ $order->payment_channel ? strtoupper($order->payment_channel) : '-' }}</div>
+            @switch($order->status)
+                @case('success')
+                    <div class="info-value">{{ $order->payment_channel ? strtoupper($order->payment_channel) : '-' }}</div>
+                    @break
+                @case('pending')
+                    <div class="info-value">Menunggu Pembayaran</div>
+                    @break
+                @case('expired')
+                    <div class="info-value">Waktu Pembayaran Habis</div>
+                    @break
+                @case('cancelled')
+                    <div class="info-value">Pesanan Dibatalkan</div>
+                    @break
+                @default
+                    <div class="info-value">Tidak Diketahui</div>
+            @endswitch
         </div>
         <div class="info-item">
             <div class="info-label">
@@ -92,10 +105,11 @@
             </div>
             <div class="info-value">
                 @if($shippingType === 'pickup')
+                    <strong>Rasa Lelang Karya</strong><br>
                     Griya Jl. Sekargading blok C 19, <br>
                     RT.04/RW.03, Kel. Kalisegoro, <br>
                     Gunung Pati, Kota Semarang <br>
-                    Jawa Tengah 50228
+                    Jam Operasional: 09.00 – 21.00
                 @else
                     {{ $order->address->name ?? '-' }} - {{ $order->address->phone ?? '-' }} <br>
                     {{ $order->address->address ?? '-' }},

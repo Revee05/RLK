@@ -113,6 +113,8 @@ document.addEventListener("DOMContentLoaded", function () {
                         window.checkout.destination =
                             data.address.district_id || '';
 
+                        window.SHIPPER_DATA = null;
+
                         document.dispatchEvent(new CustomEvent('alamatDipilih', {
                             detail: {
                                 districtId: data.address.district_id

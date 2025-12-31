@@ -35,8 +35,14 @@ document.addEventListener("DOMContentLoaded", function(){
     const shipperLoading = document.getElementById('shipper-loading');
 
     document.getElementById('shipperModal').addEventListener('show.bs.modal', function(){
-        const destination = window.SHIPPER_DATA?.destination || window.checkout?.destination || document.getElementById('selected_district_id').value;
-        const weight = window.SHIPPER_DATA?.weight || window.checkout?.totalWeight || {{ $totalWeight }};
+        const destination =
+            window.checkout?.destination ||
+            document.getElementById('selected_district_id').value;
+
+        const weight = 
+            window.SHIPPER_DATA?.weight || 
+            window.checkout?.totalWeight || 
+            {{ $totalWeight }};
 
         if(!destination){
             shipperList.innerHTML = `<div class="text-center text-muted">Pilih alamat terlebih dahulu.</div>`;

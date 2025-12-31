@@ -43,7 +43,9 @@
                 <h6>Pengambilan Pesanan</h6>
                 <p>
                     <strong>Rasa Lelang Karya</strong><br>
-                    Griya Sekar Gading Blok C No.19<br>
+                    Griya Jl. Sekargading blok C 19, <br>
+                    RT.04/RW.03, Kel. Kalisegoro, <br>
+                    Gunung Pati, Kota Semarang <br>
                     Jam Operasional: 09.00 – 21.00
                 </p>
 
