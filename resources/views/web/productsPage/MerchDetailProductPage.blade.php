@@ -54,14 +54,6 @@ $totalStock = $product->variants->sum(fn($variant) => ($variant->sizes && $varia
     3. PAGE MAIN CONTAINER
 ========================= --}}
 
-<!-- Breadcrumb Navigation -->
-<nav aria-label="breadcrumb" class="mb-3 container pt-3">
-    <ol class="breadcrumb bg-transparent p-0 m-0">
-        <li class="breadcrumb-item"><a href="/">Home</a></li>
-        <li class="breadcrumb-item"><a href="/all-other-product">Merchandise</a></li>
-        <li class="breadcrumb-item active" aria-current="page">{{ $product->name }}</li>
-    </ol>
-</nav>
 <div class="main-container">
 
     {{-- =========================

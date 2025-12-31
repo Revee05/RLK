@@ -1,6 +1,33 @@
 @extends('account.partials.layout')
 @section('css')
-<!-- <link rel="stylesheet" href="{{ asset('css/account/purchase_history.css') }}"> -->
+<style>
+.purchase-history-container .nav-tabs {
+    border-bottom: 1px solid #dee2e6;
+}
+.purchase-history-container .nav-tabs .nav-item {
+    margin-bottom: -1px;
+}
+.purchase-history-container .nav-tabs .nav-link {
+    border: 1px solid transparent;
+    border-top-left-radius: .25rem;
+    border-top-right-radius: .25rem;
+    color: #6c757d;
+}
+.purchase-history-container .nav-tabs .nav-link.active, 
+.purchase-history-container .nav-tabs .nav-link:hover, 
+.purchase-history-container .nav-tabs .nav-link:focus {
+    color: #495057;
+    background-color: #fff;
+    border-color: #dee2e6 #dee2e6 #fff;
+    font-weight: 600;
+}
+.tab-content {
+    padding-top: 1rem;
+    max-height: 500px;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+</style>
 @endsection
 
 @section('content')
@@ -10,92 +37,44 @@
 
         <div class="col-md-9">
             <div class="card content-border">
-                <div class="card-head border-bottom border-darkblue align-baseline ps-4">
-                    <h3 class="mb-0 fw-bolder align-bottom">Riwayat Pembelian</h3>
-                </div>
                 <div class="card-body ps-4 pe-4">
-                    <!-- Transaction Statistics -->
-                    <div class="transaction-stats">
-                        <div class="stat-box">
-                            <div class="stat-label">Total Pembelian</div>
-                            <div class="stat-value">{{ $orders->count() }}</div>
-                        </div>
-                        <div class="stat-box">
-                            <div class="stat-label">Total Pengeluaran</div>
-                            <div class="stat-value">Rp.
-                                {{ number_format($orders->where('status', 'paid')->sum('total_tagihan'), 0, ',', '.') }}
-                            </div>
-                        </div>
-                        <div class="stat-box">
-                            <div class="stat-label">Pesanan Pending</div>
-                            <div class="stat-value">{{ $orders->where('status', 'pending')->count() }}</div>
-                        </div>
-                    </div>
+                    <h3 class="mb-4 fw-bolder">Riwayat Pembelian</h3>
+                    
+                    <!-- Status Filter Tabs -->
+                    <ul class="nav nav-tabs" id="statusTabs" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" id="semua-tab" data-bs-toggle="tab" data-bs-target="#semua" type="button" role="tab" aria-controls="semua" aria-selected="true">Semua Status</button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="belum-bayar-tab" data-bs-toggle="tab" data-bs-target="#belum-bayar" type="button" role="tab" aria-controls="belum-bayar" aria-selected="false">Belum Bayar</button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="diproses-tab" data-bs-toggle="tab" data-bs-target="#diproses" type="button" role="tab" aria-controls="diproses" aria-selected="false">Diproses</button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="selesai-tab" data-bs-toggle="tab" data-bs-target="#selesai" type="button" role="tab" aria-controls="selesai" aria-selected="false">Selesai</button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="dibatalkan-tab" data-bs-toggle="tab" data-bs-target="#dibatalkan" type="button" role="tab" aria-controls="dibatalkan" aria-selected="false">Dibatalkan</button>
+                        </li>
+                    </ul>
 
                     <!-- Transaction Log -->
-                    <div class="transaction-log-section">
-                        <div class="section-title">Log Transaksi Terbaru</div>
-                        <div class="transaction-list-container">
-                        @if($orders->count() > 0)
-                        @foreach($orders->sortByDesc('created_at') as $order)
-                        <div class="transaction-item">
-                            <div class="transaction-id">
-                                NO. TRANSAKSI:
-                                <br>
-                                {{ $order->invoice }}
-                            </div>
-                            <div class="transaction-status">
-                                @if($order->status == 'pending')
-                                <span class="badge-status badge-menunggu">Menunggu Pembayaran</span>
-                                @elseif($order->status == 'paid')
-                                <span class="badge-status badge-proses">Sudah Dibayar</span>
-                                @elseif($order->status == 'shipped')
-                                <span class="badge-status badge-dikirim">Sedang Dikirim</span>
-                                @elseif($order->status == 'completed')
-                                <span class="badge-status badge-selesai">Selesai</span>
-                                @else
-                                <span class="badge-status"
-                                    style="background-color: #f8d7da; color: #721c24; border: 1px solid #f5c2c7;">Dibatalkan</span>
-                                @endif
-                            </div>
-                            <div class="transaction-date">
-                                {{ \Carbon\Carbon::parse($order->created_at)->format('d-m-Y H:i') }}
-                            </div>
-                            <div class="transaction-amount">
-                                Rp. {{ number_format($order->total_tagihan, 0, ',', '.') }}
-                            </div>
-                            <div class="transaction-actions">
-                                @if($order->status == 'pending')
-                                <a href="{{ route('payment.status', $order->invoice) }}"
-                                    class="btn-action btn-bayar-sekarang">
-                                    Bayar Sekarang
-                                </a>
-                                @elseif($order->status == 'paid')
-                                <button class="btn-action btn-paid">
-                                    Paid
-                                </button>
-                                @elseif($order->status == 'shipped')
-                                <button class="btn-action btn-shipped">
-                                    Shipped
-                                </button>
-                                @elseif($order->status == 'completed')
-                                <button class="btn-action btn-selesai" disabled>
-                                    Selesai
-                                </button>
-                                @endif
-                                <a href="{{ route('account.merch.order.show', $order->id) }}"
-                                    class="btn-action btn-lihat-detail ajax-link">
-                                    Lihat Detail
-                                </a>
-                            </div>
+                    <div class="tab-content" id="statusTabsContent">
+                        <div class="tab-pane fade show active" id="semua" role="tabpanel" aria-labelledby="semua-tab">
+                            @include('account.merch_history.partials.order_list', ['orders' => $orders])
                         </div>
-                        @endforeach
-                        @else
-                        <div class="empty-state">
-                            <i class="bi bi-cart-x"></i>
-                            <p>Belum ada riwayat pembelian</p>
+                        <div class="tab-pane fade" id="belum-bayar" role="tabpanel" aria-labelledby="belum-bayar-tab">
+                            @include('account.merch_history.partials.order_list', ['orders' => $orders->where('status', 'pending')])
                         </div>
-                        @endif
+                        <div class="tab-pane fade" id="diproses" role="tabpanel" aria-labelledby="diproses-tab">
+                            @include('account.merch_history.partials.order_list', ['orders' => $orders->whereIn('status', ['paid', 'shipped'])])
+                        </div>
+                        <div class="tab-pane fade" id="selesai" role="tabpanel" aria-labelledby="selesai-tab">
+                            @include('account.merch_history.partials.order_list', ['orders' => $orders->where('status', 'completed')])
+                        </div>
+                        <div class="tab-pane fade" id="dibatalkan" role="tabpanel" aria-labelledby="dibatalkan-tab">
+                            @include('account.merch_history.partials.order_list', ['orders' => $orders->whereIn('status', ['cancelled', 'failed'])])
                         </div>
                     </div>
                 </div>
@@ -106,10 +85,5 @@
 @endsection
 
 @section('js')
-<script>
-$(document).ready(function() {
-    // Add any interactive features here if needed
-});
-</script>
 <script src="{{ asset('js/account/tabs.js') }}"></script>
 @endsection
