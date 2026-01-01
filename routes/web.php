@@ -95,21 +95,6 @@ Route::get('/merch-products/json', 'Web\MerchProduct\GetMerchProduct')->name('me
 // =============================
 // SENIMAN
 // =============================
-Route::get('/pay', 'PaymentController@createInvoice')->name('pay');
-
-// prod routes
-Route::get('/','Web\HomeController@index')->name('home');
-Route::get('/lelang','Web\HomeController@lelang')->name('lelang');
-Route::get('/blogs','Web\BlogController@index')->name('blogs');
-Route::get('/galeri-kami','Web\HomeController@galeriKami')->name('galeri.kami');
-Route::post('/new/login', 'Auth\\LoginController@postLogin')->name('new.login');
-Route::get('/products/search','Web\HomeController@search')->name('web.search');
-Route::post('/bid/messages', 'Web\ChatsController@sendMessage');
-Route::get('/checkout', 'Web\CheckoutMerchController@index')->name('checkout.index');
-
-// =============================
-// SENIMAN
-// =============================
 Route::get('/seniman', 'Web\SenimanController@index')->name('seniman.index');
 Route::get('/seniman/{slug}', 'Web\SenimanController@detail')->name('seniman.detail');
 Route::get('/produk-seniman/{slug}', [\App\Http\Controllers\Web\SenimanController::class, 'detail'])->name('products.seniman');

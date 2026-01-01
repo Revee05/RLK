@@ -17,12 +17,11 @@ use App\Services\RajaOngkirService;
 use App\models\MerchProductVariant;
 use Xendit\Xendit;
 
-
 class CheckoutMerchController extends Controller
 {
-    // ==================================================================
-    // METHOD INDEX: Menggunakan Logika Anda (Database & Checkbox)
-    // ==================================================================
+    /**
+     * Tampilan Halaman Checkout
+     */
     public function index(Request $request)
     {
         if (!$request->has('cart_item_ids') || empty($request->input('cart_item_ids'))) {
@@ -36,10 +35,9 @@ class CheckoutMerchController extends Controller
             'merchSize'
         ])
             ->where('user_id', auth()->id())
-            ->whereIn('id', $request->input('cart_item_ids')) // <--- FIX: Wajib filter ID
+            ->whereIn('id', $request->input('cart_item_ids'))
             ->get();
 
-        // Validasi: Jika data tidak ditemukan di DB (misal ID dimanipulasi/dihapus)
         if ($cartItems->isEmpty()) {
             return redirect()->route('cart.index')
                 ->with('error', 'Item yang dipilih tidak valid atau sudah tidak tersedia.');
@@ -51,13 +49,10 @@ class CheckoutMerchController extends Controller
             'checkout_gift_wrap' => $request->has('wrap_product'),
         ]);
 
-        // Cek apakah user mencentang "Bungkus Kado"
         $isGiftWrap = $request->has('wrap_product');
         $giftWrapPrice = $isGiftWrap ? 10000 : 0;
 
-        // Mapping Data untuk View
         $cart = $cartItems->map(function ($item) {
-            // Logika Gambar
             $imagePath = '/img/default.png';
 
             if ($item->merchVariant && $item->merchVariant->images->isNotEmpty()) {
@@ -66,74 +61,36 @@ class CheckoutMerchController extends Controller
                 $imagePath = $item->merchProduct->images->first()->image_path;
             }
 
-            // Logika Nama Produk
             $productName = $item->merchProduct->name ?? 'Unknown Product';
-<<<<<<< HEAD
-<<<<<<< HEAD
-            
-=======
-=======
->>>>>>> 43b45affe19788a50a895b18b1bc2b3dbadc8885
 
-            /*if($item->merchSize) {
-                $productName .= ' (' . $item->merchSize->size . ')';
-            }*/
-
-<<<<<<< HEAD
->>>>>>> 8d3c61b76e5d2177c0d7f5265badd763d88e6ec7
-=======
->>>>>>> 43b45affe19788a50a895b18b1bc2b3dbadc8885
             return [
-                'id'       => $item->id,
-                'name'     => $productName,
-                'price'    => $item->price,
-                'quantity' => $item->quantity,
-                'image'    => $imagePath,
-
-                // --- Informasi Varian ---
+                'id'           => $item->id,
+                'name'         => $productName,
+                'price'        => $item->price,
+                'quantity'     => $item->quantity,
+                'image'        => $imagePath,
                 'variant_name' => $item->merchVariant->name ?? null,
                 'variant_code' => $item->merchVariant->code ?? null,
                 'discount'     => $item->merchVariant->discount ?? null,
                 'stock'        => $item->merchVariant->stock ?? null,
-                'weight'        => $item->merchVariant->weight ?? null,
-
-                // Size
+                'weight'       => $item->merchVariant->weight ?? null,
                 'size_name'    => $item->merchSize->size ?? null,
-
-                // Data ID Asli untuk proses backend nanti
-                'product_id' => $item->merch_product_id,
-                'variant_id' => $item->merch_product_variant_id,
-                'size_id'    => $item->merch_product_variant_size_id,
+                'product_id'   => $item->merch_product_id,
+                'variant_id'   => $item->merch_product_variant_id,
+                'size_id'      => $item->merch_product_variant_size_id,
             ];
         });
 
-        // ==================================================================
-        // 4. HITUNG TOTAL
-        // ==================================================================
-        $subtotalBarang = $cart->sum(function ($item) {
-            return $item['price'] * $item['quantity'];
-        });
-
+        $subtotalBarang = $cart->sum(fn($item) => $item['price'] * $item['quantity']);
         $totalQty = $cart->sum('quantity');
         $subtotal = $subtotalBarang;
 
-        // Simpan ID item yang terpilih untuk dikirim ke view (Input Hidden)
         $selectedItemIds = $cartItems->pluck('id')->toArray();
-
-        // ==================================================================
-        // 5. DATA PENDUKUNG (Alamat, Kurir, Provinsi)
-        // ==================================================================
-        $addresses = UserAddress::where('user_id', auth()->id())->orderByDesc('is_primary')
-            ->orderBy('id')->get();
-
-        // Ambil shipper
+        $addresses = UserAddress::where('user_id', auth()->id())->orderByDesc('is_primary')->orderBy('id')->get();
         $shippers = Shipper::all();
-
-        // Ambil semua provinsi
         $province = Province::all();
 
         $selectedAddressId = session('checkout_address_id');
-
         $selectedAddress = $selectedAddressId
             ? UserAddress::with(['province', 'city', 'district'])->find($selectedAddressId)
             : auth()->user()->userAddress()->with(['province', 'city', 'district'])->first();
@@ -153,9 +110,9 @@ class CheckoutMerchController extends Controller
         ));
     }
 
-    // ==================================================================
-    // METHOD PROCESS
-    // ==================================================================
+    /**
+     * Proses Pembuatan Order
+     */
     public function process(Request $request)
     {
         \Log::info('Checkout PROCESS: mulai proses checkout', $request->all());
@@ -163,50 +120,29 @@ class CheckoutMerchController extends Controller
         $request->validate([
             'address_id'        => 'required',
             'shipping_method'   => 'required',
-            'selected_item_ids' => 'required', // Wajib ada (dari input hidden)
+            'selected_item_ids' => 'required',
         ]);
 
-        $shippingMethod = $request->shipping_method; // delivery | pickup
-
-        // 1. Decode ID Item yang dipilih dari View
-        //$selectedIds = json_decode($request->selected_item_ids, true);
+        $shippingMethod = $request->shipping_method;
         $selectedIds = session('checkout_selected_item_ids', []);
 
         if (empty($selectedIds)) {
-            \Log::warning('Checkout PROCESS: selected_item_ids kosong');
             return redirect()->route('cart.index')->with('error', 'Data item tidak valid.');
         }
 
-        // 2. Ambil Item dari Database (HANYA YANG DIPILIH)
-<<<<<<< HEAD
-<<<<<<< HEAD
         $cartItems = CartItem::with(['merchProduct', 'merchVariant.images', 'merchSize'])
                     ->where('user_id', auth()->id())
-                    ->whereIn('id', $selectedIds) // <--- Ini perbaikan kuncinya
+                    ->whereIn('id', $selectedIds)
                     ->get();
-=======
-        $cartItems = CartItem::where('user_id', auth()->id())
-            ->whereIn('id', $selectedIds) // <--- Ini perbaikan kuncinya
-            ->get();
->>>>>>> 8d3c61b76e5d2177c0d7f5265badd763d88e6ec7
-=======
-        $cartItems = CartItem::where('user_id', auth()->id())
-            ->whereIn('id', $selectedIds) // <--- Ini perbaikan kuncinya
-            ->get();
->>>>>>> 43b45affe19788a50a895b18b1bc2b3dbadc8885
 
         if ($cartItems->isEmpty()) {
-            \Log::warning('Checkout PROCESS: item cart tidak ditemukan di DB');
-            return redirect()->route('cart.index')->with('error', 'Keranjang kosong atau item tidak ditemukan.');
+            return redirect()->route('cart.index')->with('error', 'Keranjang kosong.');
         }
 
-        // Mapping item supaya bisa ditampilkan di preview
         $orderItems = $cartItems->map(function ($item) {
             $imagePath = '/img/default.png';
             if ($item->merchVariant && $item->merchVariant->images->isNotEmpty()) {
                 $imagePath = $item->merchVariant->images->first()->image_path;
-            } elseif ($item->merchProduct && $item->merchProduct->images->isNotEmpty()) {
-                $imagePath = $item->merchProduct->images->first()->image_path;
             }
 
             return [
@@ -216,54 +152,15 @@ class CheckoutMerchController extends Controller
                 'qty'          => $item->quantity,
                 'image'        => $imagePath,
                 'variant_name' => $item->merchVariant->name ?? null,
-                'variant_code' => $item->merchVariant->code ?? null,
-                'discount'     => $item->merchVariant->discount ?? null,
-                'stock'        => $item->merchVariant->stock ?? null,
-                'weight'       => $item->merchVariant->weight ?? null,
                 'size_name'    => $item->merchSize->size ?? null,
-                'product_id'   => $item->merch_product_id,
-                'variant_id'   => $item->merch_product_variant_id,
-                'size_id'      => $item->merch_product_variant_size_id,
             ];
         });
 
-        // Hitung Total Barang
-        $totalBarang = $cartItems->sum(function ($item) {
-            return $item->price * $item->quantity;
-        });
-
-<<<<<<< HEAD
-        // Total berat berdasarkan varian × quantity
-        $totalWeight = $cartItems->sum(fn($item) => ($item->merchVariant->weight ?? 0) * $item->quantity);
-        $totalWeight = $totalWeight > 0 ? $totalWeight : 1000;
-
-        $shipperId = null;
-=======
-        // 3. Handle Biaya-biaya
-        $totalOngkir = $request->total_ongkir ?? 0;
-
-        // Handle Bungkus Kado (Dari Input Hidden)
-        $biayaLayanan = 0;
-<<<<<<< HEAD
->>>>>>> 8d3c61b76e5d2177c0d7f5265badd763d88e6ec7
-
-        if ($shippingMethod === 'delivery') {
-            $request->validate([
-                'total_ongkir'     => 'required|numeric|min:1',
-                'shipping_name'    => 'required',
-                'shipping_code'    => 'required',
-                'shipping_service' => 'required',
-            ]);
-        }
-
-<<<<<<< HEAD
+        $totalBarang = $cartItems->sum(fn($item) => $item->price * $item->quantity);
         $totalOngkir = $shippingMethod === 'delivery' ? (int) $request->input('total_ongkir', 0) : 0;
-    
-        // Gift wrap
+        
         $giftWrap = session('checkout_gift_wrap', false);
         $biayaGiftWrap = $giftWrap ? 10000 : 0;
-=======
->>>>>>> 43b45affe19788a50a895b18b1bc2b3dbadc8885
 
         if ($shippingMethod === 'delivery') {
             $shippingData = [
@@ -275,7 +172,6 @@ class CheckoutMerchController extends Controller
                 'etd'     => $request->shipping_etd,
             ];
         } else {
-            // PICKUP
             $shippingData = [
                 'type' => 'pickup',
                 'name' => 'Ambil di Toko',
@@ -284,24 +180,7 @@ class CheckoutMerchController extends Controller
             ];
         }
 
-       /* $shippingData = [
-            'name'        => $request->shipping_name ?? null,
-            'code'        => in_array($request->shipping_code, ['undefined', null, '']) ? null : $request->shipping_code,
-            'service'     => in_array($request->shipping_service, ['undefined', null, '']) ? null : $request->shipping_service,
-            'cost'        => (int) $request->input('total_ongkir', 0),
-            'etd'         => $request->shipping_etd ?? null,
-        ]; */
-
-<<<<<<< HEAD
         $totalTagihan = $totalBarang + $totalOngkir + $biayaGiftWrap;
-=======
-        $shipperId = $request->shipping_method == 'pickup' ? null : $request->selected_shipper_id;
-        $totalTagihan = $totalBarang + $totalOngkir + $biayaLayanan;
->>>>>>> 8d3c61b76e5d2177c0d7f5265badd763d88e6ec7
-=======
-        $shipperId = $request->shipping_method == 'pickup' ? null : $request->selected_shipper_id;
-        $totalTagihan = $totalBarang + $totalOngkir + $biayaLayanan;
->>>>>>> 43b45affe19788a50a895b18b1bc2b3dbadc8885
 
         try {
             DB::beginTransaction();
@@ -309,23 +188,10 @@ class CheckoutMerchController extends Controller
             $order = OrderMerch::create([
                 'user_id'       => auth()->id(),
                 'address_id'    => $request->address_id,
-<<<<<<< HEAD
-<<<<<<< HEAD
                 'items'         => $orderItems->toJson(), 
                 'shipping'      => json_encode($shippingData),
                 'gift_wrap'     => $giftWrap,
                 'jenis_ongkir'  => $request->jenis_ongkir ?? 'Regular', 
-=======
-=======
->>>>>>> 43b45affe19788a50a895b18b1bc2b3dbadc8885
-                // Simpan snapshot item sebagai JSON
-                'items'         => $cartItems->toJson(),
-                'shipper_id'    => $shipperId,
-                'jenis_ongkir'  => $request->jenis_ongkir ?? 'Regular',
-<<<<<<< HEAD
->>>>>>> 8d3c61b76e5d2177c0d7f5265badd763d88e6ec7
-=======
->>>>>>> 43b45affe19788a50a895b18b1bc2b3dbadc8885
                 'total_ongkir'  => $totalOngkir,
                 'total_tagihan' => $totalTagihan,
                 'invoice'       => 'INV-' . strtoupper(Str::random(10)),
@@ -333,53 +199,29 @@ class CheckoutMerchController extends Controller
                 'note'          => $request->note ?? '',
             ]);
 
-            // 5. Hapus HANYA Item yang diproses dari Database Cart
             CartItem::whereIn('id', $selectedIds)->delete();
 
             DB::commit();
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-            session()->forget([
-                'checkout_selected_item_ids',
-                'checkout_gift_wrap',
-            ]);
+            session()->forget(['checkout_selected_item_ids', 'checkout_gift_wrap']);
            
-            \Log::info('Checkout PROCESS: order berhasil disimpan', [
-                'order_id' => $order->id,
-                'invoice'  => $order->invoice,
-                'user_id'  => auth()->id(),
-            ]);
-
             return redirect()->route('checkout.preview', ['invoice' => $order->invoice]);
 
-=======
-            return redirect()->route('checkout.success', $order->invoice);
->>>>>>> 8d3c61b76e5d2177c0d7f5265badd763d88e6ec7
-=======
-            return redirect()->route('checkout.success', $order->invoice);
->>>>>>> 43b45affe19788a50a895b18b1bc2b3dbadc8885
         } catch (\Exception $e) {
             DB::rollBack();
-            \Log::error('Checkout PROCESS: gagal menyimpan order', [
-                'message' => $e->getMessage(),
-                'user_id' => auth()->id(),
-                'stack' => $e->getTraceAsString(),
-            ]);
-            return redirect()->back()->with('error', 'Gagal memproses pesanan: ' . $e->getMessage());
+            \Log::error('Checkout PROCESS Error: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Gagal memproses pesanan.');
         }
     }
 
     public function setAddress(Request $request)
     {
-        $address = UserAddress::with(['province', 'city', 'district'])
-            ->find($request->address_id);
+        $address = UserAddress::with(['province', 'city', 'district'])->find($request->address_id);
 
         if (!$address) {
             return response()->json(['status' => 'error']);
         }
 
-        // Simpan pilihan alamat ke session (agar persist saat refresh)
         session(['checkout_address_id' => $address->id]);
 
         return response()->json([
@@ -389,12 +231,9 @@ class CheckoutMerchController extends Controller
                 'name'          => $address->name,
                 'phone'         => $address->phone,
                 'address'       => $address->address,
-                'is_primary'    => $address->is_primary,
                 'district'      => $address->district->name ?? '',
                 'city'          => $address->city->name ?? '',
                 'province'      => $address->province->name ?? '',
-
-                // Tambahkan ID untuk kurir
                 'district_id'   => $address->district_id,
                 'city_id'       => $address->city_id,
                 'province_id'   => $address->province_id,
@@ -402,44 +241,16 @@ class CheckoutMerchController extends Controller
         ]);
     }
 
-    public function calculateShipping(Request $request)
-    {
-        $shippers = Shipper::select('id', 'name')->get();
-        $result = [];
-        foreach ($shippers as $ship) {
-            $result[] = [
-                'id'    => $ship->id,
-                'name'  => $ship->name,
-                'price' => 10000,       // flat 0
-                'eta'   => '-',     // default
-            ];
-        }
-        return response()->json($result);
-    }
-
     public function getShippingCost(Request $request)
     {
-        \Log::info('CHECKOUT SHIPPING COST REQUEST', [
-            'request_all' => $request->all(),
-        ]);
-
-        // VALIDASI ALAMAT
         if (!$request->filled('origin') || !$request->filled('destination')) {
-            \Log::warning('ONGKIR GAGAL: ORIGIN / DESTINATION KOSONG', [
-                'origin' => $request->origin,
-                'destination' => $request->destination,
-            ]);
-
-            return response()->json([
-                'error' => 'Alamat pengiriman belum lengkap.'
-            ], 422);
+            return response()->json(['error' => 'Alamat pengiriman belum lengkap.'], 422);
         }
 
         try {
             $origin      = (int) $request->origin;
             $destination = (int) $request->destination;
 
-            // Ambil cart item untuk menghitung total berat
             $cartItems = CartItem::with('merchVariant')
                         ->where('user_id', auth()->id())
                         ->whereIn('id', $request->selected_item_ids ?? [])
@@ -451,38 +262,12 @@ class CheckoutMerchController extends Controller
             $couriers = ['jne', 'tiki', 'pos'];
             $result   = [];
 
-            \Log::info('PAYLOAD RAJAONGKIR', [
-                'origin' => $origin,
-                'destination' => $destination,
-                'weight' => $weight,
-                'couriers' => $couriers,
-                'price' => 'lowest',
-            ]);
-
             $rajaOngkir = new RajaOngkirService();
 
             foreach ($couriers as $courier) {
+                $response = $rajaOngkir->calculateCost($origin, $destination, $weight, $courier, 'lowest');
 
-                \Log::info('REQUEST RAJAONGKIR', [
-                    'courier' => $courier,
-                ]);
-
-                $response = $rajaOngkir->calculateCost(
-                    $origin,
-                    $destination,
-                    $weight,
-                    $courier,
-                    'lowest'
-                );
-
-                \Log::info('ONGKIR RESPONSE PARSED', [
-                    'courier' => $courier,
-                    'response' => $response
-                ]);
-
-                if (empty($response['data'])) {
-                    continue;
-                }
+                if (empty($response['data'])) continue;
 
                 foreach ($response['data'] as $service) {
                     $result[] = [
@@ -494,39 +279,13 @@ class CheckoutMerchController extends Controller
                 }
             }
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-            // URUTKAN DARI TERMURAH
             usort($result, fn ($a, $b) => $a['price'] <=> $b['price']);
-=======
-            usort($result, fn($a, $b) => $a['price'] <=> $b['price']);
->>>>>>> 8d3c61b76e5d2177c0d7f5265badd763d88e6ec7
-=======
-            usort($result, fn($a, $b) => $a['price'] <=> $b['price']);
->>>>>>> 43b45affe19788a50a895b18b1bc2b3dbadc8885
 
             return response()->json($result);
         } catch (\Throwable $e) {
-
-            \Log::error('SHIPPING COST ERROR', [
-                'message' => $e->getMessage(),
-                'file' => $e->getFile(),
-                'line' => $e->getLine(),
-            ]);
-
-            return response()->json([
-                'error' => 'Gagal mengambil data kurir.'
-            ], 500);
+            return response()->json(['error' => 'Gagal mengambil data kurir.'], 500);
         }
     }
-
-    public function success($invoice)
-    {
-        $order = OrderMerch::where('invoice', $invoice)->firstOrFail();
-        return view('web.checkout.success', compact('order'));
-    }
-<<<<<<< HEAD
-<<<<<<< HEAD
 
     public function preview($invoice)
     {
@@ -534,25 +293,21 @@ class CheckoutMerchController extends Controller
             ->where('user_id', auth()->id())
             ->firstOrFail();
 
-        // Decode JSON items & shipping
         $items = json_decode($order->items, true);
         $shipping = json_decode($order->shipping, true);
-        $giftWrap = json_decode($order->gift_wrap, true);
-        $giftWrapCost = $order->gift_wrap ? 10000 : 0;
-        $isPickup = false;
-        $subtotal = collect($items)->sum(function($item) {
-            return $item['price'] * $item['qty'];
-        });
-        // Total ongkir
+        $giftWrap = (bool) $order->gift_wrap;
+        $giftWrapCost = $giftWrap ? 10000 : 0;
+        
+        $subtotal = collect($items)->sum(fn($item) => $item['price'] * $item['qty']);
         $shippingCost = $order->total_ongkir ?? 0;
+        $isPickup = ($shipping['type'] ?? '') === 'pickup';
 
         return view('web.checkout.preview', compact('order', 'shippingCost', 'items', 'shipping', 'giftWrap', 'giftWrapCost', 'isPickup', 'subtotal'));
     }
 
+    public function success($invoice)
+    {
+        $order = OrderMerch::where('invoice', $invoice)->firstOrFail();
+        return view('web.checkout.success', compact('order'));
+    }
 }
-=======
-}
->>>>>>> 8d3c61b76e5d2177c0d7f5265badd763d88e6ec7
-=======
-}
->>>>>>> 43b45affe19788a50a895b18b1bc2b3dbadc8885
