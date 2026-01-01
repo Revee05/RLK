@@ -90,7 +90,7 @@ body {
 	width: 300px;
 	display: flex;
 	flex-direction: column;
-	gap: 1.5rem;
+	gap: 1rem;
 }
 
 /* Profile Image */
@@ -123,7 +123,7 @@ body {
 .contact-profile-box {
 	background: linear-gradient(135deg, #4db8c4 0%, #3da5b0 100%);
 	border-radius: 12px;
-	padding: 1.2rem;
+	padding: 0.5rem;
 	color: #fff;
 	box-shadow: 0 4px 16px rgba(77, 184, 196, 0.3);
 	width: 100%;

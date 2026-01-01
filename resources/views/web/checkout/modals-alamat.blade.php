@@ -8,9 +8,11 @@
             </div>
 
             <div class="modal-body">
-                <div class="address-item mb-3">
-                    <button type="button" class="btn btn-dark w-100 py-2" id="btn-add-address">
-                        + Tambah Alamat Baru
+
+                <!-- Tambah Alamat -->
+                <div class="address-item">
+                    <button type="button" class="btn-add-address w-100 py-2" id="btn-add-address">
+                        Tambah Alamat
                     </button>
                 </div>
 
@@ -64,107 +66,97 @@
 </div>
 
 @push('js')
-    <script>
-        document.addEventListener("DOMContentLoaded", function() {
-            const addressList = document.getElementById("address-list");
+<script>
+document.addEventListener("DOMContentLoaded", function () {
 
-            function bindAddressCardEvents() {
-                if (!addressList) return;
+    const modalAdd = new bootstrap.Modal(document.getElementById("addAddressModal"));
+    const addressList = document.getElementById("address-list");
 
-                addressList.querySelectorAll(".address-card").forEach(card => {
-                    card.addEventListener("click", function() {
-                        const addressId = this.dataset.id;
-                        const districtId = this.dataset.districtId;
-                        const radio = this.querySelector('input[type="radio"]');
-                        
-                        if (radio) radio.checked = true;
+    function bindAddressCardEvents() {
+        addressList.querySelectorAll(".address-card").forEach(card => {
+            card.addEventListener("click", function () {
 
-                        // Kirim ke server untuk set session alamat
-                        fetch("{{ route('checkout.set-address') }}", {
-                            method: "POST",
-                            headers: {
-                                "Content-Type": "application/json",
-                                "X-CSRF-TOKEN": "{{ csrf_token() }}"
-                            },
-                            body: JSON.stringify({
-                                address_id: addressId
-                            })
-                        })
-                        .then(res => res.json())
-                        .then(data => {
-                            if (data.status === "success") {
-                                // 1. Update Tampilan Alamat di Halaman Checkout Utama
-                                const checkoutContainer = document.getElementById("checkout-selected-address");
-                                if (checkoutContainer) {
-                                    checkoutContainer.innerHTML = `
-                                        <div class="address-row">
-                                            ${data.address.is_primary ? '<span class="label-utama">Utama</span><br>' : ''}
-                                            <div class="address-name">${data.address.name}</div>
-                                            <span class="address-separator">|</span>
-                                            <div class="address-phone mt-1">${data.address.phone}</div>
-                                        </div>
-                                        <div class="address-detail mt-1">
-                                            ${data.address.address}, ${data.address.district ?? '-'}, ${data.address.city ?? '-'}, ${data.address.province ?? '-'}
-                                        </div>
-                                    `;
-                                }
+                const radio = this.querySelector('input[type="radio"]');
+                if (radio) radio.checked = true;
 
-                                // 2. Update Hidden Input di Form
-                                const inputDistrict = document.getElementById('selected_district_id');
-                                const inputAddressId = document.querySelector('input[name="address_id"]');
-                                
-                                if (inputDistrict) inputDistrict.value = data.address.district_id;
-                                if (inputAddressId) inputAddressId.value = addressId;
+                fetch("{{ route('checkout.set-address') }}", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "X-CSRF-TOKEN": "{{ csrf_token() }}"
+                    },
+                    body: JSON.stringify({
+                        address_id: this.dataset.id
+                    })
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.status === "success") {
 
-                                // 3. Update Variabel Global Checkout
-                                if (window.checkout) {
-                                    window.checkout.destination = data.address.district_id;
-                                }
+                        const checkoutContainer =
+                            document.getElementById("checkout-selected-address");
 
-                                // 4. Reset Kurir (Karena alamat berubah, ongkir harus dihitung ulang)
-                                const selectedShipperDiv = document.getElementById('selected-shipper');
-                                const shippingPriceEl = document.getElementById('shipping_price');
-                                const inputOngkir = document.getElementById('input_total_ongkir');
+                        checkoutContainer.innerHTML = `
+                            <div class="address-row">
+                                ${data.address.is_primary ? '<span class="label-utama">Utama</span><br>' : ''}
+                                <div class="address-name">${data.address.name}</div>
+                                <span class="address-separator">|</span>
+                                <div class="address-phone mt-1">${data.address.phone}</div>
+                            </div>
+                            <div class="address-detail mt-1">
+                                ${data.address.address},
+                                ${data.address.district ?? '-'},
+                                ${data.address.city ?? '-'},
+                                ${data.address.province ?? '-'}
+                            </div>
+                        `;
 
-                                if (selectedShipperDiv) {
-                                    selectedShipperDiv.style.display = 'none';
-                                    selectedShipperDiv.innerHTML = '';
-                                }
-                                if (shippingPriceEl) shippingPriceEl.innerText = 'Rp 0';
-                                if (inputOngkir) inputOngkir.value = 0;
+                        document.getElementById('selected_district_id').value =
+                            data.address.district_id || '';
 
-                                // 5. Jalankan Event Alamat Dipilih untuk refresh total biaya
-                                document.dispatchEvent(new CustomEvent('alamatDipilih', {
-                                    detail: {
-                                        id: addressId,
-                                        districtId: data.address.district_id
-                                    }
-                                }));
+                        window.checkout.destination =
+                            data.address.district_id || '';
 
-                                // 6. Tutup Modal
-                                const modalInstance = bootstrap.Modal.getInstance(document.getElementById("addressModal"));
-                                if (modalInstance) modalInstance.hide();
+                        window.SHIPPER_DATA = null;
+
+                        document.dispatchEvent(new CustomEvent('alamatDipilih', {
+                            detail: {
+                                districtId: data.address.district_id
                             }
-                        })
-                        .catch(err => console.error("Error setting address:", err));
-                    });
+                        }));
+
+                        const selectedShipperDiv =
+                            document.getElementById('selected-shipper');
+
+                        selectedShipperDiv.style.display = 'none';
+                        selectedShipperDiv.innerHTML = `
+                            <input type="hidden" name="selected_shipper_id" id="selected_shipper_id" value="">
+                            <input type="hidden" name="total_ongkir" id="input_total_ongkir" value="0">
+                            <input type="hidden" name="jenis_ongkir" id="input_jenis_ongkir" value="Reguler">
+                        `;
+
+                        window.updateTotal(0);
+
+                        bootstrap.Modal
+                            .getInstance(document.getElementById("addressModal"))
+                            ?.hide();
+                    }
                 });
-            }
-
-            // Inisialisasi event listener
-            bindAddressCardEvents();
-
-            // Handler Tambah Alamat (Tutup modal ini, buka modal tambah)
-            document.getElementById("btn-add-address")?.addEventListener("click", function() {
-                const currentModal = bootstrap.Modal.getInstance(document.getElementById("addressModal"));
-                if (currentModal) currentModal.hide();
-                
-                const addModalEl = document.getElementById("addAddressModal");
-                if (addModalEl) {
-                    const addModal = new bootstrap.Modal(addModalEl);
-                    addModal.show();
-                }
             });
         });
-    </script>
+    }
+
+    bindAddressCardEvents();
+
+    document.getElementById("btn-add-address")
+        ?.addEventListener("click", function () {
+            bootstrap.Modal
+                .getInstance(document.getElementById("addressModal"))
+                ?.hide();
+
+            modalAdd.show();
+        });
+
+});
+</script>
 @endpush

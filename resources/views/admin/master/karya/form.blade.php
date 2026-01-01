@@ -235,6 +235,18 @@
                 <input type="url" name="social[tiktok]" value="{{ old('social.tiktok', isset($karya) && $karya->social ? ($karya->social['tiktok'] ?? '') : '') }}" class="form-control form-control-sm" placeholder="https://tiktok.com/@username">
             </div>
         </div>
+        <div class="form-group">
+            {{ Form::label('email', 'Email') }}
+            <div class="input-group input-group-sm">
+                <div class="input-group-prepend">
+                    <span class="input-group-text"><i class="fa fa-envelope" style="color: #6c757d;"></i></span>
+                </div>
+                <input type="email" name="social[email]" value="{{ old('social.email', isset($karya) && $karya->social ? ($karya->social['email'] ?? '') : '') }}" class="form-control form-control-sm {{ $errors->has('social.email') ? 'is-invalid' : '' }}" placeholder="email@domain.com">
+                @error('social.email')
+                    <div class="invalid-feedback">{{ $message }}</div>
+                @enderror
+            </div>
+        </div>
     </div>
     <div class="col-sm-3">
         <div class="card rounded-0 border-0 shadow-sm" style="position: sticky; top: 20px;">

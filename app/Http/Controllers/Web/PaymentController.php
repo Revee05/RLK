@@ -15,7 +15,8 @@ use Illuminate\Support\Facades\DB;
 use GuzzleHttp\Client;
 use App\Models\MerchProductVariant;
 use App\Models\MerchProductVariantSize;
-
+use App\Mail\OrderConfirmationMail;
+use Illuminate\Support\Facades\Mail;
 
 class PaymentController extends Controller
 {
@@ -173,17 +174,17 @@ class PaymentController extends Controller
             try {
 
                 foreach ($items as $item) {
-
-                    $qty = $item['qty'];
+                    $qty = $item['qty'] ?? 1;
 
                     // =========================
-                    // JIKA ADA SIZE → KURANGI SIZE
+                    // JIKA ADA SIZE
                     // =========================
                     if (!empty($item['size_id'])) {
 
-                        $size = MerchProductVariantSize::where('id', $item['size_id'])
-                            ->lockForUpdate()
-                            ->first();
+                        $size = MerchProductVariantSize::where(
+                            'id',
+                            $item['size_id']
+                        )->lockForUpdate()->first();
 
                         if (!$size || $size->stock < $qty) {
                             throw new \Exception('Stok size tidak cukup');
@@ -195,17 +196,16 @@ class PaymentController extends Controller
                             'size_id' => $item['size_id'],
                             'qty' => $qty
                         ]);
-
                     } 
-
                     // =========================
-                    // TIDAK ADA SIZE → VARIANT
+                    // VARIANT (TANPA SIZE)
                     // =========================
-                    else {
+                    elseif (!empty($item['variant_id'])) {
 
-                        $variant = MerchProductVariant::where('id', $item['variant_id'])
-                            ->lockForUpdate()
-                            ->first();
+                        $variant = MerchProductVariant::where(
+                            'id',
+                            $item['variant_id']
+                        )->lockForUpdate()->first();
 
                         if (!$variant || $variant->stock < $qty) {
                             throw new \Exception('Stok variant tidak cukup');
@@ -219,6 +219,7 @@ class PaymentController extends Controller
                         ]);
                     }
                 }
+
 
                 // Tandai stok sudah dikurangi (biar idempotent)
                 $order->stock_reduced = 1;
@@ -264,6 +265,24 @@ class PaymentController extends Controller
         // Jika sudah PAID dari webhook → tidak perlu cek Xendit lagi
         if ($order->status === 'success') {
             Log::info("Order sudah PAID — SKIP cek Xendit, langsung render success page");
+            if (empty($order->email_sent)) {
+                if ($order->user && $order->user->email) {
+                    try {
+                        Mail::to($order->user->email)
+                            ->send(new OrderConfirmationMail($order));
+
+                        Log::info('Email konfirmasi berhasil dikirim via status page', ['invoice' => $order->invoice]);
+
+                        // Tandai email sudah dikirim (opsional)
+                        $order->update(['email_sent' => 1]);
+                    } catch (\Exception $e) {
+                        Log::error('Gagal mengirim email konfirmasi via status page', [
+                            'invoice' => $order->invoice,
+                            'error' => $e->getMessage()
+                        ]);
+                    }
+                }
+            }
             return view('web.payment.status', compact('order'));
         }
         

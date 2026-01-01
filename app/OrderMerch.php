@@ -27,6 +27,7 @@ class OrderMerch extends Model
         'stock_reduced',
         'snap_token',
         'note',
+        'email_sent',
     ];
 
     protected $casts = [

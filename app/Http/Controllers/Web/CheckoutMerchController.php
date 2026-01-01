@@ -123,13 +123,17 @@ class CheckoutMerchController extends Controller
             'selected_item_ids' => 'required',
         ]);
 
-        $shippingMethod = $request->shipping_method;
+        $shippingMethod = $request->shipping_method; // delivery | pickup
+
+        // Decode ID Item yang dipilih dari View
+        
         $selectedIds = session('checkout_selected_item_ids', []);
 
         if (empty($selectedIds)) {
             return redirect()->route('cart.index')->with('error', 'Data item tidak valid.');
         }
 
+        // Ambil Item dari Database (HANYA YANG DIPILIH)
         $cartItems = CartItem::with(['merchProduct', 'merchVariant.images', 'merchSize'])
                     ->where('user_id', auth()->id())
                     ->whereIn('id', $selectedIds)
@@ -156,18 +160,47 @@ class CheckoutMerchController extends Controller
             ];
         });
 
-        $totalBarang = $cartItems->sum(fn($item) => $item->price * $item->quantity);
-        $totalOngkir = $shippingMethod === 'delivery' ? (int) $request->input('total_ongkir', 0) : 0;
-        
+        // Hitung Total Barang
+        $totalBarang = $cartItems->sum(function ($item) {
+            return $item->price * $item->quantity;
+        });
+
+        // Total berat berdasarkan varian × quantity
+        $totalWeight = $cartItems->sum(fn($item) => ($item->merchVariant->weight ?? 0) * $item->quantity);
+        $totalWeight = $totalWeight > 0 ? $totalWeight : 1000;
+
+        $shipperId = null;
+
+        // Gift wrap
         $giftWrap = session('checkout_gift_wrap', false);
         $biayaGiftWrap = $giftWrap ? 10000 : 0;
 
+        $totalOngkir = 0;
+        $shippingData = [];
+
         if ($shippingMethod === 'delivery') {
+            $request->validate([
+                'total_ongkir'     => 'required|numeric|min:1',
+                'shipping_name'    => 'required',
+                'shipping_code'    => 'required',
+                'shipping_service' => 'required',
+            ]);
+
+            $totalOngkir = (int) $request->input('total_ongkir', 0);
+
+            // Ambil kode kurir dari request (misal 'jnt')
+            $shipperCode = $request->shipping_code;
+
+            // Cari ID shipper di tabel shippers
+            $shipper = Shipper::where('code', $shipperCode)->first();
+            $shipperId = $shipper ? $shipper->id : null;
+    
             $shippingData = [
                 'type'    => 'delivery',
                 'name'    => $request->shipping_name,
                 'code'    => $request->shipping_code,
                 'service' => $request->shipping_service,
+                'description' => $request->shipping_description ?? null,
                 'cost'    => $totalOngkir,
                 'etd'     => $request->shipping_etd,
             ];
@@ -192,6 +225,8 @@ class CheckoutMerchController extends Controller
                 'shipping'      => json_encode($shippingData),
                 'gift_wrap'     => $giftWrap,
                 'jenis_ongkir'  => $request->jenis_ongkir ?? 'Regular', 
+                
+                'shipper_id'    => $shipperId,
                 'total_ongkir'  => $totalOngkir,
                 'total_tagihan' => $totalTagihan,
                 'invoice'       => 'INV-' . strtoupper(Str::random(10)),
@@ -199,11 +234,15 @@ class CheckoutMerchController extends Controller
                 'note'          => $request->note ?? '',
             ]);
 
+            // Hapus HANYA Item yang diproses dari Database Cart
             CartItem::whereIn('id', $selectedIds)->delete();
 
             DB::commit();
 
-            session()->forget(['checkout_selected_item_ids', 'checkout_gift_wrap']);
+            session()->forget([
+                'checkout_selected_item_ids',
+                'checkout_gift_wrap',
+            ]);
            
             return redirect()->route('checkout.preview', ['invoice' => $order->invoice]);
 
@@ -222,6 +261,11 @@ class CheckoutMerchController extends Controller
             return response()->json(['status' => 'error']);
         }
 
+        if ($address->user_id !== auth()->id()) {
+            return response()->json(['status' => 'error'], 403);
+        }
+
+        // Simpan pilihan alamat ke session (agar persist saat refresh)
         session(['checkout_address_id' => $address->id]);
 
         return response()->json([
@@ -239,6 +283,24 @@ class CheckoutMerchController extends Controller
                 'province_id'   => $address->province_id,
             ]
         ]);
+    }
+
+    public function calculateShipping(Request $request)
+    {
+        // Ambil semua kurir dari tabel shippers
+        $shippers = Shipper::all();
+        $result = [];
+
+        foreach ($shippers as $ship) {
+            $result[] = [
+                'id'    => $ship->id,
+                'name'  => $ship->name,
+                'code'  => $ship->code,
+                'price' => 0,       // flat 0
+                'eta'   => '-',     // default
+            ];
+        }
+        return response()->json($result);
     }
 
     public function getShippingCost(Request $request)
@@ -259,7 +321,8 @@ class CheckoutMerchController extends Controller
             $weight = $cartItems->sum(fn($item) => ($item->merchVariant->weight ?? 0) * $item->quantity);
             $weight = $weight > 0 ? $weight : 1000;
 
-            $couriers = ['jne', 'tiki', 'pos'];
+            // Ambil semua kode kurir dari tabel shippers
+            $couriers = Shipper::pluck('code')->toArray();
             $result   = [];
 
             $rajaOngkir = new RajaOngkirService();
@@ -270,21 +333,37 @@ class CheckoutMerchController extends Controller
                 if (empty($response['data'])) continue;
 
                 foreach ($response['data'] as $service) {
+                    // Gunakan kode kurir dari loop utama
+                    $courierCode = $courier;
+                
+                    $shipper = Shipper::where('code', $courierCode)->first();
+                    if (!$shipper) continue;
+
                     $result[] = [
-                        'id'    => $courier . '-' . $service['service'],
-                        'name'  => strtoupper($courier) . ' - ' . $service['service'],
-                        'price' => (int) $service['cost'],
-                        'eta'   => $service['etd'] ?? '-',
+                        'shipper_id' => $shipper->id,        // integer ID dari DB
+                        'name'       => $shipper->name,      // nama kurir
+                        'code'       => $courierCode,    // kode kurir
+                        'service'    => $service['service'], // nama service
+                        'description'=> $service['description'] ?? '',
+                        'cost'       => (int)$service['cost'],
+                        'etd'        => $service['etd'] ?? '-',
                     ];
                 }
             }
 
-            usort($result, fn ($a, $b) => $a['price'] <=> $b['price']);
+            // URUTKAN DARI TERMURAH
+            usort($result, fn ($a, $b) => $a['cost'] <=> $b['cost']);
 
             return response()->json($result);
         } catch (\Throwable $e) {
             return response()->json(['error' => 'Gagal mengambil data kurir.'], 500);
         }
+    }
+
+    public function success($invoice)
+    {
+        $order = OrderMerch::where('invoice', $invoice)->firstOrFail();
+        return view('web.checkout.success', compact('order'));
     }
 
     public function preview($invoice)
@@ -305,9 +384,4 @@ class CheckoutMerchController extends Controller
         return view('web.checkout.preview', compact('order', 'shippingCost', 'items', 'shipping', 'giftWrap', 'giftWrapCost', 'isPickup', 'subtotal'));
     }
 
-    public function success($invoice)
-    {
-        $order = OrderMerch::where('invoice', $invoice)->firstOrFail();
-        return view('web.checkout.success', compact('order'));
-    }
 }

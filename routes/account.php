@@ -28,7 +28,8 @@ Route::group(['prefix' => '/account', 'middleware' => ['auth', 'verified', 'IsMe
 
     // Merchandise Purchase History Routes
     Route::get('/riwayat-pembelian', 'Account\RiwayatPembelianController@index')->name('account.purchase.history');
-    Route::get('/riwayat-pembelian/merch-order/{id}', 'Account\RiwayatPembelianController@show')->name('account.merch.order.show');
+    Route::get('/riwayat-pembelian/merch/{id}', 'Account\RiwayatPembelianController@show')->name('account.merch.order.show');
+    Route::get('/riwayat-pembelian/lelang/{id}', 'Account\RiwayatPembelianController@showLelang')->name('account.lelang.order.show');
 
     Route::get('invoice/payment/finish', 'Account\OrderController@finish')->name('account.invoice.finish');
     Route::get('invoice/payment/unfinish', 'Account\OrderController@unfinish')->name('account.invoice.unfinish');
