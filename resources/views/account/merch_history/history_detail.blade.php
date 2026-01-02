@@ -1,9 +1,94 @@
 @extends('account.partials.layout')
-@section('css')
-<!-- <link rel="stylesheet" href="{{ asset('css/account/merch_order_detail.css') }}"> -->
-@endsection
 
 @section('content')
+<style>
+/* Buttons and container for order detail actions */
+.order-detail-container .action-buttons {
+    display: flex;
+    gap: .75rem;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+/* Base button */
+.order-detail-container .btn-base {
+    padding: .55rem 1rem;
+    border-radius: .45rem;
+    font-weight: 600;
+    text-decoration: none;
+    display: inline-block;
+    min-width: 140px;
+    text-align: center;
+    box-sizing: border-box;
+}
+
+/* Primary (teal) - used for Bayar Sekarang and Kembali */
+.order-detail-container .btn-primary {
+    background-color: rgba(88, 188, 194, 1);
+    color: #fff;
+    border: none;
+}
+.order-detail-container .btn-primary:hover { background-color: rgba(63,149,151,1); }
+
+/* Danger (red) - cancel action */
+.order-detail-container .btn-danger {
+    background-color: rgba(236, 31, 48, 1);
+    color: #fff;
+    border: 1.5px solid rgba(236, 31, 48, 1);
+}
+.order-detail-container .btn-danger:hover { background-color: rgba(187,24,37,1); }
+
+/* Bayar Sekarang (teal) - payment action */
+.order-detail-container .btn-bayar-sekarang {
+    background-color: rgba(88, 188, 194, 1);
+    color: #fff;
+    border: none;
+}
+.order-detail-container .btn-bayar-sekarang:hover { background-color: rgba(63,149,151,1); }
+
+/* Mobile: stack actions and make them touch-friendly */
+@media (max-width: 576px) {
+    .order-detail-container .action-buttons { flex-direction: column; align-items: stretch; }
+    .order-detail-container .action-buttons .btn-base { width: 100%; min-width: unset; }
+}
+
+/* Stronger rules for anchors to override global link styles */
+.order-detail-container .action-buttons a.btn-base,
+.order-detail-container .action-buttons a.btn-primary,
+.order-detail-container .action-buttons a.btn-bayar-sekarang,
+.order-detail-container .action-buttons a.btn-danger,
+.order-detail-container .action-buttons button.btn-base,
+.order-detail-container .action-buttons button.btn-primary,
+.order-detail-container .action-buttons button.btn-bayar-sekarang,
+.order-detail-container .action-buttons button.btn-danger {
+    display: inline-block !important;
+    padding: .55rem 1rem !important;
+    border-radius: .45rem !important;
+    text-decoration: none !important;
+    color: inherit !important;
+    box-sizing: border-box !important;
+}
+.order-detail-container .action-buttons a.btn-primary,
+.order-detail-container .action-buttons button.btn-primary {
+    background-color: rgba(88, 188, 194, 1) !important;
+    color: #fff !important;
+    border: none !important;
+}
+.order-detail-container .action-buttons a.btn-bayar-sekarang,
+.order-detail-container .action-buttons button.btn-bayar-sekarang {
+    background-color: rgba(88, 188, 194, 1) !important;
+    color: #fff !important;
+    border: none !important;
+}
+.order-detail-container .action-buttons a.btn-danger,
+.order-detail-container .action-buttons button.btn-danger {
+    background-color: rgba(236, 31, 48, 1) !important;
+    color: #fff !important;
+    border: 1.5px solid rgba(236, 31, 48, 1) !important;
+}
+</style>
+
 <div class="container order-detail-container">
     <div class="row">
         @include('account.partials.nav_new')
@@ -11,7 +96,7 @@
         <div class="col-md-9">
             <div class="card content-border">
                 <div class="card-head border-bottom border-darkblue align-baseline ps-4">
-                    <h3 class="mb-0 fw-bolder align-bottom">Detail Pesanan Merchandise</h3>
+                    <h3 class="mb-0 fw-bolder align-bottom">Detail Pesanan</h3>
                 </div>
                 <div class="card-body ps-4 pe-4">
                     <!-- Order Header -->
@@ -63,6 +148,20 @@
                                     @endif
                                     <div class="product-price">Rp. {{ number_format($item['price'] ?? 0, 0, ',', '.') }}</div>
                                     <div class="product-qty">Jumlah: {{ $item['qty'] ?? 1 }} pcs</div>
+                                    <div class="product-meta" style="font-size:13px; color:#666; ">
+                                        @if(isset($item['variant_code']) && $item['variant_code'])
+                                            <div>SKU: {{ $item['variant_code'] }}</div>
+                                        @endif
+                                        @if(isset($item['stock']))
+                                            <div>Stok: {{ $item['stock'] }}</div>
+                                        @endif
+                                        @if(isset($item['weight']))
+                                            <div>Berat: {{ $item['weight'] }} gr</div>
+                                        @endif
+                                        @if(isset($item['discount']) && (int)$item['discount'] > 0)
+                                            <div>Diskon: Rp. {{ number_format($item['discount'], 0, ',', '.') }}</div>
+                                        @endif
+                                    </div>
                                 </div>
                                 <div class="text-end" style="min-width: 150px;">
                                     <div style="font-size: 14px; color: #666; margin-bottom: 5px;">Subtotal</div>
@@ -217,16 +316,16 @@
                     </div>
 
                     <!-- Action Buttons -->
-                    <div class="text-center">
+                    <div class="action-buttons">
+                        @php $orderType = isset($order->order_type) ? $order->order_type : 'merch'; @endphp
                         @if($order->status == 'pending')
-                            <a href="{{ route('checkout.preview', $order->invoice) }}" 
-                               class="btn-back ajax-link" style="background-color: #333; margin-right: 10px;">
-                                Bayar Sekarang
-                            </a>
+                            <form method="POST" action="{{ url('/account/merch/order/'.$order->id.'/cancel') }}" onsubmit="return confirm('Batalkan pesanan ini?');" style="margin:0;">
+                                @csrf
+                                <button type="submit" class="btn-base btn-danger">Batalkan Pesanan</button>
+                            </form>
+                            <a href="{{ $orderType === 'merch' ? route('checkout.preview', $order->invoice) : route('lelang.payment.checkout', ['invoice' => $order->invoice]) }}" class="btn-base btn-bayar-sekarang">Bayar Sekarang</a>
                         @endif
-                        <a href="{{ route('account.purchase.history') }}" class="btn-back ajax-link">
-                            Kembali ke Riwayat Pembelian
-                        </a>
+                        <a href="{{ route('account.purchase.history') }}" class="btn-base btn-primary">Kembali ke Riwayat Pembelian</a>
                     </div>
                 </div>
             </div>
