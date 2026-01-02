@@ -20,7 +20,8 @@ class RiwayatPembelianController extends Controller
     {
         if (Auth::check()) {
             $merchOrders = OrderMerch::where('user_id', Auth::user()->id)
-                          ->with(['address', 'shipper'])
+                          ->with(['address.province', 'address.city', 'address.district', 'shipper'])
+                          ->orderBy('created_at', 'desc')
                           ->get();
             
             foreach ($merchOrders as $order) {
@@ -29,6 +30,7 @@ class RiwayatPembelianController extends Controller
 
             $lelangOrders = Order::where('user_id', Auth::user()->id)
                            ->with(['product.karya', 'product.kategori', 'bid.user'])
+                           ->orderBy('created_at', 'desc')
                            ->get();
 
             foreach ($lelangOrders as $order) {

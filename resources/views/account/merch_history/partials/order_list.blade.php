@@ -116,7 +116,7 @@
                         $items = is_string($order->items) ? json_decode($order->items, true) : $order->items;
                         if (!empty($items)) {
                             $productName = $items[0]['name'];
-                            $totalProducts = collect($items)->sum('quantity');
+                            $totalProducts = collect($items)->sum('qty');
                         }
                     } elseif ($orderType === 'lelang' && isset($order->product) && isset($order->product->karya)) {
                         $productName = $order->product->karya->nama_karya;
@@ -128,11 +128,11 @@
             <div>
                 @if($order->status == 'pending')
                     <span class="order-status-badge status-pending">Belum Bayar</span>
-                @elseif($order->status == 'paid' || $order->status == 'shipped')
-                    <span class="order-status-badge status-processing">Diproses</span>
-                @elseif($order->status == 'completed')
+                @elseif($order->status == 'success')
                     <span class="order-status-badge status-completed">Selesai</span>
-                @elseif($order->status == 'cancelled' || $order->status == 'failed')
+                @elseif($order->status == 'expired')
+                    <span class="order-status-badge status-cancelled">Kadaluarsa</span>
+                @elseif($order->status == 'cancelled')
                     <span class="order-status-badge status-cancelled">Dibatalkan</span>
                 @endif
             </div>
@@ -159,13 +159,11 @@
 
         <div class="order-item-footer d-flex justify-content-end align-items-center">
             @if($order->status == 'pending')
-                <a href="{{ $orderType === 'merch' ? route('checkout.success', $order->invoice) : route('lelang.payment.checkout', ['invoice' => $order->invoice]) }}" class="btn-bayar-sekarang">Bayar Sekarang</a>
+                <a href="{{ $orderType === 'merch' ? route('checkout.preview', $order->invoice) : route('lelang.payment.checkout', ['invoice' => $order->invoice]) }}" class="btn-bayar-sekarang">Bayar Sekarang</a>
                 <a href="#" class="btn-batalkan">Batalkan Pesanan</a>
-            @elseif($order->status == 'paid' || $order->status == 'shipped')
-                {{-- No button for processing status based on image --}}
-            @elseif($order->status == 'completed')
+            @elseif($order->status == 'success')
                 <a href="#" class="btn btn-beli-lagi me-2">Beli Lagi</a>
-            @elseif($order->status == 'cancelled' || $order->status == 'failed')
+            @elseif($order->status == 'cancelled' || $order->status == 'expired')
                  <a href="#" class="btn btn-beli-lagi me-2">Beli Lagi</a>
             @endif
             

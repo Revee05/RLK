@@ -20,13 +20,11 @@
                         <div class="order-date">Tanggal Pemesanan: {{ \Carbon\Carbon::parse($order->created_at)->format('d F Y, H:i') }}</div>
                         @if($order->status == 'pending')
                             <span class="order-status-badge badge-menunggu">Menunggu Pembayaran</span>
-                        @elseif($order->status == 'paid')
-                            <span class="order-status-badge badge-selesai">Sudah Dibayar</span>
-                        @elseif($order->status == 'shipped')
-                            <span class="order-status-badge badge-proses">Sedang Dikirim</span>
-                        @elseif($order->status == 'completed')
+                        @elseif($order->status == 'success')
                             <span class="order-status-badge badge-selesai">Pesanan Selesai</span>
-                        @else
+                        @elseif($order->status == 'expired')
+                            <span class="order-status-badge" style="background-color: #f8d7da; color: #721c24;">Kadaluarsa</span>
+                        @elseif($order->status == 'cancelled')
                             <span class="order-status-badge" style="background-color: #f8d7da; color: #721c24;">Dibatalkan</span>
                         @endif
                     </div>
@@ -52,13 +50,24 @@
                                 @endif
                                 <div class="product-details">
                                     <div class="product-name">{{ $item['name'] ?? 'Produk Merchandise' }}</div>
+                                    @if(isset($item['variant_name']) || isset($item['size_name']))
+                                        <div style="font-size: 13px; color: #666; margin-top: 3px;">
+                                            @if(isset($item['variant_name']))
+                                                Varian: {{ $item['variant_name'] }}
+                                            @endif
+                                            @if(isset($item['size_name']))
+                                                @if(isset($item['variant_name'])) | @endif
+                                                Ukuran: {{ $item['size_name'] }}
+                                            @endif
+                                        </div>
+                                    @endif
                                     <div class="product-price">Rp. {{ number_format($item['price'] ?? 0, 0, ',', '.') }}</div>
-                                    <div class="product-qty">Jumlah: {{ $item['quantity'] ?? 1 }} pcs</div>
+                                    <div class="product-qty">Jumlah: {{ $item['qty'] ?? 1 }} pcs</div>
                                 </div>
                                 <div class="text-end" style="min-width: 150px;">
                                     <div style="font-size: 14px; color: #666; margin-bottom: 5px;">Subtotal</div>
                                     <div style="font-size: 18px; font-weight: 600; color: #333;">
-                                        Rp. {{ number_format(($item['price'] ?? 0) * ($item['quantity'] ?? 1), 0, ',', '.') }}
+                                        Rp. {{ number_format(($item['price'] ?? 0) * ($item['qty'] ?? 1), 0, ',', '.') }}
                                     </div>
                                 </div>
                             </div>
@@ -104,6 +113,33 @@
                         </div>
                         @endif
                         
+                        @php
+                            $shipping = is_array($order->shipping) ? $order->shipping : [];
+                        @endphp
+                        
+                        @if(!empty($shipping))
+                            @if(isset($shipping['type']))
+                            <div class="info-row">
+                                <span class="info-label">Jenis Pengiriman</span>
+                                <span class="info-value">{{ ucfirst($shipping['type']) == 'Delivery' ? 'Dikirim ke Alamat' : 'Ambil Sendiri' }}</span>
+                            </div>
+                            @endif
+                            
+                            @if(isset($shipping['service']))
+                            <div class="info-row">
+                                <span class="info-label">Layanan</span>
+                                <span class="info-value">{{ $shipping['service'] }} @if(isset($shipping['description'])) - {{ $shipping['description'] }} @endif</span>
+                            </div>
+                            @endif
+                            
+                            @if(isset($shipping['etd']))
+                            <div class="info-row">
+                                <span class="info-label">Estimasi Pengiriman</span>
+                                <span class="info-value">{{ $shipping['etd'] }}</span>
+                            </div>
+                            @endif
+                        @endif
+                        
                         @if($order->note)
                         <div class="info-row">
                             <span class="info-label">Catatan</span>
@@ -111,6 +147,41 @@
                         </div>
                         @endif
                     </div>
+
+                    <!-- Payment Information -->
+                    @if($order->status == 'success' && ($order->payment_method || $order->paid_at))
+                    <div class="order-content">
+                        <div class="section-title">Informasi Pembayaran</div>
+                        
+                        @if($order->paid_at)
+                        <div class="info-row">
+                            <span class="info-label">Tanggal Pembayaran</span>
+                            <span class="info-value">{{ \Carbon\Carbon::parse($order->paid_at)->format('d F Y, H:i') }}</span>
+                        </div>
+                        @endif
+                        
+                        @if($order->payment_method)
+                        <div class="info-row">
+                            <span class="info-label">Metode Pembayaran</span>
+                            <span class="info-value">{{ strtoupper($order->payment_method) }}</span>
+                        </div>
+                        @endif
+                        
+                        @if($order->payment_channel)
+                        <div class="info-row">
+                            <span class="info-label">Channel Pembayaran</span>
+                            <span class="info-value">{{ strtoupper($order->payment_channel) }}</span>
+                        </div>
+                        @endif
+                        
+                        @if($order->payment_destination)
+                        <div class="info-row">
+                            <span class="info-label">Nomor Virtual Account / ID Pembayaran</span>
+                            <span class="info-value">{{ $order->payment_destination }}</span>
+                        </div>
+                        @endif
+                    </div>
+                    @endif
 
                     <!-- Payment Summary -->
                     <div class="order-content">
@@ -120,7 +191,7 @@
                                 $subtotalItems = 0;
                                 if($items && count($items) > 0) {
                                     foreach($items as $item) {
-                                        $subtotalItems += ($item['price'] ?? 0) * ($item['quantity'] ?? 1);
+                                        $subtotalItems += ($item['price'] ?? 0) * ($item['qty'] ?? 1);
                                     }
                                 }
                             @endphp
@@ -132,6 +203,12 @@
                                 <span>Ongkos Kirim</span>
                                 <span>Rp. {{ number_format($order->total_ongkir ?? 0, 0, ',', '.') }}</span>
                             </div>
+                            @if($order->gift_wrap)
+                            <div class="total-row">
+                                <span>Gift Wrap (Bungkus Kado)</span>
+                                <span>Rp. 10.000</span>
+                            </div>
+                            @endif
                             <div class="total-final">
                                 <span>Total Pembayaran</span>
                                 <span style="color: #58bcc2;">Rp. {{ number_format($order->total_tagihan, 0, ',', '.') }}</span>
@@ -142,7 +219,7 @@
                     <!-- Action Buttons -->
                     <div class="text-center">
                         @if($order->status == 'pending')
-                            <a href="{{ route('checkout.success', $order->invoice) }}" 
+                            <a href="{{ route('checkout.preview', $order->invoice) }}" 
                                class="btn-back ajax-link" style="background-color: #333; margin-right: 10px;">
                                 Bayar Sekarang
                             </a>

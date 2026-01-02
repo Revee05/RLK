@@ -49,9 +49,6 @@
                             <button class="nav-link" id="belum-bayar-tab" data-bs-toggle="tab" data-bs-target="#belum-bayar" type="button" role="tab" aria-controls="belum-bayar" aria-selected="false">Belum Bayar</button>
                         </li>
                         <li class="nav-item" role="presentation">
-                            <button class="nav-link" id="diproses-tab" data-bs-toggle="tab" data-bs-target="#diproses" type="button" role="tab" aria-controls="diproses" aria-selected="false">Diproses</button>
-                        </li>
-                        <li class="nav-item" role="presentation">
                             <button class="nav-link" id="selesai-tab" data-bs-toggle="tab" data-bs-target="#selesai" type="button" role="tab" aria-controls="selesai" aria-selected="false">Selesai</button>
                         </li>
                         <li class="nav-item" role="presentation">
@@ -67,14 +64,11 @@
                         <div class="tab-pane fade" id="belum-bayar" role="tabpanel" aria-labelledby="belum-bayar-tab">
                             @include('account.merch_history.partials.order_list', ['orders' => $orders->where('status', 'pending')])
                         </div>
-                        <div class="tab-pane fade" id="diproses" role="tabpanel" aria-labelledby="diproses-tab">
-                            @include('account.merch_history.partials.order_list', ['orders' => $orders->whereIn('status', ['paid', 'shipped'])])
-                        </div>
                         <div class="tab-pane fade" id="selesai" role="tabpanel" aria-labelledby="selesai-tab">
-                            @include('account.merch_history.partials.order_list', ['orders' => $orders->where('status', 'completed')])
+                            @include('account.merch_history.partials.order_list', ['orders' => $orders->where('status', 'success')])
                         </div>
                         <div class="tab-pane fade" id="dibatalkan" role="tabpanel" aria-labelledby="dibatalkan-tab">
-                            @include('account.merch_history.partials.order_list', ['orders' => $orders->whereIn('status', ['cancelled', 'failed'])])
+                            @include('account.merch_history.partials.order_list', ['orders' => $orders->whereIn('status', ['cancelled', 'expired'])])
                         </div>
                     </div>
                 </div>
