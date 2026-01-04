@@ -29,12 +29,61 @@ class RiwayatPembelianController extends Controller
             }
 
             $lelangOrders = Order::where('user_id', Auth::user()->id)
-                           ->with(['product.karya', 'product.kategori', 'bid.user'])
+                           ->with(['product', 'product.karya', 'product.kategori', 'product.images', 'bid.user'])
                            ->orderBy('created_at', 'desc')
                            ->get();
 
+            if (app()->environment(['local', 'testing', 'development'])) {
+                Log::info('DEBUG Lelang Orders Raw Data', [
+                    'count' => $lelangOrders->count(),
+                    'sample_data' => $lelangOrders->first() ? [
+                        'id' => $lelangOrders->first()->id,
+                        'order_invoice' => $lelangOrders->first()->order_invoice,
+                        'orderid_uuid' => $lelangOrders->first()->orderid_uuid,
+                        'payment_status' => $lelangOrders->first()->payment_status,
+                        'product_id' => $lelangOrders->first()->product_id,
+                        'product' => $lelangOrders->first()->product ? 'exists' : 'null',
+                        'product_title' => $lelangOrders->first()->product ? $lelangOrders->first()->product->title : 'null',
+                        'karya' => $lelangOrders->first()->product && $lelangOrders->first()->product->karya ? 'exists' : 'null',
+                    ] : 'no data',
+                ]);
+            }
+
             foreach ($lelangOrders as $order) {
+                // Samakan struktur data dengan OrderMerch untuk digunakan di view riwayat pembelian
                 $order->order_type = 'lelang';
+
+                // Invoice: untuk lelang disimpan di kolom order_invoice
+                $order->invoice = $order->order_invoice;
+
+                // Safety fallbacks: some orders may reference a deleted/missing product
+                if (!$order->product) {
+                    $order->product_exists = false;
+                    $order->product_title = $order->product_title ?? 'Produk tidak tersedia';
+                    $order->product_image = 'assets/img/default.jpg';
+                } else {
+                    $order->product_exists = true;
+                    $order->product_title = $order->product->title;
+                    $order->product_image = optional($order->product->imageUtama)->path ?? 'assets/img/default.jpg';
+                }
+
+                // Status UI: mapping dari payment_status numerik ke string yang dipakai di view
+                // 1: pending, 2: success, 3: expired, 4: cancelled
+                switch ((int) $order->payment_status) {
+                    case 2:
+                        $order->status = 'success';
+                        break;
+                    case 3:
+                        $order->status = 'expired';
+                        break;
+                    case 4:
+                        $order->status = 'cancelled';
+                        break;
+                    case 1:
+                    default:
+                        $order->status = 'pending';
+                        break;
+                }
             }
 
             $orders = $merchOrders->concat($lelangOrders)->sortByDesc('created_at');
@@ -89,6 +138,36 @@ class RiwayatPembelianController extends Controller
                           ->firstOrFail();
             
             $order->order_type = 'lelang';
+
+            // Samakan properti yang dipakai di Blade dengan OrderMerch
+            $order->invoice = $order->order_invoice;
+
+            // Safety fallbacks: some orders may reference a deleted/missing product
+            if (!$order->product) {
+                $order->product_exists = false;
+                $order->product_title = 'Produk tidak tersedia';
+                $order->product_image = 'assets/img/default.jpg';
+            } else {
+                $order->product_exists = true;
+                $order->product_title = $order->product->title ?? 'Produk Lelang';
+                $order->product_image = optional($order->product->imageUtama)->path ?? 'assets/img/default.jpg';
+            }
+
+            switch ((int) $order->payment_status) {
+                case 2:
+                    $order->status = 'success';
+                    break;
+                case 3:
+                    $order->status = 'expired';
+                    break;
+                case 4:
+                    $order->status = 'cancelled';
+                    break;
+                case 1:
+                default:
+                    $order->status = 'pending';
+                    break;
+            }
 
             if (app()->environment(['local', 'testing', 'development'])) {
                 Log::info('RiwayatPembelianController@showLelang', [

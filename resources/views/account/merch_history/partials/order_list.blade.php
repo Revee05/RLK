@@ -101,8 +101,9 @@
                             $productName = $items[0]['name'];
                             $totalProducts = collect($items)->sum('qty');
                         }
-                    } elseif ($orderType === 'lelang' && isset($order->product) && isset($order->product->karya)) {
-                        $productName = $order->product->karya->nama_karya;
+                    } elseif ($orderType === 'lelang') {
+                        // Gunakan product_title yang sudah disiapkan di controller (dengan fallback)
+                        $productName = $order->product_title ?? 'Produk Lelang';
                         $totalProducts = 1;
                     }
                 @endphp
@@ -142,7 +143,10 @@
         <div class="order-item-footer d-flex justify-content-end align-items-center">
             <div class="action-btn-group">
                 @if($order->status == 'pending')
-                    <a href="{{ $orderType === 'merch' ? route('checkout.preview', $order->invoice) : route('lelang.payment.checkout', ['invoice' => $order->invoice]) }}" class="btn-base btn-bayar-sekarang">Bayar Sekarang</a>
+                    <a href="{{ $orderType === 'merch' 
+                        ? route('checkout.preview', $order->invoice) 
+                        : route('account.invoice', $order->orderid_uuid) }}" 
+                       class="btn-base btn-bayar-sekarang">Bayar Sekarang</a>
                 @elseif($order->status == 'success')
                     <a href="#" class="btn-base btn-beli-lagi">Beli Lagi</a>
                 @elseif($order->status == 'cancelled' || $order->status == 'expired')

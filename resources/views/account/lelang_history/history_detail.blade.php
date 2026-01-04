@@ -20,12 +20,14 @@
                         <div class="order-date">Tanggal Pemesanan: {{ \Carbon\Carbon::parse($order->created_at)->format('d F Y, H:i') }}</div>
                         @if($order->status == 'pending')
                             <span class="order-status-badge badge-menunggu">Menunggu Pembayaran</span>
-                        @elseif($order->status == 'paid')
+                        @elseif($order->status == 'success')
                             <span class="order-status-badge badge-selesai">Sudah Dibayar</span>
-                        @elseif($order->status == 'completed')
-                            <span class="order-status-badge badge-selesai">Pesanan Selesai</span>
-                        @else
+                        @elseif($order->status == 'expired')
+                            <span class="order-status-badge" style="background-color: #fff3cd; color: #856404;">Kadaluarsa</span>
+                        @elseif($order->status == 'cancelled')
                             <span class="order-status-badge" style="background-color: #f8d7da; color: #721c24;">Dibatalkan</span>
+                        @else
+                            <span class="order-status-badge" style="background-color: #e2e3e5; color: #383d41;">Status Tidak Dikenal</span>
                         @endif
                     </div>
 
@@ -33,17 +35,50 @@
                     <div class="order-content">
                         <div class="section-title">Produk yang Dimenangkan</div>
                         <div class="product-item">
-                            @if($order->product && $order->product->karya && $order->product->karya->image)
-                                <img src="{{ asset('storage/' . $order->product->karya->image) }}" 
-                                     alt="{{ $order->product->karya->nama_karya }}" 
-                                     class="product-image">
+                            @php
+                                // Gunakan data yang sudah disiapkan di controller dengan fallback
+                                $productName = 'Produk Lelang';
+                                $productImage = null;
+                                
+                                if ($order->product && $order->product_exists) {
+                                    $productName = $order->product->title ?? 'Produk Lelang';
+                                    
+                                    // Ambil gambar utama dari relasi imageUtama
+                                    if ($order->product->imageUtama && $order->product->imageUtama->path) {
+                                        $productImage = $order->product->imageUtama->path;
+                                    }
+                                    // Fallback ke images pertama
+                                    elseif ($order->product->images && $order->product->images->count() > 0) {
+                                        $productImage = $order->product->images->first()->path ?? null;
+                                    }
+                                    // Fallback ke karya
+                                    elseif ($order->product->karya && $order->product->karya->image) {
+                                        $productImage = $order->product->karya->image;
+                                    }
+                                    
+                                    // Fallback nama produk dari karya jika title kosong
+                                    if (empty($productName) && $order->product->karya) {
+                                        $productName = $order->product->karya->nama_karya ?? $order->product->karya->name ?? 'Produk Lelang';
+                                    }
+                                } else {
+                                    // Product tidak ada atau dihapus, gunakan fallback dari controller
+                                    $productName = $order->product_title ?? 'Produk tidak tersedia';
+                                    $productImage = null;
+                                }
+                            @endphp
+                            
+                            @if($productImage)
+                                <img src="{{ asset($productImage) }}" 
+                                     alt="{{ $productName }}" 
+                                     class="product-image"
+                                     onerror="this.onerror=null; this.src='{{ asset('assets/img/default.jpg') }}'">
                             @else
                                 <div class="product-image" style="background-color: #e0e0e0; display: flex; align-items: center; justify-content: center;">
                                     <i class="bi bi-image" style="font-size: 32px; color: #999;"></i>
                                 </div>
                             @endif
                             <div class="product-details">
-                                <div class="product-name">{{ $order->product->karya->nama_karya ?? 'Produk Lelang' }}</div>
+                                <div class="product-name">{{ $productName }}</div>
                                 <div class="product-price">Harga Menang: Rp. {{ number_format($order->total_tagihan, 0, ',', '.') }}</div>
                             </div>
                         </div>
@@ -63,7 +98,7 @@
                     <!-- Action Buttons -->
                     <div class="text-center">
                         @if($order->status == 'pending')
-                            <a href="{{ route('lelang.payment.checkout', ['invoice' => $order->invoice]) }}" 
+                            <a href="{{ route('account.invoice', $order->orderid_uuid) }}" 
                                class="btn-back ajax-link" style="background-color: #333; margin-right: 10px;">
                                 Bayar Sekarang
                             </a>
