@@ -168,3 +168,145 @@
 .btn-text:hover {
     text-decoration: underline;
 }
+
+/* RESPONSIVE ADJUSTMENTS */
+
+/* Mobile first */
+@media (max-width: 767px) {
+    .status-page {
+        margin: 20px 10px;
+    }
+
+    .status-title {
+        font-size: 24px;
+    }
+
+    .status-desc {
+        font-size: 14px;
+    }
+
+    .note-box, .info-box, .product-box {
+        padding: 12px;
+    }
+
+    .info-label, .info-value, .order-note {
+        font-size: 12px;
+    }
+
+    /* INFO BOX menjadi 2 kolom di mobile */
+    .info-box {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 5px;
+    }
+
+    .info-item {
+        padding: 5px;
+        font-size: 10px;
+    }
+
+    .section-title {
+        font-size: 14px;
+    }
+
+    .product-img {
+        max-width: 50px; 
+    }
+
+    .product-name {
+        font-size: 12px; 
+    }
+
+    .product-price {
+        font-size: 12px; 
+    }
+
+    .product-row {
+        gap: 10px; 
+    }
+
+    .summary-row,
+    .total-row {
+        align-items: flex-start;
+        gap: 5px;
+        font-size: 14px;
+    }
+
+    .action-box {
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    .btn-main {
+        padding: 14px 30px;
+        font-size: 14px;
+    }
+
+    .btn-text {
+        font-size: 14px;
+    }
+}
+
+/* Tablet / iPad */
+@media (min-width: 768px) and (max-width: 1024px) {
+    .status-page {
+        margin: 40px 20px;
+    }
+
+    .status-title {
+        font-size: 32px;
+    }
+
+    .status-desc {
+        font-size: 15px;
+    }
+
+    .note-box, .info-box, .product-box {
+        padding: 16px;
+    }
+
+    /* INFO BOX 4 kolom tetap */
+    .info-box {
+        grid-template-columns: repeat(4, 1fr);
+        gap: 15px;
+    }
+
+    .info-item {
+        padding: 15px;
+        font-size: 15px;
+    }
+
+    .product-row {
+        flex-direction: row;
+        align-items: flex-start;
+    }
+
+    .product-img {
+        max-width: 130px;
+        margin-right: 20px;
+        margin-bottom: 0;
+    }
+
+    .product-info {
+        text-align: left;
+    }
+
+    .summary-row,
+    .total-row {
+        flex-direction: row;
+        justify-content: space-between;
+    }
+
+    .action-box {
+        flex-direction: row;
+        gap: 20px;
+    }
+
+    .btn-main {
+        padding: 16px 40px;
+        font-size: 15px;
+    }
+
+    .btn-text {
+        font-size: 15px;
+    }
+}
