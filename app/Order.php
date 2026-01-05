@@ -40,6 +40,10 @@ class Order extends Model
         return $this->belongsTo('App\Products','product_id');
     }
     
+    public function bid(){
+        return $this->hasOne('App\Bid','product_id','product_id')->latest();
+    }
+    
     public function provinsi(){
         return $this->belongsTo('App\Provinsi','provinsi_id');
     }

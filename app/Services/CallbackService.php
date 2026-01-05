@@ -3,7 +3,7 @@
 namespace App\Services\Midtrans;
  
 use App\Order;
-use App\Services\Midtrans;
+use App\Services;
 use Midtrans\Notification;
  
 class CallbackService extends Midtrans

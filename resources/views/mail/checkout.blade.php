@@ -14,7 +14,7 @@
 <a href="{{ route('checkout.cart', \Crypt::encrypt($bid->product->slug)) }}" style="background-color:#5b9aff;border-radius:4px;color:#ffffff;padding:0 24px;margin-bottom:20px;font-family:'Lato';font-size:14px;font-weight:bold;line-height:50px;display:inline-block;text-decoration:none" target="_blank">Selesaikan Pembayaran</a>
 </center>
 
-<p><strong>Perhatian:</strong> Harap selesaikan pembayaran dalam 48 jam setelah menerima email ini. Jika pembayaran tidak diterima dalam jangka waktu yang ditentukan, kemenangan dapat dibatalkan.</p>
+<p><strong>Perhatian:</strong> Harap selesaikan pembayaran dalam  7 x 24 jam setelah menerima email ini. Jika pembayaran tidak diterima dalam jangka waktu yang ditentukan, kemenangan dapat dibatalkan.</p>
 
 <p>Jika butuh bantuan, hubungi tim support melalui halaman kontak atau email admin.</p>
 
