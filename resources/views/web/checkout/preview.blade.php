@@ -43,8 +43,8 @@
                 <h6>Pengambilan Pesanan</h6>
                 <p>
                     <strong>Rasa Lelang Karya</strong><br>
-                    Griya Jl. Sekargading blok C 19, <br>
-                    RT.04/RW.03, Kel. Kalisegoro, <br>
+                    Griya Sekargading blok C 19,
+                    RT.04 RW.03, Kel. Kalisegoro,
                     Gunung Pati, Kota Semarang <br>
                     Jam Operasional: 09.00 – 21.00
                 </p>
