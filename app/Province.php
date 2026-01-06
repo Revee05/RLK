@@ -14,4 +14,12 @@ class Province extends Model
     {
         return $this->hasMany(City::class);
     }
+
+    /**
+     * Alias untuk backward compatibility dengan sistem lama (Provinsi)
+     */
+    public function getNamaProvinsiAttribute()
+    {
+        return $this->name;
+    }
 }

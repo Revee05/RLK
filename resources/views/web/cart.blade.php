@@ -21,6 +21,9 @@
 
     @php
         $hasItems = $cartItems && !$cartItems->isEmpty();
+        // Deteksi apakah ada item lelang / merch di keranjang
+        $hasLelang = $hasItems ? $cartItems->contains(fn($it) => method_exists($it, 'isAuction') ? $it->isAuction() : false) : false;
+        $hasMerch = $hasItems ? $cartItems->contains(fn($it) => method_exists($it, 'isAuction') ? !$it->isAuction() : false) : false;
     @endphp
 
     {{-- 1. KERANJANG KOSONG --}}
@@ -35,6 +38,12 @@
 
     {{-- 2. LIST ITEM --}}
     <div id="cart-content-view" class="{{ $hasItems ? '' : 'd-none' }}">
+        @if($hasLelang && $hasMerch)
+            <div class="alert alert-warning">
+                <strong>Perhatian:</strong> Keranjang Anda berisi produk <em>lelang</em> dan <em>merchandise</em>.
+                Checkout untuk produk lelang (yang memiliki masa kadaluarsa) dan merchandise harus dilakukan secara terpisah. Silakan pilih dan checkout satu jenis produk saja (merch atau lelang).
+            </div>
+        @endif
         <form action="{{ route('checkout.index') }}" method="GET" id="checkout-form">
             @csrf 
 
@@ -103,7 +112,7 @@
                     {{-- A. DESKTOP VIEW --}}
                     <div class="row g-3 align-items-center my-3 py-2 border-bottom border-black cart-item-row desktop-view d-none d-md-flex" id="item-row-desktop-{{ $item->id }}">
                         <div class="col-1 text-center">
-                            <input class="form-check-input item-checkbox" type="checkbox" name="cart_item_ids[]" value="{{ $item->id }}" data-item-total="{{ $total }}" onclick="syncCheckbox(this, {{ $item->id }})">
+                            <input class="form-check-input item-checkbox" type="checkbox" name="cart_item_ids[]" value="{{ $item->id }}" data-item-total="{{ $total }}" data-type="{{ $isAuction ? 'lelang' : 'merch' }}" onclick="syncCheckbox(this, {{ $item->id }})">
                         </div>
                         <div class="col-md-4 d-flex align-items-center">
                             <img src="{{ $imgUrl }}" class="rounded me-3 img-product-{{ $item->id }}" style="width: 70px; height: 70px; object-fit: cover; border: 1px solid #f8f9fa;">
@@ -119,6 +128,8 @@
                                         </div>
                                     @endif
                                 @else
+                                    {{-- TAMPILAN KHUSUS MERCH --}}
+                                    <span class="badge bg-primary text-white mb-1" style="font-size: 10px;">Merchandise</span>
                                     {{-- TAMPILAN KHUSUS MERCH (Dropdown) --}}
                                     <div class="d-flex flex-wrap gap-2 mt-2">
                                         @if($availableVariants->count() > 0)
@@ -176,7 +187,7 @@
                     {{-- B. MOBILE VIEW --}}
                     <div class="d-flex d-md-none align-items-start my-3 pb-3 border-bottom cart-item-row mobile-view" id="item-row-mobile-{{ $item->id }}">
                         <div class="me-3 d-flex align-items-center align-self-center">
-                            <input class="form-check-input mobile-checkbox item-checkbox" type="checkbox" name="cart_item_ids[]" value="{{ $item->id }}" data-item-total="{{ $total }}" onclick="syncCheckbox(this, {{ $item->id }})">
+                            <input class="form-check-input mobile-checkbox item-checkbox" type="checkbox" name="cart_item_ids[]" value="{{ $item->id }}" data-item-total="{{ $total }}" data-type="{{ $isAuction ? 'lelang' : 'merch' }}" onclick="syncCheckbox(this, {{ $item->id }})">
                         </div>
                         <div class="flex-grow-1 pe-2" style="min-width: 0;">
                             <div class="d-flex align-items-start">
@@ -258,7 +269,12 @@
                             <span class="fw-bold text-secondary">Subtotal</span>
                             <span class="fw-bold fs-4 text-dark" id="subtotalDisplay">Rp0</span>
                         </div>
-                        <button type="submit" class="btn btn-dark w-100 py-3 fw-bold shadow-sm transition-btn">
+                        <div id="mixed-warning-placeholder" class="mb-2 d-none">
+                            <div id="mixedWarning" class="alert alert-warning py-2 mb-2" role="alert" style="font-size:13px;">
+                                <strong>Perhatian:</strong> Anda memilih produk <em>lelang</em> dan <em>merchandise</em> bersamaan. Silakan pilih satu jenis produk untuk checkout.
+                            </div>
+                        </div>
+                        <button type="submit" id="checkoutButton" class="btn btn-dark w-100 py-3 fw-bold shadow-sm transition-btn">
                             Checkout
                         </button>
                     </div>
@@ -278,6 +294,7 @@
         const checkboxes = document.querySelectorAll(`input[value="${id}"].item-checkbox`);
         checkboxes.forEach(box => box.checked = el.checked);
         updateSubtotal();
+        updateCheckoutState();
     }
 
     function updateSubtotal() {
@@ -307,12 +324,53 @@
         const checkoutForm = document.getElementById('checkout-form');
         if(checkoutForm) {
             checkoutForm.addEventListener('submit', function(e) {
-                if (document.querySelectorAll('.item-checkbox:checked').length === 0) {
+                const checkedBoxes = Array.from(document.querySelectorAll('.item-checkbox:checked'));
+                if (checkedBoxes.length === 0) {
                     e.preventDefault();
                     alert('Harap pilih minimal satu produk untuk checkout!');
+                    return;
+                }
+
+                // Cek apakah user memilih campuran antara lelang dan merch
+                const types = new Set(checkedBoxes.map(cb => cb.getAttribute('data-type') || 'merch'));
+                if (types.size > 1) {
+                    e.preventDefault();
+                    alert('Tidak dapat checkout produk lelang dan merchandise bersamaan. Silakan pilih dan checkout satu jenis produk saja.');
+                    return;
                 }
             });
         }
+
+        // Update checkout button state and show mixed warning
+        function updateCheckoutState() {
+            const checkedBoxes = Array.from(document.querySelectorAll('.item-checkbox:checked'));
+            const checkoutBtn = document.getElementById('checkoutButton');
+            const mixedPlaceholder = document.getElementById('mixed-warning-placeholder');
+
+            if (!checkoutBtn) return;
+
+            if (checkedBoxes.length === 0) {
+                checkoutBtn.disabled = false; // allow user to open checkout page but validation will prevent empty selection
+                if (mixedPlaceholder) mixedPlaceholder.classList.add('d-none');
+                return;
+            }
+
+            const types = new Set(checkedBoxes.map(cb => cb.getAttribute('data-type') || 'merch'));
+            if (types.size > 1) {
+                // Mixed types selected -> disable button and show warning
+                checkoutBtn.disabled = true;
+                if (mixedPlaceholder) mixedPlaceholder.classList.remove('d-none');
+            } else {
+                checkoutBtn.disabled = false;
+                if (mixedPlaceholder) mixedPlaceholder.classList.add('d-none');
+            }
+        }
+
+        // Attach change listeners to checkboxes to update state dynamically
+        document.querySelectorAll('.item-checkbox').forEach(cb => cb.addEventListener('change', updateCheckoutState));
+
+        // Initial state
+        updateCheckoutState();
 
         // --- 1. LOGIC AJAX UPDATE OPTION (HARGA & GAMBAR BERUBAH) ---
         document.querySelectorAll('.option-selector').forEach(select => {

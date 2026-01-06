@@ -14,4 +14,12 @@ class District extends Model
     {
         return $this->belongsTo(City::class);
     }
+
+    /**
+     * Alias untuk backward compatibility dengan sistem lama (Kecamatan)
+     */
+    public function getNamaKecamatanAttribute()
+    {
+        return $this->name;
+    }
 }
