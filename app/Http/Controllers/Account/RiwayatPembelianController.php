@@ -132,7 +132,7 @@ class RiwayatPembelianController extends Controller
     public function showLelang($id)
     {
         try {
-            $order = Order::with(['product.karya', 'product.kategori', 'product.images', 'bid.user', 'provinsi', 'kabupaten', 'kecamatan'])
+            $order = Order::with(['product.karya', 'product.kategori', 'product.images', 'bid.user', 'provinsi', 'kabupaten', 'kecamatan', 'address.province', 'address.city', 'address.district', 'shipper'])
                           ->where('id', $id)
                           ->where('user_id', Auth::user()->id)
                           ->firstOrFail();
@@ -147,10 +147,25 @@ class RiwayatPembelianController extends Controller
                 $order->product_exists = false;
                 $order->product_title = 'Produk tidak tersedia';
                 $order->product_image = 'assets/img/default.jpg';
+                $order->product_category = null;
+                $order->product_artist = null;
+                $order->product_description = null;
             } else {
                 $order->product_exists = true;
                 $order->product_title = $order->product->title ?? 'Produk Lelang';
                 $order->product_image = optional($order->product->imageUtama)->path ?? 'assets/img/default.jpg';
+                $order->product_category = optional($order->product->kategori)->nama_kategori ?? 'Tidak ada kategori';
+                $order->product_artist = optional(optional($order->product->karya)->user)->name ?? 'Seniman tidak diketahui';
+                $order->product_description = $order->product->description ?? null;
+                
+                // Informasi bid/lelang
+                if ($order->bid) {
+                    $order->winning_bid = $order->bid->bid_terakhir ?? $order->bid_terakhir;
+                    $order->winner_name = optional($order->bid->user)->name ?? optional(Auth::user())->name ?? 'Pemenang';
+                } else {
+                    $order->winning_bid = $order->bid_terakhir ?? $order->total_tagihan;
+                    $order->winner_name = optional(Auth::user())->name ?? 'Pemenang';
+                }
             }
 
             switch ((int) $order->payment_status) {
@@ -189,6 +204,90 @@ class RiwayatPembelianController extends Controller
                 ]);
             }
             throw $e;
+        }
+    }
+
+    /**
+     * Cancel merchandise order
+     *
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function cancelMerch($id)
+    {
+        try {
+            $order = OrderMerch::where('id', $id)
+                              ->where('user_id', Auth::user()->id)
+                              ->firstOrFail();
+
+            if ($order->status !== 'pending') {
+                return redirect()->back()->with('error', 'Pesanan tidak dapat dibatalkan.');
+            }
+
+            $order->status = 'cancelled';
+            $order->save();
+
+            if (app()->environment(['local', 'testing', 'development'])) {
+                Log::info('RiwayatPembelianController@cancelMerch', [
+                    'user_id' => Auth::user()->id,
+                    'order_id' => $order->id,
+                    'old_status' => 'pending',
+                    'new_status' => 'cancelled',
+                ]);
+            }
+
+            return redirect()->route('account.purchase.history')->with('success', 'Pesanan berhasil dibatalkan.');
+        } catch (\Exception $e) {
+            if (app()->environment(['local', 'testing', 'development'])) {
+                Log::error('RiwayatPembelianController@cancelMerch Error', [
+                    'user_id' => Auth::user()->id,
+                    'order_id' => $id,
+                    'error' => $e->getMessage(),
+                ]);
+            }
+            return redirect()->back()->with('error', 'Terjadi kesalahan saat membatalkan pesanan.');
+        }
+    }
+
+    /**
+     * Cancel lelang order
+     *
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function cancelLelang($id)
+    {
+        try {
+            $order = Order::where('id', $id)
+                          ->where('user_id', Auth::user()->id)
+                          ->firstOrFail();
+
+            if ((int) $order->payment_status !== 1) {
+                return redirect()->back()->with('error', 'Pesanan lelang tidak dapat dibatalkan.');
+            }
+
+            $order->payment_status = 4; // 4 = cancelled
+            $order->save();
+
+            if (app()->environment(['local', 'testing', 'development'])) {
+                Log::info('RiwayatPembelianController@cancelLelang', [
+                    'user_id' => Auth::user()->id,
+                    'order_id' => $order->id,
+                    'old_status' => 1,
+                    'new_status' => 4,
+                ]);
+            }
+
+            return redirect()->route('account.purchase.history')->with('success', 'Pesanan lelang berhasil dibatalkan.');
+        } catch (\Exception $e) {
+            if (app()->environment(['local', 'testing', 'development'])) {
+                Log::error('RiwayatPembelianController@cancelLelang Error', [
+                    'user_id' => Auth::user()->id,
+                    'order_id' => $id,
+                    'error' => $e->getMessage(),
+                ]);
+            }
+            return redirect()->back()->with('error', 'Terjadi kesalahan saat membatalkan pesanan lelang.');
         }
     }
 }

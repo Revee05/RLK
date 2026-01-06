@@ -216,10 +216,11 @@
                         <div class="info-row">
                             <span class="info-label">Alamat Lengkap</span>
                             <span class="info-value" style="max-width: 60%; text-align: right;">
-                                {{ $order->address->address }}, 
-                                {{ $order->address->district->name ?? '' }}, 
-                                {{ $order->address->city->name ?? '' }}, 
-                                {{ $order->address->province->name ?? '' }}
+                                {{ $order->address->address }}
+                                @if($order->address->district), {{ $order->address->district->name ?? '' }}@endif
+                                @if($order->address->city), {{ $order->address->city->name ?? '' }}@endif
+                                @if($order->address->province), {{ $order->address->province->name ?? '' }}@endif
+                                @if($order->address->postal_code) {{ $order->address->postal_code }}@endif
                             </span>
                         </div>
                         @else
@@ -229,12 +230,12 @@
                         @if($order->shipper)
                         <div class="info-row">
                             <span class="info-label">Kurir</span>
-                            <span class="info-value">{{ strtoupper($order->shipper->name ?? 'N/A') }} - {{ $order->jenis_ongkir ?? 'Regular' }}</span>
+                            <span class="info-value">{{ strtoupper($order->shipper->name ?? 'N/A') }} @if($order->jenis_ongkir)- {{ $order->jenis_ongkir }}@endif</span>
                         </div>
                         @endif
                         
                         @php
-                            $shipping = is_array($order->shipping) ? $order->shipping : [];
+                            $shipping = is_array($order->shipping) ? $order->shipping : (is_string($order->shipping) ? json_decode($order->shipping, true) : []);
                         @endphp
                         
                         @if(!empty($shipping))
@@ -258,6 +259,13 @@
                                 <span class="info-value">{{ $shipping['etd'] }}</span>
                             </div>
                             @endif
+                            
+                            @if(isset($shipping['cost']))
+                            <div class="info-row">
+                                <span class="info-label">Biaya Pengiriman</span>
+                                <span class="info-value">Rp. {{ number_format($shipping['cost'], 0, ',', '.') }}</span>
+                            </div>
+                            @endif
                         @endif
                         
                         @if($order->note)
@@ -267,6 +275,25 @@
                         </div>
                         @endif
                     </div>
+
+                    <!-- Order Status & Tracking (if available) -->
+                    @if($order->status == 'success' && $order->shipper)
+                    <div class="order-content">
+                        <div class="section-title">Status Pengiriman</div>
+                        @if($order->nomor_resi)
+                        <div class="info-row">
+                            <span class="info-label">Nomor Resi</span>
+                            <span class="info-value">{{ $order->nomor_resi }}</span>
+                        </div>
+                        @endif
+                        @if($order->status_pesanan)
+                        <div class="info-row">
+                            <span class="info-label">Status</span>
+                            <span class="info-value">{{ ucfirst($order->status_pesanan) }}</span>
+                        </div>
+                        @endif
+                    </div>
+                    @endif
 
                     <!-- Payment Information -->
                     @if($order->status == 'success' && ($order->payment_method || $order->paid_at))
@@ -309,16 +336,35 @@
                         <div class="total-section">
                             @php
                                 $subtotalItems = 0;
+                                $totalWeight = 0;
+                                $totalQty = 0;
                                 if($items && count($items) > 0) {
                                     foreach($items as $item) {
                                         $subtotalItems += ($item['price'] ?? 0) * ($item['qty'] ?? 1);
+                                        $totalWeight += ($item['weight'] ?? 0) * ($item['qty'] ?? 1);
+                                        $totalQty += ($item['qty'] ?? 1);
                                     }
                                 }
                             @endphp
+                            <div class="info-row mb-2">
+                                <span class="info-label">ID Pesanan</span>
+                                <span class="info-value">{{ $order->id }}</span>
+                            </div>
+                            <div class="info-row mb-3">
+                                <span class="info-label">Tanggal Pesanan</span>
+                                <span class="info-value">{{ \Carbon\Carbon::parse($order->created_at)->format('d F Y, H:i') }}</span>
+                            </div>
+                            <hr style="margin: 1rem 0; border-color: #e9ecef;">
                             <div class="total-row">
-                                <span>Subtotal Produk</span>
+                                <span>Subtotal Produk ({{ $totalQty }} item)</span>
                                 <span>Rp. {{ number_format($subtotalItems, 0, ',', '.') }}</span>
                             </div>
+                            @if($totalWeight > 0)
+                            <div class="total-row">
+                                <span>Total Berat</span>
+                                <span>{{ number_format($totalWeight, 0, ',', '.') }} gr</span>
+                            </div>
+                            @endif
                             <div class="total-row">
                                 <span>Ongkos Kirim</span>
                                 <span>Rp. {{ number_format($order->total_ongkir ?? 0, 0, ',', '.') }}</span>
