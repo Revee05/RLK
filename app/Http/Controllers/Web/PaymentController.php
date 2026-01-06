@@ -4,11 +4,8 @@ namespace App\Http\Controllers\Web;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use Xendit\Configuration;
-use Xendit\Invoice\InvoiceApi;
-use Xendit\Invoice\CreateInvoiceRequest;
-use Xendit\Invoice\InvoiceCallback;
-use Xendit\XenditSdkException;
+use Xendit\Xendit;
+use Xendit\Invoice;
 use App\OrderMerch;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
@@ -38,51 +35,47 @@ class PaymentController extends Controller
         }
 
         try {
-            // Set API key untuk Xendit PHP SDK v3.x
-            $config = \Xendit\Configuration::getDefaultConfiguration()
-                ->setApiKey(env('XENDIT_SECRET_KEY'));
+            // Set API key untuk Xendit PHP SDK v2.x
+            \Xendit\Xendit::setApiKey(env('XENDIT_SECRET_KEY'));
 
             Log::info('Xendit API key diset');
 
-            // InvoiceApi HARUS pakai Guzzle + Config
-            $apiInstance = new InvoiceApi(
-                new \GuzzleHttp\Client(),
-                $config
-            );
-
-            Log::info('InvoiceApi instance dibuat');
-
-            $createInvoiceRequest = new CreateInvoiceRequest([
+            $params = [
                 'external_id' => $order->invoice,
                 'amount' => $order->total_tagihan,
                 'payer_email' => auth()->user()->email,
                 'description' => 'Pembayaran ' . $order->invoice,
                 'currency' => 'IDR',
                 'invoice_duration' => 60, //1 jam
-
-                // Redirect setelah bayar
                 'success_redirect_url' => url('/payment/status/' . $order->invoice),
                 'failure_redirect_url' => url('/payment/status/' . $order->invoice),
-                
                 'customer_notification_preference' => [
                     'invoice_created' => ['email'],
                     'invoice_reminder' => ['email'],
                     'invoice_paid' => ['email'],
                 ],
-            ]);
+            ];
 
-            $xenditInvoice = $apiInstance->createInvoice($createInvoiceRequest);
+            // v2.x: use static Invoice class
+            $xenditInvoice = \Xendit\Invoice::create($params);
+
+            $invoiceUrl = null;
+            if (is_array($xenditInvoice)) {
+                $invoiceUrl = $xenditInvoice['invoice_url'] ?? null;
+            } elseif (is_object($xenditInvoice)) {
+                $invoiceUrl = $xenditInvoice->invoice_url ?? null;
+            }
 
             Log::info('Invoice berhasil dibuat', [
-                'invoice_url' => $xenditInvoice->getInvoiceUrl()
+                'invoice_url' => $invoiceUrl
             ]);
 
             $order->update([
-                'payment_url' => $xenditInvoice->getInvoiceUrl(),
+                'payment_url' => $invoiceUrl,
                 'status' => 'pending',
             ]);
 
-            return redirect($xenditInvoice->getInvoiceUrl());
+            return redirect($invoiceUrl ?: url('/payment/status/' . $order->invoice));
 
         } catch (\Exception $e) {
             Log::error('Gagal membuat invoice', ['message' => $e->getMessage()]);
