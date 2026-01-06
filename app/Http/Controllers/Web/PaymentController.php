@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Xendit\Xendit;
 use Xendit\Invoice;
 use App\OrderMerch;
+use App\Order;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
 use GuzzleHttp\Client;
@@ -25,10 +26,29 @@ class PaymentController extends Controller
             'user_id' => auth()->id(),
         ]);
 
-        $order = OrderMerch::where('invoice', $invoice)->firstOrFail();
-        Log::info('Order ditemukan', ['order_id' => $order->id]);
+        // Try OrderMerch first
+        $order = OrderMerch::where('invoice', $invoice)->first();
+        $orderType = 'merch';
 
-        if ($order->status !== 'pending') {
+        // If not found, try Order (lelang)
+        if (!$order) {
+            $order = Order::where('invoice', $invoice)->first();
+            $orderType = 'lelang';
+        }
+
+        if (!$order) {
+            abort(404, 'Order tidak ditemukan');
+        }
+
+        Log::info('Order ditemukan', [
+            'order_id' => $order->id,
+            'type' => $orderType
+        ]);
+
+        // Check status (unified field atau fallback ke payment_status untuk Order lama)
+        $currentStatus = $order->status ?? ($order->payment_status == 1 ? 'pending' : 'success');
+        
+        if ($currentStatus !== 'pending') {
             return redirect()
                 ->route('payment.status', $invoice)
                 ->with('error', 'Pesanan tidak dapat dibayar.');
@@ -74,6 +94,12 @@ class PaymentController extends Controller
                 'payment_url' => $invoiceUrl,
                 'status' => 'pending',
             ]);
+            
+            // Update payment_status untuk Order lama (backward compat)
+            if ($orderType === 'lelang' && method_exists($order, 'setAttribute')) {
+                $order->setAttribute('payment_status', 1);
+                $order->save();
+            }
 
             return redirect($invoiceUrl ?: url('/payment/status/' . $order->invoice));
 
@@ -115,11 +141,23 @@ class PaymentController extends Controller
 
         // Cari order berdasarkan external_id
         $order = OrderMerch::where('invoice', $externalId)->first();
+        $orderType = 'merch';
+
+        if (!$order) {
+            $order = Order::where('invoice', $externalId)->first();
+            $orderType = 'lelang';
+        }
 
         if (!$order) {
             Log::error("Order tidak ditemukan: " . $externalId);
             return response()->json(['message' => 'Order not found'], 404);
         }
+
+        Log::info("Order ditemukan untuk webhook", [
+            'invoice' => $externalId,
+            'type' => $orderType,
+            'status_xendit' => $status
+        ]);
 
         switch ($status) {
             case 'PAID':
@@ -127,17 +165,34 @@ class PaymentController extends Controller
                     'status'  => 'success',
                     'paid_at' => now(),
                 ]);
+                // Update payment_status untuk Order lama
+                if ($orderType === 'lelang') {
+                    $order->setAttribute('payment_status', 2);
+                    $order->save();
+                }
                 break;
             case 'EXPIRED':
                 $order->update(['status' => 'expired']);
+                if ($orderType === 'lelang') {
+                    $order->setAttribute('payment_status', 3);
+                    $order->save();
+                }
                 break;
             case 'FAILED':
                 $order->update(['status' => 'cancelled']);
+                if ($orderType === 'lelang') {
+                    $order->setAttribute('payment_status', 4);
+                    $order->save();
+                }
                 break;
             default:
                 $order->update([
                     'status' => 'pending'
                 ]);
+                if ($orderType === 'lelang') {
+                    $order->setAttribute('payment_status', 1);
+                    $order->save();
+                }
                 break;
         }
 
@@ -153,7 +208,7 @@ class PaymentController extends Controller
         // =======================================================
         //   PENGURANGAN STOK — HANYA KALAU STATUS = PAID
         // =======================================================
-        if ($status === 'PAID') {
+        if ($status === 'PAID' && $orderType === 'merch') {
 
             // Idempotency → kalau sudah pernah dapat PAID, jangan kurangi stok lagi
             if ($order->stock_reduced == 1) {
@@ -236,6 +291,37 @@ class PaymentController extends Controller
             ]);
         }
 
+        // =======================================================
+        //   KIRIM EMAIL KONFIRMASI — HANYA KALAU STATUS = PAID
+        // =======================================================
+        if ($status === 'PAID') {
+            $emailSent = $orderType === 'lelang' 
+                ? ($order->email_sent ?? 0) 
+                : $order->email_sent;
+                
+            if ($emailSent == 1) {
+                Log::info("Email sudah pernah dikirim, SKIP", ['invoice' => $order->invoice]);
+            } else {
+                try {
+                    \Mail::to($order->email)->send(new \App\Mail\OrderConfirmationMail($order));
+                    
+                    // Update flag email_sent
+                    $order->update(['email_sent' => 1]);
+                    
+                    Log::info("Email konfirmasi berhasil dikirim", [
+                        'invoice' => $order->invoice,
+                        'email' => $order->email,
+                        'order_type' => $orderType
+                    ]);
+                } catch (\Exception $e) {
+                    Log::error("Gagal mengirim email konfirmasi", [
+                        'invoice' => $order->invoice,
+                        'error' => $e->getMessage()
+                    ]);
+                }
+            }
+        }
+
         Log::info("Order Updated dari Callback", [
             'invoice' => $externalId,
             'status'  => $status,
@@ -248,15 +334,29 @@ class PaymentController extends Controller
 
     public function status($invoice)
     {
-        $order = OrderMerch::where('invoice', $invoice)->firstOrFail();
+        // Try OrderMerch first
+        $order = OrderMerch::where('invoice', $invoice)->first();
+        $orderType = 'merch';
+
+        if (!$order) {
+            $order = Order::where('invoice', $invoice)->first();
+            $orderType = 'lelang';
+        }
+
+        if (!$order) {
+            abort(404, 'Order tidak ditemukan');
+        }
 
         Log::info("Halaman success dipanggil", [
             'invoice' => $invoice,
-            'current_status' => $order->status
+            'current_status' => $order->status ?? $order->payment_status,
+            'type' => $orderType
         ]);
 
         // Jika sudah PAID dari webhook → tidak perlu cek Xendit lagi
-        if ($order->status === 'success') {
+        $currentStatus = $order->status ?? ($order->payment_status == 2 ? 'success' : 'pending');
+        
+        if ($currentStatus === 'success') {
             Log::info("Order sudah PAID — SKIP cek Xendit, langsung render success page");
             if (empty($order->email_sent)) {
                 if ($order->user && $order->user->email) {
