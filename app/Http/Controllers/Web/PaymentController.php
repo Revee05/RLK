@@ -60,6 +60,44 @@ class PaymentController extends Controller
 
             Log::info('Xendit API key diset');
 
+            // Prepare customer data
+            $customerData = [
+                'given_names' => auth()->user()->name,
+                'email' => auth()->user()->email,
+            ];
+
+            // Add address data if available
+            if ($orderType === 'merch') {
+                $address = $order->address;
+                if ($address) {
+                    $customerData['mobile_number'] = $address->phone ?? auth()->user()->phone ?? null;
+                    $customerData['address'] = [
+                        'country' => 'Indonesia',
+                        'street_line1' => $address->address ?? '',
+                        'city' => $address->city->name ?? '',
+                        'province' => $address->province->name ?? '',
+                        'postal_code' => $address->kodepos ?? '',
+                    ];
+                }
+            } else {
+                // Order lelang - ambil dari field langsung
+                $customerData['mobile_number'] = $order->phone ?? auth()->user()->phone ?? null;
+                if ($order->address) {
+                    $customerData['address'] = [
+                        'country' => 'Indonesia',
+                        'street_line1' => $order->address ?? '',
+                        'city' => optional($order->kabupaten)->nama_kabupaten ?? '',
+                        'province' => optional($order->provinsi)->nama_provinsi ?? '',
+                        'postal_code' => '',
+                    ];
+                }
+            }
+
+            // Remove null values
+            $customerData = array_filter($customerData, function($value) {
+                return !is_null($value) && $value !== '';
+            });
+
             $params = [
                 'external_id' => $order->invoice,
                 'amount' => $order->total_tagihan,
@@ -69,12 +107,18 @@ class PaymentController extends Controller
                 'invoice_duration' => 60, //1 jam
                 'success_redirect_url' => url('/payment/status/' . $order->invoice),
                 'failure_redirect_url' => url('/payment/status/' . $order->invoice),
+                'customer' => $customerData,
                 'customer_notification_preference' => [
                     'invoice_created' => ['email'],
                     'invoice_reminder' => ['email'],
                     'invoice_paid' => ['email'],
                 ],
             ];
+
+            Log::info('Xendit params prepared', [
+                'customer' => $customerData,
+                'order_type' => $orderType
+            ]);
 
             // v2.x: use static Invoice class
             $xenditInvoice = \Xendit\Invoice::create($params);

@@ -143,10 +143,15 @@
         <div class="order-item-footer d-flex justify-content-end align-items-center">
             <div class="action-btn-group">
                 @if($order->status == 'pending')
-                    <a href="{{ $orderType === 'merch' 
-                        ? route('checkout.preview', $order->invoice) 
-                        : route('account.invoice', $order->orderid_uuid) }}" 
-                       class="btn-base btn-bayar-sekarang">Bayar Sekarang</a>
+                    @php
+                        $payRoute = null;
+                        if (!empty($order->invoice)) {
+                            $payRoute = route('checkout.preview', $order->invoice);
+                        } else {
+                            $payRoute = route('account.invoice', $order->orderid_uuid);
+                        }
+                    @endphp
+                    <a href="{{ $payRoute }}" class="btn-base btn-bayar-sekarang">Bayar Sekarang</a>
                 @elseif($order->status == 'success')
                     <a href="#" class="btn-base btn-beli-lagi">Beli Lagi</a>
                 @elseif($order->status == 'cancelled' || $order->status == 'expired')

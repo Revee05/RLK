@@ -118,9 +118,30 @@
                     <div class="order-content">
                         <div class="section-title">Produk yang Dibeli</div>
                         @php
-                            $items = is_string($order->items) ? json_decode($order->items, true) : $order->items;
+                            $orderType = isset($order->order_type) ? $order->order_type : 'merch';
+
+                            if ($orderType === 'merch') {
+                                $items = is_string($order->items) ? json_decode($order->items, true) : $order->items;
+                            } else {
+                                // Untuk order type 'lelang' / auction, sintetis satu item
+                                $items = [];
+                                $name = $order->product_title ?? $order->product_name ?? 'Produk Lelang';
+                                $image = $order->product_image ?? null;
+                                $price = $order->price ?? $order->total_tagihan ?? 0;
+                                $items[] = [
+                                    'name' => $name,
+                                    'image' => $image,
+                                    'price' => $price,
+                                    'qty' => 1,
+                                ];
+                            }
+
+                            // Cancel URL sesuai tipe order
+                            $cancelUrl = $orderType === 'merch'
+                                ? url('/account/merch/order/'.$order->id.'/cancel')
+                                : url('/account/lelang/order/'.$order->id.'/cancel');
                         @endphp
-                        
+
                         @if($items && count($items) > 0)
                             @foreach($items as $item)
                             <div class="product-item">
@@ -317,13 +338,12 @@
 
                     <!-- Action Buttons -->
                     <div class="action-buttons">
-                        @php $orderType = isset($order->order_type) ? $order->order_type : 'merch'; @endphp
                         @if($order->status == 'pending')
-                            <form method="POST" action="{{ url('/account/merch/order/'.$order->id.'/cancel') }}" onsubmit="return confirm('Batalkan pesanan ini?');" style="margin:0;">
+                            <form method="POST" action="{{ $cancelUrl }}" onsubmit="return confirm('Batalkan pesanan ini?');" style="margin:0;">
                                 @csrf
                                 <button type="submit" class="btn-base btn-danger">Batalkan Pesanan</button>
                             </form>
-                            <a href="{{ $orderType === 'merch' ? route('checkout.preview', $order->invoice) : route('lelang.payment.checkout', ['invoice' => $order->invoice]) }}" class="btn-base btn-bayar-sekarang">Bayar Sekarang</a>
+                            <a href="{{ ($orderType === 'merch') ? route('checkout.preview', $order->invoice) : route('lelang.payment.checkout', ['invoice' => $order->invoice]) }}" class="btn-base btn-bayar-sekarang">Bayar Sekarang</a>
                         @endif
                         <a href="{{ route('account.purchase.history') }}" class="btn-base btn-primary">Kembali ke Riwayat Pembelian</a>
                     </div>
