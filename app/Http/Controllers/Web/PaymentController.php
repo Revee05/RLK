@@ -423,19 +423,22 @@ class PaymentController extends Controller
             return view('web.payment.status', compact('order'));
         }
         
+        // Untuk pending status, cek status dari Xendit menggunakan SDK v2.x
         try {
-            $config = Configuration::getDefaultConfiguration()
-                ->setApiKey(env('XENDIT_SECRET_KEY'));
+            \Xendit\Xendit::setApiKey(env('XENDIT_SECRET_KEY'));
 
-            $api = new InvoiceApi(new \GuzzleHttp\Client(), $config);
+            // Ambil invoice berdasarkan external_id menggunakan Invoice::retrieve
+            $invoiceList = \Xendit\Invoice::retrieveAll([
+                'external_id' => $invoice
+            ]);
 
-            // Ambil invoice berdasarkan external_id
-            $invoiceList = $api->getInvoices("external_id=" . $invoice);
-            $invoiceData = $invoiceList[0] ?? null;
+            $invoiceData = !empty($invoiceList) ? $invoiceList[0] : null;
 
             if ($invoiceData) {
-
-                $status = $invoiceData->getStatus() ?? null;
+                // Extract status dari array response
+                $status = is_array($invoiceData) 
+                    ? ($invoiceData['status'] ?? null) 
+                    : (isset($invoiceData->status) ? $invoiceData->status : null);
 
 
                 Log::info("Status invoice dari Xendit berhasil diambil", [
@@ -480,12 +483,20 @@ class PaymentController extends Controller
                         ]);
                         break;
                 }
-                // Update payment method
-                $update['payment_method'] = $invoiceData->getPaymentMethod() ?? $order->payment_method;
-                $update['payment_channel'] = $invoiceData->getPaymentChannel() ?? $order->payment_channel;
-                $update['payment_destination'] = $invoiceData->getPaymentDestination() ?? $order->payment_destination;
+                
+                // Update payment method dari response Xendit
+                $update = [];
+                if (is_array($invoiceData)) {
+                    $update['payment_method'] = $invoiceData['payment_method'] ?? $order->payment_method;
+                    $update['payment_channel'] = $invoiceData['payment_channel'] ?? $order->payment_channel;
+                    $update['payment_destination'] = $invoiceData['payment_destination'] ?? $order->payment_destination;
+                } else {
+                    $update['payment_method'] = $invoiceData->payment_method ?? $order->payment_method;
+                    $update['payment_channel'] = $invoiceData->payment_channel ?? $order->payment_channel;
+                    $update['payment_destination'] = $invoiceData->payment_destination ?? $order->payment_destination;
+                }
 
-                Log::info("InvoiceData:", (array) $invoiceData);
+                Log::info("InvoiceData:", is_array($invoiceData) ? $invoiceData : (array) $invoiceData);
 
                 $order->update($update);
 

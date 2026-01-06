@@ -323,10 +323,7 @@
                     <!-- Action Buttons -->
                     <div class="action-buttons">
                         @if($order->status == 'pending')
-                            <form method="POST" action="{{ url('/account/lelang/order/'.$order->id.'/cancel') }}" onsubmit="return confirm('Batalkan pesanan lelang ini?');" style="margin:0;">
-                                @csrf
-                                <button type="submit" class="btn-base btn-danger">Batalkan Pesanan</button>
-                            </form>
+                            {{-- Tombol cancel TIDAK ada untuk lelang/auction karena tidak bisa dibatalkan --}}
                             <a href="{{ route('checkout.preview', $order->invoice) }}" class="btn-base btn-bayar-sekarang">Bayar Sekarang</a>
                         @endif
                         <a href="{{ route('account.purchase.history') }}" class="btn-base btn-primary">Kembali ke Riwayat Pembelian</a>

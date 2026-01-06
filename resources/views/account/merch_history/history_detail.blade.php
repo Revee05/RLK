@@ -135,11 +135,6 @@
                                     'qty' => 1,
                                 ];
                             }
-
-                            // Cancel URL sesuai tipe order
-                            $cancelUrl = $orderType === 'merch'
-                                ? url('/account/merch/order/'.$order->id.'/cancel')
-                                : url('/account/lelang/order/'.$order->id.'/cancel');
                         @endphp
 
                         @if($items && count($items) > 0)
@@ -385,10 +380,13 @@
                     <!-- Action Buttons -->
                     <div class="action-buttons">
                         @if($order->status == 'pending')
-                            <form method="POST" action="{{ $cancelUrl }}" onsubmit="return confirm('Batalkan pesanan ini?');" style="margin:0;">
-                                @csrf
-                                <button type="submit" class="btn-base btn-danger">Batalkan Pesanan</button>
-                            </form>
+                            @if($orderType === 'merch')
+                                {{-- Tombol cancel hanya untuk merchandise --}}
+                                <form method="POST" action="{{ route('payment.cancel', $order->invoice) }}" onsubmit="return confirm('Batalkan pesanan ini?');" style="margin:0;">
+                                    @csrf
+                                    <button type="submit" class="btn-base btn-danger">Batalkan Pesanan</button>
+                                </form>
+                            @endif
                             <a href="{{ ($orderType === 'merch') ? route('checkout.preview', $order->invoice) : route('lelang.payment.checkout', ['invoice' => $order->invoice]) }}" class="btn-base btn-bayar-sekarang">Bayar Sekarang</a>
                         @endif
                         <a href="{{ route('account.purchase.history') }}" class="btn-base btn-primary">Kembali ke Riwayat Pembelian</a>
