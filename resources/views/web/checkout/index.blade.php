@@ -7,7 +7,6 @@
 @section('content')
 
     <div class="container py-5">
-
         <h2 class="fw-bold mb-4">Checkout</h2>
 
         <form action="{{ route('checkout.process') }}" method="POST">
@@ -220,13 +219,12 @@
         </form>
     </div>
 
-    {{-- Include modal --}}
+    {{-- Modals --}}
     @include('web.checkout.modals-alamat', ['addresses' => $addresses, 'province' => $province])
     @include('web.checkout.modals-tambah-alamat', ['province' => $province])
     @include('web.checkout.modals-shipper', [
         'selectedAddress' => $selectedAddress,
         'cart' => $cart,
-        'subtotal' => $subtotal,
     ])
 @endsection
 

@@ -18,7 +18,6 @@ use App\Services\RajaOngkirService;
 use App\models\MerchProductVariant;
 use Xendit\Xendit;
 
-
 class CheckoutMerchController extends Controller
 {
     /*
@@ -102,15 +101,11 @@ class CheckoutMerchController extends Controller
                 'variant_code' => $item->merchVariant->code ?? null,
                 'discount'     => $item->merchVariant->discount ?? null,
                 'stock'        => $item->merchVariant->stock ?? null,
-                'weight'        => $item->merchVariant->weight ?? null,
-
-                // Size
+                'weight'       => $item->merchVariant->weight ?? null,
                 'size_name'    => $item->merchSize->size ?? null,
-
-                // Data ID Asli untuk proses backend nanti
-                'product_id' => $item->merch_product_id,
-                'variant_id' => $item->merch_product_variant_id,
-                'size_id'    => $item->merch_product_variant_size_id,
+                'product_id'   => $item->merch_product_id,
+                'variant_id'   => $item->merch_product_variant_id,
+                'size_id'      => $item->merch_product_variant_size_id,
             ];
         });
 
@@ -133,7 +128,6 @@ class CheckoutMerchController extends Controller
         $province = Province::all();
 
         $selectedAddressId = session('checkout_address_id');
-
         $selectedAddress = $selectedAddressId
             ? UserAddress::with(['province', 'city', 'district'])->find($selectedAddressId)
             : auth()->user()->userAddress()->with(['province', 'city', 'district'])->first();
@@ -182,14 +176,13 @@ class CheckoutMerchController extends Controller
         $selectedIds = session('checkout_selected_item_ids', []);
 
         if (empty($selectedIds)) {
-            \Log::warning('Checkout PROCESS: selected_item_ids kosong');
             return redirect()->route('cart.index')->with('error', 'Data item tidak valid.');
         }
 
         // Ambil Item dari Database (HANYA YANG DIPILIH)
         $cartItems = CartItem::with(['merchProduct', 'merchVariant.images', 'merchSize', 'auctionProduct'])
                     ->where('user_id', auth()->id())
-                    ->whereIn('id', $selectedIds) // <--- Ini perbaikan kuncinya
+                    ->whereIn('id', $selectedIds)
                     ->get();
 
         \Log::info('Checkout PROCESS: Cart items loaded', [
@@ -205,8 +198,7 @@ class CheckoutMerchController extends Controller
         ]);
 
         if ($cartItems->isEmpty()) {
-            \Log::warning('Checkout PROCESS: item cart tidak ditemukan di DB');
-            return redirect()->route('cart.index')->with('error', 'Keranjang kosong atau item tidak ditemukan.');
+            return redirect()->route('cart.index')->with('error', 'Keranjang kosong.');
         }
 
         // Detect cart type: lelang vs merchandise
@@ -257,8 +249,6 @@ class CheckoutMerchController extends Controller
             $imagePath = '/img/default.png';
             if ($item->merchVariant && $item->merchVariant->images->isNotEmpty()) {
                 $imagePath = $item->merchVariant->images->first()->image_path;
-            } elseif ($item->merchProduct && $item->merchProduct->images->isNotEmpty()) {
-                $imagePath = $item->merchProduct->images->first()->image_path;
             }
 
             return [
@@ -268,14 +258,7 @@ class CheckoutMerchController extends Controller
                 'qty'          => $item->quantity,
                 'image'        => $imagePath,
                 'variant_name' => $item->merchVariant->name ?? null,
-                'variant_code' => $item->merchVariant->code ?? null,
-                'discount'     => $item->merchVariant->discount ?? null,
-                'stock'        => $item->merchVariant->stock ?? null,
-                'weight'       => $item->merchVariant->weight ?? null,
                 'size_name'    => $item->merchSize->size ?? null,
-                'product_id'   => $item->merch_product_id,
-                'variant_id'   => $item->merch_product_variant_id,
-                'size_id'      => $item->merch_product_variant_size_id,
             ];
         });
 
@@ -324,7 +307,6 @@ class CheckoutMerchController extends Controller
                 'etd'     => $request->shipping_etd,
             ];
         } else {
-            // PICKUP
             $shippingData = [
                 'type' => 'pickup',
                 'name' => 'Ambil di Toko',
@@ -353,7 +335,6 @@ class CheckoutMerchController extends Controller
             $order = OrderMerch::create([
                 'user_id'       => auth()->id(),
                 'address_id'    => $request->address_id,
-
                 'items'         => $orderItems->toJson(), 
                 'shipping'      => json_encode($shippingData),
                 'gift_wrap'     => $giftWrap,
@@ -572,8 +553,7 @@ class CheckoutMerchController extends Controller
      */
     public function setAddress(Request $request)
     {
-        $address = UserAddress::with(['province', 'city', 'district'])
-            ->find($request->address_id);
+        $address = UserAddress::with(['province', 'city', 'district'])->find($request->address_id);
 
         if (!$address) {
             return response()->json(['status' => 'error']);
@@ -593,12 +573,9 @@ class CheckoutMerchController extends Controller
                 'name'          => $address->name,
                 'phone'         => $address->phone,
                 'address'       => $address->address,
-                'is_primary'    => $address->is_primary,
                 'district'      => $address->district->name ?? '',
                 'city'          => $address->city->name ?? '',
                 'province'      => $address->province->name ?? '',
-
-                // Tambahkan ID untuk kurir
                 'district_id'   => $address->district_id,
                 'city_id'       => $address->city_id,
                 'province_id'   => $address->province_id,
@@ -638,21 +615,13 @@ class CheckoutMerchController extends Controller
 
         // Validate origin and destination
         if (!$request->filled('origin') || !$request->filled('destination')) {
-            \Log::warning('ONGKIR GAGAL: ORIGIN / DESTINATION KOSONG', [
-                'origin' => $request->origin,
-                'destination' => $request->destination,
-            ]);
-
-            return response()->json([
-                'error' => 'Alamat pengiriman belum lengkap.'
-            ], 422);
+            return response()->json(['error' => 'Alamat pengiriman belum lengkap.'], 422);
         }
 
         try {
             $origin      = (int) $request->origin;
             $destination = (int) $request->destination;
 
-            // Ambil cart item untuk menghitung total berat
             $cartItems = CartItem::with('merchVariant')
                         ->where('user_id', auth()->id())
                         ->whereIn('id', $request->selected_item_ids ?? [])
@@ -665,17 +634,10 @@ class CheckoutMerchController extends Controller
             $couriers = Shipper::pluck('code')->toArray();
             $result   = [];
 
-            \Log::info('PAYLOAD RAJAONGKIR', [
-                'origin' => $origin,
-                'destination' => $destination,
-                'weight' => $weight,
-                'couriers' => $couriers,
-                'price' => 'lowest',
-            ]);
-
             $rajaOngkir = new RajaOngkirService();
 
             foreach ($couriers as $courier) {
+                $response = $rajaOngkir->calculateCost($origin, $destination, $weight, $courier, 'lowest');
 
                 \Log::info('REQUEST RAJAONGKIR', [
                     'courier' => $courier,
@@ -775,7 +737,6 @@ class CheckoutMerchController extends Controller
             $order->order_type = 'merch';
         }
 
-        // Decode JSON items & shipping
         $items = json_decode($order->items, true);
         $shipping = json_decode($order->shipping, true);
         $giftWrap = $order->gift_wrap ?? false;
@@ -786,6 +747,7 @@ class CheckoutMerchController extends Controller
         });
         // Total ongkir
         $shippingCost = $order->total_ongkir ?? 0;
+        $isPickup = ($shipping['type'] ?? '') === 'pickup';
 
         return view('web.checkout.preview', compact('order', 'shippingCost', 'items', 'shipping', 'giftWrap', 'giftWrapCost', 'isPickup', 'subtotal'));
     }

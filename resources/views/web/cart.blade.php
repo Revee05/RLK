@@ -78,16 +78,21 @@
                             $product = $item->auctionProduct;
                             if (!$product) continue; // Skip jika produk terhapus
 
-                            // Gambar Lelang (Sesuaikan kolom DB kamu, misal: image, images, atau relasi)
-                            // Asumsi tabel products punya kolom 'image_path' atau ambil dari relasi images
-                            if (!empty($product->image_path)) { 
-                                $imgUrl = asset($product->image_path);
+                            // LOGIKA GAMBAR LELANG (DIPERBAIKI)
+                            // 1. Cek apakah ada relasi images dan datanya ada
+                            if ($product->images && $product->images->count() > 0) {
+                                // Gunakan ->path sesuai yang ada di detail.blade.php
+                                $imgUrl = asset($product->images->first()->path); 
+                            } 
+                            // Fallback jika tidak punya relasi images, cek kolom path langsung di tabel produk
+                            elseif (!empty($product->path)) { 
+                                $imgUrl = asset($product->path);
                             }
-                            // Atau jika pakai relasi images:
-                            // if($product->images && $product->images->count() > 0) $imgUrl = asset($product->images->first()->image_path);
+                            else {
+                                $imgUrl = 'https://via.placeholder.com/100?text=No+Image';
+                            }
 
-                            $title = $product->title ?? 'Produk Lelang'; // Sesuaikan kolom title/name
-
+                            $title = $product->title ?? 'Produk Lelang';
                         } else {
                             // --- KONDISI MERCHANDISE (Kode Lama) ---
                             $product = $item->merchProduct;
