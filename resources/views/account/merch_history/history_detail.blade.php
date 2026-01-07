@@ -1,9 +1,94 @@
 @extends('account.partials.layout')
-@section('css')
-<!-- <link rel="stylesheet" href="{{ asset('css/account/merch_order_detail.css') }}"> -->
-@endsection
 
 @section('content')
+<style>
+/* Buttons and container for order detail actions */
+.order-detail-container .action-buttons {
+    display: flex;
+    gap: .75rem;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+/* Base button */
+.order-detail-container .btn-base {
+    padding: .55rem 1rem;
+    border-radius: .45rem;
+    font-weight: 600;
+    text-decoration: none;
+    display: inline-block;
+    min-width: 140px;
+    text-align: center;
+    box-sizing: border-box;
+}
+
+/* Primary (teal) - used for Bayar Sekarang and Kembali */
+.order-detail-container .btn-primary {
+    background-color: rgba(88, 188, 194, 1);
+    color: #fff;
+    border: none;
+}
+.order-detail-container .btn-primary:hover { background-color: rgba(63,149,151,1); }
+
+/* Danger (red) - cancel action */
+.order-detail-container .btn-danger {
+    background-color: rgba(236, 31, 48, 1);
+    color: #fff;
+    border: 1.5px solid rgba(236, 31, 48, 1);
+}
+.order-detail-container .btn-danger:hover { background-color: rgba(187,24,37,1); }
+
+/* Bayar Sekarang (teal) - payment action */
+.order-detail-container .btn-bayar-sekarang {
+    background-color: rgba(88, 188, 194, 1);
+    color: #fff;
+    border: none;
+}
+.order-detail-container .btn-bayar-sekarang:hover { background-color: rgba(63,149,151,1); }
+
+/* Mobile: stack actions and make them touch-friendly */
+@media (max-width: 576px) {
+    .order-detail-container .action-buttons { flex-direction: column; align-items: stretch; }
+    .order-detail-container .action-buttons .btn-base { width: 100%; min-width: unset; }
+}
+
+/* Stronger rules for anchors to override global link styles */
+.order-detail-container .action-buttons a.btn-base,
+.order-detail-container .action-buttons a.btn-primary,
+.order-detail-container .action-buttons a.btn-bayar-sekarang,
+.order-detail-container .action-buttons a.btn-danger,
+.order-detail-container .action-buttons button.btn-base,
+.order-detail-container .action-buttons button.btn-primary,
+.order-detail-container .action-buttons button.btn-bayar-sekarang,
+.order-detail-container .action-buttons button.btn-danger {
+    display: inline-block !important;
+    padding: .55rem 1rem !important;
+    border-radius: .45rem !important;
+    text-decoration: none !important;
+    color: inherit !important;
+    box-sizing: border-box !important;
+}
+.order-detail-container .action-buttons a.btn-primary,
+.order-detail-container .action-buttons button.btn-primary {
+    background-color: rgba(88, 188, 194, 1) !important;
+    color: #fff !important;
+    border: none !important;
+}
+.order-detail-container .action-buttons a.btn-bayar-sekarang,
+.order-detail-container .action-buttons button.btn-bayar-sekarang {
+    background-color: rgba(88, 188, 194, 1) !important;
+    color: #fff !important;
+    border: none !important;
+}
+.order-detail-container .action-buttons a.btn-danger,
+.order-detail-container .action-buttons button.btn-danger {
+    background-color: rgba(236, 31, 48, 1) !important;
+    color: #fff !important;
+    border: 1.5px solid rgba(236, 31, 48, 1) !important;
+}
+</style>
+
 <div class="container order-detail-container">
     <div class="row">
         @include('account.partials.nav_new')
@@ -11,7 +96,7 @@
         <div class="col-md-9">
             <div class="card content-border">
                 <div class="card-head border-bottom border-darkblue align-baseline ps-4">
-                    <h3 class="mb-0 fw-bolder align-bottom">Detail Pesanan Merchandise</h3>
+                    <h3 class="mb-0 fw-bolder align-bottom">Detail Pesanan</h3>
                 </div>
                 <div class="card-body ps-4 pe-4">
                     <!-- Order Header -->
@@ -20,13 +105,11 @@
                         <div class="order-date">Tanggal Pemesanan: {{ \Carbon\Carbon::parse($order->created_at)->format('d F Y, H:i') }}</div>
                         @if($order->status == 'pending')
                             <span class="order-status-badge badge-menunggu">Menunggu Pembayaran</span>
-                        @elseif($order->status == 'paid')
-                            <span class="order-status-badge badge-selesai">Sudah Dibayar</span>
-                        @elseif($order->status == 'shipped')
-                            <span class="order-status-badge badge-proses">Sedang Dikirim</span>
-                        @elseif($order->status == 'completed')
+                        @elseif($order->status == 'success')
                             <span class="order-status-badge badge-selesai">Pesanan Selesai</span>
-                        @else
+                        @elseif($order->status == 'expired')
+                            <span class="order-status-badge" style="background-color: #f8d7da; color: #721c24;">Kadaluarsa</span>
+                        @elseif($order->status == 'cancelled')
                             <span class="order-status-badge" style="background-color: #f8d7da; color: #721c24;">Dibatalkan</span>
                         @endif
                     </div>
@@ -35,9 +118,25 @@
                     <div class="order-content">
                         <div class="section-title">Produk yang Dibeli</div>
                         @php
-                            $items = is_string($order->items) ? json_decode($order->items, true) : $order->items;
+                            $orderType = isset($order->order_type) ? $order->order_type : 'merch';
+
+                            if ($orderType === 'merch') {
+                                $items = is_string($order->items) ? json_decode($order->items, true) : $order->items;
+                            } else {
+                                // Untuk order type 'lelang' / auction, sintetis satu item
+                                $items = [];
+                                $name = $order->product_title ?? $order->product_name ?? 'Produk Lelang';
+                                $image = $order->product_image ?? null;
+                                $price = $order->price ?? $order->total_tagihan ?? 0;
+                                $items[] = [
+                                    'name' => $name,
+                                    'image' => $image,
+                                    'price' => $price,
+                                    'qty' => 1,
+                                ];
+                            }
                         @endphp
-                        
+
                         @if($items && count($items) > 0)
                             @foreach($items as $item)
                             <div class="product-item">
@@ -52,13 +151,38 @@
                                 @endif
                                 <div class="product-details">
                                     <div class="product-name">{{ $item['name'] ?? 'Produk Merchandise' }}</div>
+                                    @if(isset($item['variant_name']) || isset($item['size_name']))
+                                        <div style="font-size: 13px; color: #666; margin-top: 3px;">
+                                            @if(isset($item['variant_name']))
+                                                Varian: {{ $item['variant_name'] }}
+                                            @endif
+                                            @if(isset($item['size_name']))
+                                                @if(isset($item['variant_name'])) | @endif
+                                                Ukuran: {{ $item['size_name'] }}
+                                            @endif
+                                        </div>
+                                    @endif
                                     <div class="product-price">Rp. {{ number_format($item['price'] ?? 0, 0, ',', '.') }}</div>
-                                    <div class="product-qty">Jumlah: {{ $item['quantity'] ?? 1 }} pcs</div>
+                                    <div class="product-qty">Jumlah: {{ $item['qty'] ?? 1 }} pcs</div>
+                                    <div class="product-meta" style="font-size:13px; color:#666; ">
+                                        @if(isset($item['variant_code']) && $item['variant_code'])
+                                            <div>SKU: {{ $item['variant_code'] }}</div>
+                                        @endif
+                                        @if(isset($item['stock']))
+                                            <div>Stok: {{ $item['stock'] }}</div>
+                                        @endif
+                                        @if(isset($item['weight']))
+                                            <div>Berat: {{ $item['weight'] }} gr</div>
+                                        @endif
+                                        @if(isset($item['discount']) && (int)$item['discount'] > 0)
+                                            <div>Diskon: Rp. {{ number_format($item['discount'], 0, ',', '.') }}</div>
+                                        @endif
+                                    </div>
                                 </div>
                                 <div class="text-end" style="min-width: 150px;">
                                     <div style="font-size: 14px; color: #666; margin-bottom: 5px;">Subtotal</div>
                                     <div style="font-size: 18px; font-weight: 600; color: #333;">
-                                        Rp. {{ number_format(($item['price'] ?? 0) * ($item['quantity'] ?? 1), 0, ',', '.') }}
+                                        Rp. {{ number_format(($item['price'] ?? 0) * ($item['qty'] ?? 1), 0, ',', '.') }}
                                     </div>
                                 </div>
                             </div>
@@ -87,10 +211,11 @@
                         <div class="info-row">
                             <span class="info-label">Alamat Lengkap</span>
                             <span class="info-value" style="max-width: 60%; text-align: right;">
-                                {{ $order->address->address }}, 
-                                {{ $order->address->district->name ?? '' }}, 
-                                {{ $order->address->city->name ?? '' }}, 
-                                {{ $order->address->province->name ?? '' }}
+                                {{ $order->address->address }}
+                                @if($order->address->district), {{ $order->address->district->name ?? '' }}@endif
+                                @if($order->address->city), {{ $order->address->city->name ?? '' }}@endif
+                                @if($order->address->province), {{ $order->address->province->name ?? '' }}@endif
+                                @if($order->address->postal_code) {{ $order->address->postal_code }}@endif
                             </span>
                         </div>
                         @else
@@ -100,8 +225,42 @@
                         @if($order->shipper)
                         <div class="info-row">
                             <span class="info-label">Kurir</span>
-                            <span class="info-value">{{ strtoupper($order->shipper->name ?? 'N/A') }} - {{ $order->jenis_ongkir ?? 'Regular' }}</span>
+                            <span class="info-value">{{ strtoupper($order->shipper->name ?? 'N/A') }} @if($order->jenis_ongkir)- {{ $order->jenis_ongkir }}@endif</span>
                         </div>
+                        @endif
+                        
+                        @php
+                            $shipping = is_array($order->shipping) ? $order->shipping : (is_string($order->shipping) ? json_decode($order->shipping, true) : []);
+                        @endphp
+                        
+                        @if(!empty($shipping))
+                            @if(isset($shipping['type']))
+                            <div class="info-row">
+                                <span class="info-label">Jenis Pengiriman</span>
+                                <span class="info-value">{{ ucfirst($shipping['type']) == 'Delivery' ? 'Dikirim ke Alamat' : 'Ambil Sendiri' }}</span>
+                            </div>
+                            @endif
+                            
+                            @if(isset($shipping['service']))
+                            <div class="info-row">
+                                <span class="info-label">Layanan</span>
+                                <span class="info-value">{{ $shipping['service'] }} @if(isset($shipping['description'])) - {{ $shipping['description'] }} @endif</span>
+                            </div>
+                            @endif
+                            
+                            @if(isset($shipping['etd']))
+                            <div class="info-row">
+                                <span class="info-label">Estimasi Pengiriman</span>
+                                <span class="info-value">{{ $shipping['etd'] }}</span>
+                            </div>
+                            @endif
+                            
+                            @if(isset($shipping['cost']))
+                            <div class="info-row">
+                                <span class="info-label">Biaya Pengiriman</span>
+                                <span class="info-value">Rp. {{ number_format($shipping['cost'], 0, ',', '.') }}</span>
+                            </div>
+                            @endif
                         @endif
                         
                         @if($order->note)
@@ -112,26 +271,105 @@
                         @endif
                     </div>
 
+                    <!-- Order Status & Tracking (if available) -->
+                    @if($order->status == 'success' && $order->shipper)
+                    <div class="order-content">
+                        <div class="section-title">Status Pengiriman</div>
+                        @if($order->nomor_resi)
+                        <div class="info-row">
+                            <span class="info-label">Nomor Resi</span>
+                            <span class="info-value">{{ $order->nomor_resi }}</span>
+                        </div>
+                        @endif
+                        @if($order->status_pesanan)
+                        <div class="info-row">
+                            <span class="info-label">Status</span>
+                            <span class="info-value">{{ ucfirst($order->status_pesanan) }}</span>
+                        </div>
+                        @endif
+                    </div>
+                    @endif
+
+                    <!-- Payment Information -->
+                    @if($order->status == 'success' && ($order->payment_method || $order->paid_at))
+                    <div class="order-content">
+                        <div class="section-title">Informasi Pembayaran</div>
+                        
+                        @if($order->paid_at)
+                        <div class="info-row">
+                            <span class="info-label">Tanggal Pembayaran</span>
+                            <span class="info-value">{{ \Carbon\Carbon::parse($order->paid_at)->format('d F Y, H:i') }}</span>
+                        </div>
+                        @endif
+                        
+                        @if($order->payment_method)
+                        <div class="info-row">
+                            <span class="info-label">Metode Pembayaran</span>
+                            <span class="info-value">{{ strtoupper($order->payment_method) }}</span>
+                        </div>
+                        @endif
+                        
+                        @if($order->payment_channel)
+                        <div class="info-row">
+                            <span class="info-label">Channel Pembayaran</span>
+                            <span class="info-value">{{ strtoupper($order->payment_channel) }}</span>
+                        </div>
+                        @endif
+                        
+                        @if($order->payment_destination)
+                        <div class="info-row">
+                            <span class="info-label">Nomor Virtual Account / ID Pembayaran</span>
+                            <span class="info-value">{{ $order->payment_destination }}</span>
+                        </div>
+                        @endif
+                    </div>
+                    @endif
+
                     <!-- Payment Summary -->
                     <div class="order-content">
                         <div class="section-title">Ringkasan Pembayaran</div>
                         <div class="total-section">
                             @php
                                 $subtotalItems = 0;
+                                $totalWeight = 0;
+                                $totalQty = 0;
                                 if($items && count($items) > 0) {
                                     foreach($items as $item) {
-                                        $subtotalItems += ($item['price'] ?? 0) * ($item['quantity'] ?? 1);
+                                        $subtotalItems += ($item['price'] ?? 0) * ($item['qty'] ?? 1);
+                                        $totalWeight += ($item['weight'] ?? 0) * ($item['qty'] ?? 1);
+                                        $totalQty += ($item['qty'] ?? 1);
                                     }
                                 }
                             @endphp
+                            <div class="info-row mb-2">
+                                <span class="info-label">ID Pesanan</span>
+                                <span class="info-value">{{ $order->id }}</span>
+                            </div>
+                            <div class="info-row mb-3">
+                                <span class="info-label">Tanggal Pesanan</span>
+                                <span class="info-value">{{ \Carbon\Carbon::parse($order->created_at)->format('d F Y, H:i') }}</span>
+                            </div>
+                            <hr style="margin: 1rem 0; border-color: #e9ecef;">
                             <div class="total-row">
-                                <span>Subtotal Produk</span>
+                                <span>Subtotal Produk ({{ $totalQty }} item)</span>
                                 <span>Rp. {{ number_format($subtotalItems, 0, ',', '.') }}</span>
                             </div>
+                            @if($totalWeight > 0)
+                            <div class="total-row">
+                                <span>Total Berat</span>
+                                <span>{{ number_format($totalWeight, 0, ',', '.') }} gr</span>
+                            </div>
+                            @endif
                             <div class="total-row">
                                 <span>Ongkos Kirim</span>
                                 <span>Rp. {{ number_format($order->total_ongkir ?? 0, 0, ',', '.') }}</span>
                             </div>
+                            @if($order->gift_wrap)
+                            <div class="total-row">
+                                <span>Gift Wrap (Bungkus Kado)</span>
+                                <span>Rp. 10.000</span>
+                            </div>
+                            @endif
                             <div class="total-final">
                                 <span>Total Pembayaran</span>
                                 <span style="color: #58bcc2;">Rp. {{ number_format($order->total_tagihan, 0, ',', '.') }}</span>
@@ -140,16 +378,18 @@
                     </div>
 
                     <!-- Action Buttons -->
-                    <div class="text-center">
+                    <div class="action-buttons">
                         @if($order->status == 'pending')
-                            <a href="{{ route('checkout.success', $order->invoice) }}" 
-                               class="btn-back ajax-link" style="background-color: #333; margin-right: 10px;">
-                                Bayar Sekarang
-                            </a>
+                            @if($orderType === 'merch')
+                                {{-- Tombol cancel hanya untuk merchandise --}}
+                                <form method="POST" action="{{ route('payment.cancel', $order->invoice) }}" onsubmit="return confirm('Batalkan pesanan ini?');" style="margin:0;">
+                                    @csrf
+                                    <button type="submit" class="btn-base btn-danger">Batalkan Pesanan</button>
+                                </form>
+                            @endif
+                            <a href="{{ ($orderType === 'merch') ? route('checkout.preview', $order->invoice) : route('lelang.payment.checkout', ['invoice' => $order->invoice]) }}" class="btn-base btn-bayar-sekarang">Bayar Sekarang</a>
                         @endif
-                        <a href="{{ route('account.purchase.history') }}" class="btn-back ajax-link">
-                            Kembali ke Riwayat Pembelian
-                        </a>
+                        <a href="{{ route('account.purchase.history') }}" class="btn-base btn-primary">Kembali ke Riwayat Pembelian</a>
                     </div>
                 </div>
             </div>

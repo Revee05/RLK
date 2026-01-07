@@ -26,6 +26,8 @@ class OrderMerch extends Model
         'payment_destination',
         'stock_reduced',
         'snap_token',
+        'payment_url',
+        'paid_at',
         'note',
         'email_sent',
     ];
@@ -34,6 +36,9 @@ class OrderMerch extends Model
         'items' => 'array',
         'shipping' => 'array',
         'gift_wrap' => 'boolean',
+        'stock_reduced' => 'boolean',
+        'email_sent' => 'boolean',
+        'paid_at' => 'datetime',
     ];
 
     public function user()

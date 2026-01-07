@@ -11,7 +11,8 @@ class ShipperSeeder extends Seeder
      */
     public function run()
     {
-        DB::table('shipper')->truncate();
+        // Use delete() instead of truncate() to avoid foreign key constraint errors
+        DB::table('shipper')->delete();
 
             $data = [
                 [
