@@ -22,7 +22,8 @@ class CartController extends Controller
                 'merchProduct.categories',
                 'merchVariant.images',
                 'merchSize',
-                'auctionProduct' 
+                'auctionProduct',
+                'auctionProduct.images'
             ])
             ->where('user_id', Auth::id())
             // ->whereNotNull('merch_product_id') // <--- Baris ini sudah benar dikomentari
