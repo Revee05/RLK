@@ -65,7 +65,7 @@
                             <div class="form-group row mb-0">
                                 <label class="col-sm-4 font-weight-bold">Email</label>
                                 <div class="col-sm-8">
-                                  : Rp {{$detailBid->user->email}}
+                                  : {{$detailBid->user->email}}
                                 </div>
                             </div>
                         </div>
@@ -73,7 +73,7 @@
                             <div class="form-group row mb-0">
                                 <label class="col-sm-4 font-weight-bold">Nominal Penawaran</label>
                                 <div class="col-sm-8">
-                                  : {{$detailBid->price ?? ''}}
+                                  : Rp. {{$detailBid->price ?? ''}}
                                 </div>
                             </div>
                             <div class="form-group row mb-0">
@@ -88,16 +88,6 @@
                                   : {{$order->payment_status ?? ''}}
                                 </div>
                             </div>
-                            <div class="form-group row mb-0">
-                                <label class="col-sm-4 font-weight-bold">Email</label>
-                                <div class="col-sm-8">
-                                  : Rp {{$detailBid->user->email}}
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="col-md-12">
-                            a
                         </div>
                     </div>
                 </div>

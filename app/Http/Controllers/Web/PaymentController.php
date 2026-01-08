@@ -4,12 +4,10 @@ namespace App\Http\Controllers\Web;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use Xendit\Configuration;
-use Xendit\Invoice\InvoiceApi;
-use Xendit\Invoice\CreateInvoiceRequest;
-use Xendit\Invoice\InvoiceCallback;
-use Xendit\XenditSdkException;
+use Xendit\Xendit;
+use Xendit\Invoice;
 use App\OrderMerch;
+use App\Order;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
 use GuzzleHttp\Client;
@@ -28,61 +26,126 @@ class PaymentController extends Controller
             'user_id' => auth()->id(),
         ]);
 
-        $order = OrderMerch::where('invoice', $invoice)->firstOrFail();
-        Log::info('Order ditemukan', ['order_id' => $order->id]);
+        // Try OrderMerch first
+        $order = OrderMerch::where('invoice', $invoice)->first();
+        $orderType = 'merch';
 
-        if ($order->status !== 'pending') {
+        // If not found, try Order (lelang)
+        if (!$order) {
+            $order = Order::where('invoice', $invoice)->first();
+            $orderType = 'lelang';
+        }
+
+        if (!$order) {
+            abort(404, 'Order tidak ditemukan');
+        }
+
+        Log::info('Order ditemukan', [
+            'order_id' => $order->id,
+            'type' => $orderType
+        ]);
+
+        // Check status (unified field atau fallback ke payment_status untuk Order lama)
+        $currentStatus = $order->status ?? ($order->payment_status == 1 ? 'pending' : 'success');
+        
+        if ($currentStatus !== 'pending') {
             return redirect()
                 ->route('payment.status', $invoice)
                 ->with('error', 'Pesanan tidak dapat dibayar.');
         }
 
         try {
-            // Set API key untuk Xendit PHP SDK v3.x
-            $config = \Xendit\Configuration::getDefaultConfiguration()
-                ->setApiKey(env('XENDIT_SECRET_KEY'));
+            // Set API key untuk Xendit PHP SDK v2.x
+            \Xendit\Xendit::setApiKey(env('XENDIT_SECRET_KEY'));
 
             Log::info('Xendit API key diset');
 
-            // InvoiceApi HARUS pakai Guzzle + Config
-            $apiInstance = new InvoiceApi(
-                new \GuzzleHttp\Client(),
-                $config
-            );
+            // Prepare customer data
+            $customerData = [
+                'given_names' => auth()->user()->name,
+                'email' => auth()->user()->email,
+            ];
 
-            Log::info('InvoiceApi instance dibuat');
+            // Add address data if available
+            if ($orderType === 'merch') {
+                $address = $order->address;
+                if ($address) {
+                    $customerData['mobile_number'] = $address->phone ?? auth()->user()->phone ?? null;
+                    $customerData['address'] = [
+                        'country' => 'Indonesia',
+                        'street_line1' => $address->address ?? '',
+                        'city' => $address->city->name ?? '',
+                        'province' => $address->province->name ?? '',
+                        'postal_code' => $address->kodepos ?? '',
+                    ];
+                }
+            } else {
+                // Order lelang - ambil dari field langsung
+                $customerData['mobile_number'] = $order->phone ?? auth()->user()->phone ?? null;
+                if ($order->address) {
+                    $customerData['address'] = [
+                        'country' => 'Indonesia',
+                        'street_line1' => $order->address ?? '',
+                        'city' => optional($order->kabupaten)->nama_kabupaten ?? '',
+                        'province' => optional($order->provinsi)->nama_provinsi ?? '',
+                        'postal_code' => '',
+                    ];
+                }
+            }
 
-            $createInvoiceRequest = new CreateInvoiceRequest([
+            // Remove null values
+            $customerData = array_filter($customerData, function($value) {
+                return !is_null($value) && $value !== '';
+            });
+
+            $params = [
                 'external_id' => $order->invoice,
                 'amount' => $order->total_tagihan,
                 'payer_email' => auth()->user()->email,
                 'description' => 'Pembayaran ' . $order->invoice,
                 'currency' => 'IDR',
                 'invoice_duration' => 60, //1 jam
-
-                // Redirect setelah bayar
                 'success_redirect_url' => url('/payment/status/' . $order->invoice),
                 'failure_redirect_url' => url('/payment/status/' . $order->invoice),
-                
+                'customer' => $customerData,
                 'customer_notification_preference' => [
                     'invoice_created' => ['email'],
                     'invoice_reminder' => ['email'],
                     'invoice_paid' => ['email'],
                 ],
+            ];
+
+            Log::info('Xendit params prepared', [
+                'customer' => $customerData,
+                'order_type' => $orderType
             ]);
 
-            $xenditInvoice = $apiInstance->createInvoice($createInvoiceRequest);
+            // v2.x: use static Invoice class
+            $xenditInvoice = \Xendit\Invoice::create($params);
+
+            $invoiceUrl = null;
+            if (is_array($xenditInvoice)) {
+                $invoiceUrl = $xenditInvoice['invoice_url'] ?? null;
+            } elseif (is_object($xenditInvoice)) {
+                $invoiceUrl = $xenditInvoice->invoice_url ?? null;
+            }
 
             Log::info('Invoice berhasil dibuat', [
-                'invoice_url' => $xenditInvoice->getInvoiceUrl()
+                'invoice_url' => $invoiceUrl
             ]);
 
             $order->update([
-                'payment_url' => $xenditInvoice->getInvoiceUrl(),
+                'payment_url' => $invoiceUrl,
                 'status' => 'pending',
             ]);
+            
+            // Update payment_status untuk Order lama (backward compat)
+            if ($orderType === 'lelang' && method_exists($order, 'setAttribute')) {
+                $order->setAttribute('payment_status', 1);
+                $order->save();
+            }
 
-            return redirect($xenditInvoice->getInvoiceUrl());
+            return redirect($invoiceUrl ?: url('/payment/status/' . $order->invoice));
 
         } catch (\Exception $e) {
             Log::error('Gagal membuat invoice', ['message' => $e->getMessage()]);
@@ -122,11 +185,23 @@ class PaymentController extends Controller
 
         // Cari order berdasarkan external_id
         $order = OrderMerch::where('invoice', $externalId)->first();
+        $orderType = 'merch';
+
+        if (!$order) {
+            $order = Order::where('invoice', $externalId)->first();
+            $orderType = 'lelang';
+        }
 
         if (!$order) {
             Log::error("Order tidak ditemukan: " . $externalId);
             return response()->json(['message' => 'Order not found'], 404);
         }
+
+        Log::info("Order ditemukan untuk webhook", [
+            'invoice' => $externalId,
+            'type' => $orderType,
+            'status_xendit' => $status
+        ]);
 
         switch ($status) {
             case 'PAID':
@@ -134,17 +209,34 @@ class PaymentController extends Controller
                     'status'  => 'success',
                     'paid_at' => now(),
                 ]);
+                // Update payment_status untuk Order lama
+                if ($orderType === 'lelang') {
+                    $order->setAttribute('payment_status', 2);
+                    $order->save();
+                }
                 break;
             case 'EXPIRED':
                 $order->update(['status' => 'expired']);
+                if ($orderType === 'lelang') {
+                    $order->setAttribute('payment_status', 3);
+                    $order->save();
+                }
                 break;
             case 'FAILED':
                 $order->update(['status' => 'cancelled']);
+                if ($orderType === 'lelang') {
+                    $order->setAttribute('payment_status', 4);
+                    $order->save();
+                }
                 break;
             default:
                 $order->update([
                     'status' => 'pending'
                 ]);
+                if ($orderType === 'lelang') {
+                    $order->setAttribute('payment_status', 1);
+                    $order->save();
+                }
                 break;
         }
 
@@ -160,7 +252,7 @@ class PaymentController extends Controller
         // =======================================================
         //   PENGURANGAN STOK — HANYA KALAU STATUS = PAID
         // =======================================================
-        if ($status === 'PAID') {
+        if ($status === 'PAID' && $orderType === 'merch') {
 
             // Idempotency → kalau sudah pernah dapat PAID, jangan kurangi stok lagi
             if ($order->stock_reduced == 1) {
@@ -243,6 +335,37 @@ class PaymentController extends Controller
             ]);
         }
 
+        // =======================================================
+        //   KIRIM EMAIL KONFIRMASI — HANYA KALAU STATUS = PAID
+        // =======================================================
+        if ($status === 'PAID') {
+            $emailSent = $orderType === 'lelang' 
+                ? ($order->email_sent ?? 0) 
+                : $order->email_sent;
+                
+            if ($emailSent == 1) {
+                Log::info("Email sudah pernah dikirim, SKIP", ['invoice' => $order->invoice]);
+            } else {
+                try {
+                    \Mail::to($order->email)->send(new \App\Mail\OrderConfirmationMail($order));
+                    
+                    // Update flag email_sent
+                    $order->update(['email_sent' => 1]);
+                    
+                    Log::info("Email konfirmasi berhasil dikirim", [
+                        'invoice' => $order->invoice,
+                        'email' => $order->email,
+                        'order_type' => $orderType
+                    ]);
+                } catch (\Exception $e) {
+                    Log::error("Gagal mengirim email konfirmasi", [
+                        'invoice' => $order->invoice,
+                        'error' => $e->getMessage()
+                    ]);
+                }
+            }
+        }
+
         Log::info("Order Updated dari Callback", [
             'invoice' => $externalId,
             'status'  => $status,
@@ -255,15 +378,29 @@ class PaymentController extends Controller
 
     public function status($invoice)
     {
-        $order = OrderMerch::where('invoice', $invoice)->firstOrFail();
+        // Try OrderMerch first
+        $order = OrderMerch::where('invoice', $invoice)->first();
+        $orderType = 'merch';
+
+        if (!$order) {
+            $order = Order::where('invoice', $invoice)->first();
+            $orderType = 'lelang';
+        }
+
+        if (!$order) {
+            abort(404, 'Order tidak ditemukan');
+        }
 
         Log::info("Halaman success dipanggil", [
             'invoice' => $invoice,
-            'current_status' => $order->status
+            'current_status' => $order->status ?? $order->payment_status,
+            'type' => $orderType
         ]);
 
         // Jika sudah PAID dari webhook → tidak perlu cek Xendit lagi
-        if ($order->status === 'success') {
+        $currentStatus = $order->status ?? ($order->payment_status == 2 ? 'success' : 'pending');
+        
+        if ($currentStatus === 'success') {
             Log::info("Order sudah PAID — SKIP cek Xendit, langsung render success page");
             if (empty($order->email_sent)) {
                 if ($order->user && $order->user->email) {
@@ -286,19 +423,22 @@ class PaymentController extends Controller
             return view('web.payment.status', compact('order'));
         }
         
+        // Untuk pending status, cek status dari Xendit menggunakan SDK v2.x
         try {
-            $config = Configuration::getDefaultConfiguration()
-                ->setApiKey(env('XENDIT_SECRET_KEY'));
+            \Xendit\Xendit::setApiKey(env('XENDIT_SECRET_KEY'));
 
-            $api = new InvoiceApi(new \GuzzleHttp\Client(), $config);
+            // Ambil invoice berdasarkan external_id menggunakan Invoice::retrieve
+            $invoiceList = \Xendit\Invoice::retrieveAll([
+                'external_id' => $invoice
+            ]);
 
-            // Ambil invoice berdasarkan external_id
-            $invoiceList = $api->getInvoices("external_id=" . $invoice);
-            $invoiceData = $invoiceList[0] ?? null;
+            $invoiceData = !empty($invoiceList) ? $invoiceList[0] : null;
 
             if ($invoiceData) {
-
-                $status = $invoiceData->getStatus() ?? null;
+                // Extract status dari array response
+                $status = is_array($invoiceData) 
+                    ? ($invoiceData['status'] ?? null) 
+                    : (isset($invoiceData->status) ? $invoiceData->status : null);
 
 
                 Log::info("Status invoice dari Xendit berhasil diambil", [
@@ -343,12 +483,20 @@ class PaymentController extends Controller
                         ]);
                         break;
                 }
-                // Update payment method
-                $update['payment_method'] = $invoiceData->getPaymentMethod() ?? $order->payment_method;
-                $update['payment_channel'] = $invoiceData->getPaymentChannel() ?? $order->payment_channel;
-                $update['payment_destination'] = $invoiceData->getPaymentDestination() ?? $order->payment_destination;
+                
+                // Update payment method dari response Xendit
+                $update = [];
+                if (is_array($invoiceData)) {
+                    $update['payment_method'] = $invoiceData['payment_method'] ?? $order->payment_method;
+                    $update['payment_channel'] = $invoiceData['payment_channel'] ?? $order->payment_channel;
+                    $update['payment_destination'] = $invoiceData['payment_destination'] ?? $order->payment_destination;
+                } else {
+                    $update['payment_method'] = $invoiceData->payment_method ?? $order->payment_method;
+                    $update['payment_channel'] = $invoiceData->payment_channel ?? $order->payment_channel;
+                    $update['payment_destination'] = $invoiceData->payment_destination ?? $order->payment_destination;
+                }
 
-                Log::info("InvoiceData:", (array) $invoiceData);
+                Log::info("InvoiceData:", is_array($invoiceData) ? $invoiceData : (array) $invoiceData);
 
                 $order->update($update);
 

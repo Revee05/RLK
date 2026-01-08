@@ -95,7 +95,6 @@ Route::get('/pay', 'PaymentController@createInvoice')->name('pay');
 
 // prod routes
 Route::get('/','Web\HomeController@index')->name('home');
-Route::get('/lelang','Web\HomeController@lelang')->name('lelang');
 Route::get('/blogs','Web\BlogController@index')->name('blogs');
 Route::get('/galeri-kami','Web\HomeController@galeriKami')->name('galeri.kami');
 Route::post('/new/login', 'Auth\\LoginController@postLogin')->name('new.login');

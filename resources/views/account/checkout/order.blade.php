@@ -37,7 +37,16 @@
                     {{Auth::user()->name}}
                   </strong>
                   <p class="fs-sm">
-                    {{ucfirst($order->label_address)}} - {{ucfirst($order->address)}}, {{ucfirst($order->kecamatan->nama_kecamatan)}},{{ucfirst($order->kabupaten->nama_kabupaten)}}, {{ucfirst($order->provinsi->nama_provinsi)}}
+                    {{ucfirst($order->label_address)}} - {{ucfirst($order->address)}}
+                    @if(optional($order->kecamatan)->nama_kecamatan)
+                      , {{ucfirst(optional($order->kecamatan)->nama_kecamatan)}}
+                    @endif
+                    @if(optional($order->kabupaten)->nama_kabupaten)
+                      , {{ucfirst(optional($order->kabupaten)->nama_kabupaten)}}
+                    @endif
+                    @if(optional($order->provinsi)->nama_provinsi)
+                      , {{ucfirst(optional($order->provinsi)->nama_provinsi)}}
+                    @endif
                     <br>
                   </p>
                 </div>
