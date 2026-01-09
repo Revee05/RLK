@@ -228,15 +228,6 @@
                                     @endforelse
                                 </tbody>
                             </table>
-                            <div class="mb-3 small mt-2">
-                                <div><span class="text-danger fw-bold">●</span> Total Kadaluwarsa: <b>Rp
-                                        {{ number_format($trxSummary['expired_total']) }}</b></div>
-                                <div><span class="text-warning fw-bold">●</span> Total Menunggu: <b>Rp
-                                        {{ number_format($trxSummary['pending_total']) }}</b></div>
-                                <div><span class="text-success fw-bold">●</span> Total Dibayar: <b>Rp
-                                        {{ number_format($trxSummary['paid_total']) }}</b></div>
-                            </div>
-
                         </div>
 
                     </div>

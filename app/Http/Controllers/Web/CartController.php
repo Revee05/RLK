@@ -9,7 +9,7 @@ use App\CartItem;
 use App\models\MerchProduct;
 use App\models\MerchProductVariant;
 use App\models\MerchProductVariantSize;
-use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Log; // Pastikan ini ada
 
 class CartController extends Controller
 {
@@ -22,22 +22,16 @@ class CartController extends Controller
                 'merchProduct.categories',
                 'merchVariant.images',
                 'merchSize',
-                'auctionProduct' 
+                'auctionProduct',
+                'auctionProduct.images'
             ])
             ->where('user_id', Auth::id())
-            // ->whereNotNull('merch_product_id') // <--- Baris ini sudah benar dikomentari
             ->orderBy('created_at', 'desc')
             ->get();
 
-        // ======================================================
-        // TAMBAHAN: LOG DATA CART (JSON FORMAT)
-        // ======================================================
-        // Ini akan mencatat data ke file: storage/logs/laravel.log
-        \Illuminate\Support\Facades\Log::info('--- LOAD CART USER ID: ' . Auth::id() . ' ---');
-        \Illuminate\Support\Facades\Log::info($cartItems->toJson(JSON_PRETTY_PRINT));
-
-        // Opsi Alternatif: Jika ingin melihat JSON langsung di Browser (Debugging Cepat)
-        // return response()->json($cartItems); 
+        // Log sederhana penanda user membuka keranjang
+        // Log ini akan masuk ke storage/logs/laravel.log
+        Log::info('User membuka keranjang', ['user_id' => Auth::id()]);
 
         return view('web.cart', compact('cartItems'));
     }
@@ -81,30 +75,17 @@ class CartController extends Controller
         if ($qty > $availableStock) {
             $msg = "Stok tidak mencukupi. Tersisa: {$availableStock}";
             
-            if ($request->ajax() || $request->wantsJson()) {
-                $this->logResponse('addMerchToCart', [
-                    'status' => 'error',
-                    'reason' => 'stock_insufficient',
-                    'message' => $msg,
-                    'availableStock' => $availableStock,
-                    'requestedQty' => $qty,
-                    'merch_product_id' => $request->merch_product_id,
-                    'variant_id' => $request->variant_id,
-                    'size_id' => $request->size_id,
-                ]);
+            // Log Error ke storage/logs
+            Log::error('Gagal tambah ke cart: Stok kurang', [
+                'user_id' => $user->id,
+                'product_id' => $request->merch_product_id,
+                'requested' => $qty,
+                'available' => $availableStock
+            ]);
 
+            if ($request->ajax() || $request->wantsJson()) {
                 return response()->json(['success' => false, 'message' => $msg], 422);
             }
-            $this->logResponse('addMerchToCart', [
-                'status' => 'error',
-                'reason' => 'stock_insufficient',
-                'message' => $msg,
-                'availableStock' => $availableStock,
-                'requestedQty' => $qty,
-                'merch_product_id' => $request->merch_product_id,
-                'variant_id' => $request->variant_id,
-                'size_id' => $request->size_id,
-            ]);
 
             return back()->with('error', $msg);
         }
@@ -120,28 +101,17 @@ class CartController extends Controller
             $newTotalQty = $existingItem->quantity + $qty;
             if ($newTotalQty > $availableStock) {
                 $msg = "Total pesanan melebihi stok ({$availableStock}).";
-                if ($request->ajax() || $request->wantsJson()) {
-                    $this->logResponse('addMerchToCart', [
-                        'status' => 'error',
-                        'reason' => 'stock_exceeded_total',
-                        'message' => $msg,
-                        'availableStock' => $availableStock,
-                        'existingQty' => $existingItem->quantity,
-                        'requestedQty' => $qty,
-                        'merch_product_id' => $request->merch_product_id,
-                    ]);
 
+                Log::warning('Gagal update cart: Stok total berlebih', [
+                    'user_id' => $user->id,
+                    'current_qty' => $existingItem->quantity,
+                    'add_qty' => $qty,
+                    'max_stock' => $availableStock
+                ]);
+
+                if ($request->ajax() || $request->wantsJson()) {
                     return response()->json(['success' => false, 'message' => $msg], 422);
                 }
-                $this->logResponse('addMerchToCart', [
-                    'status' => 'error',
-                    'reason' => 'stock_exceeded_total',
-                    'message' => $msg,
-                    'availableStock' => $availableStock,
-                    'existingQty' => $existingItem->quantity,
-                    'requestedQty' => $qty,
-                    'merch_product_id' => $request->merch_product_id,
-                ]);
 
                 return back()->with('error', $msg);
             }
@@ -159,15 +129,11 @@ class CartController extends Controller
             ]);
         }
 
-        // RESPON SUKSES
-        $this->logResponse('addMerchToCart', [
-            'status' => 'success',
-            'message' => 'Produk berhasil ditambahkan ke keranjang.',
-            'merch_product_id' => $request->merch_product_id,
-            'variant_id' => $request->variant_id,
-            'size_id' => $request->size_id,
-            'quantity' => $qty,
-            'price' => $finalPrice,
+        // RESPON SUKSES & LOG
+        Log::info('Berhasil tambah item ke keranjang', [
+            'user_id' => $user->id,
+            'product_id' => $request->merch_product_id,
+            'qty' => $qty
         ]);
 
         if ($request->ajax() || $request->wantsJson()) {
@@ -186,12 +152,7 @@ class CartController extends Controller
     public function updateQuantity(Request $request, CartItem $cartItem)
     {
         if ($cartItem->user_id !== Auth::id()) {
-            $this->logResponse('updateQuantity', [
-                'status' => 'error',
-                'reason' => 'unauthorized',
-                'cart_item_id' => $cartItem->id,
-            ]);
-
+            Log::warning('Percobaan akses ilegal updateQuantity', ['user_id' => Auth::id(), 'cart_item_id' => $cartItem->id]);
             return response()->json(['success' => false, 'message' => 'Unauthorized'], 403);
         }
 
@@ -210,12 +171,10 @@ class CartController extends Controller
 
         // Jika request melebihi stok
         if ($newQuantity > $maxStock) {
-            $this->logResponse('updateQuantity', [
-                'status' => 'error',
-                'reason' => 'stock_exceeded',
-                'maxStock' => $maxStock,
-                'requested' => $newQuantity,
+            Log::info('Update quantity dibatasi stok', [
                 'cart_item_id' => $cartItem->id,
+                'requested' => $newQuantity,
+                'max' => $maxStock
             ]);
 
             return response()->json([
@@ -228,11 +187,7 @@ class CartController extends Controller
         $cartItem->quantity = $newQuantity;
         $cartItem->save();
 
-        $this->logResponse('updateQuantity', [
-            'status' => 'success',
-            'newQuantity' => $cartItem->quantity,
-            'cart_item_id' => $cartItem->id,
-        ]);
+        Log::info('Update quantity berhasil', ['cart_item_id' => $cartItem->id, 'new_qty' => $newQuantity]);
 
         return response()->json([
             'success' => true,
@@ -248,12 +203,7 @@ class CartController extends Controller
         $cartItem = CartItem::find($id); 
         
         if (!$cartItem) {
-            $this->logResponse('updateOption', [
-                'status' => 'error',
-                'reason' => 'not_found',
-                'id' => $id,
-            ]);
-
+            Log::error('Update option gagal: Item tidak ditemukan', ['id' => $id]);
             return response()->json(['success' => false, 'message' => 'Item tidak ditemukan'], 404);
         }
 
@@ -320,6 +270,8 @@ class CartController extends Controller
             }
         }
 
+        Log::info('Update opsi cart berhasil', ['cart_item_id' => $id]);
+
         // --- C. KIRIM JSON ---
         return response()->json([
             'success'       => true,
@@ -338,31 +290,17 @@ class CartController extends Controller
     public function destroy(CartItem $cartItem)
     {
         if ($cartItem->user_id !== Auth::id()) {
-            if (request()->ajax() || request()->wantsJson()) {
-                $this->logResponse('destroy', [
-                    'status' => 'error',
-                    'reason' => 'unauthorized',
-                    'cart_item_id' => $cartItem->id,
-                ]);
+            Log::warning('Percobaan hapus ilegal', ['user_id' => Auth::id(), 'cart_item_id' => $cartItem->id]);
 
+            if (request()->ajax() || request()->wantsJson()) {
                 return response()->json(['success' => false, 'message' => 'Unauthorized'], 403);
             }
-            $this->logResponse('destroy', [
-                'status' => 'error',
-                'reason' => 'unauthorized',
-                'cart_item_id' => $cartItem->id,
-            ]);
-
             abort(403);
         }
         
         $cartItem->delete();
         
-        $this->logResponse('destroy', [
-            'status' => 'success',
-            'message' => 'Item dihapus',
-            'cart_item_id' => $cartItem->id,
-        ]);
+        Log::info('Item dihapus dari keranjang', ['cart_item_id' => $cartItem->id, 'user_id' => Auth::id()]);
 
         if (request()->ajax() || request()->wantsJson()) {
             return response()->json([
@@ -372,25 +310,5 @@ class CartController extends Controller
         }
         
         return back()->with('success', 'Item dihapus.');
-    }
-
-    /**
-     * Conditional logger for local/development environment.
-     *
-     * @param string $method
-     * @param array $data
-     * @return void
-     */
-    private function logResponse(string $method, array $data = [])
-    {
-        if (app()->environment('local') || app()->environment('development')) {
-            $payload = array_merge([
-                'method' => $method,
-                'env' => app()->environment(),
-                'timestamp' => now()->toDateTimeString(),
-            ], $data);
-
-            Log::info('CartController response', $payload);
-        }
     }
 }

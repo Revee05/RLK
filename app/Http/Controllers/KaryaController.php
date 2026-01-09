@@ -61,6 +61,7 @@ class KaryaController extends Controller
             'city_id'=>'nullable|exists:cities,id',
             'district_id'=>'nullable|exists:districts,id',
             'social'=>'nullable|array',
+            'social.email' => 'nullable|email|max:255',
             'fotoseniman'=>'nullable|image|mimes:jpeg,jpg,png,webp|max:2048',
         ],[
             'name.required' => 'Nama seniman wajib diisi',
@@ -75,6 +76,7 @@ class KaryaController extends Controller
             'fotoseniman.image' => 'File harus berupa gambar',
             'fotoseniman.mimes' => 'Format gambar harus jpeg, jpg, png, atau webp',
             'fotoseniman.max' => 'Ukuran gambar maksimal 2MB',
+            'social.email' => 'Format email tidak valid',
         ]);
         try {
             $imageName = '';
@@ -173,6 +175,7 @@ class KaryaController extends Controller
             'city_id'=>'nullable|exists:cities,id',
             'district_id'=>'nullable|exists:districts,id',
             'social'=>'nullable|array',
+            'social.email' => 'nullable|email|max:255',
             'fotoseniman'=>'nullable|image|mimes:jpeg,jpg,png,webp|max:2048',
         ], [
             'name.required' => 'Nama seniman wajib diisi',
@@ -187,6 +190,7 @@ class KaryaController extends Controller
             'fotoseniman.image' => 'File harus berupa gambar',
             'fotoseniman.mimes' => 'Format gambar harus jpeg, jpg, png, atau webp',
             'fotoseniman.max' => 'Ukuran gambar maksimal 2MB',
+            'social.email' => 'Format email tidak valid',
         ]);
         try {
             $karya = Karya::findOrFail($id);

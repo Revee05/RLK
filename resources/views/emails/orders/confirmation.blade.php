@@ -19,22 +19,34 @@ Pembayaran untuk pesanan Anda telah kami terima dengan detail sebagai berikut:
 @php
     $items = is_array($items ?? null) ? $items : [];
     $subtotalProduk = 0;
+    $orderType = $orderType ?? 'merch'; // Default to merch for backward compatibility
 @endphp
 
 @foreach($items as $item)
 @php
-    $qty   = $item['quantity'] ?? 1;
+    $qty   = $item['qty'] ?? $item['quantity'] ?? 1;
     $price = (int) ($item['price'] ?? 0);
     $lineTotal = $price * $qty;
     $subtotalProduk += $lineTotal;
+    
+    // Get product name based on order type
+    if ($orderType === 'lelang') {
+        $productName = $item['name'] ?? $item['title'] ?? 'Produk Lelang';
+        $variantInfo = null;
+        $sizeInfo = null;
+    } else {
+        $productName = $item['name'] ?? $item['merch_product']['name'] ?? 'Produk';
+        $variantInfo = $item['variant_name'] ?? $item['merch_variant']['name'] ?? null;
+        $sizeInfo = $item['size_name'] ?? $item['merch_size']['name'] ?? null;
+    }
 @endphp
 
-- **{{ $item['merch_product']['name'] ?? 'Produk' }}**
-  @if(!empty($item['merch_variant']['name']))
-    <br>Varian: {{ $item['merch_variant']['name'] }}
+- **{{ $productName }}**
+  @if($variantInfo)
+    <br>Varian: {{ $variantInfo }}
   @endif
-  @if(!empty($item['merch_size']['name']))
-    <br>Ukuran: {{ $item['merch_size']['name'] }}
+  @if($sizeInfo)
+    <br>Ukuran: {{ $sizeInfo }}
   @endif
   <br>Jumlah: {{ $qty }}
   <br>Harga Satuan: Rp {{ number_format($price,0,',','.') }}
@@ -44,11 +56,12 @@ Pembayaran untuk pesanan Anda telah kami terima dengan detail sebagai berikut:
 ---
 
 @php
-    $shipping = json_decode($order->shipping, true) ?? [];
-    $shippingType = $shipping['type'] ?? 'delivery';
-    $shippingName = $shipping['name'] ?? '-';
-    $shippingService = $shipping['service'] ?? '-';
-    $shippingCost = $shipping['cost'] ?? 0;
+    // Use passed shipping data if available, otherwise parse from order
+    $shippingData = $shipping ?? (json_decode($order->shipping ?? '{}', true) ?? []);
+    $shippingType = $shippingData['type'] ?? 'delivery';
+    $shippingName = $shippingData['name'] ?? '-';
+    $shippingService = $shippingData['service'] ?? '-';
+    $shippingCost = $shippingData['cost'] ?? 0;
     $pickupAddress = "Griya Jl. Sekargading blok C 19, RT.04/RW.03, Kel. Kalisegoro, Gunung Pati, Kota Semarang, Jawa Tengah 50228";
 @endphp
 

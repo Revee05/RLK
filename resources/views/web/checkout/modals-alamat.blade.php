@@ -1,5 +1,4 @@
-<!-- MODAL PILIH ALAMAT -->
-<div class="modal fade  modal-alamat" id="addressModal" tabindex="-1" aria-hidden="true">
+<div class="modal fade modal-alamat" id="addressModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-lg">
         <div class="modal-content">
 
@@ -17,43 +16,48 @@
                     </button>
                 </div>
 
-                <!-- LIST ALAMAT -->
                 <div id="address-list">
                     @if ($addresses->count())
                         @foreach ($addresses as $address)
-                            <label class="address-card justify-content-between align-items-start mb-3"
-                                data-id="{{ $address->id }}" data-name="{{ $address->name }}"
-                                data-phone="{{ $address->phone }}" data-label="{{ $address->label_address }}"
+                            <label class="address-card d-flex justify-content-between align-items-start mb-3 p-3 border rounded pointer"
+                                data-id="{{ $address->id }}" 
+                                data-name="{{ $address->name }}"
+                                data-phone="{{ $address->phone }}" 
+                                data-label="{{ $address->label_address }}"
                                 data-address="{{ $address->address }}"
-                                data-provinsi="{{ $address->province->name ?? '' }}"
-                                data-kabupaten="{{ $address->city->name ?? '' }}"
-                                data-kecamatan="{{ $address->district->name ?? '' }}">
+                                data-district-id="{{ $address->district_id }}">
+                                
                                 <div>
-                                    @if ($address->is_primary ?? false)
-                                        <span class="label-utama">Utama</span><br>
+                                    @if ($address->is_primary || $address->is_main)
+                                        <span class="label-utama badge bg-primary mb-1">Utama</span><br>
                                     @endif
 
-                                    <span class="address-name"> {{ $address->name }} </span>
+                                    <span class="address-name fw-bold"> {{ $address->name }} </span>
                                     <span class="address-separator">|</span>
-                                    <span class="address-phone"> {{ $address->phone }} </span> <br>
-                                    <div class="address-detail">
+                                    <span class="address-phone text-muted"> {{ $address->phone }} </span> <br>
+                                    
+                                    <div class="address-detail mt-1 small text-secondary">
                                         {{ $address->address }},
                                         {{ $address->district->name ?? '-' }}<br>
                                         {{ $address->city->name ?? '-' }},
                                         {{ $address->province->name ?? '-' }}
                                     </div>
                                 </div>
-                                <input type="radio" name="selected_address" class="form-check-input mt-1"
-                                    @if ($loop->first) checked @endif>
+                                
+                                <input type="radio" name="selected_address_radio" class="form-check-input mt-1"
+                                    value="{{ $address->id }}"
+                                    @if ($selectedAddress && $selectedAddress->id == $address->id) checked @endif>
                             </label>
                         @endforeach
                     @else
-                        <p class="text-muted">Belum ada alamat.</p>
+                        <div class="text-center py-4">
+                            <p class="text-muted">Kamu belum memiliki alamat pengiriman.</p>
+                        </div>
                     @endif
                 </div>
             </div>
 
-            <div class="modal-footer">
+            <div class="modal-footer border-0">
                 <button class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
             </div>
 

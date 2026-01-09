@@ -8,13 +8,13 @@
     <li><strong>Auction berakhir pada:</strong> {{ $bid->product->end_date ?? '—' }}</li>
 </ul>
 
-<p>Silakan selesaikan pembayaran agar proses dapat dilanjutkan. Jika ada instruksi pembayaran khusus, cek halaman checkout atau dashboard Anda.</p>
+<p>Produk lelang telah kami masukkan ke <strong>keranjang Anda</strong>. Silakan selesaikan checkout dalam waktu <strong>7 hari</strong> sebelum masa berlaku berakhir.</p>
 
 <center>
-<a href="{{ route('checkout.cart', \Crypt::encrypt($bid->product->slug)) }}" style="background-color:#5b9aff;border-radius:4px;color:#ffffff;padding:0 24px;margin-bottom:20px;font-family:'Lato';font-size:14px;font-weight:bold;line-height:50px;display:inline-block;text-decoration:none" target="_blank">Selesaikan Pembayaran</a>
+<a href="{{ route('cart.index') }}" style="background-color:#5b9aff;border-radius:4px;color:#ffffff;padding:0 24px;margin-bottom:20px;font-family:'Lato';font-size:14px;font-weight:bold;line-height:50px;display:inline-block;text-decoration:none" target="_blank">Lihat Keranjang & Checkout</a>
 </center>
 
-<p><strong>Perhatian:</strong> Harap selesaikan pembayaran dalam 48 jam setelah menerima email ini. Jika pembayaran tidak diterima dalam jangka waktu yang ditentukan, kemenangan dapat dibatalkan.</p>
+<p><strong>Perhatian:</strong> Harap selesaikan pembayaran dalam  7 x 24 jam setelah menerima email ini. Jika pembayaran tidak diterima dalam jangka waktu yang ditentukan, kemenangan dapat dibatalkan.</p>
 
 <p>Jika butuh bantuan, hubungi tim support melalui halaman kontak atau email admin.</p>
 

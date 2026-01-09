@@ -14,15 +14,6 @@
 <script>
     const userFavorites = @json($favoriteProductIds);
 </script>
-
-<div class="container py-4">
-    <!-- Breadcrumb Navigation -->
-    <nav aria-label="breadcrumb" class="mb-3">
-        <ol class="breadcrumb bg-transparent p-0 m-0">
-            <li class="breadcrumb-item"><a href="/">Home</a></li>
-            <li class="breadcrumb-item active" aria-current="page">Merchandise</li>
-        </ol>
-    </nav>
 <div class="container py-5">
     <h2 class="text-center fw-bold mb-4">Products Design</h2>
     <div class="products-grid-header mb-4 d-flex align-items-center gap-2 flex-wrap">
