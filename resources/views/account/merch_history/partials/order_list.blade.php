@@ -86,6 +86,8 @@
 
 @if($orders->count() > 0)
     @foreach($orders->sortByDesc('created_at') as $order)
+   
+
     <div class="order-item-card mb-3">
         <div class="order-item-header d-flex justify-content-between align-items-start">
             <div>
@@ -97,7 +99,11 @@
 
                     if ($orderType === 'merch') {
                         $items = is_string($order->items) ? json_decode($order->items, true) : $order->items;
-                        if (!empty($items)) {
+                        if (json_last_error() === JSON_ERROR_NONE &&
+                            is_array($items) &&
+                            isset($items[0]) &&
+                            isset($items[0]['name'])
+                        ) {
                             $productName = $items[0]['name'];
                             $totalProducts = collect($items)->sum('qty');
                         }
