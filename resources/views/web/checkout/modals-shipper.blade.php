@@ -80,14 +80,14 @@ document.addEventListener("DOMContentLoaded", function(){
                 const etd = ship.etd ?? '-';
                 
                 const div = document.createElement('div');
-                div.classList.add('border','rounded','p-3','mb-2','pointer');
+                div.classList.add('shipper-item');
                 div.innerHTML=`
-                    <div class="d-flex justify-content-between align-items-center">
+                    <div>
                         <div>
-                            <strong>${ship.name} - ${service}</strong><br>
-                            <small class="text-muted">Estimasi: ${etd}</small>
+                            <div class="shipper-name">${ship.name} - ${service}</div>
+                            <div class="shipper-etd">Estimasi: ${etd}</div>
                         </div>
-                        <div class="fw-bold">Rp ${cost.toLocaleString('id-ID')}</div>
+                        <div class="shipper-price">Rp ${cost.toLocaleString('id-ID')}</div>
                     </div>`;
                 div.onclick=function(){window.selectShipper(
                     ship.name,       // name
