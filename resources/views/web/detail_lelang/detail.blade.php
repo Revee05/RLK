@@ -65,9 +65,11 @@
                         {{-- Render main --}}
                         <div class="main-box">
                             @if ($main)
-                                <img id="mainDisplay" src="{{ asset($main->path) }}" data-src="{{ asset($main->path) }}" alt="Main image" data-index="0" />
+                                <img id="mainDisplay" src="{{ asset($main->path) }}" data-src="{{ asset($main->path) }}"
+                                    alt="Main image" data-index="0" />
                             @else
-                                <img id="mainDisplay" src="{{ asset('assets/default.jpg') }}" data-src="{{ asset('assets/default.jpg') }}" alt="Main image" data-index="0" />
+                                <img id="mainDisplay" src="{{ asset('assets/default.jpg') }}"
+                                    data-src="{{ asset('assets/default.jpg') }}" alt="Main image" data-index="0" />
                             @endif
                         </div>
 
@@ -80,6 +82,11 @@
                             @endforeach
                         </div>
 
+                        {{-- 🔽 BID UNTUK MOBILE (DI BAWAH IMAGE + THUMBS) --}}
+                        <div class="d-block d-md-none mt-3">
+                            @include('web.detail_lelang.bid_lelang')
+                        </div>
+
                         <div class="details-section">
                             <h4>Deskripsi Produk</h4>
                             <div class="detail-desc">{!! $product->description !!}</div>
@@ -87,9 +94,9 @@
                             <div class="details-grid">
                                 <div>
                                     <!-- <p class="label-teal">Material</p>
-                                    <p>{{ $product->material ?? '-' }}</p> -->
+                                            <p>{{ $product->material ?? '-' }}</p> -->
                                     <!-- <p class="label-teal">Dimensi</p>
-                                    <p>{{ $product->dimension ?? '-' }}</p> -->
+                                            <p>{{ $product->dimension ?? '-' }}</p> -->
                                     <p class="label-teal">Berat</p>
                                     <p>{{ $product->weight ?? '-' }} gr</p>
                                 </div>
@@ -103,31 +110,32 @@
                         </div>
 
                         {{-- HISTORY / REALTIME --}}
-                        <div class="history-box" style="background:#f8f9fa; border:1px solid #ddd; border-radius:8px; padding:16px;">
-                            <div class="history-head" style="background:#20c997; color:#fff; padding:8px 12px; border-radius:6px 6px 0 0; font-weight:bold;">
+                        <div class="history-box"
+                            style="background:#f8f9fa; border:1px solid #ddd; border-radius:8px; padding:16px;">
+                            <div class="history-head"
+                                style="background:#20c997; color:#fff; padding:8px 12px; border-radius:6px 6px 0 0; font-weight:bold;">
                                 Riwayat Bidding
                             </div>
 
                             {{-- LOGIKA BARU: Cek Status Dulu --}}
-                            @if($product->status == 1)
+                            @if ($product->status == 1)
                                 {{-- KONDISI 1: LELANG MASIH JALAN (STATUS 1) --}}
 
                                 @if (Auth::check())
                                     {{-- User Login: Tampilkan Chat & Form Bid --}}
-                                    <div id="chat-container" class="history-body" style="overflow-y:auto; max-height:400px; min-height:120px; background:#fff; border:1px solid #eee; border-radius:6px; margin-bottom:12px; padding:8px;">
+                                    <div id="chat-container" class="history-body"
+                                        style="overflow-y:auto; max-height:400px; min-height:120px; background:#fff; border:1px solid #eee; border-radius:6px; margin-bottom:12px; padding:8px;">
                                         <chat-messages :messages="messages"></chat-messages>
                                     </div>
-                                    <chat-form
-                                        ref="bidForm"
-                                        :user='@json(Auth::user())'
+                                    <chat-form ref="bidForm" :user='@json(Auth::user())'
                                         :produk="{{ intval($product->id) }}"
                                         :kelipatan="{{ intval($product->kelipatan ?? 10000) }}"
-                                        :price="{{ intval($product->price) }}"
-                                        v-on:messagesent="addMessage">
+                                        :price="{{ intval($product->price) }}" v-on:messagesent="addMessage">
                                     </chat-form>
                                 @else
                                     {{-- User Guest: Tampilkan List Bid Saja --}}
-                                    <div class="history-body" style="overflow-y:auto; max-height:400px; min-height:120px; background:#fff; border:1px solid #eee; border-radius:6px; margin-bottom:12px; padding:8px;">
+                                    <div class="history-body"
+                                        style="overflow-y:auto; max-height:400px; min-height:120px; background:#fff; border:1px solid #eee; border-radius:6px; margin-bottom:12px; padding:8px;">
                                         @foreach ($bids as $b)
                                             <div class="history-item">
                                                 <strong>{{ $b->user->name }}</strong>
@@ -135,33 +143,35 @@
                                             </div>
                                         @endforeach
                                     </div>
-                                    <a href="{{ url('/login') }}" class="btn btn-outline-secondary mt-2 w-100">Login untuk ikut bidding</a>
+                                    <a href="{{ url('/login') }}" class="btn btn-outline-secondary mt-2 w-100">Login untuk
+                                        ikut bidding</a>
                                 @endif
-
                             @elseif($product->status == 2)
                                 {{-- KONDISI 2: SOLD / TERJUAL --}}
                                 <div class="alert alert-success mt-3 text-center">
                                     <h4><i class="fa fa-trophy"></i> TERJUAL!</h4>
                                     <p>Lelang ini telah dimenangkan.</p>
                                     {{-- Menampilkan Pemenang Terakhir --}}
-                                    @if($bids->count() > 0)
+                                    @if ($bids->count() > 0)
                                         <div class="mt-2 p-2 bg-white rounded border">
                                             Pemenang: <strong>{{ $bids->first()->user->name ?? 'User' }}</strong><br>
-                                            Harga Akhir: <strong>Rp {{ number_format($bids->first()->price, 0, ',', '.') }}</strong>
+                                            Harga Akhir: <strong>Rp
+                                                {{ number_format($bids->first()->price, 0, ',', '.') }}</strong>
                                         </div>
                                     @endif
                                 </div>
 
                                 {{-- Tetap tampilkan riwayat chat/bid tapi read-only (tanpa form) --}}
-                                <div class="history-body mt-2" style="overflow-y:auto; max-height:200px; background:#fff; border:1px solid #eee; border-radius:6px; padding:8px; opacity: 0.7;">
+                                <div class="history-body mt-2"
+                                    style="overflow-y:auto; max-height:200px; background:#fff; border:1px solid #eee; border-radius:6px; padding:8px; opacity: 0.7;">
                                     @foreach ($bids as $b)
                                         <div class="history-item text-muted">
                                             <small>{{ $b->created_at->format('d M H:i') }}</small> -
-                                            <strong>{{ $b->user->name }}</strong>: Rp {{ number_format($b->price, 0, ',', '.') }}
+                                            <strong>{{ $b->user->name }}</strong>: Rp
+                                            {{ number_format($b->price, 0, ',', '.') }}
                                         </div>
                                     @endforeach
                                 </div>
-
                             @else
                                 {{-- KONDISI 3: EXPIRED / GAGAL --}}
                                 <div class="alert alert-danger mt-3 text-center">
@@ -172,36 +182,62 @@
                         </div>
 
                         {{-- SHIPPING --}}
-                        <div class="shipping-section" style="margin-top:30px; margin-left:30px;">
+                        <div class="shipping-section">
                             <h4 class="shipping-title">Pengiriman Produk</h4>
                             <p class="shipping-label">Pengiriman</p>
                             <p class="shipping-value">Dikirim dari Semarang</p>
 
                             <p class="shipping-label">Proteksi Kerusakan</p>
-                            <p class="shipping-value">Melindungi produkmu dari risiko rusak maupun kerugian selama 6 bulan.</p>
+                            <p class="shipping-value">Melindungi produkmu dari risiko rusak maupun kerugian selama 6 bulan.
+                            </p>
                         </div>
 
                         {{-- RELATED --}}
                         @if (isset($related) && count($related) > 0)
-                            <div class="related-title">Related Products</div>
-                            <div class="related-grid">
-                                @foreach ($related as $r)
-                                    <a href="{{ route('lelang.detail', $r->slug) }}" class="text-dark text-decoration-none">
-                                        <div class="related-card">
-                                            {{-- Safe Image Check --}}
-                                            <img src="{{ asset($r->imageUtama ? $r->imageUtama->path : 'assets/img/default.jpg') }}" alt="related" style="object-fit: cover;">
+                            <div class="related-title">Related products</div>
 
-                                            <div class="related-name">{{ $r->title }}</div>
-                                            <div class="related-price">{{ $r->price_str }}</div>
+                            <div class="related-grid-modern">
+                                @foreach ($related->take(2) as $r)
+                                    <a href="{{ route('lelang.detail', $r->slug) }}" class="related-link">
+
+                                        <div class="related-card-modern">
+
+                                            {{-- IMAGE --}}
+                                            <div class="related-image-wrap">
+                                                <img src="{{ asset($r->imageUtama ? $r->imageUtama->path : 'assets/img/default.jpg') }}"
+                                                    alt="{{ $r->title }}">
+
+                                                {{-- TIMER BADGE --}}
+                                                <div class="related-timer">
+                                                    {{ $r->remaining_time ?? '00:01:09:32' }}
+                                                </div>
+                                            </div>
+
+                                            {{-- CONTENT --}}
+                                            <div class="related-content">
+                                                <div class="related-name">{{ $r->title }}</div>
+                                                <div class="related-sub">Bidding Tertinggi:</div>
+                                                <div class="related-price">Rp
+                                                    {{ number_format($r->highest_bid ?? $r->price, 0, ',', '.') }}</div>
+                                            </div>
+
                                         </div>
                                     </a>
                                 @endforeach
                             </div>
+
+                            {{-- BUTTON --}}
+                            <div class="related-more-wrap">
+                                <a href="{{ route('lelang.products.json') }}" class="btn-related-more">
+                                    See More Product
+                                </a>
+                            </div>
                         @endif
+
                     </div>
 
                     {{-- RIGHT COLUMN (Dipisah ke file bid_lelang.blade.php) --}}
-                    <div class="auction-right">
+                    <div class="auction-right d-none d-md-block ">
                         @include('web.detail_lelang.bid_lelang')
                     </div>
 
@@ -227,7 +263,7 @@
         window.initialHighest = {{ intval($highestBid) }};
         window.serverStep = {{ intval($step ?? 10000) }};
         window.serverNominals = @json($nominals ?? []);
-        
+
         console.log('[INIT] Global vars:', {
             productId: window.productId,
             slug: window.productSlug,
@@ -248,13 +284,14 @@
             var select = document.getElementById('bidSelect');
             if (!btn || !select) return;
             btn.disabled = false;
-            btn.addEventListener('click', function () {
+            btn.addEventListener('click', function() {
                 var val = select.value;
                 if (!val || isNaN(val) || Number(val) < 1) {
                     alert('Pilih nominal bidding terlebih dahulu');
                     return;
                 }
-                if (typeof window.app !== 'undefined' && window.app.$refs && window.app.$refs.bidForm && typeof window.app.$refs.bidForm.sendBidFromButton === 'function') {
+                if (typeof window.app !== 'undefined' && window.app.$refs && window.app.$refs.bidForm &&
+                    typeof window.app.$refs.bidForm.sendBidFromButton === 'function') {
                     console.log('[BID] Kirim bid via Vue:', val);
                     window.app.$refs.bidForm.sendBidFromButton(val);
                 } else {
@@ -269,7 +306,7 @@
             if (btn) btn.disabled = true;
             var tries = 0;
             var maxTries = 50;
-            var timer = setInterval(function () {
+            var timer = setInterval(function() {
                 tries++;
                 if (typeof window.app !== 'undefined' && window.app.$refs && window.app.$refs.bidForm) {
                     clearInterval(timer);
@@ -285,17 +322,17 @@
 
         // Event listener untuk inisialisasi dropdown dan tombol bid setelah DOM siap
         document.addEventListener('DOMContentLoaded', waitForVueAndSetupBidBtn);
-        document.addEventListener('DOMContentLoaded', function () {
+        document.addEventListener('DOMContentLoaded', function() {
             const initialHighest = {{ intval($highestBid) }};
             const serverStep = window.serverStep || {{ intval($step ?? 10000) }};
             const serverNominals = window.serverNominals || @json($nominals ?? []);
-            
+
             console.log('[Init] Setting initial dropdown', {
                 highest: initialHighest,
                 step: serverStep,
                 nominals: serverNominals
             });
-            
+
             if (typeof window.updateNominalDropdown === 'function') {
                 // Kirim nominals dan step dari server agar sinkron dengan database
                 window.updateNominalDropdown(initialHighest, serverNominals, serverStep);
@@ -312,7 +349,7 @@
          * - Mendengarkan event BidSent dan MessageSent dari channel Echo.
          * - Update harga tertinggi, dropdown nominal bid, dan nilai bid di Vue ChatForm.
          */
-        @if(Auth::check())
+        @if (Auth::check())
             if (typeof Echo !== 'undefined') {
                 console.log('[Echo] Mendengarkan channel product.{{ $product->id }}');
                 const channel = Echo.private(`product.{{ $product->id }}`);
@@ -340,13 +377,15 @@
                     if (select) {
                         if (typeof window.updateNominalDropdown === 'function') {
                             try {
-                                window.updateNominalDropdown(Number(e.price) || 0, e.nominals || null, e.step || null);
+                                window.updateNominalDropdown(Number(e.price) || 0, e.nominals || null, e.step ||
+                                    null);
                             } catch (err) {
                                 console.error('[Echo] updateNominalDropdown threw', err);
                             }
                         } else if (Array.isArray(e.nominals)) {
                             // fallback manual build using guarded formatter
-                            const fmt = (typeof window.formatRp === 'function') ? window.formatRp : (v => String(v));
+                            const fmt = (typeof window.formatRp === 'function') ? window.formatRp : (v => String(
+                                v));
                             select.innerHTML = '<option value="">Pilih Nominal Bid</option>';
                             e.nominals.forEach(v => {
                                 const opt = document.createElement('option');
@@ -377,7 +416,7 @@
          * - Menukar gambar utama dengan thumbnail saat thumbnail diklik.
          * - Memberi efek animasi pada pergantian gambar.
          */
-        (function () {
+        (function() {
             function $(sel) {
                 return document.querySelector(sel);
             }
@@ -423,7 +462,7 @@
                 }, 140);
             }
 
-            document.addEventListener('click', function (e) {
+            document.addEventListener('click', function(e) {
                 const thumbElem = e.target.closest('.thumb-item');
                 if (!thumbElem) return;
                 const mainImg = $('#mainDisplay');
@@ -442,7 +481,7 @@
          * - Mengupdate tampilan setiap detik.
          * - Otomatis berhenti jika waktu habis atau element hilang.
          */
-        (function () {
+        (function() {
             console.info('[countdown] init');
             try {
                 if (window.__auction_countdown && window.__auction_countdown.interval) {
@@ -567,8 +606,9 @@
             } else {
                 startTicking();
             }
-            document.addEventListener('visibilitychange', function () {
-                if (document.visibilityState === 'visible' && window.__auction_countdown && window.__auction_countdown.tick) {
+            document.addEventListener('visibilitychange', function() {
+                if (document.visibilityState === 'visible' && window.__auction_countdown && window
+                    .__auction_countdown.tick) {
                     window.__auction_countdown.tick();
                 }
             }, false);
@@ -590,7 +630,7 @@
          * Setelah DOM siap, inject data existingBids ke instance Vue jika tersedia.
          * Memastikan data riwayat bid langsung muncul di chat tanpa reload.
          */
-        document.addEventListener("DOMContentLoaded", function () {
+        document.addEventListener("DOMContentLoaded", function() {
             if (typeof app !== 'undefined') {
                 if (window.existingBids && window.existingBids.length > 0) {
                     if (app.messages) {
