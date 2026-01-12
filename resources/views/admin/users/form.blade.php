@@ -3,6 +3,10 @@
     {{ Form::text('name', $user->name ?? '', array('class' => 'form-control form-control-sm ','placeholder' => 'Nama')) }}
 </div>
 <div class="form-group">
+    {{ Form::label('username', 'Username') }}
+    {{ Form::text('username', $user->username ?? '', array('class' => 'form-control form-control-sm','placeholder' => 'Username')) }}
+</div>
+<div class="form-group">
     {{ Form::label('name', 'Email') }}
     {{ Form::text('email', $user->email ?? '', array('class' => 'form-control form-control-sm','placeholder' => 'Email')) }}
 </div>

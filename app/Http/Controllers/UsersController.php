@@ -5,9 +5,11 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\User;
 use Carbon;
-use Auth; 
+use Auth;
 use Illuminate\Support\Facades\Hash;
 use App\Favorite;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 
 class UsersController extends Controller
 {
@@ -42,6 +44,7 @@ class UsersController extends Controller
     {
         $request->validate([
             'name'=>'required',
+            'username'=>'nullable|unique:users,username',
             'access'=>'required',
             'email'=>'required|unique:users',
             'password'=>'required|min:6|confirmed',
@@ -54,13 +57,32 @@ class UsersController extends Controller
             'password.confirmed' => 'Konfirmasi Password tidak sama',
         ]);
         try {
-            User::create([
+            // ensure username exists (generate from name/email if not provided)
+            $username = $request->username ?? null;
+            if(!$username) {
+                $base = Str::slug($request->name ?: explode('@', $request->email)[0], '-');
+                $base = substr($base, 0, 50) ?: 'user';
+                $candidate = $base;
+                $i = 0;
+                while(User::where('username', $candidate)->exists()){
+                    $i++;
+                    $candidate = $base . $i;
+                }
+                $username = $candidate;
+            }
+
+            // create user then ensure email_verified_at is set (force auto-verify)
+            $user = User::create([
                 'name'=> $request->name,
+                'username'=> $username,
                 'email'=> $request->email,
-                'email_verified_at'=> Carbon\Carbon::now()->toDateTimeString(),
                 'password'=> Hash::make($request->password),
                 'access'=> $request->access,
             ]);
+
+            // Force mark as verified to guarantee admin-created users are active
+            $user->email_verified_at = Carbon\Carbon::now()->toDateTimeString();
+            $user->save();
             return redirect()->route('admin.user.index')->with('message', 'Data berhasil disimpan');
         } catch (Exception $e) {
             Log::error("User save error ".$e->getMessage());
