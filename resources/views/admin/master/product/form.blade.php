@@ -1,3 +1,14 @@
+<div class="alert alert-info persistent-alert">
+    <strong>Petunjuk Pengisian:</strong>
+    <ul class="mb-0 pl-3">
+        <li>Field bertanda * wajib diisi.</li>
+        <li>`price`, `stock`, `long`, `width`, `height`, dan `kelipatan` harus berupa angka.</li>
+        <li>`sku` harus unik saat pembuatan produk.</li>
+        <li>`end_date` opsional. Format contoh: <code>2026-01-31 23:59:00</code> (juga menerima <code>YYYY-MM-DD HH:MM</code>).</li>
+        <li>Pilih `type` dari pilihan: <em>Normal</em> atau <em>Featured</em>.</li>
+    </ul>
+</div>
+
 <div class="form-group row">
     {{ Form::label('type', 'Tipe Produk *',['class'=>'col-sm-2 col-form-label']) }}
     <div class="col-sm-3">
@@ -32,7 +43,7 @@
     </div>
 </div>
 <div class="form-group row">
-    {{ Form::label('name', 'Diskon *',['class'=>'col-sm-2 col-form-label']) }}
+    {{ Form::label('name', 'Diskon',['class'=>'col-sm-2 col-form-label']) }}
     <div class="col-sm-3">
         <div class="input-group input-group-sm mb-3">
         {{ Form::number('diskon', null, array('class' => 'form-control form-control-sm ')) }}
@@ -67,14 +78,14 @@
     </div>
 </div>
 <div class="form-group row">
-    {{ Form::label('name', 'Sku',['class'=>'col-sm-2 col-form-label']) }}
+    {{ Form::label('name', 'Sku *',['class'=>'col-sm-2 col-form-label']) }}
     <div class="col-sm-2">
         {{ Form::text('sku', null, array('class' => 'form-control form-control-sm ')) }}
         <span class="text-xs">Kode Unik Produk</span>
     </div>
 </div>
 <div class="form-group row">
-    {{ Form::label('name', 'Berat *',['class'=>'col-sm-2 col-form-label']) }}
+    {{ Form::label('name', 'Berat',['class'=>'col-sm-2 col-form-label']) }}
     <div class="col-sm-3">
         <div class="input-group input-group-sm mb-3">
         {{ Form::text('weight', null, array('class' => 'form-control form-control-sm ')) }}
@@ -91,7 +102,7 @@
     </div>
 </div>
 <div class="form-group row">
-    {{ Form::label('name', 'Panjang',['class'=>'col-sm-2 col-form-label']) }}
+    {{ Form::label('name', 'Panjang *',['class'=>'col-sm-2 col-form-label']) }}
     <div class="col-sm-2">
         <div class="input-group input-group-sm mb-3">
         {{ Form::text('long', null, array('class' => 'form-control form-control-sm ')) }}
@@ -100,7 +111,7 @@
           </div>
         </div>
     </div>
-    {{ Form::label('name', 'Lebar',['class'=>'col-sm-1 col-form-label']) }}
+    {{ Form::label('name', 'Lebar *',['class'=>'col-sm-1 col-form-label']) }}
     <div class="col-sm-2">
         <div class="input-group input-group-sm mb-3">
         {{ Form::text('width', null, array('class' => 'form-control form-control-sm ')) }}
@@ -109,7 +120,7 @@
           </div>
         </div>
     </div>
-    {{ Form::label('name', 'Tinggi',['class'=>'col-sm-1 col-form-label']) }}
+    {{ Form::label('name', 'Tinggi *',['class'=>'col-sm-1 col-form-label']) }}
     <div class="col-sm-2">
         <div class="input-group input-group-sm mb-3">
         {{ Form::text('height', null, array('class' => 'form-control form-control-sm ')) }}
@@ -120,13 +131,13 @@
     </div>
 </div>
 <div class="form-group row">
-    {{ Form::label('name', 'Kondisi',['class'=>'col-sm-2 col-form-label']) }}
+    {{ Form::label('name', 'Kondisi *',['class'=>'col-sm-2 col-form-label']) }}
     <div class="col-sm-2">
         {{ Form::select('kondisi', ['baru'=>'Baru','bekas'=>'Bekas'],null, array('class' => 'form-control form-control-sm ')) }}
     </div>
 </div>
 <div class="form-group row">
-    {{ Form::label('name', 'Kelipatan',['class'=>'col-sm-2 col-form-label']) }}
+    {{ Form::label('name', 'Kelipatan *',['class'=>'col-sm-2 col-form-label']) }}
     <div class="col-sm-2">
         {{ Form::number('kelipatan', null, array('class' => 'form-control form-control-sm ')) }}
          <span class="text-danger text-xs">Penulisan kelipatan tanpa titik</span>
