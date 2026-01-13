@@ -100,7 +100,8 @@
         <!-- Custom scripts for all pages-->
         <script src="{{asset('assets/js/sb-admin-2.min.js')}}"></script>
         <script type="text/javascript">
-            $('div.alert-info').not('.alert-secondary').delay(2000).slideUp(300);
+            // Do not auto-hide alerts that explicitly request persistence
+            $('div.alert-info').not('.alert-secondary').not('.persistent-alert').delay(2000).slideUp(300);
             
             // Auto-show notifications with slide-down animation
             $(document).ready(function() {

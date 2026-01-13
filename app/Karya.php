@@ -47,4 +47,13 @@ class Karya extends Model
     {
         return $this->belongsTo(District::class);
     }
+
+    /**
+     * Accessor untuk backward compatibility
+     * View menggunakan nama_karya tapi database punya field name
+     */
+    public function getNamaKaryaAttribute()
+    {
+        return $this->name;
+    }
 }

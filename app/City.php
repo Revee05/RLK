@@ -19,4 +19,12 @@ class City extends Model
     {
         return $this->hasMany(District::class);
     }
+
+    /**
+     * Alias untuk backward compatibility dengan sistem lama (Kabupaten)
+     */
+    public function getNamaKabupatenAttribute()
+    {
+        return $this->name;
+    }
 }

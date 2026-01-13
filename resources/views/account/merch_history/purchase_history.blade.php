@@ -23,9 +23,20 @@
 }
 .tab-content {
     padding-top: 1rem;
-    max-height: 500px;
+    max-height: 520px;
     overflow-y: auto;
     overflow-x: hidden;
+    /* border: 1px solid #000000ff; */
+}
+/* Limit the visible height of the orders list and make it scrollable */
+.orders-list {
+    max-height: 485px;
+    overflow-y: auto;
+    padding-right: .5rem; /* avoid content touching scrollbar */
+    /* border: 1px solid #000000ff; */
+}
+@media (max-width: 576px) {
+    .orders-list { max-height: none; overflow: visible; padding-right: 0; }
 }
 </style>
 @endsection
@@ -38,7 +49,7 @@
         <div class="col-md-9">
             <div class="card content-border">
                 <div class="card-body ps-4 pe-4">
-                    <h3 class="mb-4 fw-bolder">Riwayat Pembelian</h3>
+                    <h3 class="mb-2 fw-bolder">Riwayat Pembelian</h3>
                     
                     <!-- Status Filter Tabs -->
                     <ul class="nav nav-tabs" id="statusTabs" role="tablist">
@@ -62,19 +73,19 @@
                     <!-- Transaction Log -->
                     <div class="tab-content" id="statusTabsContent">
                         <div class="tab-pane fade show active" id="semua" role="tabpanel" aria-labelledby="semua-tab">
-                            @include('account.merch_history.partials.order_list', ['orders' => $orders])
+                            <div class="orders-list">@include('account.merch_history.partials.order_list', ['orders' => $orders])</div>
                         </div>
                         <div class="tab-pane fade" id="belum-bayar" role="tabpanel" aria-labelledby="belum-bayar-tab">
-                            @include('account.merch_history.partials.order_list', ['orders' => $orders->where('status', 'pending')])
+                            <div class="orders-list">@include('account.merch_history.partials.order_list', ['orders' => $orders->where('status', 'pending')])</div>
                         </div>
                         <div class="tab-pane fade" id="diproses" role="tabpanel" aria-labelledby="diproses-tab">
-                            @include('account.merch_history.partials.order_list', ['orders' => $orders->whereIn('status', ['paid', 'shipped'])])
+                            <div class="orders-list">@include('account.merch_history.partials.order_list', ['orders' => $orders->where('status', 'processing')])</div>
                         </div>
                         <div class="tab-pane fade" id="selesai" role="tabpanel" aria-labelledby="selesai-tab">
-                            @include('account.merch_history.partials.order_list', ['orders' => $orders->where('status', 'completed')])
+                            <div class="orders-list">@include('account.merch_history.partials.order_list', ['orders' => $orders->where('status', 'success')])</div>
                         </div>
                         <div class="tab-pane fade" id="dibatalkan" role="tabpanel" aria-labelledby="dibatalkan-tab">
-                            @include('account.merch_history.partials.order_list', ['orders' => $orders->whereIn('status', ['cancelled', 'failed'])])
+                            <div class="orders-list">@include('account.merch_history.partials.order_list', ['orders' => $orders->whereIn('status', ['cancelled', 'expired'])])</div>
                         </div>
                     </div>
                 </div>

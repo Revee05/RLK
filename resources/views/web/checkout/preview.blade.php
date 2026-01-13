@@ -7,7 +7,11 @@
 @php
     $items    = json_decode($order->items, true);
     $shipping = $order->shipping ? json_decode($order->shipping, true) : null;
-    $address  = $order->address;
+    
+    // Untuk OrderMerch: alamat ada di relasi address
+    // Untuk Order (lelang): alamat ada di field langsung (name, phone, address, dll)
+    $isOrderMerch = get_class($order) === 'App\OrderMerch';
+    $address = $isOrderMerch ? $order->address : null;
 @endphp
 
 
@@ -43,8 +47,8 @@
                 <h6>Pengambilan Pesanan</h6>
                 <p>
                     <strong>Rasa Lelang Karya</strong><br>
-                    Griya Jl. Sekargading blok C 19, <br>
-                    RT.04/RW.03, Kel. Kalisegoro, <br>
+                    Griya Sekargading blok C 19,
+                    RT.04 RW.03, Kel. Kalisegoro,
                     Gunung Pati, Kota Semarang <br>
                     Jam Operasional: 09.00 – 21.00
                 </p>
@@ -53,17 +57,25 @@
 
                 <h6>Alamat Pengiriman</h6>
                 <p>
-                    {{ Str::title($order->address->name ?? '-') }} -
-                    {{ $order->address->phone ?? '-' }} <br>
-
-                    {{ Str::title($address->address ?? '-') }},
-                    {{ Str::title($address->district->name ?? '-') }} <br>
-
-                    {{ Str::title($address->city->name ?? '-') }},
-                    {{ Str::title($address->province->name ?? '-') }}
-
-                    @if(!empty($address->kodepos))
-                        , ID {{ $address->kodepos }}
+                    @if($isOrderMerch && $address)
+                        {{-- OrderMerch: ambil dari relasi address --}}
+                        {{ Str::title($address->name ?? '-') }} -
+                        {{ $address->phone ?? '-' }} <br>
+                        {{ Str::title($address->address ?? '-') }},
+                        {{ Str::title($address->district->name ?? '-') }} <br>
+                        {{ Str::title($address->city->name ?? '-') }},
+                        {{ Str::title($address->province->name ?? '-') }}
+                        @if(!empty($address->kodepos))
+                            , ID {{ $address->kodepos }}
+                        @endif
+                    @else
+                        {{-- Order (lelang): ambil langsung dari field order --}}
+                        {{ Str::title($order->name ?? '-') }} -
+                        {{ $order->phone ?? '-' }} <br>
+                        {{ Str::title($order->address ?? '-') }},
+                        {{ Str::title(optional($order->kecamatan)->nama_kecamatan ?? '-') }} <br>
+                        {{ Str::title(optional($order->kabupaten)->nama_kabupaten ?? '-') }},
+                        {{ Str::title(optional($order->provinsi)->nama_provinsi ?? '-') }}
                     @endif
                 </p>
 

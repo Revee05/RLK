@@ -28,7 +28,7 @@
     </h1>
     {{ Form::open(array('route' => 'setting.update.data','files'=>true)) }}
     <div class="row">
-        <div class="col-sm-6">
+        <div class="col-sm-6 order-2 order-sm-1">
             
             <div class="card shadow mb-4 rounded-0">
                 <div class="card-body">
@@ -66,7 +66,7 @@
                 </div>
             </div>
         </div>
-        <div class="col-sm-3">
+        <div class="col-sm-3 order-1 order-sm-2">
             <div class="card rounded-0 border-0">
                 <div class="card-body p-0">
                     <div class="preview-cover">

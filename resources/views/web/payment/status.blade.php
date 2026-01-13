@@ -12,6 +12,9 @@
     $shippingType = $shipping['type'] ?? 'delivery';
     $giftWrapCost = $order->gift_wrap == 1 ? 10000 : 0;
     $shippingData = json_decode($order->shipping, true);
+    $subtotal = collect($items)->sum(function($item) {
+        return $item['price'] * $item['qty'];
+    });
 @endphp
 
 @section('content')
@@ -106,14 +109,14 @@
             <div class="info-value">
                 @if($shippingType === 'pickup')
                     <strong>Rasa Lelang Karya</strong><br>
-                    Griya Jl. Sekargading blok C 19, <br>
-                    RT.04/RW.03, Kel. Kalisegoro, <br>
+                    Griya Jl. Sekargading blok C 19, 
+                    RT.04/RW.03, Kel. Kalisegoro,
                     Gunung Pati, Kota Semarang <br>
                     Jam Operasional: 09.00 – 21.00
                 @else
                     {{ $order->address->name ?? '-' }} - {{ $order->address->phone ?? '-' }} <br>
                     {{ $order->address->address ?? '-' }},
-                    {{ $order->address->district->name ?? '-' }}<br>
+                    {{ $order->address->district->name ?? '-' }},
                     {{ $order->address->city->name ?? '-' }},
                     {{ $order->address->province->name ?? '-' }}
                 @endif
@@ -178,7 +181,7 @@
         {{-- SUMMARY --}}
         <div class="summary-row">
             <span>Subtotal</span>
-            <span class="summary-price">Rp. {{ number_format($order->subtotal,0,',','.') }}</span>
+            <span class="summary-price">Rp {{ number_format($subtotal,0,',','.') }}</span>
         </div>
         <div class="summary-row">
             <span>Biaya Pengiriman</span>
