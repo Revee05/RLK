@@ -152,7 +152,7 @@
                         <p>{!! Str::limit(strip_tags($blog->body), 150) !!}</p>
                         
                         <a href="{{route('web.blog.detail',$blog->slug)}}" class="btn-blog-responsive">
-                            <span class="text-desktop">Lihat lebih banyak</span>
+                            <span class="text-desktop">Lihat..</span>
                             
                             <span class="text-mobile">Read more . . .</span>
                         </a>
@@ -208,7 +208,7 @@
                 // === TAMPILAN MOBILE / TABLET (<= 991px) ===
                 0:{ 
                     items: 1, 
-                    loop: true,       // <--- LOOP NYALA HANYA DI SINI (MOBILE)
+                    loop: false,      // <--- LOOP DIMATIKAN DI SINI (MOBILE) - agar "See for More" tidak berulang
                     mouseDrag: true, 
                     touchDrag: true, 
                     

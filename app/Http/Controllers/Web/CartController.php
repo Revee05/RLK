@@ -41,6 +41,14 @@ class CartController extends Controller
     // ==========================================
     public function addMerchToCart(Request $request)
     {
+        // Jika user belum login, kembalikan pesan yang jelas untuk AJAX dan non-AJAX
+        if (!Auth::check()) {
+            $msg = 'Silahkan login supaya bisa menyimpan produk ke keranjang';
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json(['success' => false, 'message' => $msg], 401);
+            }
+            return redirect()->back()->with('error', $msg);
+        }
         // Normalisasi Input
         $inputVariantId = $request->input('variant_id') ?? $request->input('selected_variant_id');
         $inputSizeId    = $request->input('size_id') ?? $request->input('selected_size_id');
@@ -217,7 +225,13 @@ class CartController extends Controller
             // Logic: Auto-select Size pertama dari varian baru
             $newVariant = MerchProductVariant::find($newVariantId);
             if ($newVariant && $newVariant->sizes->count() > 0) {
-                $cartItem->merch_product_variant_size_id = $newVariant->sizes->first()->id;
+                // Pilih size pertama yang memiliki stok > 0 jika ada, jika tidak pilih first()
+                $firstInStock = $newVariant->sizes->first(fn($s) => ($s->stock ?? 0) > 0);
+                if ($firstInStock) {
+                    $cartItem->merch_product_variant_size_id = $firstInStock->id;
+                } else {
+                    $cartItem->merch_product_variant_size_id = $newVariant->sizes->first()->id;
+                }
             } else {
                 $cartItem->merch_product_variant_size_id = null;
             }
@@ -251,6 +265,42 @@ class CartController extends Controller
         $cartItem->price = $price;
         $cartItem->save();
 
+        // ====== Hitung stok maksimum untuk varian/size yang dipilih ======
+        $maxStock = 0;
+        if ($currentSize) {
+            $maxStock = $currentSize->stock;
+        } elseif ($currentVariant) {
+            $maxStock = $currentVariant->stock;
+        } else {
+            $maxStock = $currentProduct->stock ?? 0;
+        }
+
+        // Jika user baru saja mengganti varian atau size, set jumlah ke 1 (jika tersedia)
+        if ($request->has('variant_id') || $request->has('size_id')) {
+            $desiredQty = ($maxStock >= 1) ? 1 : 0;
+            if ($cartItem->quantity !== $desiredQty) {
+                $cartItem->quantity = (int) $desiredQty;
+                $cartItem->save();
+                Log::info('Reset cart item quantity to 1 after option change', [
+                    'cart_item_id' => $cartItem->id,
+                    'new_qty' => $cartItem->quantity,
+                    'max_stock' => $maxStock
+                ]);
+            }
+        } else {
+            // Jika quantity saat ini melebihi stok baru, sesuaikan dan simpan
+            if ($cartItem->quantity > $maxStock) {
+                $adjustedQty = (int) $maxStock;
+                $cartItem->quantity = $adjustedQty;
+                $cartItem->save();
+                Log::info('Adjusted cart item quantity due to stock change', [
+                    'cart_item_id' => $cartItem->id,
+                    'new_qty' => $adjustedQty,
+                    'max_stock' => $maxStock
+                ]);
+            }
+        }
+
         // Cari Gambar (Prioritas: Varian > Produk)
         $newImageUrl = 'https://via.placeholder.com/100';
         if ($currentVariant && $currentVariant->images->count() > 0) {
@@ -265,7 +315,8 @@ class CartController extends Controller
             foreach($currentVariant->sizes as $size) {
                 $availableSizes[] = [
                     'id' => $size->id,
-                    'size' => $size->size
+                    'size' => $size->size,
+                    'stock' => $size->stock ?? 0
                 ];
             }
         }
@@ -277,8 +328,9 @@ class CartController extends Controller
             'success'       => true,
             'new_price'     => $price,
             'new_total'     => $price * $cartItem->quantity,
+            'newQuantity'   => $cartItem->quantity,
             'new_image'     => $newImageUrl,
-            'new_size_id'   => $cartItem->merch_product_variant_size_id, 
+            'new_size_id'   => $cartItem->merch_product_variant_size_id,
             'available_sizes' => $availableSizes
         ]);
 

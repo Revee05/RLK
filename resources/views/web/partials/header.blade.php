@@ -53,6 +53,7 @@
 
                         @if (Auth::user()->access == 'admin')
                             <a class="dropdown-item" href="{{ route('admin.dashboard') }}">Dashboard</a>
+                            <a class="dropdown-item" href="{{ route('account.dashboard') }}">Profile</a>
                         @else
                             <a class="dropdown-item" href="{{ route('account.dashboard') }}">Profile</a>
                             <div class="d-md-none"> <!-- show nav list only on mobile -->
@@ -92,23 +93,56 @@
 
 <script>
     document.addEventListener("DOMContentLoaded", function() {
-        // Hamburger menu
+        // Elements
         var toggle = document.getElementById('menuToggle');
         var menu = document.querySelector('.menu-area');
-        if (toggle && menu) {
-            toggle.addEventListener('click', function() {
-                menu.classList.toggle('active');
-                toggle.classList.toggle('active');
+        var profileBtn = document.getElementById('profileDropdown');
+        var profileMenu = document.getElementById('profileDropdownMenu');
+
+        // Helpers to close menus
+        function closeProfileMenu() {
+            if (profileMenu && profileMenu.classList.contains('show')) profileMenu.classList.remove('show');
+        }
+        function closeMobileMenu() {
+            if (menu && menu.classList.contains('active')) {
+                menu.classList.remove('active');
+                if (toggle) toggle.classList.remove('active');
+            }
+        }
+        function closeOtherDropdowns(exceptMenu) {
+            document.querySelectorAll('.menu-area .dropdown-menu').forEach(function(m) {
+                if (m !== exceptMenu) {
+                    m.classList.remove('show');
+                    var p = m.closest('.dropdown-menu-nav');
+                    if (p) p.classList.remove('open');
+                }
             });
         }
 
-        // Profile dropdown
-        var profileBtn = document.getElementById('profileDropdown');
-        var profileMenu = document.getElementById('profileDropdownMenu');
+        // Hamburger menu - when opening, close profile and other dropdowns
+        if (toggle && menu) {
+            toggle.addEventListener('click', function(e) {
+                e.preventDefault();
+                var opening = !menu.classList.contains('active');
+                menu.classList.toggle('active');
+                toggle.classList.toggle('active');
+                if (opening) {
+                    closeProfileMenu();
+                    closeOtherDropdowns();
+                }
+            });
+        }
+
+        // Profile dropdown - when opening, close mobile menu and other dropdowns
         if (profileBtn && profileMenu) {
             profileBtn.addEventListener('click', function(e) {
                 e.preventDefault();
+                var opening = !profileMenu.classList.contains('show');
                 profileMenu.classList.toggle('show');
+                if (opening) {
+                    closeMobileMenu();
+                    closeOtherDropdowns();
+                }
             });
             document.addEventListener('click', function(e) {
                 if (!profileBtn.contains(e.target) && !profileMenu.contains(e.target)) {
@@ -116,29 +150,44 @@
                 }
             });
         }
-        // Helper for dropdown menu with caret animation
+
+        // Helper for other dropdown menus (koleksi, tentang, panduan)
         function setupDropdown(btnId, menuId) {
             var btn = document.getElementById(btnId);
-            var menu = document.getElementById(menuId);
+            var menuEl = document.getElementById(menuId);
             var parent = btn ? btn.closest('.dropdown-menu-nav') : null;
-            if (btn && menu && parent) {
+            if (btn && menuEl && parent) {
                 btn.addEventListener('click', function(e) {
                     e.preventDefault();
-                    menu.classList.toggle('show');
+                    var opening = !menuEl.classList.contains('show');
+                    menuEl.classList.toggle('show');
                     parent.classList.toggle('open');
+                    if (opening) {
+                        closeProfileMenu();
+                        closeMobileMenu();
+                        closeOtherDropdowns(menuEl);
+                    }
                 });
                 document.addEventListener('click', function(e) {
-                    if (!btn.contains(e.target) && !menu.contains(e.target)) {
-                        menu.classList.remove('show');
+                    if (!btn.contains(e.target) && !menuEl.contains(e.target)) {
+                        menuEl.classList.remove('show');
                         parent.classList.remove('open');
                     }
                 });
             }
         }
 
-        // Tentang & Panduan dropdown
+        // Initialize dropdowns
         setupDropdown('tentangDropdown', 'tentangDropdownMenu');
         setupDropdown('panduanDropdown', 'panduanDropdownMenu');
         setupDropdown('koleksiKaryaDropdown', 'koleksiKaryaDropdownMenu');
+
+        // Ensure mobile menu is closed when resizing to desktop
+        window.addEventListener('resize', function() {
+            if (window.innerWidth > 991) {
+                closeMobileMenu();
+                closeOtherDropdowns();
+            }
+        });
     });
 </script>
