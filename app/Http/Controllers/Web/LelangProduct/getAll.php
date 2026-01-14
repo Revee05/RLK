@@ -119,6 +119,12 @@ class getAll extends Controller
             case 'priciest':
                 $query->orderBy('price', 'desc');
                 break;
+            case 'running':
+                // Filter only auctions still running (end_date in future) and active status
+                $query->where('end_date', '>', now())
+                      ->where('status', 1)
+                      ->orderBy('id', 'desc');
+                break;
             case 'newest':
             default:
                 $query->orderBy('id', 'desc');

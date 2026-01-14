@@ -152,7 +152,7 @@
                         <p>{!! Str::limit(strip_tags($blog->body), 150) !!}</p>
                         
                         <a href="{{route('web.blog.detail',$blog->slug)}}" class="btn-blog-responsive">
-                            <span class="text-desktop">Lihat lebih banyak</span>
+                            <span class="text-desktop">Lihat..</span>
                             
                             <span class="text-mobile">Read more . . .</span>
                         </a>
