@@ -470,7 +470,7 @@
         // --- 2. LOGIC UPDATE QUANTITY (debounced per item, optimistic UI) ---
         const quantityTimers = {};
         const pendingDesired = {};
-        const DEBOUNCE_MS = 1000;
+        const DEBOUNCE_MS = 700;
 
         document.querySelectorAll('.btn-quantity').forEach(function(button) {
             button.addEventListener('click', function() {
