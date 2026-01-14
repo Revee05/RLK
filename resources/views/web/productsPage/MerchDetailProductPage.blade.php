@@ -584,19 +584,39 @@ document.addEventListener('DOMContentLoaded', function() {
                     },
                     body: formData
                 })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
+                .then(async response => {
+                    // Tangani 401 khusus (belum login)
+                    if (response.status === 401) {
                         msgContainer.innerHTML =
-                            `<div class="alert alert-success py-2">${data.message}</div>`;
+                            `<div class="alert alert-danger py-2">Silahkan login supaya bisa menyimpan produk ke keranjang. <a href="${"{{ route('login') }}"}" class="alert-link">Log in</a></div>`;
+                        return null; // hentikan chain
+                    }
+
+                    // Coba parse JSON, jika gagal tampilkan pesan umum
+                    let data = null;
+                    try {
+                        data = await response.json();
+                    } catch (e) {
+                        msgContainer.innerHTML = `<div class="alert alert-danger py-2">Terjadi kesalahan sistem.</div>`;
+                        return null;
+                    }
+
+                    return { ok: response.ok, data };
+                })
+                .then(result => {
+                    if (!result) return; // sudah ditangani di atas
+
+                    const { ok, data } = result;
+                    if (ok && data && data.success) {
+                        msgContainer.innerHTML = `<div class="alert alert-success py-2">${data.message}</div>`;
+                    } else if (data && data.message) {
+                        msgContainer.innerHTML = `<div class="alert alert-danger py-2">${data.message}</div>`;
                     } else {
-                        msgContainer.innerHTML =
-                            `<div class="alert alert-danger py-2">${data.message}</div>`;
+                        msgContainer.innerHTML = `<div class="alert alert-danger py-2">Terjadi kesalahan sistem.</div>`;
                     }
                 })
                 .catch(err => {
-                    msgContainer.innerHTML =
-                        `<div class="alert alert-danger py-2">Terjadi kesalahan sistem.</div>`;
+                    msgContainer.innerHTML = `<div class="alert alert-danger py-2">Terjadi kesalahan sistem.</div>`;
                 })
                 .finally(() => {
                     // Kembalikan tombol seperti semula

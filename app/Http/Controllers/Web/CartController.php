@@ -41,6 +41,14 @@ class CartController extends Controller
     // ==========================================
     public function addMerchToCart(Request $request)
     {
+        // Jika user belum login, kembalikan pesan yang jelas untuk AJAX dan non-AJAX
+        if (!Auth::check()) {
+            $msg = 'Silahkan login supaya bisa menyimpan produk ke keranjang';
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json(['success' => false, 'message' => $msg], 401);
+            }
+            return redirect()->back()->with('error', $msg);
+        }
         // Normalisasi Input
         $inputVariantId = $request->input('variant_id') ?? $request->input('selected_variant_id');
         $inputSizeId    = $request->input('size_id') ?? $request->input('selected_size_id');
