@@ -114,13 +114,16 @@
             <span>Pemenang Lelang</span>
         </a>
     </li>
+    
     <li class="nav-item @yield('transaksi')">
-        <a class="nav-link collapsed">
+        <a class="nav-link collapsed" href="{{ route('admin.transaksi.index') }}">
             <i class="fas fa-money-bill-wave"></i>
-            <span>Transakasi</span>
+            <span>Transaksi</span>
         </a>
     </li>
+
     <hr class="sidebar-divider">
+    
     {{-- ... (Sisa menu Anda) ... --}}
 
     @if(Auth::user()->access == 'admin')
