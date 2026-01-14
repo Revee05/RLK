@@ -46,19 +46,26 @@
                         </tr>
                     </thead>
                     <tbody>
-                        @foreach($daftarPemenang as $bid)
+                        @foreach($daftarPemenang as $product)
                         <tr>
                             <td class="text-center">
                                 <div class="figure">
-                                    <img src="{{asset($bid->product->imageUtama->path ?? 'assets/img/default.jpg')}}">
+                                    <img src="{{ asset($product->imageUtama->path ?? 'assets/img/default.jpg') }}">
                                 </div>
                             </td>
-                            <td>{{ucfirst($bid->product->title)}}</td>
-                            <td>{{$bid->user->name}}</td>
-                            <td>{{$bid->price}}</td>
+                            <td>{{ ucfirst($product->title) }}</td>
+                            <td>{{ $product->winner->name ?? '-' }}</td>
+                            <td>
+                                @php
+                                    $lastBid = optional($product->bid->first())->price;
+                                    $orderBid = optional($product->order)->bid_terakhir;
+                                    $fallback = $product->final_price ?? $product->price;
+                                @endphp
+                                {{ $lastBid ?? $orderBid ?? $fallback ?? '-' }}
+                            </td>
                             
                             <td class="text-center">
-                                <a href="{{route('admin.daftar-pemenang.show',$bid->id)}}" class="btn btn-sm btn-warning rounded-0" title="RESET BID">
+                                <a href="{{ route('admin.daftar-pemenang.show', $product->id) }}" class="btn btn-sm btn-warning rounded-0" title="Lihat">
                                     <i class="fa fa-xs fa-eye"></i>
                                 </a>
                             </td>

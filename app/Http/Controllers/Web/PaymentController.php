@@ -104,7 +104,7 @@ class PaymentController extends Controller
                 'payer_email' => auth()->user()->email,
                 'description' => 'Pembayaran ' . $order->invoice,
                 'currency' => 'IDR',
-                'invoice_duration' => 60, //1 jam
+                'invoice_duration' => (int) env('XENDIT_INVOICE_DURATION', 3600), // detik (default 3600 = 1 jam)
                 'success_redirect_url' => url('/payment/status/' . $order->invoice),
                 'failure_redirect_url' => url('/payment/status/' . $order->invoice),
                 'customer' => $customerData,

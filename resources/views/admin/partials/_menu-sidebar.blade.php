@@ -102,19 +102,28 @@
         </a>
     </li>
     <hr class="sidebar-divider">
-    <li class="nav-item @yield('penawaran')">
+    <!-- <li class="nav-item @yield('penawaran')">
         <a class="nav-link collapsed" href="{{route('admin.daftar-penawaran.index')}}">
             <i class="fas fa-cart-plus"></i>
             <span>Daftar Penawaran</span>
         </a>
-    </li>
+    </li> -->
     <li class="nav-item @yield('slider')">
         <a class="nav-link collapsed" href="{{route('admin.daftar-pemenang.index')}}">
             <i class="fas fa-users"></i>
             <span>Pemenang Lelang</span>
         </a>
     </li>
+    
+    <li class="nav-item @yield('transaksi')">
+        <a class="nav-link collapsed" href="{{ route('admin.transaksi.index') }}">
+            <i class="fas fa-money-bill-wave"></i>
+            <span>Transaksi</span>
+        </a>
+    </li>
+
     <hr class="sidebar-divider">
+    
     {{-- ... (Sisa menu Anda) ... --}}
 
     @if(Auth::user()->access == 'admin')
