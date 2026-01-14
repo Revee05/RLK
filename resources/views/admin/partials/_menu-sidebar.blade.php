@@ -83,12 +83,12 @@
             </div>
         </div>
     </li>
-    <li class="nav-item @yield('post')">
+    <!-- <li class="nav-item @yield('post')">
         <a class="nav-link collapsed" href="{{route('admin.posts.index')}}">
             <i class="fas fa-list"></i>
             <span>Pages</span>
         </a>
-    </li>
+    </li> -->
     <li class="nav-item @yield('slider')">
         <a class="nav-link collapsed" href="{{route('master.sliders.index')}}">
             <i class="fas fa-image"></i>
