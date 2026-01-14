@@ -1,5 +1,5 @@
 <!-- MODAL 2: TAMBAH ALAMAT --> 
-<div class="modal fade" id="addAddressModal" tabindex="-1" aria-hidden="true">
+<div class="modal fade" id="addAddressModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="true" data-bs-keyboard="true">
   <div class="modal-dialog modal-dialog-centered modal-lg">
     <div class="modal-content">
 
@@ -64,7 +64,8 @@
 <script>
 document.addEventListener("DOMContentLoaded", function () {
 
-    const modalAdd = new bootstrap.Modal(document.getElementById("addAddressModal"));
+    // JANGAN inisialisasi modal di sini, sudah di file modals-alamat.blade.php
+    // const modalAdd = new bootstrap.Modal(document.getElementById("addAddressModal"));
 
     let province = document.getElementById('province');
     let city     = document.getElementById('city');
@@ -169,6 +170,26 @@ document.addEventListener("DOMContentLoaded", function () {
             console.error(err);
             alert("Terjadi kesalahan");
         });
+    });
+
+    // FORCE cleanup backdrop saat modal ditutup
+    const addModalElement = document.getElementById('addAddressModal');
+    
+    addModalElement.addEventListener('hide.bs.modal', function () {
+      // noop
+    });
+    
+    addModalElement.addEventListener('hidden.bs.modal', function () {
+      // FORCE hapus SEMUA backdrop
+      setTimeout(() => {
+        const allBackdrops = document.querySelectorAll('.modal-backdrop');
+        allBackdrops.forEach(backdrop => backdrop.remove());
+            
+        // Reset body
+        document.body.classList.remove('modal-open');
+        document.body.style.overflow = '';
+        document.body.style.paddingRight = '';
+      }, 50);
     });
 
 });
