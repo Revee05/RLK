@@ -3,8 +3,8 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Bid;
 use App\Order;
+use App\Products;
 use DB;
 
 class DaftarPemenangController extends Controller
@@ -16,12 +16,20 @@ class DaftarPemenangController extends Controller
      */
     public function index()
     {
-        $daftarPemenang = Bid::whereHas('product', function($q){
-           $q->where('status',2);
-        })->whereRaw('id in (select max(id) from bid group by (product_id))')->get();
-        // ->groupBy('product_id')->select('product_id','id', DB::raw('count(*) as total'))->get();
-        // dd($daftarPemenang);
-        return view('admin.pemenang.index',compact('daftarPemenang'));
+        // Ambil daftar pemenang dari kolom `winner_id` pada table `products`
+        $daftarPemenang = Products::with([
+            'winner',
+            'imageUtama',
+            'order',
+            'bid' => function($q){
+                $q->orderBy('id','desc')->limit(1);
+            }
+        ])
+            ->whereNotNull('winner_id')
+            ->where('status', 2)
+            ->get();
+
+        return view('admin.pemenang.index', compact('daftarPemenang'));
     }
 
     /**
@@ -54,9 +62,16 @@ class DaftarPemenangController extends Controller
     public function show($id)
     {
         try {
-            $detailBid = Bid::findOrfail($id);
-            $order = Order::where('product_id',$detailBid->product_id)->first();
-            return view('admin.pemenang.show',compact('detailBid','order'));
+            // $id is expected to be the product id; load product with winner, latest bid and order
+            $detailBid = Products::with([
+                'winner',
+                'bid' => function($q){
+                    $q->orderBy('id','desc')->limit(1);
+                },
+                'order'
+            ])->findOrFail($id);
+            $order = $detailBid->order ?? Order::where('product_id', $detailBid->id)->first();
+            return view('admin.pemenang.show', compact('detailBid','order'));
         } catch (\Throwable $th) {
             abort(404);
         }
