@@ -208,7 +208,7 @@
                 // === TAMPILAN MOBILE / TABLET (<= 991px) ===
                 0:{ 
                     items: 1, 
-                    loop: true,       // <--- LOOP NYALA HANYA DI SINI (MOBILE)
+                    loop: false,      // <--- LOOP DIMATIKAN DI SINI (MOBILE) - agar "See for More" tidak berulang
                     mouseDrag: true, 
                     touchDrag: true, 
                     
