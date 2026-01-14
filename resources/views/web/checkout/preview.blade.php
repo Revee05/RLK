@@ -178,6 +178,7 @@
             </button>
         </form>
 
+        @if($isOrderMerch)
         <form action="{{ route('payment.cancel', $order->invoice) }}" method="POST"
               onsubmit="return confirm('Yakin ingin membatalkan pesanan ini?')">
             @csrf
@@ -185,6 +186,7 @@
                 Batalkan
             </button>
         </form>
+        @endif
 
     </div>
 
