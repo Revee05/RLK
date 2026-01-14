@@ -397,20 +397,20 @@ class PaymentController extends Controller
             'type' => $orderType
         ]);
 
-        // Jika sudah PAID dari webhook → tidak perlu cek Xendit lagi
+        // Hanya cek Xendit kalau statusnya masih 'pending'.
         $currentStatus = $order->status ?? ($order->payment_status == 2 ? 'success' : 'pending');
-        
-        if ($currentStatus === 'success') {
-            Log::info("Order sudah PAID — SKIP cek Xendit, langsung render success page");
-            if (empty($order->email_sent)) {
+
+        if ($currentStatus !== 'pending') {
+            Log::info("Order status is not pending — SKIP cek Xendit, langsung render page", ['invoice' => $invoice, 'status' => $currentStatus]);
+
+            // Jika sudah PAID dan email belum terkirim, kirim konfirmasi
+            if ($currentStatus === 'success' && empty($order->email_sent)) {
                 if ($order->user && $order->user->email) {
                     try {
                         Mail::to($order->user->email)
                             ->send(new OrderConfirmationMail($order));
 
                         Log::info('Email konfirmasi berhasil dikirim via status page', ['invoice' => $order->invoice]);
-
-                        // Tandai email sudah dikirim (opsional)
                         $order->update(['email_sent' => 1]);
                     } catch (\Exception $e) {
                         Log::error('Gagal mengirim email konfirmasi via status page', [
@@ -420,9 +420,10 @@ class PaymentController extends Controller
                     }
                 }
             }
+
             return view('web.payment.status', compact('order'));
         }
-        
+
         // Untuk pending status, cek status dari Xendit menggunakan SDK v2.x
         try {
             \Xendit\Xendit::setApiKey(env('XENDIT_SECRET_KEY'));
@@ -518,21 +519,49 @@ class PaymentController extends Controller
 
     public function cancel(Request $request, $invoice)
     {
-        $order = OrderMerch::where('invoice', $invoice)->firstOrFail();
+        // Support both OrderMerch (merchandise) and legacy Order (lelang)
+        $order = OrderMerch::where('invoice', $invoice)->first();
+        $orderType = 'merch';
+
+        if (!$order) {
+            $order = Order::where('invoice', $invoice)->first();
+            $orderType = 'lelang';
+        }
+
+        if (!$order) {
+            abort(404, 'Order tidak ditemukan');
+        }
+
+        // Authorization: only owner can cancel
+        if (method_exists($order, 'getAttribute') && $order->user_id !== auth()->id()) {
+            return redirect()
+                ->route('payment.status', $invoice)
+                ->with('error', 'Anda tidak berhak membatalkan pesanan ini.');
+        }
+
+        // Determine current status (handle legacy payment_status for Order)
+        $currentStatus = $order->status ?? ($order->payment_status == 1 ? 'pending' : 'success');
 
         // Proteksi: hanya bisa cancel kalau masih pending
-        if ($order->status !== 'pending') {
+        if ($currentStatus !== 'pending') {
             return redirect()
                 ->route('payment.status', $invoice)
                 ->with('error', 'Pesanan tidak bisa dibatalkan.');
         }
 
-        $order->update([
-            'status' => 'cancelled'
-        ]);
+        $update = ['status' => 'cancelled'];
+
+        // For legacy Order (lelang) also set payment_status to 4 (cancelled/failed)
+        if ($orderType === 'lelang' && property_exists($order, 'payment_status')) {
+            $update['payment_status'] = 4;
+        }
+
+        $order->update($update);
 
         Log::info('Pesanan dibatalkan oleh user', [
-            'invoice' => $invoice
+            'invoice' => $invoice,
+            'type' => $orderType,
+            'user_id' => auth()->id()
         ]);
 
         return redirect()
