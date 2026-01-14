@@ -174,7 +174,7 @@
                         <div class="d-flex justify-content-between align-items-center mb-3">
                             <h5 class="fw-bold mb-0">Transaksi Terbaru</h5>
 
-                            <a href="{{ route('admin.daftar-pemenang.index') }}" class="text-primary small fw-semibold">
+                            <a href="{{ route('admin.transaksi.index') }}" class="text-primary small fw-semibold">
                                 Lihat Semua →
                             </a>
                         </div>
