@@ -12,9 +12,9 @@
                     </div>
                     <div class="card-body ps-4">
 
-                        @include('admin.partials._success')
+                        {{-- @include('admin.partials._success') --}}
                         {{-- Erors notification --}}
-                        @include('admin.partials._errors')
+                        {{-- @include('admin.partials._errors') --}}
                         {{ Form::model($user, ['route' => ['update.profil'], 'method' => 'POST']) }}
                         <div class="form-group">
                             {{ Form::label('name', 'Password') }}
@@ -23,6 +23,11 @@
                         <div class="form-group py-2">
                             {{ Form::label('name', 'Konfirmasi Password') }}
                             {{ Form::password('password_confirmation', ['class' => 'form-control input-field input-cyan', 'placeholder' => 'Konfirmasi Password']) }}
+                            @error('password')
+                                @foreach ($errors->all() as $error)
+                                    <div class="invalid-feedback d-block">{{ $error }}</div>
+                                @endforeach
+                            @enderror
                         </div>
                         <input type="hidden" name="id" value="{{ Auth::user()->id }}">
                         <input type="hidden" name="katasandi" value="1">

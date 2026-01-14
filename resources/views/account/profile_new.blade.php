@@ -62,7 +62,10 @@
                         {{ Form::model($user, ['route' => ['update.profil'], 'method' => 'POST']) }}
                         <div class="form-group mb-3">
                             {{ Form::label('name', 'Nama Lengkap') }}
-                            {{ Form::text('name', $user->name ?? '', ['class' => 'form-control input-field input-cyan', 'placeholder' => 'Nama']) }}
+                            {{ Form::text('name', $user->name ?? '', ['class' => 'form-control input-field input-cyan' . ($errors->has('name') ? ' is-invalid' : ''), 'placeholder' => 'Nama']) }}
+                            @error('name')
+                                <div class="invalid-feedback d-block">{{ $message }}</div>
+                            @enderror
                         </div>
 
                         <div class="form-group mb-3">
@@ -72,7 +75,10 @@
 
                         <div class="form-group mb-3">
                             {{ Form::label('name', 'Email') }}
-                            {{ Form::text('email', $user->email ?? '', ['class' => 'form-control input-field input-cyan', 'placeholder' => 'Email']) }}
+                            {{ Form::text('email', $user->email ?? '', ['class' => 'form-control input-field input-cyan' . ($errors->has('email') ? ' is-invalid' : ''), 'placeholder' => 'Email']) }}
+                            @error('email')
+                                <div class="invalid-feedback d-block">{{ $message }}</div>
+                            @enderror
                         </div>
 
                         <div class="form-group mb-3">
