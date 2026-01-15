@@ -77,20 +77,16 @@
 <section class="section-padding auction-section">
     <div class="container">
         <div class="row">
-            <div class="col-lg-12 d-flex justify-content-between align-items-center">
-                <h2 class="section-title mb-0">General Auction</h2>
-                <div class="owl-custom-nav-auction">
-                    <span class="custom-next" id="auction-next">
-                        <i class="fa fa-arrow-right"></i>
-                    </span>
-                </div>
+            <div class="col-lg-12 d-flex justify-content-between align-items-center mb-4 header-flex">
+                <h2 class="section-title mb-0">Karya Lelang</h2>
+                <a href="{{ route('lelang') }}" class="see-all-text">Lihat Semua</a>
             </div>
         </div>
 
         <div class="main-content">
             <div id="auction-carousel" class="owl-carousel owl-theme">
                 
-                @if($products->isNotEmpty())
+                @if(isset($products) && $products->isNotEmpty())
                     @foreach($products as $produk) 
                     <div class="item">
                         <div class="card-auction">
@@ -103,20 +99,24 @@
                             </div>
 
                         </div>
-                    </div> @endforeach
-                @endif
-                
-                <div class="item">
-                    <a href="{{ route('lelang') }}" class="card-see-more-link">
-                        <div class="card-auction card-see-more">
+                    </div> 
+                    @endforeach
+                @else
+                    {{-- CARD INFORMASI JIKA KOSONG --}}
+                    <div class="item">
+                        <div class="card-auction">
+                            <div style="height: 300px; background-color: #f8f9fa; display: flex; align-items: center; justify-content: center;">
+                                <i class="fa fa-gavel fa-4x" style="color: #dee2e6;"></i>
+                            </div>
                             <div class="card-body">
-                                <h5>See for More</h5>
-                                <small class="see-more-caption">Click here</small>
+                                <h5>Belum Ada Lelang</h5> 
+                                <p>Saat ini belum ada lelang yang berlangsung.</p>
+                                <span class="btn btn-outline-custom disabled" style="opacity: 0.6; cursor: default; background-color: #e9ecef; border-color: #dee2e6; color: #6c757d;">Nantikan Segera</span>
                             </div>
                         </div>
-                    </a>
-                </div>
-
+                    </div>
+                @endif
+                
             </div> 
             <div class="owl-theme">
                 <div class="owl-controls">
@@ -129,20 +129,16 @@
 @if(isset($blogs) && $blogs->isNotEmpty())
 <section class="section-padding blog-section">
     <div class="container">
-        <div class="row align-items-center mb-2">
-            <div class="col-lg-12 d-flex justify-content-between align-items-center">
-                <h2 class="section-title mb-0">Online Blog</h2>
-                <div class="owl-custom-nav-blog">
-                    <span class="custom-next" id="blog-next">
-                        <i class="fa fa-arrow-right"></i>
-                    </span>
-                </div>
+        <div class="row align-items-center mb-4">
+            <div class="col-lg-12 d-flex justify-content-between align-items-center header-flex">
+                <h2 class="section-title mb-0">Artikel dan Berita</h2>
+                <a href="{{ route('blogs') }}" class="see-all-text">Lihat Semua</a>
             </div>
         </div>
         
         <div class="blog-slider owl-carousel owl-theme">
 
-            @foreach($blogs->take(3) as $blog) 
+            @foreach($blogs->take(5) as $blog) 
             <div class="item d-flex">
                 <div class="card-blog">
                     <img src="{{asset('uploads/blogs/'.$blog->image)}}" alt="{{$blog->title}}">
@@ -151,87 +147,66 @@
                         
                         <p>{!! Str::limit(strip_tags($blog->body), 150) !!}</p>
                         
+                        {{-- UPDATE: TEXT BUTTON UNIFIED --}}
                         <a href="{{route('web.blog.detail',$blog->slug)}}" class="btn-blog-responsive">
-                            <span class="text-desktop">Lihat..</span>
-                            
-                            <span class="text-mobile">Read more . . .</span>
+                            Baca Selengkapnya
                         </a>
                     </div>
                 </div>
             </div>
             @endforeach
-            <div class="item d-flex">
-                <a href="{{ route('blogs') }}" class="card-blog-link">
-                    <div class="card-blog card-see-more-blog">
-                        <div class="card-body">
-                            <h5>See for More</h5>
-                            <small class="see-more-caption">Click here</small>
-                        </div>
-                    </div>
-                </a>
-            </div>
+            
         </div> 
     </div>
 </section>
 @endif
 
 @endsection 
+
 {{-- 
 ================================
-3. JAVASCRIPT (Menggunakan Dots)
+3. JAVASCRIPT
 ================================
 --}}
 @section('js')
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
-    
     <script src="{{asset('theme/owlcarousel/owl.carousel.min.js')}}"></script>
     
     <script type="text/javascript">
     $(document).ready(function(){
     
         // --- 1. BOOTSTRAP CAROUSEL (Hero Slider) ---
-        // Assuming 'myCarousel' is the Bootstrap component in the hero section
         $('#myCarousel').carousel({
-            interval: 2000 // Sets auto-slide interval
+            interval: 2000 
         });
 
         // --- 2. AUCTION CAROUSEL (Owl Carousel) ---
         var auctionCarousel = $('.main-content .owl-carousel');
 
         auctionCarousel.owlCarousel({
-            // HAPUS "loop: true" dari sini (Global settings)
             margin: 15, 
             nav: false, 
             dots: true, 
             
             responsive:{
-                // === TAMPILAN MOBILE / TABLET (<= 991px) ===
+                // === MOBILE ===
                 0:{ 
                     items: 1, 
                     loop: false,      // <--- LOOP DIMATIKAN DI SINI (MOBILE) - agar "See for More" tidak berulang
                     mouseDrag: true, 
                     touchDrag: true, 
-                    
-                    // Opsional: stagePadding membuat user melihat potongan slide kiri/kanan
-                    // Hapus baris stagePadding di bawah jika ingin slide penuh satu kotak
                     stagePadding: 40, 
                     margin: 10 
                 },
-                
-                // === TAMPILAN DESKTOP (>= 992px) ===
+                // === DESKTOP ===
                 992:{ 
                     items: 3,
-                    loop: false,      // <--- LOOP MATI DI SINI (DESKTOP)
+                    loop: false,      
                     mouseDrag: true, 
                     touchDrag: true,
-                    stagePadding: 0   // Pastikan 0 agar rapi di desktop
+                    stagePadding: 0   
                 }
             }
-        });
-
-        // Connect Custom Auction Button (Only Next/Right is active)
-        $('#auction-next').click(function() {
-            auctionCarousel.trigger('next.owl.carousel');
         });
 
         // --- 3. BLOG CAROUSEL (Owl Carousel) ---
@@ -244,28 +219,19 @@
             dots: true, 
             
             responsive:{
-                // MOBILE (<= 767px)
                 0:{
                     items: 1, 
                     margin: 15,
-                    // ENSURE DRAG IS ACTIVE FOR MOBILE/TOUCH
                     mouseDrag: true, 
                     touchDrag: true
                 },
-                // TABLET (>= 768px)
                 768:{
                     items: 2 
                 },
-                // DESKTOP (>= 992px)
                 992:{
                     items: 2 
                 }
             }
-        });
-
-        // Connect Custom Blog Button (Only Next/Right is active)
-        $('#blog-next').click(function() {
-            blogCarousel.trigger('next.owl.carousel');
         });
     });
     </script>
