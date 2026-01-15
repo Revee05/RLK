@@ -143,7 +143,7 @@ $totalStock = $product->variants->sum(fn($variant) => ($variant->sizes && $varia
                             @endif
 
                             <input type="radio" name="variant_id" value="{{ $variant->id }}" class="d-none"
-                                autocomplete="off" {{ $variant->id == $mainVariant->id ? 'checked' : '' }}>
+                                autocomplete="off" {{ ($mainVariant && $variant->id == $mainVariant->id) ? 'checked' : '' }}>
                             <span>{{ $variant->name }}</span>
                         </label>
                         @endforeach
@@ -191,9 +191,9 @@ $totalStock = $product->variants->sum(fn($variant) => ($variant->sizes && $varia
 
                     {{-- Input hidden variant & size biarkan tetap sama --}}
                     <input type="hidden" name="selected_variant_id" id="selected_variant_id"
-                        value="{{ $mainVariant->id }}">
+                        value="{{ $mainVariant ? ($mainVariant->id ?? '') : '' }}">
                     <input type="hidden" name="selected_size_id" id="selected_size_id"
-                        value="{{ $mainVariant->sizes->first()->id ?? '' }}">
+                        value="{{ ($mainVariant && $mainVariant->sizes->first()) ? $mainVariant->sizes->first()->id : '' }}">
 
                     {{-- Bagian Quantity biarkan tetap sama --}}
                     <label class="form-label fw-bold">Quantity</label>
@@ -206,7 +206,7 @@ $totalStock = $product->variants->sum(fn($variant) => ($variant->sizes && $varia
                         </div>
                         <span id="stock-info" class="text-muted ms-3">
                             Tersedia
-                            {{ $mainVariant->sizes->count() ? ($mainVariant->sizes->first()->stock ?? 0) : ($mainVariant->display_stock ?? 0) }}
+                            {{ $mainVariant ? ($mainVariant->sizes->count() ? ($mainVariant->sizes->first()->stock ?? 0) : ($mainVariant->display_stock ?? 0)) : 0 }}
                         </span>
                     </div>
 
