@@ -94,17 +94,41 @@ class PanduanAdminController extends Controller
     {
         $panduan = Panduan::findOrFail($id);
 
+        // 1. Validasi: Title wajib, PDF opsional (nullable)
         $request->validate([
             'title' => 'required|unique:panduan,title,' . $panduan->id,
+            'pdf'   => 'nullable|mimes:pdf|max:20480', // Max 20MB
         ]);
 
+        // 2. Update data teks
         $panduan->title = $request->title;
+        // Jika ada slug, update juga (opsional, tergantung kebutuhan)
+        // $panduan->slug = Str::slug($request->title); 
+
+        // 3. Cek apakah user mengupload file baru?
+        if ($request->hasFile('pdf')) {
+            
+            // Hapus file lama jika ada
+            if ($panduan->file_path && file_exists(public_path($panduan->file_path))) {
+                unlink(public_path($panduan->file_path));
+            }
+
+            // Upload file baru
+            $file = $request->file('pdf');
+            $filename = time() . '_' . $file->getClientOriginalName();
+            $file->move('uploads/panduan/', $filename);
+            
+            // Simpan path baru ke database
+            $panduan->file_path = 'uploads/panduan/' . $filename;
+        }
 
         $panduan->save();
 
         return redirect()->route('admin.panduan.index')
-                        ->with('success', 'Panduan berhasil diperbarui.');
+            ->with('success', 'Panduan berhasil diperbarui.');
     }
+
+// Catatan: Function public function upload(...) BOLEH DIHAPUS karena sudah tidak dipakai.
 
 
 }
