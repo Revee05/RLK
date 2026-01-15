@@ -17,7 +17,12 @@
                             <label for="password" class="col-md-4 col-form-label text-md-right">{{ __('Password') }}</label>
 
                             <div class="col-md-6">
-                                <input id="password" type="password" class="form-control @error('password') is-invalid @enderror" name="password" required autocomplete="current-password">
+                                <div class="input-group">
+                                    <div class="password-wrapper">
+                                        <input id="password" type="password" class="form-control @error('password') is-invalid @enderror" name="password" required autocomplete="current-password">
+                                        <button class="password-toggle" type="button" id="toggle-password-confirm" aria-label="Show password"><i class="fas fa-eye"></i></button>
+                                    </div>
+                                </div>
 
                                 @error('password')
                                     <span class="invalid-feedback" role="alert">
@@ -46,4 +51,21 @@
         </div>
     </div>
 </div>
+<script>
+document.getElementById('toggle-password-confirm')?.addEventListener('click', function(){
+    var input = document.getElementById('password');
+    if (!input) return;
+    var icon = this.querySelector('i');
+    if (input.type === 'password') {
+        input.type = 'text';
+        if(icon){ icon.classList.remove('fa-eye'); icon.classList.add('fa-eye-slash'); }
+        this.setAttribute('aria-label','Hide password');
+    }
+    else {
+        input.type = 'password';
+        if(icon){ icon.classList.remove('fa-eye-slash'); icon.classList.add('fa-eye'); }
+        this.setAttribute('aria-label','Show password');
+    }
+});
+</script>
 @endsection
