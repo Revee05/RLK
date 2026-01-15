@@ -140,7 +140,8 @@
                                         @if($availableVariants->count() > 0)
                                             <select class="custom-select-compact option-selector" data-id="{{ $item->id }}" data-type="variant_id" title="Pilih Varian">
                                                 @foreach($availableVariants as $v)
-                                                    <option value="{{ $v->id }}" {{ $currentVariantId == $v->id ? 'selected' : '' }}>{{ $v->name }}</option>
+                                                    @php $variantSizeCount = method_exists($v, 'sizes') ? $v->sizes->count() : (data_get($v, 'sizes') ? count($v->sizes) : 0); @endphp
+                                                    <option value="{{ $v->id }}" {{ $currentVariantId == $v->id ? 'selected' : '' }} {{ $variantSizeCount == 0 ? 'disabled' : '' }}>{{ $v->name }}{{ $variantSizeCount == 0 ? ' (Display)' : '' }}</option>
                                                 @endforeach
                                             </select>
                                         @endif
@@ -150,7 +151,8 @@
                                                 {{ $availableSizes->isEmpty() ? 'disabled' : '' }} title="Pilih Ukuran" style="min-width: 60px;">
                                             @if($availableSizes->count() > 0)
                                                 @foreach($availableSizes as $s)
-                                                    <option value="{{ $s->id }}" {{ $currentSizeId == $s->id ? 'selected' : '' }}>{{ $s->size }}</option>
+                                                    @php $sStock = data_get($s, 'stock', $s->stock ?? 0); @endphp
+                                                    <option value="{{ $s->id }}" {{ $currentSizeId == $s->id ? 'selected' : '' }} {{ ($sStock !== null && $sStock <= 0) ? 'disabled' : '' }}>{{ $s->size }}{{ ($sStock !== null && $sStock <= 0) ? ' (Habis)' : '' }}</option>
                                                 @endforeach
                                             @else
                                                 <option value="">-</option>
@@ -213,7 +215,8 @@
                                             @if($availableVariants->count() > 0)
                                                 <select class="custom-select-compact option-selector" data-id="{{ $item->id }}" data-type="variant_id">
                                                     @foreach($availableVariants as $v)
-                                                        <option value="{{ $v->id }}" {{ $currentVariantId == $v->id ? 'selected' : '' }}>{{ $v->name }}</option>
+                                                        @php $variantSizeCount = method_exists($v, 'sizes') ? $v->sizes->count() : (data_get($v, 'sizes') ? count($v->sizes) : 0); @endphp
+                                                        <option value="{{ $v->id }}" {{ $currentVariantId == $v->id ? 'selected' : '' }} {{ $variantSizeCount == 0 ? 'disabled' : '' }}>{{ $v->name }}{{ $variantSizeCount == 0 ? ' (Display)' : '' }}</option>
                                                     @endforeach
                                                 </select>
                                             @endif
@@ -221,7 +224,8 @@
                                                     data-id="{{ $item->id }}" data-type="size_id" {{ $availableSizes->isEmpty() ? 'disabled' : '' }} style="min-width: 50px;">
                                                 @if($availableSizes->count() > 0)
                                                     @foreach($availableSizes as $s)
-                                                        <option value="{{ $s->id }}" {{ $currentSizeId == $s->id ? 'selected' : '' }}>{{ $s->size }}</option>
+                                                        @php $sStock = data_get($s, 'stock', $s->stock ?? 0); @endphp
+                                                        <option value="{{ $s->id }}" {{ $currentSizeId == $s->id ? 'selected' : '' }} {{ ($sStock !== null && $sStock <= 0) ? 'disabled' : '' }}>{{ $s->size }}{{ ($sStock !== null && $sStock <= 0) ? ' (Habis)' : '' }}</option>
                                                     @endforeach
                                                 @else
                                                     <option value="">-</option>
@@ -407,6 +411,13 @@
                         const priceRef = document.getElementById(`price-per-item-${itemId}`);
                         if(priceRef) priceRef.setAttribute('data-price', data.new_price);
 
+                        // Jika backend menyesuaikan quantity karena stok, sinkronkan tampilan
+                        if (typeof data.newQuantity !== 'undefined') {
+                            document.querySelectorAll(`.quantity-display-${itemId}`).forEach(el => el.value = data.newQuantity);
+                            // mobile inputs use same class in templates; ensure mobile qty displays also update
+                            document.querySelectorAll(`.mobile-qty-input.quantity-display-${itemId}`).forEach(el => el.value = data.newQuantity);
+                        }
+
                         document.querySelectorAll(`.total-display-${itemId}`).forEach(el => {
                             el.innerText = formatRupiah(data.new_total);
                         });
@@ -428,8 +439,11 @@
                                     data.available_sizes.forEach(sizeObj => {
                                         let option = document.createElement('option');
                                         option.value = sizeObj.id;
-                                        option.text = sizeObj.size;
-                                        if (sizeObj.id == data.new_size_id) option.selected = true;
+                                        // Disable option if stock is zero or missing
+                                        const stock = typeof sizeObj.stock !== 'undefined' ? parseInt(sizeObj.stock) : null;
+                                        option.disabled = (stock !== null && stock <= 0);
+                                        option.text = sizeObj.size + ((stock !== null && stock <= 0) ? ' (Habis)' : '');
+                                        if (sizeObj.id == data.new_size_id && !option.disabled) option.selected = true;
                                         sizeSelect.appendChild(option);
                                     });
                                 } else {
@@ -453,44 +467,73 @@
             });
         });
 
-        // --- 2. LOGIC UPDATE QUANTITY ---
+        // --- 2. LOGIC UPDATE QUANTITY (debounced per item, optimistic UI) ---
+        const quantityTimers = {};
+        const pendingDesired = {};
+        const DEBOUNCE_MS = 700;
+
         document.querySelectorAll('.btn-quantity').forEach(function(button) {
             button.addEventListener('click', function() {
                 const action = this.getAttribute('data-action');
                 const id = this.getAttribute('data-id');
-                const inputElement = document.querySelector('.quantity-display-' + id);
-                
-                let currentQuantity = parseInt(inputElement.value);
-                let newQuantity = currentQuantity + (action === 'increase' ? 1 : -1);
-                
-                if (newQuantity < 1 || newQuantity === currentQuantity) return;
+                const inputElements = document.querySelectorAll('.quantity-display-' + id);
+                if (!inputElements || inputElements.length === 0) return;
 
-                this.disabled = true; 
-                fetch('/cart/update/' + id, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': csrfToken,
-                        'Accept': 'application/json'
-                    },
-                    body: JSON.stringify({ quantity: newQuantity })
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        const price = parseFloat(document.getElementById('price-per-item-' + id).getAttribute('data-price'));
-                        const total = price * data.newQuantity;
-                        
-                        document.querySelectorAll('.quantity-display-' + id).forEach(el => el.value = data.newQuantity);
-                        document.querySelectorAll('.total-display-' + id).forEach(el => el.innerText = formatRupiah(total));
-                        document.querySelectorAll(`input[value="${id}"].item-checkbox`).forEach(el => el.setAttribute('data-item-total', total));
-                        
-                        if(document.querySelector(`input[value="${id}"].item-checkbox`).checked) updateSubtotal();
-                    } else {
-                        alert(data.message);
-                    }
-                })
-                .finally(() => { this.disabled = false; });
+                const currentQuantity = parseInt(inputElements[0].value) || 0;
+                let desired = currentQuantity + (action === 'increase' ? 1 : -1);
+                if (desired < 1) return;
+
+                // Optimistic UI update
+                inputElements.forEach(el => el.value = desired);
+                const price = parseFloat(document.getElementById('price-per-item-' + id).getAttribute('data-price')) || 0;
+                const optimisticTotal = price * desired;
+                document.querySelectorAll('.total-display-' + id).forEach(el => el.innerText = formatRupiah(optimisticTotal));
+                document.querySelectorAll(`input[value="${id}"].item-checkbox`).forEach(el => el.setAttribute('data-item-total', optimisticTotal));
+                if(document.querySelector(`input[value="${id}"].item-checkbox`).checked) updateSubtotal();
+
+                // store desired quantity and debounce API call
+                pendingDesired[id] = desired;
+                if (quantityTimers[id]) clearTimeout(quantityTimers[id]);
+
+                quantityTimers[id] = setTimeout(() => {
+                    // disable buttons for this item while request in-flight
+                    document.querySelectorAll(`.btn-quantity[data-id="${id}"]`).forEach(b => b.disabled = true);
+
+                    fetch('/cart/update/' + id, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': csrfToken,
+                            'Accept': 'application/json'
+                        },
+                        body: JSON.stringify({ quantity: pendingDesired[id] })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        const priceLocal = parseFloat(document.getElementById('price-per-item-' + id).getAttribute('data-price')) || 0;
+                        if (data && data.newQuantity !== undefined) {
+                            const finalQty = data.newQuantity;
+                            document.querySelectorAll('.quantity-display-' + id).forEach(el => el.value = finalQty);
+                            const finalTotal = priceLocal * finalQty;
+                            document.querySelectorAll('.total-display-' + id).forEach(el => el.innerText = formatRupiah(finalTotal));
+                            document.querySelectorAll(`input[value="${id}"].item-checkbox`).forEach(el => el.setAttribute('data-item-total', finalTotal));
+                            if(document.querySelector(`input[value="${id}"].item-checkbox`).checked) updateSubtotal();
+                        }
+                        if (data && data.success === false && data.message) {
+                            // Show message if server rejected the update
+                            alert(data.message);
+                        }
+                    })
+                    .catch(err => {
+                        console.error('Error updating quantity:', err);
+                    })
+                    .finally(() => {
+                        // re-enable buttons and clear pending state
+                        document.querySelectorAll(`.btn-quantity[data-id="${id}"]`).forEach(b => b.disabled = false);
+                        if (quantityTimers[id]) { clearTimeout(quantityTimers[id]); delete quantityTimers[id]; }
+                        if (pendingDesired[id]) delete pendingDesired[id];
+                    });
+                }, DEBOUNCE_MS);
             });
         });
 

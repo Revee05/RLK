@@ -42,6 +42,7 @@
                 </button>
                 <ul class="dropdown-menu" aria-labelledby="sortDropdown" id="sort-dropdown">
                     <li><a class="dropdown-item sort-item" data-sort="">Default</a></li>
+                    <li><a class="dropdown-item sort-item" data-sort="running">Sedang Berlangsung</a></li>
                     <li><a class="dropdown-item sort-item" data-sort="newest">Produk Terbaru</a></li>
                     <li><a class="dropdown-item sort-item" data-sort="oldest">Produk Terlama</a></li>
                     <li><a class="dropdown-item sort-item" data-sort="cheapest">Produk Termurah</a></li>
@@ -65,6 +66,8 @@
     let currentSearch = "";
     let currentCategory = "";
     let currentSort = "";
+
+    let globalIndex = 0;
 
     // Fetch and populate lelang categories
     function fetchCategories() {
@@ -171,18 +174,23 @@
             })
             .then(data => {
                 const grid = document.getElementById('products-grid');
-                if (batch === 1) grid.innerHTML = "";
-                if (data.products && data.products.length > 0) {
-                    data.products.forEach((product, idx) => {
-                        if (product) {
-                            grid.insertAdjacentHTML('beforeend', renderProduct(product, idx));
-                        }
-                    });
-                } else {
-                    if (batch === 1) {
-                        grid.innerHTML = '<div class="col-12 text-center text-muted">Tidak ada produk ditemukan.</div>';
+                if (batch === 1) {
+                grid.innerHTML = "";
+                globalIndex = 0; 
+            }
+
+            if (data.products && data.products.length > 0) {
+                data.products.forEach(product => {
+                    if (product) {
+                        grid.insertAdjacentHTML(
+                            'beforeend',
+                            renderProduct(product, globalIndex)
+                        );
+                        globalIndex++; 
                     }
-                }
+                });
+            }
+
                 if (!data.has_more_featured && !data.has_more_normal) {
                     document.getElementById('load-more').style.display = 'none';
                 } else {
@@ -215,6 +223,18 @@
         searchError.className = 'text-danger small mt-1';
         searchInput.parentNode.appendChild(searchError);
 
+        // Clear validation UI while typing or when input becomes empty
+        searchInput.addEventListener('input', function() {
+            if (this.value.trim().length === 0) {
+                searchError.textContent = '';
+                searchInput.classList.remove('is-invalid');
+            } else {
+                // remove previous error once user starts typing
+                searchError.textContent = '';
+                searchInput.classList.remove('is-invalid');
+            }
+        });
+
         document.getElementById('search-form').addEventListener('submit', function(e) {
             e.preventDefault();
             let val = searchInput.value.trim();
@@ -224,11 +244,17 @@
                 searchInput.classList.add('is-invalid');
                 return;
             }
+
             if (val.length === 0) {
-                searchError.textContent = 'Kata kunci pencarian tidak boleh kosong.';
-                searchInput.classList.add('is-invalid');
+                // If search is empty, reset to default and re-fetch products
+                searchError.textContent = '';
+                searchInput.classList.remove('is-invalid');
+                currentSearch = '';
+                currentBatch = 1;
+                fetchProducts(currentBatch, currentSearch, currentCategory, currentSort);
                 return;
             }
+
             searchInput.classList.remove('is-invalid');
             currentSearch = val;
             currentBatch = 1;

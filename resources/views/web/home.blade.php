@@ -192,7 +192,7 @@
                 // === MOBILE ===
                 0:{ 
                     items: 1, 
-                    loop: true,       
+                    loop: false,      // <--- LOOP DIMATIKAN DI SINI (MOBILE) - agar "See for More" tidak berulang
                     mouseDrag: true, 
                     touchDrag: true, 
                     stagePadding: 40, 

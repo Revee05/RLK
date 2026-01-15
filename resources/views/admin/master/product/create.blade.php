@@ -41,6 +41,11 @@ select option {
         <small>Product</small>
         {{-- <a href="" class="btn btn-primary btn-sm float-right"><i class="fa fa-plus-circle"></i> Create</a> --}}
     </h1>
+
+    <!-- Error Notification -->
+    @include('admin.partials._errors')
+
+    <!-- start store flow -->
     {{ Form::open(array('route' => 'master.product.store','files'=>true)) }}
     <div class="row">
         <div class="col-sm-12">
@@ -143,20 +148,6 @@ select option {
                     @include('admin.master.product.form')
                     <a href="{{ route('master.product.index') }}" class="btn btn-primary btn-sm rounded-0">Kembali</a>
                     {{ Form::submit('Simpan', array('class' => 'btn btn-primary btn-sm rounded-0')) }}
-                    {{-- Erors notification --}}
-                    @include('admin.partials._errors')
-                    @if ($errors->any())
-                    <div class="alert alert-danger">
-                        <ul>
-                            @foreach ($errors->all() as $error)
-                            <li>{{ $error }}</li>
-                            @endforeach
-                        </ul>
-                        <hr>
-                        <strong>Data yang dikirim:</strong>
-                        <pre>{{ print_r(old(), true) }}</pre>
-                    </div>
-                    @endif
                 </div>
             </div>
         </div>

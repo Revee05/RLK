@@ -148,14 +148,48 @@ document.addEventListener("DOMContentLoaded", function () {
 
     bindAddressCardEvents();
 
+    // Cleanup backdrop saat modal ditutup
+    document.getElementById('addressModal').addEventListener('hidden.bs.modal', function () {
+        // Hapus semua backdrop yang mungkin tertinggal
+        const backdrops = document.querySelectorAll('.modal-backdrop');
+        backdrops.forEach(backdrop => {
+            if (backdrop.classList.contains('show')) {
+                return; // Jangan hapus backdrop yang masih aktif
+            }
+            backdrop.remove();
+        });
+    });
+
     document.getElementById("btn-add-address")
         ?.addEventListener("click", function () {
-            bootstrap.Modal
-                .getInstance(document.getElementById("addressModal"))
-                ?.hide();
-
-            modalAdd.show();
-        });
+            const addressModal = bootstrap.Modal.getInstance(document.getElementById("addressModal"));
+            
+            if (addressModal) {
+                addressModal.hide();
+                
+                // Tunggu modal pertama tertutup sepenuhnya
+                document.getElementById("addressModal").addEventListener('hidden.bs.modal', function openAddModal() {
+                    // FORCE hapus SEMUA backdrop lama
+                    const allBackdrops = document.querySelectorAll('.modal-backdrop');
+                    allBackdrops.forEach(backdrop => backdrop.remove());
+                    
+                    // Reset body state
+                    document.body.classList.remove('modal-open');
+                    document.body.style.overflow = '';
+                    document.body.style.paddingRight = '';
+                    
+                    // Tunggu sebentar lalu buka modal baru
+                    setTimeout(() => {
+                        modalAdd.show();
+                    }, 200);
+                    
+                    // Remove listener setelah digunakan
+                    this.removeEventListener('hidden.bs.modal', openAddModal);
+                }, { once: true });
+            } else {
+                modalAdd.show();
+            }
+    });
 
 });
 </script>

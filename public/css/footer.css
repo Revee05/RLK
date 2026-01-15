@@ -88,6 +88,40 @@
     justify-content: center;
     text-decoration: none;
 }
+
+/* Brand colors for social icons (applies to desktop + mobile)
+   - targets the <i> element classes from FontAwesome and the anchor for SVG (Twitter/X)
+*/
+.footer__icon .fa-instagram,
+.footer__icon .fab.fa-instagram {
+    color: #E1306C;
+}
+.footer__icon .fa-facebook,
+.footer__icon .fab.fa-facebook,
+.footer__icon .fab.fa-facebook-f {
+    color: #1877F2;
+}
+.footer__icon .fa-youtube,
+.footer__icon .fab.fa-youtube {
+    color: #FF0000;
+}
+.footer__icon .fa-whatsapp,
+.footer__icon .fab.fa-whatsapp {
+    color: #25D366;
+}
+.footer__icon .fa-tiktok,
+.footer__icon .fab.fa-tiktok {
+    color: #000000;
+}
+.footer__icon .fa-envelope,
+.footer__icon .fas.fa-envelope {
+    color: #6c757d;
+}
+/* Twitter/X uses an inline SVG with fill="currentColor" so set color on the anchor itself */
+.footer__icon[title*="Twitter"],
+.footer__icon[title*="X"] {
+    color: #1DA1F2;
+}
 .footer__icon:hover {
     color: #007bff;
 }
@@ -126,12 +160,14 @@
         margin-bottom: 16px;
     }
     .footer__center {
-        flex-direction: column;
+        /* Pada mobile, tampilkan dua kolom untuk section 'Tentang' dan 'Panduan' */
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
         gap: 16px;
         margin: 16px 0;
     }
     .footer__section {
-        width: 100%;
+        width: auto;
         gap: 4px;
     }
     .footer__right {
@@ -145,8 +181,29 @@
         font-size: 22px;
         padding: 8px;
         border-radius: 50%;
-        background: #f0f0f0;
-        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+        background: transparent; /* polos */
+        box-shadow: none; /* hilangkan shadow */
+    }
+
+    /* Mobile: arrange social icons into 2 rows to avoid cramped single-line */
+    .footer__social {
+        display: grid;
+        grid-template-rows: repeat(2, auto);
+        grid-auto-flow: column;
+        gap: 12px;
+        align-items: center;
+    }
+    .footer__icon {
+        width: 44px;
+        height: 44px;
+        padding: 0;
+        justify-self: center;
+        align-self: center;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        background: transparent; /* polos */
+        box-shadow: none;
     }
     .footer__copyright {
         font-size: 13px;

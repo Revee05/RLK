@@ -1,100 +1,105 @@
-.address-wrapper {
+/* GLOBAL */
+* {
+    box-sizing: border-box;
+}
+
+body {
+    font-family: Helvetica, sans-serif;
+}
+
+.hidden {
+    display: none !important;
+}
+
+.address-wrapper,
+.shipping-box,
+.note-wrapper,
+.payment-box,
+.paynow-btn {
     width: 100%;
     max-width: 600px;
-    border: 1px solid #8a8a8a;
     border-radius: 10px;
+    background: #fff;
+}
+
+/* ===============================
+   ADDRESS
+================================ */
+.address-wrapper {
+    border: 1px solid #8a8a8a;
     padding: 20px 25px;
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
-    background: #fff;
 }
 
-/* Left Section */
 .address-left {
-    width: 75%;
+    width: 100%;
 }
 
-/* Title */
 .title-address {
-    color: #000;
-    font-family: Helvetica;
     font-size: 16px;
     font-weight: 700;
+    margin-bottom: 6px;
 }
 
-/* Row for name | phone */
 .address-row {
     display: flex;
     align-items: center;
     gap: 8px;
+    margin-bottom: 4px;
 }
 
-/* Name */
-.address-name {
-    color: #000;
-    font-family: Helvetica;
+.address-name,
+.address-phone {
     font-size: 14px;
 }
 
-/* Separator "|" */
 .address-separator {
-    color: #828282;
     font-size: 14px;
+    color: #828282;
 }
 
-/* Phone */
 .address-phone {
     color: rgba(130, 130, 130, 0.63);
-    font-family: Helvetica;
-    font-size: 14px;
 }
 
-/* Address detail */
 .address-detail {
-    color: #828282;
-    font-family: Helvetica;
     font-size: 12px;
-    font-weight: 400;
     line-height: 150%;
+    color: #828282;
 }
 
-/* Right Section */
 .address-right {
     display: flex;
     align-items: center;
 }
 
-/* Button */
 .btn-change-address {
     width: 106px;
     height: 32px;
+    border-radius: 10px;
     background: #051a36;
     border: 1px solid #051a36;
-    border-radius: 10px;
-    font-family: Helvetica;
-    font-size: 14px;
     color: #fff;
+    font-size: 14px;
+    cursor: pointer;
 }
 
+/* ===============================
+   SHIPPING
+================================ */
 .shipping-box {
-    width: 100%;
-    margin-top: 10px;
-    max-width: 600px;
-    border-radius: 10px;
     border: 1px solid #8a8a8a;
     padding: 20px;
+    margin-top: 12px;
 }
 
 .shipping-title {
-    color: #000;
-    text-align: left;
-    font-family: Helvetica;
     font-size: 18px;
-    font-weight: bold;
-    font-style: normal;
-    text-transform: capitalize;
-    padding: 0px 8px;
+    font-weight: 700;
+    padding: 0 8px;
+    margin-bottom: 10px;
 }
 
 .shipping-item {
@@ -104,31 +109,23 @@
     padding: 12px 8px;
     border-radius: 10px;
     cursor: pointer;
-    width: 100%;
 }
 
 .shipping-subtitle {
-    color: #000;
-    text-align: left;
-    font-family: Helvetica;
     font-size: 16px;
     font-weight: 700;
-    text-transform: capitalize;
 }
 
 .shipping-desc {
-    color: #828282;
-    text-align: justify;
-    font-family: Helvetica;
     font-size: 12px;
     margin-top: 4px;
-    text-transform: capitalize;
+    color: #828282;
 }
 
 .shipper-radio-custom {
-    width: 15px !important;
-    height: 15px !important;
-    accent-color: #000; /* radio custom color */
+    width: 15px;
+    height: 15px;
+    accent-color: #051a36;
     margin-left: 10px;
     flex-shrink: 0;
 }
@@ -136,16 +133,18 @@
 .pickup-info {
     display: none;
     margin-top: 10px;
-    color: #000;
     font-size: 12px;
     padding: 0px 8px;
 }
 
 .btn-kurir {
-    padding: 4px 10px;
+    padding: 6px 12px;
     font-size: 12px;
     border-radius: 6px;
     margin-top: 8px;
+    background: #051a36;
+    color: #fff;
+    border: none;
 }
 
 .selected-shipper {
@@ -155,26 +154,24 @@
     font-weight: 600;
 }
 
-.hidden {
-    display: none !important;
-}
-
+/* ===============================
+   NOTE
+================================ */
 .note-wrapper {
-    width: 100%;
-    max-width: 600px;
     border: 1px solid #8a8a8a;
-    border-radius: 10px;
-    padding: 10px 28px;
-    position: relative;
+    padding: 12px 24px;
+    margin-top: 12px;
     cursor: pointer;
-
     display: flex;
     flex-direction: column;
-    justify-content: center; /* HEADER TENGAH */
-    margin-top: 10px;
-
-    max-height: 50px;
+    justify-content: center;
+    max-height: 52px;
     transition: max-height 0.3s ease;
+}
+
+.note-wrapper.open {
+    max-height: 300px;
+    justify-content: flex-start;
 }
 
 .note-header {
@@ -187,34 +184,24 @@
     display: flex;
     align-items: center;
     gap: 6px;
-    font-family: Helvetica;
     font-size: 16px;
     font-weight: 700;
 }
 
-.note-icon {
-    width: 18px;
-    height: 18px;
-}
-
 .note-count {
-    color: #828282;
     font-size: 14px;
-    font-family: Helvetica;
+    color: #828282;
 }
 
 .note-input {
-    width: 100%;
+    display: none;
+    opacity: 0;
+    margin-top: 10px;
+    font-size: 12px;
+    height: 50px;
     border: none;
     outline: none;
     resize: none;
-    font-size: 12px;
-    font-family: Helvetica;
-    margin-top: 10px;
-    height: 50px;
-
-    display: none;
-    opacity: 0;
     transition: opacity 0.2s ease-in-out;
 }
 
@@ -223,241 +210,102 @@
     opacity: 1;
 }
 
-.note-wrapper.open {
-    /* Expanded */
-    max-height: 300px; /* nilai besar supaya cukup */
-    justify-content: flex-start;
-}
-
 .note-area {
     margin-top: 12px;
-    width: 100%;
-    height: auto;
     min-height: 60px;
-    resize: none;
-    border: 1px solid #dcdcdc;
-    border-radius: 6px;
     padding: 10px;
-    font-family: Helvetica;
     font-size: 12px;
-    color: #000;
-    outline: none;
+    border-radius: 6px;
+    border: 1px solid #dcdcdc;
 }
 
-/* WRAPPER BOX */
+/* ===============================
+   PAYMENT
+================================ */
 .payment-box {
-    width: 100%;
-    max-width: 600px;
     height: 90px;
-    border-radius: 10px;
     border: 1px solid #8a8a8a;
-    padding: 10px 15px;
-    background: #fff;
-
-    /* pengganti d-flex */
+    padding: 12px 16px;
     display: flex;
     justify-content: space-between;
     align-items: center;
     margin-bottom: 24px;
 }
 
-/* LEFT AREA */
 .payment-left {
     display: flex;
     align-items: center;
     gap: 15px;
 }
 
-/* LOGO */
 .payment-logo {
     width: 60px;
     height: 20px;
     object-fit: contain;
 }
 
-/* TEXT WRAPPER */
-.payment-text {
-    display: flex;
-    flex-direction: column;
-}
-
-/* TITLE */
 .payment-title {
-    color: #000;
-    font-family: Helvetica, sans-serif;
     font-size: 14px;
     font-weight: 700;
-    line-height: 16px;
 }
 
-/* FEE */
 .payment-fee {
-    color: #000;
-    font-family: Helvetica, sans-serif;
     font-size: 12px;
-    font-weight: 400;
-    line-height: 16px;
-    margin-top: 5px;
+    margin-top: 4px;
 }
 
-/* BUTTON */
 .payment-btn {
     width: 80px;
     height: 30px;
-
     border-radius: 10px;
-    border: 1px solid #051a36;
     background: #051a36;
-
-    color: white;
-    font-family: Helvetica, sans-serif;
+    border: 1px solid #051a36;
+    color: #fff;
     font-size: 12px;
     cursor: pointer;
 }
 
 .paynow-btn {
-    width: 100%;
-    max-width: 600px;
     height: 50px;
+    background: #051a36;
     border: none;
     border-radius: 10px;
-    background: #051a36;
-
-    box-shadow: 0 20px 35px rgba(0, 0, 0, 0.15);
-
     color: #fff;
-    font-family: Helvetica, sans-serif;
     font-size: 16px;
-    font-weight: 400;
-    line-height: 16px;
-
     display: flex;
     align-items: center;
     justify-content: center;
-
     cursor: pointer;
+    box-shadow: 0 20px 35px rgba(0, 0, 0, 0.15);
 }
 
 /* ===============================
-   MODAL ALAMAT
-   =============================== */
-.modal-alamat .modal-dialog {
-    max-width: 562px !important;
-}
-
-.modal-alamat .modal-content {
-    border-radius: 15px;
-    background: #fff;
-    padding: 20px 25px;
-}
-
-/* TITLE */
-.modal-alamat .modal-header h5 {
-    color: #000;
-    font-family: Helvetica;
-    font-size: 20px;
-    font-weight: 700;
-    line-height: 100%;
-}
-
-.modal-alamat .btn-close {
-    opacity: 0.4;
-}
-
-/* BUTTON TAMBAH ALAMAT */
-.modal-alamat .btn-add-address {
-    width: 100%;
-    max-width: 485px;
-    height: 40px;
-    align-items: center;
-    justify-content: center;
-    border-radius: 10px;
-    background: #051a36;
-    border: none;
-
-    color: #fff;
-    font-family: Helvetica;
-    font-size: 16px;
-}
-
-.modal-alamat .address-item {
-    display: flex;
-    justify-content: center;
-    margin-bottom: 20px;
-}
-
-/* CARD ALAMAT */
-.modal-alamat .address-card {
-    width: 100%;
-    max-width: 485px;
-    border-radius: 10px;
-    border: 1px solid #8a8a8a;
-    padding: 15px;
-    cursor: pointer;
-    display: flex !important;
-    justify-content: space-between;
-    gap: 10px;
-}
-
-.modal-alamat .address-card.active {
-    border: 2px solid #0ea5a5; /* warna biru seperti contoh */
-}
-
-/* LABEL UTAMA */
-.label-utama {
-    background: #0ea5a5;
-    color: #fff;
-    font-size: 10px;
-    padding: 3px 10px;
-    border-radius: 5px;
-    display: inline-block;
-    margin-bottom: 6px;
-}
-
-/* NAMA */
-.modal-alamat .address-name {
-    color: #000;
-    font-family: Helvetica;
-    font-size: 14px;
-    font-weight: 700;
-    line-height: 100%;
-}
-
-/* NOMOR & GARIS */
-.modal-alamat .address-separator {
-    margin: 0 6px;
-    color: rgba(130, 130, 130, 0.63);
-}
-
-.modal-alamat .address-phone {
-    color: rgba(130, 130, 130, 0.63);
-    font-family: Helvetica;
-    font-size: 14px;
-    font-weight: 400;
-}
-
-/* ALAMAT */
-.modal-alamat .address-detail {
-    color: #828282;
-    font-family: Helvetica;
-    font-size: 12px;
-    font-weight: 400;
-    line-height: 154%;
-}
-
-/* RADIO */
-.modal-alamat .form-check-input {
-    width: 16px;
-    height: 16px;
-    cursor: pointer;
-}
-
+   CHECKOUT SUMMARY
+================================ */
 .checkout-card {
     background: #fff;
     border-radius: 12px;
     box-shadow: 0 3px 8px rgba(0, 0, 0, 0.08);
     padding: 20px;
     margin-bottom: 20px;
+}
+
+.checkout-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
+}
+
+.checkout-row.total {
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid #eee;
+}
+
+.checkout-row.total .label,
+.checkout-row.total .value {
+    font-size: 18px;
+    font-weight: 700;
 }
 
 .checkout-item {
@@ -481,15 +329,9 @@
 .checkout-item-name {
     font-weight: 700;
     font-size: 15px;
-    margin-bottom: 3px;
 }
 
-.checkout-item-variant {
-    font-size: 12px;
-    color: #666;
-    margin-bottom: 8px;
-}
-
+.checkout-item-variant,
 .checkout-item-sub {
     font-size: 13px;
     color: #666;
@@ -499,19 +341,11 @@
     margin-top: 6px;
     font-weight: 700;
     font-size: 14px;
-    color: #222;
 }
 
 .checkout-divider {
-    border: none;
     border-top: 1px solid #e6e6e6;
     margin: 15px 0;
-}
-
-.checkout-row {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 10px;
 }
 
 .checkout-row .label {
@@ -524,18 +358,6 @@
     font-weight: 600;
 }
 
-.checkout-row.total .label {
-    font-size: 18px;
-    font-weight: 700;
-    color: #222;
-}
-
-.checkout-row.total .value {
-    font-size: 18px;
-    font-weight: 700;
-    color: #222;
-}
-
 .checkout-item-row {
     display: flex;
     justify-content: space-between;
@@ -545,4 +367,426 @@
 .checkout-item-sub {
     font-size: 14px;
     color: #555;
+}
+
+/* ===============================
+   MODAL PILIH ALAMAT
+================================ */
+.modal-alamat .modal-dialog {
+    max-width: 562px !important;
+}
+
+.modal-alamat .modal-content {
+    padding: 20px 24px;
+    border-radius: 15px;
+    background: #fff;
+}
+
+.modal-alamat .modal-header {
+    padding-bottom: 12px;
+}
+
+.modal-alamat .modal-title {
+    font-size: 20px;
+    font-weight: 700;
+}
+
+.modal-alamat .btn-close {
+    opacity: 0.4;
+}
+
+.modal-alamat .btn-add-address {
+    width: 100%;
+    height: 40px;
+    margin-bottom: 16px;
+    border-radius: 10px;
+    background: #051a36;
+    color: #fff;
+    font-size: 16px;
+    border: none;
+}
+
+.modal-alamat .address-item {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 16px;
+}
+
+.modal-alamat .address-card {
+    width: 100%;
+    padding: 15px;
+    border-radius: 10px;
+    border: 1px solid #8a8a8a;
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    cursor: pointer;
+}
+
+.modal-alamat .address-card.active {
+    border: 2px solid #0ea5a5;
+}
+
+.modal-alamat .address-name {
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.modal-alamat .address-separator {
+    margin: 0 6px;
+    color: rgba(130, 130, 130, 0.63);
+}
+
+.modal-alamat .address-phone {
+    color: rgba(130, 130, 130, 0.63);
+    font-size: 14px;
+}
+
+.modal-alamat .address-detail {
+    font-size: 12px;
+    line-height: 154%;
+    color: #828282;
+}
+
+
+.modal-alamat .label-utama {
+    display: inline-block;
+    margin-bottom: 6px;
+    padding: 3px 10px;
+    border-radius: 5px;
+    background: #0ea5a5;
+    color: #fff;
+    font-size: 10px;
+}
+
+.modal-alamat .form-check-input {
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+}
+
+/* ===============================
+   MODAL TAMBAH ALAMAT
+================================ */
+#addAddressModal .modal-dialog {
+    max-width: 520px;
+}
+
+#addAddressModal .modal-content {
+    border-radius: 12px;
+    border: none;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+}
+
+#addAddressModal .modal-header,
+#addAddressModal .modal-footer {
+    padding: 16px 20px;
+    border-color: #eee;
+}
+
+#addAddressModal .modal-title {
+    font-size: 18px;
+    font-weight: 700;
+}
+
+#addAddressModal .modal-body {
+    padding: 20px;
+}
+
+#addAddressModal .form-control {
+    padding: 10px 12px;
+    font-size: 14px;
+    border-radius: 8px;
+    border: 1px solid #ddd;
+}
+
+#addAddressModal .form-control:focus {
+    border-color: #051a36;
+    box-shadow: none;
+}
+
+#addAddressModal select:disabled {
+    background-color: #f5f5f5;
+    cursor: not-allowed;
+}
+
+#addAddressModal textarea.form-control {
+    resize: none;
+}
+
+#addAddressModal .btn-primary {
+    background: #051a36;
+    border-color: #051a36;
+}
+
+#addAddressModal .btn-primary:hover {
+    background: #04203f;
+}
+
+#addAddressModal .btn-secondary {
+    background-color: #e0e0e0;
+    border-color: #e0e0e0;
+    color: #333;
+}
+
+#addAddressModal .btn-secondary:hover {
+    background-color: #d5d5d5;
+}
+
+/* ===============================
+   MODAL SHIPPER
+================================ */
+#shipperModal .modal-dialog {
+    max-width: 520px;
+}
+
+#shipperModal .modal-content {
+    padding: 20px;
+    border-radius: 14px;
+}
+
+#shipperModal .modal-title {
+    font-size: 18px;
+    font-weight: 700;
+}
+
+.shipper-list {
+    margin-top: 12px;
+}
+
+.shipper-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 14px;
+    margin-bottom: 10px;
+    border-radius: 10px;
+    border: 1px solid #e0e0e0;
+    cursor: pointer;
+}
+
+.shipper-item.active {
+    border-color: #051a36;
+    background: rgba(5, 26, 54, 0.06);
+}
+
+.shipper-name {
+    font-size: 14px;
+    font-weight: 600;
+    color: #000;
+}
+
+.shipper-price {
+    margin-left: auto;
+    font-size: 13px;
+    color: #666;
+    text-align: right;
+    white-space: nowrap;
+}
+
+#shipperModal .modal-footer {
+    padding-top: 10px;
+}
+
+#shipperModal .btn-primary {
+    background: #051a36;
+    border-color: #051a36;
+}
+
+#shipperModal .btn-primary:hover {
+    background: #04203f;
+}
+
+@media (max-width: 767px) {
+
+    body {
+        background: #f6f6f6;
+    }
+
+    /* Container utama */
+    .address-wrapper,
+    .shipping-box,
+    .note-wrapper,
+    .payment-box,
+    .checkout-card,
+    .paynow-btn {
+        max-width: 100%;
+        border-radius: 14px;
+    }
+
+    /* ================= ADDRESS ================= */
+    .address-wrapper {
+        flex-direction: column;
+        gap: 14px;
+        padding: 16px;
+    }
+
+    .address-right {
+        width: 100%;
+        justify-content: flex-end;
+    }
+
+    .btn-change-address {
+        width: 100%;
+        height: 36px;
+    }
+
+    /* ================= CHECKOUT ITEM ================= */
+    .checkout-item {
+        gap: 12px;
+    }
+
+    .checkout-item-img {
+        width: 70px;
+        height: 70px;
+    }
+
+    .checkout-item-name {
+        font-size: 14px;
+    }
+
+    .checkout-item-variant,
+    .checkout-item-sub {
+        font-size: 12px;
+    }
+
+    /* ================= SHIPPING ================= */
+    .shipping-box {
+        padding: 14px;
+    }
+
+    .shipping-title {
+        font-size: 16px;
+    }
+
+    .shipping-subtitle {
+        font-size: 14px;
+    }
+
+    .shipping-desc {
+        font-size: 12px;
+    }
+
+    .shipper-radio-custom {
+        width: 18px;
+        height: 18px;
+    }
+
+    /* ================= NOTE ================= */
+    .note-wrapper {
+        padding: 14px 16px;
+    }
+
+    .note-title {
+        font-size: 15px;
+    }
+
+    .note-count {
+        font-size: 12px;
+    }
+
+    /* ================= PAYMENT ================= */
+    .payment-box {
+        flex-direction: column;
+        align-items: flex-start;
+        height: auto;
+        gap: 12px;
+        padding: 16px;
+    }
+
+    .payment-left {
+        gap: 10px;
+    }
+
+    .payment-btn {
+        width: 100%;
+        height: 36px;
+    }
+
+    /* ================= PAY NOW ================= */
+    .paynow-btn {
+        bottom: 12px;
+        left: 12px;
+        right: 12px;
+        z-index: 100;
+        height: 52px;
+        font-size: 16px;
+        border-radius: 14px;
+    }
+
+    body {
+        padding-bottom: 80px;
+    }
+
+    /* ================= MODAL ================= */
+    .modal-dialog {
+        margin: 10px;
+    }
+
+    .modal-content {
+        border-radius: 16px;
+    }
+
+    .modal-alamat .modal-title,
+    #shipperModal .modal-title,
+    #addAddressModal .modal-title {
+        font-size: 16px;
+    }
+
+    .modal-alamat .address-card {
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    /* Make checkout content align to edges on small screens
+       Remove bootstrap column gutters and reduce container padding
+       so cards appear flush left/right like native mobile designs */
+    .container.py-5 {
+        padding-left: 12px;
+        padding-right: 12px;
+    }
+
+    .container.py-5 .row {
+        margin-left: 0;
+        margin-right: 0;
+    }
+
+    .container.py-5 .row > [class*="col-"] {
+        padding-left: 0;
+        padding-right: 0;
+    }
+}
+
+@media (min-width: 768px) and (max-width: 1024px) {
+
+    .address-wrapper,
+    .shipping-box,
+    .note-wrapper,
+    .payment-box,
+    .checkout-card {
+        max-width: 720px;
+    }
+
+    .checkout-item-img {
+        width: 80px;
+        height: 80px;
+    }
+
+    .shipping-subtitle {
+        font-size: 15px;
+    }
+
+    .payment-box {
+        padding: 16px 18px;
+    }
+
+    .paynow-btn {
+        max-width: 720px;
+    }
+
+    .modal-alamat .modal-dialog,
+    #shipperModal .modal-dialog,
+    #addAddressModal .modal-dialog {
+        max-width: 90%;
+    }
 }
