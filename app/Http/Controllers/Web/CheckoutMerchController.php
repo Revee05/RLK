@@ -273,13 +273,16 @@ class CheckoutMerchController extends Controller
             }
 
             return [
-                'id'           => $item->id,
-                'name'         => $item->merchProduct->name ?? 'Unknown Product',
-                'price'        => $item->price,
-                'qty'          => $item->quantity,
-                'image'        => $imagePath,
-                'variant_name' => $item->merchVariant->name ?? null,
-                'size_name'    => $item->merchSize->size ?? null,
+                'id'                => $item->id,
+                'merch_product_id'  => $item->merch_product_id,  // PENTING: simpan product ID
+                'variant_id'        => $item->merch_product_variant_id,
+                'size_id'           => $item->merch_product_variant_size_id,
+                'name'              => $item->merchProduct->name ?? 'Unknown Product',
+                'price'             => $item->price,
+                'qty'               => $item->quantity,
+                'image'             => $imagePath,
+                'variant_name'      => $item->merchVariant->name ?? null,
+                'size_name'         => $item->merchSize->size ?? null,
             ];
         });
 

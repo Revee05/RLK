@@ -99,18 +99,46 @@
 
                     if ($orderType === 'merch') {
                         $items = is_string($order->items) ? json_decode($order->items, true) : $order->items;
-                        if (json_last_error() === JSON_ERROR_NONE &&
-                            is_array($items) &&
-                            isset($items[0]) &&
-                            isset($items[0]['name'])
-                        ) {
-                            $productName = $items[0]['name'];
-                            $totalProducts = collect($items)->sum('qty');
+                        if (json_last_error() === JSON_ERROR_NONE && is_array($items) && isset($items[0])) {
+                            $productName = $items[0]['name'] ?? $items[0]['title'] ?? $productName;
+                            // support both 'qty' and 'quantity' keys
+                            $totalProducts = collect($items)->sum(function($it){ return $it['qty'] ?? $it['quantity'] ?? 0; });
                         }
                     } elseif ($orderType === 'lelang') {
                         // Gunakan product_title yang sudah disiapkan di controller (dengan fallback)
-                        $productName = $order->product_title ?? 'Produk Lelang';
+                        $productName = $order->product_title ?? $order->product->title ?? 'Produk Lelang';
                         $totalProducts = 1;
+                    }
+
+                    // Compute 'Beli Lagi' URL with sensible fallbacks
+                    $beliLagiUrl = '#';
+                    if ($orderType === 'merch') {
+                        $itemsForLink = is_string($order->items) ? json_decode($order->items, true) : $order->items;
+                        if (is_array($itemsForLink) && isset($itemsForLink[0])) {
+                            $prodId = $itemsForLink[0]['merch_product_id'] ?? null;
+                            
+                            if ($prodId) {
+                                try {
+                                    $slug = \App\models\MerchProduct::where('id', $prodId)->value('slug');
+                                    if ($slug) {
+                                        $beliLagiUrl = route('merch.products.detail', $slug);
+                                    }
+                                } catch (\Exception $e) {
+                                    // ignore
+                                }
+                            }
+                        }
+                    } elseif ($orderType === 'lelang') {
+                        if (isset($order->product) && isset($order->product->slug)) {
+                            $beliLagiUrl = route('lelang.detail', $order->product->slug);
+                        } elseif (isset($order->product_id)) {
+                            try {
+                                $slug = \App\Products::where('id', $order->product_id)->value('slug');
+                                if ($slug) $beliLagiUrl = route('lelang.detail', $slug);
+                            } catch (\Exception $e) {
+                                // ignore
+                            }
+                        }
                     }
                 @endphp
                 <h4 class="product-name mt-1">{{ $productName }}</h4>
@@ -159,9 +187,9 @@
                     @endphp
                     <a href="{{ $payRoute }}" class="btn-base btn-bayar-sekarang">Bayar Sekarang</a>
                 @elseif($order->status == 'success')
-                    <a href="#" class="btn-base btn-beli-lagi">Beli Lagi</a>
+                    <a href="{{ $beliLagiUrl }}" class="btn-base btn-beli-lagi">Beli Lagi</a>
                 @elseif($order->status == 'cancelled' || $order->status == 'expired')
-                    <a href="#" class="btn-base btn-beli-lagi">Beli Lagi</a>
+                    <a href="{{ $beliLagiUrl }}" class="btn-base btn-beli-lagi">Beli Lagi</a>
                 @endif
                 
                 <a href="{{ $orderType === 'merch' ? route('account.merch.order.show', $order->id) : route('account.lelang.order.show', $order->id) }}" class="btn-base btn-lihat-detail">
