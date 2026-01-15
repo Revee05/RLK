@@ -53,7 +53,7 @@
 
                         @if (Auth::user()->access == 'admin')
                             <a class="dropdown-item" href="{{ route('admin.dashboard') }}">Dashboard</a>
-                            <a class="dropdown-item" href="{{ route('account.dashboard') }}">Profile</a>
+                            <!-- <a class="dropdown-item" href="{{ route('account.dashboard') }}">Profile</a> -->
                         @else
                             <a class="dropdown-item" href="{{ route('account.dashboard') }}">Profile</a>
                             <div class="d-md-none"> <!-- show nav list only on mobile -->
