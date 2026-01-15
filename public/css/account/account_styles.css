@@ -303,6 +303,41 @@
     border-radius: 0.6rem !important;
 }
 
+/* Password toggle inside account inputs */
+.password-wrapper{
+    position: relative;
+    width: 100%;
+}
+
+.password-wrapper .form-control,
+.password-wrapper .input-field{
+    width: 100%;
+    box-sizing: border-box;
+    padding-right: 4.6rem; /* room for circular toggle */
+}
+
+.password-toggle{
+    position: absolute;
+    right: 0.8rem;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: transparent;
+    border: transparent;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    /* box-shadow: 0 2px 6px rgba(2,6,23,0.06); */
+    z-index: 5;
+}
+
+.password-toggle i{ font-size: 1rem; color: #6c757d; }
+
+/* .password-toggle:focus{ outline: none; box-shadow: 0 0 0 3px rgba(21,188,197,0.12); } */
+
 /* Utility text color: cyan used across account pages */
 .text-cyan {
     color: #15bcc5 !important;
