@@ -43,8 +43,8 @@ class CheckoutMerchController extends Controller
                 ->with('error', 'Silakan pilih minimal satu produk untuk checkout!');
         }
 
-        // Fetch selected cart items with relations
-        $cartItems = CartItem::with(['merchProduct', 'merchVariant.images', 'merchSize'])
+        // Fetch selected cart items with relations (include auctionProduct for lelang items)
+        $cartItems = CartItem::with(['merchProduct', 'merchVariant.images', 'merchSize', 'auctionProduct'])
             ->where('user_id', auth()->id())
             ->whereIn('id', $request->input('cart_item_ids'))
             ->get();
@@ -77,35 +77,56 @@ class CheckoutMerchController extends Controller
         $isGiftWrap = $request->has('wrap_product');
         $giftWrapPrice = $isGiftWrap ? 10000 : 0;
 
-        // Map cart items for view display
+        // Map cart items for view display (support both merch and lelang)
         $cart = $cartItems->map(function ($item) {
-            // Determine product image (variant first, then product, then default)
+            // Default values
             $imagePath = '/img/default.png';
-            if ($item->merchVariant && $item->merchVariant->images->isNotEmpty()) {
-                $imagePath = $item->merchVariant->images->first()->image_path;
-            } elseif ($item->merchProduct && $item->merchProduct->images->isNotEmpty()) {
-                $imagePath = $item->merchProduct->images->first()->image_path;
-            }
+            $productName = 'Unknown Product';
+            $weight = 1000;
 
-            $productName = $item->merchProduct->name ?? 'Unknown Product';
+            if ($item->type === 'lelang') {
+                // Auction product
+                $product = $item->auctionProduct;
+                if ($product) {
+                    $productName = $product->title ?? $productName;
+                    if (isset($product->imageUtama) && $product->imageUtama && $product->imageUtama->path) {
+                        $imagePath = $product->imageUtama->path;
+                    } elseif ($product->images && $product->images->isNotEmpty()) {
+                        $imagePath = $product->images->first()->path ?? $imagePath;
+                    }
+                }
+                // Lelang items treated as qty 1
+                $qty = 1;
+            } else {
+                // Merchandise product
+                if ($item->merchVariant && $item->merchVariant->images->isNotEmpty()) {
+                    $imagePath = $item->merchVariant->images->first()->image_path;
+                    $weight = $item->merchVariant->weight ?? $weight;
+                } elseif ($item->merchProduct && $item->merchProduct->images->isNotEmpty()) {
+                    $imagePath = $item->merchProduct->images->first()->image_path;
+                }
+                $productName = $item->merchProduct->name ?? $productName;
+                $qty = $item->quantity;
+            }
 
             return [
                 'id'       => $item->id,
                 'name'     => $productName,
                 'price'    => $item->price,
-                'quantity' => $item->quantity,
+                'quantity' => $qty,
                 'image'    => $imagePath,
 
-                // Variant information
+                // Variant / auction info
                 'variant_name' => $item->merchVariant->name ?? null,
                 'variant_code' => $item->merchVariant->code ?? null,
                 'discount'     => $item->merchVariant->discount ?? null,
                 'stock'        => $item->merchVariant->stock ?? null,
-                'weight'       => $item->merchVariant->weight ?? null,
+                'weight'       => $weight,
                 'size_name'    => $item->merchSize->size ?? null,
-                'product_id'   => $item->merch_product_id,
+                'product_id'   => $item->merch_product_id ?? $item->product_id,
                 'variant_id'   => $item->merch_product_variant_id,
                 'size_id'      => $item->merch_product_variant_size_id,
+                'type'         => $item->type,
             ];
         });
 

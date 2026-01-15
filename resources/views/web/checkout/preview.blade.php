@@ -12,6 +12,12 @@
     // Untuk Order (lelang): alamat ada di field langsung (name, phone, address, dll)
     $isOrderMerch = get_class($order) === 'App\OrderMerch';
     $address = $isOrderMerch ? $order->address : null;
+    
+    // Support both variable names: $giftWrapCost (new) or $giftWrapPrice (older/other)
+    $giftWrapCost = $giftWrapCost ?? ($giftWrapPrice ?? 0);
+
+    // Determine if this order uses pickup
+    $isPickup = ($shipping['type'] ?? null) === 'pickup';
 @endphp
 
 
