@@ -18,6 +18,7 @@ use App\Http\Controllers\AdminPanduanController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Account\AuctionHistoryController;
 use App\Http\Controllers\UsersController;
+use App\Http\Controllers\HomeController;
 
 require_once  __DIR__ . "/admin.php";
 require_once  __DIR__ . "/account.php";
@@ -35,6 +36,7 @@ Route::get('/page/{slug}', 'Web\HomeController@page')->name('web.page');
 Route::get('/products/search', 'Web\HomeController@search')->name('web.search');
 Route::get('/category/{slug}', 'Web\HomeController@category')->name('products.category');
 Route::get('/detail/{slug}', 'Web\HomeController@detail')->name('detail');
+
 
 // =============================
 // AUTHENTIKASI

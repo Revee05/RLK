@@ -141,97 +141,43 @@
 
 
 /* =========================================================
-   # OWL CAROUSEL NAVIGATION & DOTS
-   ========================================================= */
-
-/* Custom Navigation Arrows (Used in Hero Slider) */
-.custom-nav {
-    position: absolute;
-    top: 30%;
-    left: 0;
-    right: 0;
-}
-
-.custom-nav .owl-prev, .owl-next {
-    position: absolute;
-    height: 50px;
-    width: 50px;
-    color: inherit;
-    background: none;
-    border: none;
-    border-radius: 50% !important;
-    z-index: 100;
-    background-color: #ffffff70 !important;
-}
-
-.custom-nav .owl-prev i, .custom-nav .owl-next i {
-    font-size: 20px;
-    margin: 10px;
-    color: black;
-}
-
-.owl-prev {
-    left: 0;
-}
-
-.owl-next {
-    right: 0;
-}
-
-/* Default Owl Dots Styling Overrides */
-/* =========================================================
-   # OWL DOTS STYLING (FIXED SIZE & ALIGNMENT)
+   # OWL DOTS STYLING
    ========================================================= */
 
 .owl-theme .owl-dots {
     text-align: center;
     margin-top: 30px;
-    display: flex; /* Gunakan flexbox untuk alignment yang lebih baik */
+    display: flex; 
     justify-content: center;
-    align-items: center; /* PENTING: Untuk menyelaraskan secara vertikal di tengah */
+    align-items: center; 
 }
 
 .owl-theme .owl-dots .owl-dot {
     outline: none;
-    /* Pastikan setiap owl-dot adalah inline-block agar span bisa diatur */
     display: inline-block; 
-    /* Margin di sini bisa membantu mengatur jarak jika flexbox di span nanti bermasalah */
-    margin: 0 4px; /* Jarak dasar antar dot, bisa disesuaikan */
+    margin: 0 4px; 
 }
 
-/* ---------------------------------------------------------
-   1. DOT TOSCA (KECIL)
-   --------------------------------------------------------- */
 .owl-theme .owl-dots .owl-dot span {
     width: 6px !important;   
     height: 6px !important;  
-    
     border-radius: 50%;
     background: #6CC4C4 !important; /* Warna Tosca */
-    
-    display: inline-flex; /* Gunakan inline-flex */
-    vertical-align: middle; /* PENTING: Untuk menyelaraskan dengan elemen lain di baris yang sama */
+    display: inline-flex; 
+    vertical-align: middle; 
     transition: all 0.3s ease;
     opacity: 1;
-    /* Hapus margin di span karena sudah ada di .owl-dot atau diatur oleh gap flexbox */
     margin: 0; 
 }
 
-/* ---------------------------------------------------------
-   2. DOT GELAP (BESAR & AKTIF)
-   --------------------------------------------------------- */
 .owl-theme .owl-dots .owl-dot.active span {
     width: 15px !important;  
     height: 15px !important; 
-    
     background: #0D1B2A !important; /* Warna Hitam/Gelap */
-    
     border-radius: 50%; 
     box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-    
-    display: inline-flex; /* Gunakan inline-flex */
-    vertical-align: middle; /* PENTING: Untuk menyelaraskan dengan elemen lain di baris yang sama */
-    /* Hapus margin di span karena sudah ada di .owl-dot atau diatur oleh gap flexbox */
+    display: inline-flex; 
+    vertical-align: middle; 
     margin: 0; 
 }
 
@@ -300,75 +246,22 @@
     color: white;
 }
 
-.btn-disabled-custom {
-    border: 1px solid #ced4da;
-    color: #6c757d;
-    background-color: #f8f9fa;
-}
-
 /* =========================================================
-   # 'SEE MORE' CARD (AUCTION)
+   # NEW: SEE ALL LINK (Lihat Semua)
    ========================================================= */
 
-.card-see-more-link {
-    text-decoration: none;
-    height: 100%;
-    width: 100%;
-    display: block;
-    transition: all 0.3s ease-in-out;
-}
-
-.card-auction.card-see-more {
-    /* Inherits core styles from .card-auction, adding centering */
-    background-color: #ffffff;
-    border: 1px solid #dee2e6;
-    box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.08);
-    transition: background-color 0.3s ease, box-shadow 0.3s ease, transform 0.3s ease;
-    justify-content: center;
-    align-items: center;
-}
-
-.card-auction.card-see-more .card-body {
-    justify-content: center;
-    align-items: center;
-    flex-grow: 1;
-    border-radius: 10px;
-    padding: 201px; /* Large padding to force centering */
-    text-align: center;
-    transition: all 0.3s ease;
-}
-
-.card-auction.card-see-more .see-more-icon {
-    font-size: 3rem;
-    font-weight: 200;
-    color: #000000;
-    display: block;
-    line-height: 1;
-    margin-bottom: 20px;
-    transition: transform 0.3s ease;
-}
-
-.card-auction.card-see-more h5 {
-    color: #000000;
-    margin-top: 0;
-    margin-bottom: 5px;
-    white-space: nowrap;
-    font-weight: 700;
-    font-size: 1.25rem;
+.see-all-text {
+    font-weight: 700; /* Bold */
+    text-decoration: underline; /* Garis Bawah */
+    color: #212529;
+    font-size: 1rem;
     transition: color 0.3s ease;
+    cursor: pointer;
 }
 
-.card-auction.card-see-more .see-more-caption {
-    color: #495057;
-    font-size: 0.85rem;
-    display: block;
-    transition: color 0.3s ease;
-}
-
-/* Hover Effects for Auction See More Card */
-.card-see-more-link:hover h5,
-.card-see-more-link:hover .see-more-caption {
-    color: #00b8a9; /* Change text color to tosca */
+.see-all-text:hover {
+    color: #00b8a9; /* Warna Tosca saat hover */
+    text-decoration: underline;
 }
 
 
@@ -378,25 +271,6 @@
 
 .blog-section {
     background-color: #ffffff;
-}
-
-/* Title Row Layout (for Title + See All Link) */
-.blog-title-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 30px;
-}
-
-.blog-see-all-link {
-    text-decoration: none;
-    color: #000000;
-    font-weight: 600;
-    transition: color 0.3s ease;
-}
-
-.blog-see-all-link:hover {
-    color: #0d6efd; /* Blue color on hover */
 }
 
 /* Blog Card Styling */
@@ -441,13 +315,28 @@
     flex-grow: 1;
 }
 
-.card-blog .btn {
+/* =========================================================
+   # BUTTON BLOG RESPONSIVE (UPDATED)
+   ========================================================= */
+
+.btn-blog-responsive {
+    /* Base Button Style (Desktop) */
+    border: 1px solid #212529;
+    color: #212529;
     border-radius: 50px;
     padding: 8px 30px;
     font-weight: 600;
-    align-self: center;
+    align-self: center; /* Desktop: Center */
     margin-top: auto;
-    
+    text-decoration: none;
+    transition: all 0.3s ease;
+    display: inline-block;
+}
+
+/* Desktop Hover Effect */
+.btn-blog-responsive:hover {
+    background-color: #212529;
+    color: white;
 }
 
 /* Fix for equal height on Blog Carousel items */
@@ -463,113 +352,6 @@
 .blog-slider .item.d-flex {
     width: 100%;
     height: 100%;
-}
-
-
-/* =========================================================
-   # 'SEE MORE' CARD (BLOG)
-   ========================================================= */
-
-.card-blog-link {
-    text-decoration: none;
-    height: 100%;
-    display: block;
-    transition: all 0.3s ease-in-out;
-}
-
-.card-blog.card-see-more-blog {
-    /* Base styles, centering content */
-    background-color: #ffffff;
-    border: 1px solid #dee2e6;
-    box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.08);
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    transition: background-color 0.3s ease, box-shadow 0.3s ease, transform 0.3s ease;
-    height: 100%;
-    width: 630px;
-    overflow: hidden;
-    padding: 45px;
-}
-
-.card-blog.card-see-more-blog .card-body {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    flex-grow: 1;
-    text-align: center;
-    padding: 0;
-    transition: all 0.3s ease;
-}
-
-/* Icon, H5, and Caption Styling (shared with Auction See More) */
-.card-blog.card-see-more-blog .see-more-icon {
-    font-size: 3rem;
-    font-weight: 200;
-    color: #000000;
-    display: block;
-    line-height: 1;
-    margin-bottom: 20px;
-    transition: transform 0.3s ease, color 0.3s ease;
-}
-
-.card-blog.card-see-more-blog h5 {
-    color: #000000;
-    margin-top: 0;
-    margin-bottom: 5px;
-    white-space: nowrap;
-    font-weight: 700;
-    font-size: 1.25rem;
-    transition: color 0.3s ease;
-}
-
-.card-blog.card-see-more-blog .see-more-caption {
-    color: #495057;
-    font-size: 0.85rem;
-    display: block;
-    transition: color 0.3s ease;
-}
-
-/* Hover Effects for Blog See More Card */
-.card-blog-link:hover .see-more-icon {
-    transform: translateX(15px);
-    color: #00b8a9; /* Blue color on hover */
-}
-
-.card-blog-link:hover h5,
-.card-blog-link:hover .see-more-caption {
-    color: #00b8a9; /* Blue color on hover */
-}
-
-
-.btn-blog-responsive {
-    /* Gaya Tombol Asli (Sama seperti btn-outline-custom) */
-    border: 1px solid #212529;
-    color: #212529;
-    border-radius: 50px;
-    padding: 8px 30px;
-    font-weight: 600;
-    align-self: center;     /* Posisi di tengah (center) untuk desktop */
-    margin-top: auto;
-    text-decoration: none;
-    transition: all 0.3s ease;
-    display: inline-block;
-}
-
-/* Efek Hover Desktop (Hitam) */
-.btn-blog-responsive:hover {
-    background-color: #212529;
-    color: white;
-}
-
-/* ATURAN TEKS: Desktop tampilkan 'Lihat lebih banyak', sembunyikan 'Read more' */
-.btn-blog-responsive .text-mobile {
-    display: none;
-}
-.btn-blog-responsive .text-desktop {
-    display: inline;
 }
 
 
@@ -598,116 +380,71 @@
         height: 350px;
     }
 
-    /* --- Overlay Box Mobile (Versi Lebih Kecil/Compact) --- */
+    /* --- Overlay Box Mobile --- */
     .hero-overlay-box {
-        left: 40px;   /* Lebih sempit kiri kanan biar gak full banget */
+        left: 40px;   
         right: 40px;
-        bottom: 20px; /* Jarak dari bawah */
+        bottom: 20px; 
         max-width: none;
-        
-        /* Padding diperkecil (Sebelumnya 18px) */
         padding: 14px 17px; 
-        
         text-align: center;
     }
 
     .hero-overlay-box h4 {
-        /* Font Judul diperkecil (Sebelumnya 1.4rem) */
         font-size: 1.1rem; 
-        margin-bottom: 2px; /* Jarak ke teks bawah dirapatkan */
+        margin-bottom: 2px; 
     }
 
     .hero-overlay-box p {
-        /* Font Deskripsi diperkecil (Sebelumnya 0.85rem) */
         font-size: 0.75rem; 
-        
-        /* Jarak ke tombol dirapatkan (Sebelumnya 12px) */
         margin-bottom: 8px; 
-        
-        line-height: 1.3; /* Spasi antar baris dirapatkan */
+        line-height: 1.3; 
     }
 
     .hero-overlay-box .btn-detail {
-        /* Tombol diperkecil (padding & font) */
         padding: 4px 12px; 
         font-size: 0.75rem;
         margin-top: 0;
     }
 
-    /* --- Section Titles Mobile --- */
+    /* --- Header Flex (Judul & Lihat Semua) --- */
+    .header-flex {
+        flex-direction: row !important; 
+        align-items: baseline !important; 
+    }
+
     .section-title {
-        font-size: 1.7rem;
+        font-size: 1.5rem;
         margin-bottom: 20px;
-        text-align: center !important;
+        text-align: left !important;
+        flex-grow: 1;
     }
 
-    .auction-section .row:first-child .col-lg-12 {
-        text-align: center;
-    }
-
-    /* --- Blog Title Layout Fix --- */
-    .blog-section .row.align-items-center {
-        flex-direction: column;
-        margin-bottom: 10px;
-    }
-
-    .blog-section .row.align-items-center .col-6 {
-        width: 100%;
-        max-width: 100%;
-        flex: 0 0 100%;
-        text-align: center;
-    }
-
-    .blog-section .section-title {
-        margin-bottom: 5px;
-        text-align: center !important;
-    }
-
-    .blog-see-all-link {
+    .see-all-text {
         font-size: 0.9rem;
-        display: block;
-        margin-bottom: 20px;
-        text-align: center !important;
     }
 
+    /* --- Blog Styling Mobile --- */
+    
     .btn-blog-responsive {
-        border: none !important;        /* Hilangkan garis pinggir */
-        background: none !important;    /* Hilangkan background */
-        padding: 0 !important;          /* Hilangkan padding */
-        border-radius: 0 !important;
-        
-        /* Ubah Warna jadi Tosca */
-        color: #00b8a9 !important;
-        font-weight: 500;
-        font-size: 0.95rem;
+        font-size: 0.9rem;
+        padding: 7px 25px; 
         margin-top: 10px;
-        align-self: flex-start;         /* Pindah ke kiri */
+        
+        /* PERBAIKAN: Ubah dari flex-start (kiri) menjadi center (tengah) */
+        align-self: center !important;  
     }
 
-    /* Efek Hover Mobile (Warna teks berubah dikit) */
-    .btn-blog-responsive:hover {
-        color: #008c81 !important;
-        background: none !important;    /* Pastikan hover hitam desktop HILANG */
-    }
-
-    /* TUKAR TEKS: Sembunyikan 'Lihat lebih banyak', Munculkan 'Read more' */
-    .btn-blog-responsive .text-desktop {
-        display: none;
-    }
-    .btn-blog-responsive .text-mobile {
-        display: inline;
-    }
-
-    /* PENTING: Rata Kiri Kontainer Card di Mobile */
+    /* PENTING: Kontainer Card tetap rata kiri untuk teks */
     .card-blog .card-body {
-        align-items: flex-start !important; /* Paksa isi card rata kiri */
+        align-items: flex-start !important; /* Default item rata kiri */
         text-align: left !important;        /* Teks rata kiri */
     }
 
     /* --- Card Content Mobile --- */
     .card-auction,
     .card-blog {
-        padding: 15px; /* Adjust padding in mobile */
+        padding: 15px; 
         margin-bottom: 15px;
     }
 
@@ -745,263 +482,5 @@
 
     .card-auction .card-body a{
         color: white;
-    }
-
-    .card-blog .btn {
-        padding: 7px 25px;
-        font-size: 0.9rem;
-    }
-
-    /* --- See More Card Mobile --- */
-    .card-auction.card-see-more {
-        min-height: 100%;
-        margin-bottom: 15px;
-        height: 100%;
-    }
-
-    .card-auction.card-see-more .card-body {
-        padding: 189px; 
-    }
-
-    .card-auction.card-see-more .see-more-icon {
-        font-size: 2.2rem;
-    }
-
-    .card-auction.card-see-more h5 {
-        font-size: 1.1rem;
-        margin-top: 10px;
-    }
-
-    .card-blog.card-see-more-blog {
-        min-height: 300px;
-        margin-bottom: 15px;
-        padding: 15px;
-    }
-
-    .card-blog.card-see-more-blog {
-        display: flex !important;
-        flex-direction: column;
-        justify-content: center !important; 
-        align-items: center !important;     
-        text-align: center !important;      
-        min-height: 300px;                 
-    }
-
-    
-    .card-blog.card-see-more-blog .card-body {
-        justify-content: center !important; 
-        align-items: center !important;     
-        text-align: center !important;
-        width: 100%;
-        padding: 0 !important;             
-        margin: 0 !important;
-    }
-    
-    /* 3. Pastikan Judul & Caption di tengah */
-    .card-blog.card-see-more-blog h5,
-    .card-blog.card-see-more-blog small {
-        text-align: center !important;
-        display: block;
-        width: 100%;
-    }
-}
-
-
-/* =========================================================
-   # RESPONSIVE FIX: TOUCH / HOVER ISSUES
-   (Disables hover effects on touch devices to prevent double-tap)
-   ========================================================= */
-
-@media (hover: none) {
-    /* Reset Auction See More Hover Effects on Touch Devices */
-    .card-see-more-link:hover .card-auction.card-see-more {
-        background-color: #ffffff;
-        border: 1px solid #dee2e6;
-        box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.08);
-        transform: none;
-    }
-
-    .card-see-more-link:hover .see-more-icon {
-        transform: none;
-    }
-
-    .card-see-more-link:hover h5 {
-        color: #212529; /* Restore default text color */
-    }
-
-    /* Styling for Custom Navigation Buttons (when using touch nav) */
-    .owl-custom-nav-auction span,
-    .owl-custom-nav-blog span {
-        cursor: pointer;
-        margin-left: 10px;
-        font-size: 12rem;
-        color: #000;
-        opacity: 0.8;
-        transition: opacity 0.2s;
-    }
-
-    .owl-custom-nav-auction span:hover,
-    .owl-custom-nav-blog span:hover {
-        opacity: 1;
-    }
-    
-    /* Specific Mobile Tweaks for Blog See More Card (from original code) */
-    @media (max-width: 767px) {
-        .card-blog.card-see-more-blog {
-            width: 375px !important;
-            height: 100% !important;
-            min-height: 300px !important;
-            padding: 20px !important;
-            margin-bottom: 30px !important;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            background-color: #ffffff;
-            border: 1px solid #dee2e6;
-        }
-
-        .card-blog.card-see-more-blog .card-body {
-            padding: 0 !important;
-            margin: 0 !important;
-            flex-grow: 0 !important;
-            width: 100%;
-            height: auto;
-        }
-
-        .card-blog.card-see-more-blog .see-more-icon {
-            font-size: 2.5rem !important;
-            margin-bottom: 15px;
-        }
-
-        .card-blog.card-see-more-blog h5 {
-            font-size: 1.2rem !important;
-        }
-    }
-}
-
-
-/* =========================================================
-   # RESPONSIVE DESIGN: CUSTOM NAVIGATION VISIBILITY (SYNCHRONIZED WITH JS)
-   ========================================================= */
-
-/* Default State (Mobile First: Hide custom arrows) */
-.owl-custom-nav-auction,
-.owl-custom-nav-blog {
-    display: none;
-}
-
-/* Tablet/Mobile Layout Fix for Title Row (< 992px) */
-@media (max-width: 991px) {
-    /* Force title and nav to stack (block display) */
-    .auction-section .col-lg-12.d-flex,
-    .blog-section .col-lg-12.d-flex {
-        display: block !important;
-        text-align: center !important;
-    }
-}
-
-/* Desktop Logic (Wide Screens: >= 992px) */
-@media (min-width: 992px) {
-    /* 1. Show Nav Containers on Desktop */
-    .owl-custom-nav-auction,
-    .owl-custom-nav-blog {
-        display: flex !important; /* HARUS ADA !important agar menang dari aturan default di luar media query */
-
-        /* TAMBAHKAN STYLING KHUSUS DESKTOP DARI BLOK BAWAH KE SINI */
-        align-items: center; 
-        gap: 15px; 
-        margin-left: 20px;
-    }
-
-
-    /* 4. Auction Nav: Remove residual margin on Next button (since Prev is hidden) */
-    #auction-next {
-        margin-left: 0 !important;
-    }
-
-    /* 5. Blog Nav: Remove residual margin on Next button (since Prev is hidden) */
-    #blog-next {
-        margin-left: 0 !important;
-    }
-}
-
-/* =========================================================
-   # OVERRIDES: CUSTOM NAVIGATION ARROW (TANDA PANAH BESAR)
-   ========================================================= */
-
-/* Gaya untuk menampung tombol Next dan Prev (jika ada) di desktop */
-.owl-custom-nav-auction,
-.owl-custom-nav-blog {
-    align-items: center; 
-    gap: 15px; 
-    margin-left: 20px;
-}
-
-/* Base style untuk tombol Next (span.custom-next) */
-.owl-custom-nav-auction .custom-next,
-.owl-custom-nav-blog .custom-next {
-    /* Hapus background, border, dan radius lingkaran */
-    background: none;
-    border: none;
-    border-radius: 0;
-    
-    /* Ukuran yang lebih besar untuk area klik */
-    width: auto; /* Biarkan lebar mengikuti ikon */
-    height: auto; /* Biarkan tinggi mengikuti ikon */
-    padding: 10px; /* Area padding untuk memudahkan klik */
-    
-    /* Center ikon di tengah area klik */
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    cursor: pointer;
-    
-    /* Hapus shadow */
-    box-shadow: none;
-    
-    /* Transisi untuk efek hover */
-    transition: transform 0.2s ease-in-out, color 0.2s ease-in-out;
-}
-
-/* Gaya untuk Ikon Panah (i.fa) */
-.owl-custom-nav-auction .custom-next i,
-.owl-custom-nav-blog .custom-next i {
-    font-size: 1.8rem; /* Ukuran ikon panah yang sangat besar */
-    color: #000000;    /* Warna hitam gelap (sesuai tema default Anda) */
-    transform: translateY(2px);  /* Hapus translasi yang ada sebelumnya */
-}
-
-/* Efek Hover */
-.owl-custom-nav-auction .custom-next:hover,
-.owl-custom-nav-blog .custom-next:hover {
-    transform: translateX(5px); /* Geser sedikit ke kanan saat hover */
-    color: #00b8a9;             /* Warna tosca saat hover */
-}
-
-
-/* --- Penyesuaian Mobile/Tablet --- */
-@media (max-width: 991px) {
-    /* Posisikan di tengah layar mobile jika judul juga di tengah */
-    .owl-custom-nav-auction,
-    .owl-custom-nav-blog {
-        justify-content: center;
-        margin-top: 15px;
-        
-    }
-    
-    /* Sesuaikan ukuran ikon untuk mobile */
-    .owl-custom-nav-auction .custom-next i,
-    .owl-custom-nav-blog .custom-next i {
-        font-size: 2rem; /* Ukuran ikon sedikit lebih kecil di mobile */
-    }
-
-    /* Reset hover effect di touch devices jika tidak diinginkan (opsional) */
-    @media (hover: none) {
-        .owl-custom-nav-auction .custom-next:hover,
-        .owl-custom-nav-blog .custom-next:hover {
-            transform: none;
-            color: #212529; /* Kembali ke warna default */
-        }
     }
 }

@@ -1,175 +1,165 @@
 @extends('web.partials.layout')
 
-{{-- 
-================================
-CSS UNTUK HALAMAN PENCARIAN
-================================
---}}
 @section('css')
-<style type_content="text/css">
-    .search-header {
-        padding-bottom: 30px;
-        border-bottom: 1px solid #dee2e6;
-        margin-bottom: 40px;
-    }
-    .search-header h1 {
-        font-weight: 700;
-        font-size: 2.2rem;
-        margin: 0;
-    }
-    .search-header h1 strong {
-        color: #00b8a9; /* Warna aksen (hijau toska) */
-    }
-    .search-header p {
-        font-size: 1.1rem;
-        color: #6c757d;
-        margin: 0;
-        padding-top: 5px;
-    }
-
-    /* Menggunakan style yang SAMA dengan 'card-auction' di home
-      untuk konsistensi desain.
-    */
-    .card-search-result {
-        border: 1px solid #dee2e6;
-        border-radius: 10px;
-        background-color: white;
-        height: 100%;
-        overflow: hidden;
-        display: flex;
-        flex-direction: column;
-        text-decoration: none;
-        color: #212529;
-        transition: box-shadow 0.2s ease-in-out;
-    }
-    .card-search-result:hover {
-        box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-    }
-    .card-search-result img {
-        width: 100%;
-        height: 250px; 
-        object-fit: cover;
-    }
-    .card-search-result .card-body {
-        padding: 20px;
-        display: flex;
-        flex-direction: column;
-        flex-grow: 1; /* Penting agar tombol menempel di bawah */
-    }
-    .card-search-result h5 {
-        font-weight: 600;
-        font-size: 1.1rem;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis; 
-    }
-    .card-search-result .kategori {
-        font-size: 0.9rem;
-        color: #6c757d;
-        margin-bottom: 15px;
-    }
-    .card-search-result .price-tag {
-        font-size: 1.1rem;
-        font-weight: 600;
-        color: #212529;
-        margin-bottom: 20px;
-    }
-    
-    /* Tombol (sama seperti di home) */
-    .btn-outline-custom {
-        border: 1px solid #212529;
-        color: #212529;
-        border-radius: 50px;
-        padding: 8px 30px;
-        font-weight: 600;
-        text-decoration: none;
-        margin-top: auto; /* KUNCI: Mendorong tombol ke bawah */
-        width: 100%; /* Tombol jadi full width di kartu */
-        text-align: center;
-    }
-    .btn-outline-custom:hover {
-        background-color: #212529;
-        color: white;
-    }
-
-    /* Tampilan jika hasil kosong */
-    .search-empty {
-        text-align: center;
-        padding: 80px 0;
-    }
-    .search-empty i {
-        font-size: 4rem;
-        color: #dee2e6; /* Ikon abu-abu muda */
-    }
-    .search-empty h3 {
-        margin-top: 20px;
-        font-weight: 600;
-    }
-    .search-empty p {
-        font-size: 1.1rem;
-        color: #6c757d;
-    }
-
-    /* Style Paginasi Bootstrap agar rapi */
-    .pagination {
-        --bs-pagination-color: #212529;
-        --bs-pagination-hover-color: #00b8a9;
-        --bs-pagination-active-bg: #00b8a9;
-        --bs-pagination-active-border-color: #00b8a9;
-    }
-</style>
+    <link rel="stylesheet" href="{{ asset('css/search.css') }}">
 @endsection
 
-{{-- 
-================================
-KONTEN (Desain Ulang)
-================================
---}}
 @section('content')
 <section class="py-5">
     <div class="container">
         
+        {{-- Hitung Total Hasil --}}
+        @php
+            $totalResults = $lelang->count() + $merchandise->count() + $blogs->count() + $seniman->count();
+        @endphp
+
+        {{-- HEADER & FORM PENCARIAN --}}
         <div class="search-header">
             <div class="row align-items-center">
-                <div class="col-md-8">
+                {{-- KOLOM KIRI --}}
+                <div class="col-md-7 text-center text-md-start mb-3 mb-md-0">
                     <h1>Hasil pencarian untuk <strong>"{{$q}}"</strong></h1>
+                    <p class="m-0">{{ $totalResults }} hasil ditemukan</p>
                 </div>
-                <div class="col-md-4 text-md-end">
-                    <p>{{$products->total()}} hasil ditemukan</p>
+                {{-- KOLOM KANAN --}}
+                <div class="col-md-5">
+                    <form action="{{ route('web.search') }}" method="GET" class="internal-search-form ms-auto">
+                        <div class="input-group input-group-search">
+                            <input type="text" name="q" class="form-control" placeholder="Cari lagi..." value="{{ $q }}" required>
+                            <button class="btn btn-search" type="submit"><i class="fas fa-search"></i></button>
+                        </div>
+                    </form>
                 </div>
             </div>
         </div>
 
-        <div class="row gx-4 gx-lg-5 row-cols-2 row-cols-md-3 row-cols-xl-4">
-            
-            @forelse($products as $produk)
-            <div class="col mb-5">
-                <a href="{{route('detail',$produk->slug)}}" class="card-search-result">
-                    <img src="{{asset($produk->imageUtama->path ?? 'assets/img/default.jpg')}}" alt="{{$produk->title}}" />
-                    <div class="card-body">
-                        <h5 class="fw-bolder">{{$produk->title}}</h5>
-                        <p class="kategori">{{$produk->kategori->name}}</p>
-                        <div class="price-tag">{{$produk->price_str}}</div>
-                        <span class="btn btn-outline-custom">Lihat Lelang</span>
-                    </div>
-                </a>
-            </div>
-            
-            @empty
+        @if($totalResults == 0)
             <div class="col-12">
                 <div class="search-empty">
-                    <i class="fas fa-search"></i> 
-                    <h3>Tidak ada hasil</h3>
-                    <p>Kami tidak dapat menemukan apa pun untuk "<strong>{{$q}}</strong>".<br>Coba gunakan kata kunci yang lain.</p>
+                    <i class="fas fa-search" style="font-size: 4rem; color: #dee2e6;"></i> 
+                    <h3 class="mt-3">Tidak ada hasil ditemukan</h3>
+                    <p>Coba gunakan kata kunci yang lebih umum atau periksa ejaan Anda.</p>
                 </div>
             </div>
-            @endforelse
-        </div>
+        @else
 
-        <div class="d-flex justify-content-center mt-4">
-            {{-- Ini akan otomatis menampilkan link paginasi jika ada lebih dari 1 halaman --}}
-            {{$products->links()}}
-        </div>
+            {{-- 1. BAGIAN SENIMAN --}}
+            @if($seniman->count() > 0)
+            <div class="section-title">
+                <span>Seniman & Kreator</span>
+                <span class="badge-count">{{ $seniman->count() }}</span>
+            </div>
+            {{-- UPDATE: row-cols-1 (HP) --}}
+            <div class="row gx-4 gx-lg-5 row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-xl-4 mb-5">
+                @foreach($seniman as $item)
+                <div class="col mb-4">
+                    <a href="{{ route('seniman.detail', $item->slug) }}" class="card-search-result card-seniman">
+                        @php
+                            $defaultAvatar = 'https://ui-avatars.com/api/?name=' . urlencode($item->name) . '&background=random&color=fff&size=150&bold=true';
+                            $imageSource = $item->image ? asset('uploads/senimans/' . $item->image) : $defaultAvatar;
+                        @endphp
+                        <img src="{{ $imageSource }}" alt="{{ $item->name }}" onerror="this.onerror=null; this.src='{{ $defaultAvatar }}';"/>
+                        <div class="card-body">
+                            <h5 title="{{ $item->name }}">{{ $item->name }}</h5>
+                            @if($item->julukan)
+                                <p class="sub-text" style="margin-bottom: 5px;">"{{ $item->julukan }}"</p>
+                            @endif
+                            <p class="sub-text">
+                                <i class="fas fa-map-marker-alt me-1"></i> {{ $item->city ? $item->city->name : 'Indonesia' }}
+                            </p>
+                            <span class="btn btn-outline-custom">Lihat Profil</span>
+                        </div>
+                    </a>
+                </div>
+                @endforeach
+            </div>
+            @endif
+
+            {{-- 2. BAGIAN LELANG --}}
+            @if($lelang->count() > 0)
+            <div class="section-title">
+                <span>Lelang Karya</span>
+                <span class="badge-count">{{ $lelang->count() }}</span>
+            </div>
+            {{-- UPDATE: row-cols-1 (HP) --}}
+            <div class="row gx-4 gx-lg-5 row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-xl-4 mb-5">
+                @foreach($lelang as $item)
+                <div class="col mb-4">
+                    <a href="{{ route('detail', $item->slug) }}" class="card-search-result">
+                        <img src="{{ asset($item->imageUtama->path ?? 'assets/img/default.jpg') }}" alt="{{ $item->title }}" />
+                        <div class="card-body">
+                            <h5 title="{{ $item->title }}">{{ $item->title }}</h5>
+                            <p class="sub-text">{{ $item->kategori->name ?? 'Umum' }}</p>
+                            <div class="price-tag" style="font-weight: 700; color: #00b8a9; margin-bottom: 15px;">
+                                {{ $item->price_str ?? 'Rp '.number_format($item->price,0,',','.') }}
+                            </div>
+                            <span class="btn btn-outline-custom">Ikut Lelang</span>
+                        </div>
+                    </a>
+                </div>
+                @endforeach
+            </div>
+            @endif
+
+            {{-- 3. BAGIAN MERCHANDISE --}}
+            @if($merchandise->count() > 0)
+            <div class="section-title">
+                <span>Merchandise</span>
+                <span class="badge-count">{{ $merchandise->count() }}</span>
+            </div>
+            {{-- UPDATE: row-cols-1 (HP) --}}
+            <div class="row gx-4 gx-lg-5 row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-xl-4 mb-5">
+                @foreach($merchandise as $item)
+                @php
+                    $imgRaw = $item->defaultVariant->images->first(); 
+                    $imgPath = $imgRaw ? $imgRaw->image_path : 'assets/img/default_merch.jpg';
+                    $price = $item->defaultVariant->price;
+                    if($item->defaultVariant->sizes && $item->defaultVariant->sizes->count() > 0) {
+                        $price = $item->defaultVariant->sizes->min('price');
+                    }
+                @endphp
+                <div class="col mb-4">
+                    <a href="{{ route('merch.products.detail', $item->slug) }}" class="card-search-result">
+                        <img src="{{ asset($imgPath) }}" alt="{{ $item->name }}" />
+                        <div class="card-body">
+                            <h5 title="{{ $item->name }}">{{ $item->name }}</h5>
+                            <p class="sub-text">Official Merch</p>
+                            <div class="price-tag" style="font-weight: 700; color: #00b8a9; margin-bottom: 15px;">
+                                Rp {{ number_format($price, 0, ',', '.') }}
+                            </div>
+                            <span class="btn btn-outline-custom">Beli Sekarang</span>
+                        </div>
+                    </a>
+                </div>
+                @endforeach
+            </div>
+            @endif
+
+            {{-- 4. BAGIAN BLOG (TETAP SAMA) --}}
+            @if($blogs->count() > 0)
+            <div class="section-title">
+                <span>Artikel & Berita</span>
+                <span class="badge-count">{{ $blogs->count() }}</span>
+            </div>
+            <div class="row gx-4 gx-lg-5 row-cols-1 row-cols-md-3 mb-5">
+                @foreach($blogs as $item)
+                <div class="col mb-4">
+                    <a href="{{ route('web.blog.detail', $item->slug) }}" class="card-search-result">
+                        <img src="{{ asset('uploads/blogs/' . $item->image) }}" onerror="this.src='{{ asset('assets/img/blog_default.jpg') }}'" alt="{{ $item->title }}" />
+                        <div class="card-body">
+                            <h5 title="{{ $item->title }}">{{ $item->title }}</h5>
+                            <p class="sub-text">
+                                <i class="far fa-calendar me-1"></i> {{ \Carbon\Carbon::parse($item->created_at)->format('d M Y') }}
+                            </p>
+                            <span class="btn btn-outline-custom mt-auto">Baca Selengkapnya</span>
+                        </div>
+                    </a>
+                </div>
+                @endforeach
+            </div>
+            @endif
+
+        @endif
     </div>
 </section>
 @endsection
