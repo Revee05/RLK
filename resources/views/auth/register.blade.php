@@ -46,8 +46,11 @@
             </div>
 
             <div class="input-group">
-                <input type="password" class="input-field input-cyan @error('password') is-invalid @enderror"
-                    name="password" required autocomplete="new-password" placeholder="Password">
+                <div class="password-wrapper">
+                    <input id="register-password" type="password" class="input-field input-cyan @error('password') is-invalid @enderror"
+                        name="password" required autocomplete="new-password" placeholder="Password">
+                    <button type="button" class="password-toggle" id="toggle-register-password" aria-label="Show password"><i class="fas fa-eye"></i></button>
+                </div>
                 @error('password')
                     <span class="invalid-feedback" role="alert">
                         <strong>{{ $message }}</strong>
@@ -55,8 +58,11 @@
                 @enderror
             </div>
             <div class="input-group">
-                <input type="password" class="input-field input-cyan" placeholder="Ulangi Password"
-                    name="password_confirmation" required autocomplete="new-password">
+                <div class="password-wrapper">
+                    <input id="register-password-confirm" type="password" class="input-field input-cyan" placeholder="Ulangi Password"
+                        name="password_confirmation" required autocomplete="new-password">
+                    <button type="button" class="password-toggle" id="toggle-register-password-confirm" aria-label="Show password"><i class="fas fa-eye"></i></button>
+                </div>
             </div>
             <button type="submit" class="button btn-black text-button-normal">
                 {{ __('Register') }}
@@ -69,4 +75,26 @@
             <a class="font-weight-normal text-black" href="{{ route('login') }}">Sudah memiliki akun? Login</a>
         </div>
     </div>
+<script>
+['register-password','register-password-confirm'].forEach(function(id){
+    var btnId = id === 'register-password' ? 'toggle-register-password' : 'toggle-register-password-confirm';
+    var btn = document.getElementById(btnId);
+    if(btn){
+        btn.addEventListener('click', function(){
+            var input = document.getElementById(id);
+            if (!input) return;
+            var icon = this.querySelector('i');
+            if(input.type === 'password'){
+                input.type = 'text';
+                if(icon){ icon.classList.remove('fa-eye'); icon.classList.add('fa-eye-slash'); }
+                this.setAttribute('aria-label','Hide password');
+            } else {
+                input.type = 'password';
+                if(icon){ icon.classList.remove('fa-eye-slash'); icon.classList.add('fa-eye'); }
+                this.setAttribute('aria-label','Show password');
+            }
+        });
+    }
+});
+</script>
 @endsection

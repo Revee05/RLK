@@ -145,6 +145,24 @@ class SlidersController extends Controller
      */
     public function destroy($id)
     {
-        //
+        try {
+            $slider = Sliders::findOrFail($id);
+
+            // 1. Hapus file fisik gambar dari folder
+            $imagePath = public_path('uploads/sliders/' . $slider->image);
+            if (File::exists($imagePath)) {
+                File::delete($imagePath);
+            }
+
+            // 2. Hapus data dari database
+            $slider->delete();
+
+            return redirect()->route('master.sliders.index')->with('message', 'Data slider berhasil dihapus');
+
+        } catch (\Exception $e) {
+            // Log error jika terjadi masalah
+            \Log::error("Gagal menghapus slider: " . $e->getMessage());
+            return redirect()->back()->with('error', 'Gagal menghapus data');
+        }
     }
 }

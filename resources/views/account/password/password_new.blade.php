@@ -12,17 +12,28 @@
                     </div>
                     <div class="card-body ps-4">
 
-                        @include('admin.partials._success')
+                        {{-- @include('admin.partials._success') --}}
                         {{-- Erors notification --}}
-                        @include('admin.partials._errors')
+                        {{-- @include('admin.partials._errors') --}}
                         {{ Form::model($user, ['route' => ['update.profil'], 'method' => 'POST']) }}
                         <div class="form-group">
                             {{ Form::label('name', 'Password') }}
-                            {{ Form::password('password', ['class' => 'form-control input-field input-cyan', 'placeholder' => 'Password']) }}
+                            <div class="password-wrapper">
+                                {{ Form::password('password', ['id' => 'account-password', 'class' => 'form-control input-field input-cyan', 'placeholder' => 'Password']) }}
+                                <button type="button" class="password-toggle" id="toggle-account-password" aria-label="Show password"><i class="fas fa-eye"></i></button>
+                            </div>
                         </div>
                         <div class="form-group py-2">
                             {{ Form::label('name', 'Konfirmasi Password') }}
-                            {{ Form::password('password_confirmation', ['class' => 'form-control input-field input-cyan', 'placeholder' => 'Konfirmasi Password']) }}
+                            <div class="password-wrapper">
+                                {{ Form::password('password_confirmation', ['id' => 'account-password-confirm', 'class' => 'form-control input-field input-cyan', 'placeholder' => 'Konfirmasi Password']) }}
+                                <button type="button" class="password-toggle" id="toggle-account-password-confirm" aria-label="Show password"><i class="fas fa-eye"></i></button>
+                            </div>
+                            @error('password')
+                                @foreach ($errors->all() as $error)
+                                    <div class="invalid-feedback d-block">{{ $error }}</div>
+                                @endforeach
+                            @enderror
                         </div>
                         <input type="hidden" name="id" value="{{ Auth::user()->id }}">
                         <input type="hidden" name="katasandi" value="1">
@@ -45,7 +56,7 @@
         </div>
     </div>
 
-    <script type="text/javascript">
+        <script type="text/javascript">
         document.addEventListener('DOMContentLoaded', function() {
             const container = document.getElementById('passwordToastContainer');
 
@@ -86,6 +97,29 @@
                     }).show();
                 })();
             @endif
+
+            // Password toggle for account password page
+            function attachToggle(btnId, inputId){
+                var btn = document.getElementById(btnId);
+                if(!btn) return;
+                btn.addEventListener('click', function(){
+                    var input = document.getElementById(inputId);
+                    if(!input) return;
+                    var icon = this.querySelector('i');
+                    if(input.type === 'password'){
+                        input.type = 'text';
+                        if(icon){ icon.classList.remove('fa-eye'); icon.classList.add('fa-eye-slash'); }
+                        this.setAttribute('aria-label','Hide password');
+                    } else {
+                        input.type = 'password';
+                        if(icon){ icon.classList.remove('fa-eye-slash'); icon.classList.add('fa-eye'); }
+                        this.setAttribute('aria-label','Show password');
+                    }
+                });
+            }
+
+            attachToggle('toggle-account-password','account-password');
+            attachToggle('toggle-account-password-confirm','account-password-confirm');
         });
     </script>
 @endsection

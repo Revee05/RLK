@@ -39,8 +39,11 @@ class MemberController extends Controller
         $id = $request->id;
         if ($request->password == "" && $request->katasandi == FALSE) {
             $this->validate($request, [
+                'name' => 'required|string|max:255',
                 'email' => 'required|email|unique:users,email,' . $id,
             ], [
+                'name.required' => 'Nama wajib diisi',
+                'name.max' => 'Nama maksimal 255 karakter',
                 'email.required' => 'Email wajib diisi'
             ]);
             $input = $request->only(['name', 'email', 'jenis_kelamin']);
@@ -49,7 +52,7 @@ class MemberController extends Controller
                 'password' => 'required|min:6|confirmed',
             ], [
                 'password.required' => 'Password harus diisi',
-                'password.confirmed' => 'Konfirmasi Password harus diisi',
+                'password.confirmed' => 'Konfirmasi Password harus diisi dan sama dengan Password',
                 'password.min' => 'Password minimal 6 karakter',
             ]);
             $input['password'] = Hash::make($request->password);

@@ -60,7 +60,12 @@ Route::group(['prefix' => '/master'], function () {
 });
 Route::resource('/daftar-penawaran','DaftarPenawaranController',['as' => 'admin']);
 Route::resource('/daftar-pemenang','DaftarPemenangController',['as' => 'admin']);
+
 //transaksi
+Route::get('/transaksi','Transaksi\TransaksiController@index')->name('admin.transaksi.index');
+Route::get('/transaksi/{id}','Transaksi\TransaksiController@show')->name('admin.transaksi.show');
+
+//transaksi_print
 // Route::group(['prefix' => '/transaksi'], function () {
 //     Route::get('/cari/barang','BarangController@dataBarang')->name('transaksi.data.barang');
 //     Route::get('/stok/barang/{id}','BarangController@getBarang')->name('transaksi.get.barang');

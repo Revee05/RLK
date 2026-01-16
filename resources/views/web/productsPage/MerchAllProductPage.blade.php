@@ -15,7 +15,7 @@
     const userFavorites = @json($favoriteProductIds);
 </script>
 <div class="container py-5">
-    <h2 class="text-center fw-bold mb-4">Products Design</h2>
+    <h2 class="text-center fw-bold mb-4">Merchandise Products</h2>
     <div class="products-grid-header mb-4 d-flex align-items-center gap-2 flex-wrap">
         <form id="search-form" class="position-relative flex-grow-1 d-flex" style="max-width:600px;">
             <input type="text" class="form-control search-input rounded-pill ps-4 pe-5"
@@ -68,6 +68,8 @@ let isLoading = false;
 let currentSearch = "";
 let currentCategory = "";
 let currentSort = "";
+let categoriesCached = null;
+let categoriesVersionCached = null;
 
 function renderProduct(product, idx) {
     let batchIdx = idx % 21;
@@ -148,13 +150,35 @@ function fetchProducts(batch = 1, search = "", category = "", sort = "") {
     fetch(url)
         .then(res => res.json())
         .then(data => {
+            console.debug('merch products response', data, { batch });
             const grid = document.getElementById('products-grid');
+
+            // count non-null products returned (server pads grid with nulls)
+            const nonNullCount = Array.isArray(data.products) ? data.products.filter(p => p != null).length : 0;
+            const serverHasMore = !!(data.has_more_featured || data.has_more_normal);
+            const gridFull = nonNullCount >= 21;
+            const hasMore = serverHasMore || gridFull;
+
+            const loadMoreBtn = document.getElementById('load-more');
+            if (!hasMore) {
+                loadMoreBtn.disabled = true;
+                loadMoreBtn.classList.add('disabled');
+                loadMoreBtn.textContent = 'No more products';
+            } else {
+                loadMoreBtn.disabled = false;
+                loadMoreBtn.classList.remove('disabled');
+                loadMoreBtn.textContent = 'Load More';
+            }
+
             if (batch === 1) grid.innerHTML = "";
+            // Render only non-null items. Use global index so layout decisions that
+            // rely on position behave consistently across batches.
             data.products.forEach((product, idx) => {
-                grid.insertAdjacentHTML('beforeend', renderProduct(product, idx));
+                if (!product) return;
+                const globalIdx = ((batch - 1) * 21) + idx;
+                grid.insertAdjacentHTML('beforeend', renderProduct(product, globalIdx));
             });
-            document.getElementById('load-more').style.display =
-                (!data.has_more_featured && !data.has_more_normal) ? 'none' : '';
+
             isLoading = false;
         })
         .catch(() => {
@@ -198,6 +222,34 @@ async function ensureCategories() {
                 categoriesVersionCached = localVer;
                 populateCategories(categoriesCached);
             }
+
+            function populateCategories(categories) {
+                const container = document.getElementById('category-dropdown');
+                if (!container) return;
+                // clear existing items
+                container.innerHTML = '';
+                // add 'All' option
+                const allItem = document.createElement('li');
+                allItem.innerHTML = `<a class="dropdown-item category-item" data-category="">Semua Kategori</a>`;
+                container.appendChild(allItem);
+
+                categories.forEach(cat => {
+                    const li = document.createElement('li');
+                    const safeName = (cat.name || '').replace(/</g, '&lt;');
+                    li.innerHTML = `<a class="dropdown-item category-item" data-category="${cat.slug}">${safeName}</a>`;
+                    container.appendChild(li);
+                });
+
+                // mark active if currentCategory matches
+                container.querySelectorAll('.category-item').forEach(item => {
+                    if (item.getAttribute('data-category') === currentCategory) {
+                        item.classList.add('active');
+                        document.getElementById('filter-label').textContent = item.textContent;
+                    } else {
+                        item.classList.remove('active');
+                    }
+                });
+            }
         } catch (e) {
             categoriesCached = null;
             categoriesVersionCached = null;
@@ -235,7 +287,9 @@ document.addEventListener('DOMContentLoaded', async function() {
         await ensureCategories();
         fetchProducts(currentBatch, currentSearch, currentCategory, currentSort);
 
-        document.getElementById('load-more').addEventListener('click', function() {
+        const loadMoreBtn = document.getElementById('load-more');
+        loadMoreBtn.addEventListener('click', function() {
+            if (loadMoreBtn.disabled || isLoading) return;
             currentBatch++;
             fetchProducts(currentBatch, currentSearch, currentCategory, currentSort);
         });

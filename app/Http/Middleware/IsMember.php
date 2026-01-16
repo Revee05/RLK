@@ -15,10 +15,11 @@ class IsMember
      */
     public function handle($request, Closure $next)
     {
-        if(auth()->user()->access == 'member'){
+        $access = auth()->user()->access ?? null;
+        if ($access == 'member' || $access == 'admin') {
             return $next($request);
         }
-   
-        return redirect('/')->with('error',"You don't have admin access.");
+
+        return redirect('/')->with('error', "You don't have access.");
     }
 }

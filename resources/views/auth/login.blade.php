@@ -23,13 +23,16 @@
                 @error('email')
                     <span class="invalid-feedback" role="alert">
                         <strong>{{ $message }}</strong>
-                    </span>
+                    </span> 
                 @enderror
             </div>
 
             <div class="input-group">
-                <input type="password" class="input-field input-cyan @error('password') is-invalid @enderror"
-                    name="password" required autocomplete="new-password" placeholder="Password">
+                <div class="password-wrapper">
+                    <input id="login-password" type="password" class="input-field input-cyan @error('password') is-invalid @enderror"
+                        name="password" required autocomplete="new-password" placeholder="Password">
+                    <button type="button" class="password-toggle" id="toggle-login-password" aria-label="Show password"><i class="fas fa-eye"></i></button>
+                </div>
                 @error('password')
                     <span class="invalid-feedback" role="alert">
                         <strong>{{ $message }}</strong>
@@ -57,4 +60,23 @@
         </div>
 
     </div>
+<script>
+var toggleLoginBtn = document.getElementById('toggle-login-password');
+if(toggleLoginBtn){
+    toggleLoginBtn.addEventListener('click', function(){
+        var input = document.getElementById('login-password');
+        if(!input) return;
+        var icon = this.querySelector('i');
+        if(input.type === 'password'){
+            input.type = 'text';
+            if(icon){ icon.classList.remove('fa-eye'); icon.classList.add('fa-eye-slash'); }
+            this.setAttribute('aria-label','Hide password');
+        } else {
+            input.type = 'password';
+            if(icon){ icon.classList.remove('fa-eye-slash'); icon.classList.add('fa-eye'); }
+            this.setAttribute('aria-label','Show password');
+        }
+    });
+}
+</script>
 @endsection

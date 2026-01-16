@@ -7,7 +7,6 @@
 @section('content')
 
     <div class="container py-5">
-
         <h2 class="fw-bold mb-4">Checkout</h2>
 
         <form action="{{ route('checkout.process') }}" method="POST">
@@ -41,7 +40,7 @@
 
                 <input type="hidden" name="selected_district_id" id="selected_district_id" value="{{ $selectedAddress->district_id ?? '' }}">
 
-                    <div class="row">
+                    <div class="row justify-content-center">
                         <!-- LEFT SIDE -->
                         <div class="col-md-7">
                             {{-- ADDRESS --}}
@@ -220,13 +219,12 @@
         </form>
     </div>
 
-    {{-- Include modal --}}
+    {{-- Modals --}}
     @include('web.checkout.modals-alamat', ['addresses' => $addresses, 'province' => $province])
     @include('web.checkout.modals-tambah-alamat', ['province' => $province])
     @include('web.checkout.modals-shipper', [
         'selectedAddress' => $selectedAddress,
         'cart' => $cart,
-        'subtotal' => $subtotal,
     ])
 @endsection
 

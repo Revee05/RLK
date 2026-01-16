@@ -69,11 +69,26 @@ class Products extends Model
     public function karya(){
         return $this->belongsTo('App\Karya','karya_id');
     }
+    /**
+     * Relation to the winning user (winner_id)
+     */
+    public function winner()
+    {
+        return $this->belongsTo('App\User', 'winner_id');
+    }
     public function bid()
     {
      
 
       return $this->hasMany('App\Bid', 'product_id');
+    }
+    
+    /**
+     * Latest order for this product (used to retrieve bid_terakhir fallback)
+     */
+    public function order()
+    {
+        return $this->hasOne('App\Order', 'product_id', 'id')->latest();
     }
     function kelengkapans()
     {

@@ -12,6 +12,12 @@
     // Untuk Order (lelang): alamat ada di field langsung (name, phone, address, dll)
     $isOrderMerch = get_class($order) === 'App\OrderMerch';
     $address = $isOrderMerch ? $order->address : null;
+    
+    // Support both variable names: $giftWrapCost (new) or $giftWrapPrice (older/other)
+    $giftWrapCost = $giftWrapCost ?? ($giftWrapPrice ?? 0);
+
+    // Determine if this order uses pickup
+    $isPickup = ($shipping['type'] ?? null) === 'pickup';
 @endphp
 
 
@@ -47,8 +53,8 @@
                 <h6>Pengambilan Pesanan</h6>
                 <p>
                     <strong>Rasa Lelang Karya</strong><br>
-                    Griya Jl. Sekargading blok C 19, <br>
-                    RT.04/RW.03, Kel. Kalisegoro, <br>
+                    Griya Sekargading blok C 19,
+                    RT.04 RW.03, Kel. Kalisegoro,
                     Gunung Pati, Kota Semarang <br>
                     Jam Operasional: 09.00 – 21.00
                 </p>
@@ -178,6 +184,7 @@
             </button>
         </form>
 
+        @if($isOrderMerch)
         <form action="{{ route('payment.cancel', $order->invoice) }}" method="POST"
               onsubmit="return confirm('Yakin ingin membatalkan pesanan ini?')">
             @csrf
@@ -185,6 +192,7 @@
                 Batalkan
             </button>
         </form>
+        @endif
 
     </div>
 
