@@ -544,3 +544,21 @@ body.auction-detail {
         padding: 3px 6px;
     }
 }
+
+/* Efek animasi harga tertinggi */
+.highest-price-animate {
+    animation: priceFlash 0.8s ease-out;
+}
+
+@keyframes priceFlash {
+    0% {
+        transform: translateY(0);
+    }
+    30% {
+        transform: translateY(-3px);
+    }
+    100% {
+        background-color: transparent;
+        transform: translateY(0);
+    }
+}
