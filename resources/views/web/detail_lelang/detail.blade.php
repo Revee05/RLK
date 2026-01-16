@@ -94,9 +94,9 @@
                             <div class="details-grid">
                                 <div>
                                     <!-- <p class="label-teal">Material</p>
-                                            <p>{{ $product->material ?? '-' }}</p> -->
+                                                            <p>{{ $product->material ?? '-' }}</p> -->
                                     <!-- <p class="label-teal">Dimensi</p>
-                                            <p>{{ $product->dimension ?? '-' }}</p> -->
+                                                            <p>{{ $product->dimension ?? '-' }}</p> -->
                                     <p class="label-teal">Berat</p>
                                     <p>{{ $product->weight ?? '-' }} gr</p>
                                 </div>
@@ -250,6 +250,13 @@
 @section('js')
     {{-- Pastikan variabel global di-define SEBELUM app.js --}}
     <script>
+        function getActiveEl(role) {
+            const els = document.querySelectorAll(`[data-role="${role}"]`);
+            return Array.from(els).find(el => el.offsetParent !== null) || null;
+        }
+    </script>
+
+    <script>
         /**
          * Inisialisasi variabel global untuk digunakan di JS dan Vue.
          * - productId: ID produk yang sedang ditampilkan
@@ -272,6 +279,7 @@
             nominals: window.serverNominals
         });
     </script>
+
     <script src="{{ asset('js/app.js') }}"></script>
 
     {{-- Script untuk update dropdown & fungsi bidding --}}
@@ -280,8 +288,8 @@
         // sekarang dipasang oleh bundled helper yang di-import di `app.js`.
 
         function setupBidButtonListener() {
-            var btn = document.getElementById('btnBidNow');
-            var select = document.getElementById('bidSelect');
+            var btn = getActiveEl('btn-bid');
+            var select = getActiveEl('bid-select');
             if (!btn || !select) return;
             btn.disabled = false;
             btn.addEventListener('click', function() {
@@ -302,7 +310,7 @@
         }
 
         function waitForVueAndSetupBidBtn() {
-            var btn = document.getElementById('btnBidNow');
+            var btn = getActiveEl('btn-bid');
             if (btn) btn.disabled = true;
             var tries = 0;
             var maxTries = 50;
@@ -364,39 +372,43 @@
                     console.error('[Pusher] Connection error:', err);
                 });
 
+                // channel.listen('BidSent', (e) => {
+                //     // update highest (guarded formatter)
+                //     const highestEl = getActiveEl('highest-price');
+                //     if (highestEl && typeof e.price !== 'undefined') {
+                //         const fmt = (typeof window.formatRp === 'function') ? window.formatRp : (v => String(v));
+                //         highestEl.innerText = 'Rp ' + fmt(Number(e.price));
+                //     }
+
+                //     // kalau server kirim nominals, rebuild select langsung — prefer helper if present
+                //     const select = getActiveEl('bid-select');
+                //     if (select) {
+                //         if (typeof window.updateNominalDropdown === 'function') {
+                //             try {
+                //                 window.updateNominalDropdown(Number(e.price) || 0, e.nominals || null, e.step ||
+                //                     null);
+                //             } catch (err) {
+                //                 console.error('[Echo] updateNominalDropdown threw', err);
+                //             }
+                //         } else if (Array.isArray(e.nominals)) {
+                //             // fallback manual build using guarded formatter
+                //             const fmt = (typeof window.formatRp === 'function') ? window.formatRp : (v => String(
+                //                 v));
+                //             select.innerHTML = '<option value="">Pilih Nominal Bid</option>';
+                //             e.nominals.forEach(v => {
+                //                 const opt = document.createElement('option');
+                //                 opt.value = Number(v);
+                //                 opt.textContent = 'Rp ' + fmt(Number(v));
+                //                 select.appendChild(opt);
+                //             });
+                //         }
+                //     }
+                // });
+
                 channel.listen('BidSent', (e) => {
-                    // update highest (guarded formatter)
-                    const highestEl = document.getElementById('highestPrice');
-                    if (highestEl && typeof e.price !== 'undefined') {
-                        const fmt = (typeof window.formatRp === 'function') ? window.formatRp : (v => String(v));
-                        highestEl.innerText = 'Rp ' + fmt(Number(e.price));
-                    }
-
-                    // kalau server kirim nominals, rebuild select langsung — prefer helper if present
-                    const select = document.getElementById('bidSelect');
-                    if (select) {
-                        if (typeof window.updateNominalDropdown === 'function') {
-                            try {
-                                window.updateNominalDropdown(Number(e.price) || 0, e.nominals || null, e.step ||
-                                    null);
-                            } catch (err) {
-                                console.error('[Echo] updateNominalDropdown threw', err);
-                            }
-                        } else if (Array.isArray(e.nominals)) {
-                            // fallback manual build using guarded formatter
-                            const fmt = (typeof window.formatRp === 'function') ? window.formatRp : (v => String(
-                                v));
-                            select.innerHTML = '<option value="">Pilih Nominal Bid</option>';
-                            e.nominals.forEach(v => {
-                                const opt = document.createElement('option');
-                                opt.value = Number(v);
-                                opt.textContent = 'Rp ' + fmt(Number(v));
-                                select.appendChild(opt);
-                            });
-                        }
-                    }
+                    console.log('[Blade] BidSent received:', e);
                 });
-
+                
                 channel.listen('MessageSent', (e) => {
                     console.log('[MessageSent] Event diterima di detail.blade.php:', e);
                 });
@@ -494,8 +506,10 @@
             const pad = n => (n < 10 ? '0' + n : n);
 
             function findEl() {
-                return document.getElementById('mainCountdown');
+                const els = document.querySelectorAll('[data-role="countdown"]');
+                return Array.from(els).find(el => el.offsetParent !== null) || null;
             }
+
 
             function readRaw() {
                 const el = findEl();
@@ -565,7 +579,7 @@
                     clearInterval(interval);
 
                     // 1. Matikan Tombol Bid
-                    const btnBid = document.getElementById('btnBidNow');
+                    const btnBid = getActiveEl('btn-bid');
                     if (btnBid) {
                         btnBid.disabled = true; // Kunci tombol
                         btnBid.innerText = "Waktu Habis"; // Ubah tulisan
@@ -575,7 +589,7 @@
                     }
 
                     // 2. Matikan Dropdown Pilihan Harga
-                    const selectBid = document.getElementById('bidSelect');
+                    const selectBid = getActiveEl('bid-select');
                     if (selectBid) {
                         selectBid.disabled = true; // Kunci dropdown
                     }

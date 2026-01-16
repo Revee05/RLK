@@ -38512,284 +38512,168 @@ __webpack_require__.r(__webpack_exports__);
 // === Load konfigurasi awal aplikasi (bootstrap Laravel Mix) ===
 __webpack_require__(/*! ./bootstrap */ "./resources/js/bootstrap.js");
 
-// === Import helper lelang yang menempelkan fungsi ke window (formatRp, updateNominalDropdown, ...) ===
+// === Import helper lelang (formatRp, updateNominalDropdown, dll) ===
 
 
-// === Expose Vue ke window agar komponen dapat diakses global ===
 window.Vue = vue__WEBPACK_IMPORTED_MODULE_1___default.a;
 
-// === Registrasi komponen global untuk form chat dan daftar message ===
+// === Registrasi komponen chat ===
 vue__WEBPACK_IMPORTED_MODULE_1___default.a.component("chat-form", __webpack_require__(/*! ./components/ChatForm.vue */ "./resources/js/components/ChatForm.vue")["default"]);
 vue__WEBPACK_IMPORTED_MODULE_1___default.a.component("chat-messages", __webpack_require__(/*! ./components/ChatMessages.vue */ "./resources/js/components/ChatMessages.vue")["default"]);
 
-// === Menunggu window.productSlug sampai tersedia sebelum inisialisasi Vue ===
-function waitForSlug(callback) {
+/**
+ * ===============================
+ * Highest Price Helper (FINAL)
+ * ===============================
+ */
+function updateHighestPrice(val) {
+  if (val === null || typeof val === "undefined" || isNaN(val)) return;
+  var els = document.querySelectorAll('[data-role="highest-price"]');
+  if (!els.length) return;
+  els.forEach(function (el) {
+    if (el.offsetParent === null) return;
+    var newText = "Rp " + window.formatRp(val);
+    if (el.innerText.trim() === newText.trim()) return;
+    el.innerText = newText;
+
+    // animasi ringan
+    el.classList.remove("highest-price-animate");
+    void el.offsetWidth;
+    el.classList.add("highest-price-animate");
+  });
+}
+function safeUpdateNominalDropdown(highest, nominals, step) {
+  var stepDefault = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : 10000;
+  if (typeof window.updateNominalDropdown !== "function") return;
+  try {
+    window.updateNominalDropdown(highest, nominals || null, step || null, stepDefault);
+  } catch (e) {
+    console.error("[updateNominalDropdown] error", e);
+  }
+}
+
+// === Tunggu slug siap ===
+function waitForSlug(cb) {
   var tries = 0;
-  var timer = setInterval(function () {
+  var t = setInterval(function () {
     tries++;
-
-    // === Jika slug sudah siap, hentikan timer dan jalankan callback ===
-    if (window.productSlug && window.productSlug !== "undefined") {
-      clearInterval(timer);
-      callback();
+    if (window.productSlug) {
+      clearInterval(t);
+      cb();
     }
-
-    // === Jika slug tidak muncul setelah beberapa percobaan, hentikan dan tampilkan error ===
     if (tries > 30) {
-      clearInterval(timer);
-      console.error("ERROR: productSlug tetap undefined!");
+      clearInterval(t);
+      console.error("productSlug tidak tersedia");
     }
   }, 100);
 }
-
-// === Helper untuk cek mode environment (local, testing, development) ===
 function isDebugEnv() {
   var env = window.appEnv || process.env.APP_ENV || "development" || "";
-  return ["local", "testing", "development", "dev"].includes(env.toLowerCase());
+  return ["local", "dev", "development", "testing"].includes(env.toLowerCase());
 }
 
-// === Mulai inisialisasi Vue setelah slug terdeteksi ===
+// === Init Vue ===
 waitForSlug(function () {
-  if (isDebugEnv()) console.log("Vue initialized. slug =", window.productSlug);
   window.app = new vue__WEBPACK_IMPORTED_MODULE_1___default.a({
     el: "#app",
     data: {
-      // === Set data awal messages berdasarkan existingBids jika tersedia ===
-      messages: window.existingBids && window.existingBids.length > 0 ? window.existingBids : []
+      messages: window.existingBids && window.existingBids.length ? window.existingBids : []
     },
     created: function created() {
-      // === Ambil daftar message awal dari backend ===
+      var _this = this;
       this.fetchMessages();
-
-      // === Jalankan polling fallback untuk menjaga state ketika Echo idle ===
       this.startStatePolling();
-
-      // === Listener Laravel Echo pada channel privat produk ===
       Echo["private"]("product.".concat(window.productId))
-      // === Listener untuk update harga tertinggi ===
+      // === Highest price realtime ===
       .listen("BidSent", function (e) {
         var price = Number(e.price);
         if (!isNaN(price)) {
-          // update highest price UI
-          var highestEl = document.getElementById("highestPrice");
-          if (highestEl) highestEl.innerText = "Rp " + window.formatRp(price);
-
-          // prefer nominals from event, fallback to step
-          var nominals = e.nominals || e.nextNominals || null;
-          var step = typeof e.step !== "undefined" ? e.step : null;
-          window.updateNominalDropdown(price, nominals, step);
+          updateHighestPrice(price);
+          safeUpdateNominalDropdown(price, e.nominals || e.nextNominals || null, e.step || null);
         }
       })
-      // === Listener untuk update riwayat bid ===
-      .listen("MessageSent", function (e) {
-        // update dropdown from message event too
-        var bid = Number(e.bid || e.message);
-        var nominals = e.nominals || e.nextNominals || null;
-        var step = typeof e.step !== "undefined" ? e.step : null;
-        if (!isNaN(bid)) window.updateNominalDropdown(bid, nominals, step);
 
-        // add message to list
-        window.app.messages.unshift({
+      // === Chat realtime (user lain) ===
+      .listen("MessageSent", function (e) {
+        // anti duplikasi
+        if (_this.messages.length && String(_this.messages[0].message) === String(e.bid || e.message)) {
+          return;
+        }
+        _this.messages.unshift({
           user: e.user,
           message: e.bid || e.message,
           tanggal: e.tanggal
         });
       });
-
-      // Expose refresh helper globally so other scripts/components can call it
-      try {
-        window.refreshStateImmediate = this.refreshStateImmediate.bind(this);
-      } catch (e) {
-        if (isDebugEnv()) console.warn('[created] failed to expose refreshStateImmediate', e);
-      }
     },
     methods: {
-      // === Mengambil seluruh message untuk productSlug dari server ===
       fetchMessages: function fetchMessages() {
-        var _this = this;
-        // mark that an initial fetch has been started to avoid duplicates
-        try {
-          window.__bid_fetch_called = true;
-        } catch (e) {}
-        axios.get("/bid/messages/".concat(window.productSlug)).then(function (res) {
-          // === Backend sudah mengurutkan: terbaru di atas ===
-          _this.messages = res.data;
-        })["catch"](function (err) {
-          if (isDebugEnv()) console.error("Gagal ambil messages:", err);
-        });
-      },
-      // === NEW: Segera refresh state (highest + messages) tanpa menunggu polling ===
-      refreshStateImmediate: function refreshStateImmediate() {
         var _this2 = this;
-        var url = "/bid/state/".concat(window.productSlug);
-        if (isDebugEnv()) console.log('[refreshStateImmediate] fetch', url);
-        axios.get(url).then(function (res) {
-          var data = res.data || {};
-          var highest = Number(data.highest);
-          var msgs = Array.isArray(data.messages) ? data.messages : [];
-
-          // Update highest UI
-          if (!isNaN(highest)) {
-            var highestEl = document.getElementById('highestPrice');
-            if (highestEl) highestEl.innerText = 'Rp ' + window.formatRp(highest);
-
-            // call dropdown updater but guard against exceptions so we still sync messages
-            try {
-              if (typeof updateNominalDropdown === 'function') {
-                updateNominalDropdown(highest, data.nextNominals || data.nominals || null, data.step || null);
-              }
-            } catch (e) {
-              if (isDebugEnv()) console.error('[refreshStateImmediate] updateNominalDropdown threw', e);
-            }
-          }
-
-          // If the state endpoint returned a messages array, it may only include
-          // the latest bid (optimized response). Do NOT replace the whole
-          // client-side history with that small array — instead merge the
-          // newest item into the existing `this.messages` to preserve history.
-          if (msgs.length > 0) {
-            var latest = msgs[0];
-            // If we don't have any messages yet, use server-provided list
-            if (!_this2.messages || _this2.messages.length === 0) {
-              _this2.messages = msgs;
-            } else {
-              // Prevent duplicates: compare by message value and timestamp
-              var existingNewest = _this2.messages[0] || null;
-              var isDuplicate = existingNewest && (String(existingNewest.message) === String(latest.message) || String(existingNewest.tanggal) === String(latest.tanggal));
-              if (!isDuplicate) {
-                _this2.messages.unshift(latest);
-              }
-            }
-          } else {
-            // No condensed messages returned — fetch full list as fallback
-            _this2.fetchMessages();
-          }
-          if (isDebugEnv()) console.log('[refreshStateImmediate] done', {
-            highest: highest,
-            msgs_count: msgs.length
-          });
+        axios.get("/bid/messages/".concat(window.productSlug)).then(function (res) {
+          _this2.messages = res.data;
         })["catch"](function (err) {
-          if (isDebugEnv()) console.warn('[refreshStateImmediate] failed', err);
-          // fallback: pastikan setidaknya ambil messages lagi
-          _this2.fetchMessages();
+          if (isDebugEnv()) console.error("fetchMessages error", err);
         });
       },
-      // === Polling fallback untuk sinkronisasi state jika Echo mati/idle ===
-      startStatePolling: function startStatePolling() {
-        var POLL_MS = 10 * 1000; // === Interval polling 5 detik ===
-        var lastEventTs = Date.now();
-
-        // === Bind event status koneksi Echo (opsional, hanya logging) ===
-        try {
-          var conn = Echo.connector && Echo.connector.pusher && Echo.connector.pusher.connection;
-          if (conn) {
-            if (isDebugEnv()) conn.bind("connected", function () {
-              console.log("[Poll] Echo connected");
-            });
-            if (isDebugEnv()) conn.bind("disconnected", function () {
-              console.warn("[Poll] Echo disconnected");
-            });
-            if (isDebugEnv()) conn.bind("error", function (err) {
-              console.error("[Poll] Echo error", err);
-            });
+      refreshStateImmediate: function refreshStateImmediate() {
+        var _this3 = this;
+        axios.get("/bid/state/".concat(window.productSlug)).then(function (res) {
+          var d = res.data || {};
+          var highest = Number(d.highest);
+          if (!isNaN(highest)) {
+            updateHighestPrice(highest);
+            safeUpdateNominalDropdown(highest, d.nextNominals || d.nominals || null, d.step || null);
           }
-        } catch (e) {
-          if (isDebugEnv()) console.warn("[Poll] Echo bind failed", e);
-        }
-
-        // === Update timestamp ketika event MessageSent masuk ===
-        Echo["private"]("product.".concat(window.productId)).listen("MessageSent", function () {
-          lastEventTs = Date.now();
+          if (Array.isArray(d.messages) && d.messages.length) {
+            var latest = d.messages[0];
+            if (!_this3.messages.length || _this3.messages[0].message !== latest.message) {
+              _this3.messages.unshift(latest);
+            }
+          }
+        })["catch"](function () {
+          return _this3.fetchMessages();
         });
-
-        // === Jalankan polling periodik ===
+      },
+      startStatePolling: function startStatePolling() {
+        var _this4 = this;
+        var POLL_MS = 10000;
+        var lastEvent = Date.now();
+        Echo["private"]("product.".concat(window.productId)).listen("MessageSent", function () {
+          return lastEvent = Date.now();
+        });
         setInterval(function () {
-          var now = Date.now();
-          var idle = now - lastEventTs > POLL_MS; // === Cek apakah Echo idle ===
-          var url = "/bid/state/".concat(window.productSlug);
-
-          // === Jika tidak idle, polling tidak dijalankan ===
-          if (!idle) return;
-
-          // === Ambil state terbaru dari server ===
-          axios.get(url).then(function (res) {
-            var data = res.data || {};
-            var highest = Number(data.highest);
-            var msgs = Array.isArray(data.messages) ? data.messages : [];
-
-            // === Sinkronisasi harga tertinggi ===
-            if (!isNaN(highest)) {
-              var highestEl = document.getElementById("highestPrice");
-              if (highestEl) highestEl.innerText = "Rp " + window.formatRp(highest);
-              // pass server nominals / step when available
-              window.updateNominalDropdown(highest, data.nextNominals || data.nominals || null, data.step || null);
-            }
-
-            // === Sinkronisasi riwayat bid jika ada yang lebih baru ===
-            if (msgs.length > 0) {
-              if (!window.app.messages.length || window.app.messages[0].message !== msgs[0].message) {
-                window.app.messages.unshift(msgs[0]);
-              }
-            }
-          })["catch"](function (err) {
-            if (isDebugEnv()) console.warn("[Poll] State fetch failed", err);
-          });
+          if (Date.now() - lastEvent < POLL_MS) return;
+          _this4.refreshStateImmediate();
         }, POLL_MS);
       },
-      // === Mengirim bid baru ke server ===
+      /**
+       * ===============================
+       * KIRIM BID (OPTIMISTIC – FINAL)
+       * ===============================
+       */
       addMessage: function addMessage(msg) {
-        var _this3 = this;
+        var _this5 = this;
         axios.post("/bid/messages", msg).then(function (res) {
-          if (isDebugEnv()) console.log("[addMessage] Bid berhasil dikirim:", res.data);
+          var _res$data;
+          var sd = ((_res$data = res.data) === null || _res$data === void 0 ? void 0 : _res$data.data) || {};
 
-          // === Update UI secara instan untuk pengirim (optimistic update) ===
-          if (res.data.status === "Message Sent!" && res.data.data) {
-            var serverData = res.data.data || {};
+          // ✅ CHAT LANGSUNG MUNCUL
+          _this5.messages.unshift({
+            user: sd.user,
+            message: sd.message,
+            tanggal: sd.tanggal
+          });
 
-            // === Tambahkan riwayat bid baru (gunakan message dari server) ===
-            _this3.messages.unshift({
-              user: serverData.user,
-              message: serverData.message,
-              tanggal: serverData.tanggal
-            });
-
-            // === Prefer highest dari server jika tersedia ===
-            var highestFromServer = typeof serverData.highest !== "undefined" ? Number(serverData.highest) : NaN;
-            var displayPrice = !isNaN(highestFromServer) ? highestFromServer : Number(serverData.message);
-            if (!isNaN(displayPrice)) {
-              var highestEl = document.getElementById("highestPrice");
-              if (highestEl) {
-                highestEl.innerText = "Rp " + window.formatRp(displayPrice);
-                highestEl.style.transition = "all 0.3s ease";
-                highestEl.style.backgroundColor = "#fef3c7";
-                setTimeout(function () {
-                  highestEl.style.backgroundColor = "transparent";
-                }, 800);
-              }
-
-              // === Update dropdown kelipatan nominal ===
-              if (typeof updateNominalDropdown === "function") {
-                // prefer server-provided nominals if present in response.data.data
-                var sd = res.data && res.data.data || {};
-                updateNominalDropdown(displayPrice, sd.nextNominals || sd.nominals || null, sd.step || null);
-              }
-            }
-            if (isDebugEnv()) console.log("[addMessage] ✓ UI updated immediately for bidder");
+          // ✅ HIGHEST PRICE
+          var highest = typeof sd.highest !== "undefined" ? Number(sd.highest) : Number(sd.message);
+          if (!isNaN(highest)) {
+            updateHighestPrice(highest);
+            safeUpdateNominalDropdown(highest, sd.nextNominals || sd.nominals || null, sd.step || null);
           }
-
-          // === User lain otomatis update dari Echo ===
         })["catch"](function (err) {
-          if (isDebugEnv()) console.error("[addMessage] Bid gagal:", err);
-
-          // Jika collision / sudah diambil user lain -> refresh state segera
-          var msg = err.response && err.response.data && err.response.data.message ? err.response.data.message : "";
-          if (err.response && (err.response.status === 409 || msg.includes("Harga bid ini sudah diambil user lain"))) {
-            if (isDebugEnv()) console.log('[addMessage] Detected bid collision. Refreshing state immediately.');
-            _this3.refreshStateImmediate();
-          } else if (err.response && err.response.status === 422) {
-            // Validasi (mis: bid lebih kecil atau tidak sesuai kelipatan) -> refresh juga untuk sinkronisasi
-            if (isDebugEnv()) console.log('[addMessage] Validation error. Refreshing state to sync.');
-            _this3.refreshStateImmediate();
+          var _err$response;
+          if ([409, 422].includes(err === null || err === void 0 ? void 0 : (_err$response = err.response) === null || _err$response === void 0 ? void 0 : _err$response.status)) {
+            _this5.refreshStateImmediate();
           }
           alert("Gagal mengirim bid. Silakan coba lagi.");
         });
@@ -38999,66 +38883,100 @@ __webpack_require__.r(__webpack_exports__);
  * Dipanggil dari app.js (Vue) dan blade (inline scripts).
  */
 (function () {
-  'use strict';
+  "use strict";
 
-  if (typeof window.formatRp !== 'function') {
+  if (typeof window.formatRp !== "function") {
     window.formatRp = function (n) {
-      if (n === null || n === undefined) return '';
+      if (n === null || n === undefined) return "";
       var num = Number(n);
       if (isNaN(num)) return String(n);
       return String(num).replace(/\B(?=(\d{3})+(?!\d))/g, ".");
     };
   }
-  if (typeof window.updateNominalDropdown !== 'function') {
-    window.updateNominalDropdown = function (highest, nominalsArray, stepOverride, stepDefault) {
-      var defaultStep = Number(stepDefault) || 10000;
-      var h = Number(highest);
-      var select = document.getElementById('bidSelect');
 
-      // DEBUG LOG
-      console.log('[updateNominalDropdown] Called with:', {
+  /**
+   * updateNominalDropdown
+   * =====================
+   * - Sinkron dengan elemen Blade berbasis data-role
+   * - Support mobile & desktop (elemen aktif saja)
+   * - Support data dari server (nominals) & fallback step
+   * - Aman dipanggil dari Blade / Vue / Echo
+   */
+  if (typeof window.updateNominalDropdown !== "function") {
+    window.updateNominalDropdown = function (highest) {
+      var nominalsArray = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
+      var stepOverride = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : null;
+      var stepDefault = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : 10000;
+      var h = Number(highest);
+      var defaultStep = Number(stepDefault) || 10000;
+
+      /**
+       * Ambil elemen aktif (tidak display:none)
+       */
+      function getActiveEl(role) {
+        var els = document.querySelectorAll("[data-role=\"".concat(role, "\"]"));
+        return Array.from(els).find(function (el) {
+          return el.offsetParent !== null;
+        }) || null;
+      }
+      var select = getActiveEl("bid-select");
+
+      // ===== DEBUG =====
+      console.log("[updateNominalDropdown]", {
         highest: h,
         nominalsArray: nominalsArray,
         stepOverride: stepOverride,
-        stepDefault: stepDefault,
-        defaultStep: defaultStep
+        stepDefault: defaultStep,
+        selectFound: !!select
       });
-      if (!select || isNaN(h)) {
-        console.warn('[updateNominalDropdown] Select not found or highest is NaN');
+
+      // ===== GUARD =====
+      if (!select) {
+        console.warn("[updateNominalDropdown] ❌ bid-select not found (active)");
         return;
       }
+      if (isNaN(h)) {
+        console.warn("[updateNominalDropdown] ❌ highest is NaN:", highest);
+        return;
+      }
+
+      // ===== RESET OPTIONS =====
       select.innerHTML = '<option value="">Pilih Nominal Bid</option>';
 
-      // Jika nominalsArray ada dan valid, gunakan itu (dari server)
-      if (Array.isArray(nominalsArray) && nominalsArray.length) {
-        console.log('[updateNominalDropdown] Using nominals from server:', nominalsArray);
+      /**
+       * ===== CASE 1: Server kirim nominals (PRIORITAS)
+       */
+      if (Array.isArray(nominalsArray) && nominalsArray.length > 0) {
+        console.log("[updateNominalDropdown] ✓ Using server nominals");
         nominalsArray.forEach(function (val) {
           var v = Number(val);
           if (isNaN(v)) return;
-          var opt = document.createElement('option');
+          var opt = document.createElement("option");
           opt.value = v;
-          opt.textContent = 'Rp ' + window.formatRp(v);
+          opt.textContent = "Rp " + window.formatRp(v);
           select.appendChild(opt);
         });
-        return;
+        return; // STOP — jangan fallback
       }
 
-      // Fallback: hitung dari step
+      /**
+       * ===== CASE 2: Fallback hitung dari step
+       */
       var step = Number(stepOverride) || defaultStep;
-      console.log('[updateNominalDropdown] Fallback: building from step:', step);
+      console.log("[updateNominalDropdown] ✓ Fallback build by step:", step);
       for (var i = 1; i <= 5; i++) {
         var val = h + step * i;
-        var opt = document.createElement('option');
+        var opt = document.createElement("option");
         opt.value = val;
-        opt.textContent = 'Rp ' + window.formatRp(val);
+        opt.textContent = "Rp " + window.formatRp(val);
         select.appendChild(opt);
       }
     };
   }
-  if (typeof window.refreshStateImmediate !== 'function') {
+  if (typeof window.refreshStateImmediate !== "function") {
     window.refreshStateImmediate = function () {
       // no-op fallback — bisa di-overwrite oleh app.js jika perlu
-      console.info('[helpers] refreshStateImmediate noop');
+      console.info("[helpers] refreshStateImmediate noop");
     };
   }
 })();
@@ -39083,8 +39001,8 @@ __webpack_require__.r(__webpack_exports__);
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-__webpack_require__(/*! C:\Users\HP\Documents\GitHub\RLK\resources\js\app.js */"./resources/js/app.js");
-module.exports = __webpack_require__(/*! C:\Users\HP\Documents\GitHub\RLK\resources\sass\app.scss */"./resources/sass/app.scss");
+__webpack_require__(/*! C:\laragon\www\RLK\resources\js\app.js */"./resources/js/app.js");
+module.exports = __webpack_require__(/*! C:\laragon\www\RLK\resources\sass\app.scss */"./resources/sass/app.scss");
 
 
 /***/ })

@@ -1,376 +1,228 @@
 // === Load konfigurasi awal aplikasi (bootstrap Laravel Mix) ===
 require("./bootstrap");
 
-// === Import helper lelang yang menempelkan fungsi ke window (formatRp, updateNominalDropdown, ...) ===
-import './lelang/helper';
+// === Import helper lelang (formatRp, updateNominalDropdown, dll) ===
+import "./lelang/helper";
 
 import Vue from "vue";
-// === Expose Vue ke window agar komponen dapat diakses global ===
 window.Vue = Vue;
 
-// === Registrasi komponen global untuk form chat dan daftar message ===
+// === Registrasi komponen chat ===
 Vue.component("chat-form", require("./components/ChatForm.vue").default);
 Vue.component(
     "chat-messages",
     require("./components/ChatMessages.vue").default
 );
 
-// === Menunggu window.productSlug sampai tersedia sebelum inisialisasi Vue ===
-function waitForSlug(callback) {
+/**
+ * ===============================
+ * Highest Price Helper (FINAL)
+ * ===============================
+ */
+function updateHighestPrice(val) {
+    if (val === null || typeof val === "undefined" || isNaN(val)) return;
+
+    const els = document.querySelectorAll('[data-role="highest-price"]');
+    if (!els.length) return;
+
+    els.forEach((el) => {
+        if (el.offsetParent === null) return;
+
+        const newText = "Rp " + window.formatRp(val);
+
+        if (el.innerText.trim() === newText.trim()) return;
+
+        el.innerText = newText;
+
+        // animasi ringan
+        el.classList.remove("highest-price-animate");
+        void el.offsetWidth;
+        el.classList.add("highest-price-animate");
+    });
+}
+
+function safeUpdateNominalDropdown(highest, nominals, step, stepDefault = 10000) {
+    if (typeof window.updateNominalDropdown !== "function") return;
+
+    try {
+        window.updateNominalDropdown(
+            highest,
+            nominals || null,
+            step || null,
+            stepDefault
+        );
+    } catch (e) {
+        console.error("[updateNominalDropdown] error", e);
+    }
+}
+
+// === Tunggu slug siap ===
+function waitForSlug(cb) {
     let tries = 0;
-
-    const timer = setInterval(() => {
+    const t = setInterval(() => {
         tries++;
-
-        // === Jika slug sudah siap, hentikan timer dan jalankan callback ===
-        if (window.productSlug && window.productSlug !== "undefined") {
-            clearInterval(timer);
-            callback();
+        if (window.productSlug) {
+            clearInterval(t);
+            cb();
         }
-
-        // === Jika slug tidak muncul setelah beberapa percobaan, hentikan dan tampilkan error ===
         if (tries > 30) {
-            clearInterval(timer);
-            console.error("ERROR: productSlug tetap undefined!");
+            clearInterval(t);
+            console.error("productSlug tidak tersedia");
         }
     }, 100);
 }
 
-// === Helper untuk cek mode environment (local, testing, development) ===
 function isDebugEnv() {
     const env =
         window.appEnv || process.env.APP_ENV || process.env.NODE_ENV || "";
-    return ["local", "testing", "development", "dev"].includes(
+    return ["local", "dev", "development", "testing"].includes(
         env.toLowerCase()
     );
 }
 
-// === Mulai inisialisasi Vue setelah slug terdeteksi ===
+// === Init Vue ===
 waitForSlug(() => {
-    if (isDebugEnv())
-        console.log("Vue initialized. slug =", window.productSlug);
-
     window.app = new Vue({
         el: "#app",
 
         data: {
-            // === Set data awal messages berdasarkan existingBids jika tersedia ===
             messages:
-                window.existingBids && window.existingBids.length > 0
+                window.existingBids && window.existingBids.length
                     ? window.existingBids
                     : [],
         },
 
         created() {
-            // === Ambil daftar message awal dari backend ===
             this.fetchMessages();
-
-            // === Jalankan polling fallback untuk menjaga state ketika Echo idle ===
             this.startStatePolling();
 
-            // === Listener Laravel Echo pada channel privat produk ===
             Echo.private(`product.${window.productId}`)
-                // === Listener untuk update harga tertinggi ===
+                // === Highest price realtime ===
                 .listen("BidSent", (e) => {
                     const price = Number(e.price);
                     if (!isNaN(price)) {
-                        // update highest price UI
-                        const highestEl = document.getElementById("highestPrice");
-                        if (highestEl) highestEl.innerText = "Rp " + window.formatRp(price);
-
-                        // prefer nominals from event, fallback to step
-                        const nominals = e.nominals || e.nextNominals || null;
-                        const step = typeof e.step !== "undefined" ? e.step : null;
-                        window.updateNominalDropdown(price, nominals, step);
+                        updateHighestPrice(price);
+                        safeUpdateNominalDropdown(
+                            price,
+                            e.nominals || e.nextNominals || null,
+                            e.step || null
+                        );
                     }
                 })
-                // === Listener untuk update riwayat bid ===
-                .listen("MessageSent", (e) => {
-                    // update dropdown from message event too
-                    const bid = Number(e.bid || e.message);
-                    const nominals = e.nominals || e.nextNominals || null;
-                    const step = typeof e.step !== "undefined" ? e.step : null;
-                    if (!isNaN(bid)) window.updateNominalDropdown(bid, nominals, step);
 
-                    // add message to list
-                    window.app.messages.unshift({
+                // === Chat realtime (user lain) ===
+                .listen("MessageSent", (e) => {
+                    // anti duplikasi
+                    if (
+                        this.messages.length &&
+                        String(this.messages[0].message) ===
+                            String(e.bid || e.message)
+                    ) {
+                        return;
+                    }
+
+                    this.messages.unshift({
                         user: e.user,
                         message: e.bid || e.message,
                         tanggal: e.tanggal,
                     });
                 });
-
-            // Expose refresh helper globally so other scripts/components can call it
-            try {
-                window.refreshStateImmediate = this.refreshStateImmediate.bind(this);
-            } catch (e) {
-                if (isDebugEnv()) console.warn('[created] failed to expose refreshStateImmediate', e);
-            }
         },
 
         methods: {
-            // === Mengambil seluruh message untuk productSlug dari server ===
             fetchMessages() {
-                // mark that an initial fetch has been started to avoid duplicates
-                try { window.__bid_fetch_called = true; } catch (e) {}
                 axios
                     .get(`/bid/messages/${window.productSlug}`)
                     .then((res) => {
-                        // === Backend sudah mengurutkan: terbaru di atas ===
                         this.messages = res.data;
                     })
                     .catch((err) => {
                         if (isDebugEnv())
-                            console.error("Gagal ambil messages:", err);
+                            console.error("fetchMessages error", err);
                     });
             },
 
-            // === NEW: Segera refresh state (highest + messages) tanpa menunggu polling ===
             refreshStateImmediate() {
-                const url = `/bid/state/${window.productSlug}`;
-                if (isDebugEnv()) console.log('[refreshStateImmediate] fetch', url);
                 axios
-                    .get(url)
+                    .get(`/bid/state/${window.productSlug}`)
                     .then((res) => {
-                        const data = res.data || {};
-                        const highest = Number(data.highest);
-                        const msgs = Array.isArray(data.messages) ? data.messages : [];
+                        const d = res.data || {};
+                        const highest = Number(d.highest);
 
-                        // Update highest UI
                         if (!isNaN(highest)) {
-                            const highestEl = document.getElementById('highestPrice');
-                            if (highestEl) highestEl.innerText = 'Rp ' + window.formatRp(highest);
-
-                            // call dropdown updater but guard against exceptions so we still sync messages
-                            try {
-                                if (typeof updateNominalDropdown === 'function') {
-                                    updateNominalDropdown(
-                                        highest,
-                                        data.nextNominals || data.nominals || null,
-                                        data.step || null
-                                    );
-                                }
-                            } catch (e) {
-                                if (isDebugEnv()) console.error('[refreshStateImmediate] updateNominalDropdown threw', e);
-                            }
+                            updateHighestPrice(highest);
+                            safeUpdateNominalDropdown(
+                                highest,
+                                d.nextNominals || d.nominals || null,
+                                d.step || null
+                            );
                         }
 
-                        // If the state endpoint returned a messages array, it may only include
-                        // the latest bid (optimized response). Do NOT replace the whole
-                        // client-side history with that small array — instead merge the
-                        // newest item into the existing `this.messages` to preserve history.
-                        if (msgs.length > 0) {
-                            const latest = msgs[0];
-                            // If we don't have any messages yet, use server-provided list
-                            if (!this.messages || this.messages.length === 0) {
-                                this.messages = msgs;
-                            } else {
-                                // Prevent duplicates: compare by message value and timestamp
-                                const existingNewest = this.messages[0] || null;
-                                const isDuplicate = existingNewest && (
-                                    String(existingNewest.message) === String(latest.message) ||
-                                    String(existingNewest.tanggal) === String(latest.tanggal)
-                                );
-                                if (!isDuplicate) {
-                                    this.messages.unshift(latest);
-                                }
+                        if (Array.isArray(d.messages) && d.messages.length) {
+                            const latest = d.messages[0];
+                            if (
+                                !this.messages.length ||
+                                this.messages[0].message !== latest.message
+                            ) {
+                                this.messages.unshift(latest);
                             }
-                        } else {
-                            // No condensed messages returned — fetch full list as fallback
-                            this.fetchMessages();
                         }
-
-                        if (isDebugEnv()) console.log('[refreshStateImmediate] done', { highest, msgs_count: msgs.length });
                     })
-                    .catch((err) => {
-                        if (isDebugEnv()) console.warn('[refreshStateImmediate] failed', err);
-                        // fallback: pastikan setidaknya ambil messages lagi
-                        this.fetchMessages();
-                    });
+                    .catch(() => this.fetchMessages());
             },
 
-            // === Polling fallback untuk sinkronisasi state jika Echo mati/idle ===
             startStatePolling() {
-                const POLL_MS = 10 * 1000; // === Interval polling 5 detik ===
-                let lastEventTs = Date.now();
+                const POLL_MS = 10000;
+                let lastEvent = Date.now();
 
-                // === Bind event status koneksi Echo (opsional, hanya logging) ===
-                try {
-                    const conn =
-                        Echo.connector &&
-                        Echo.connector.pusher &&
-                        Echo.connector.pusher.connection;
-                    if (conn) {
-                        if (isDebugEnv())
-                            conn.bind("connected", () => {
-                                console.log("[Poll] Echo connected");
-                            });
-                        if (isDebugEnv())
-                            conn.bind("disconnected", () => {
-                                console.warn("[Poll] Echo disconnected");
-                            });
-                        if (isDebugEnv())
-                            conn.bind("error", (err) => {
-                                console.error("[Poll] Echo error", err);
-                            });
-                    }
-                } catch (e) {
-                    if (isDebugEnv())
-                        console.warn("[Poll] Echo bind failed", e);
-                }
-
-                // === Update timestamp ketika event MessageSent masuk ===
                 Echo.private(`product.${window.productId}`).listen(
                     "MessageSent",
-                    () => {
-                        lastEventTs = Date.now();
-                    }
+                    () => (lastEvent = Date.now())
                 );
 
-                // === Jalankan polling periodik ===
                 setInterval(() => {
-                    const now = Date.now();
-                    const idle = now - lastEventTs > POLL_MS; // === Cek apakah Echo idle ===
-                    const url = `/bid/state/${window.productSlug}`;
-
-                    // === Jika tidak idle, polling tidak dijalankan ===
-                    if (!idle) return;
-
-                    // === Ambil state terbaru dari server ===
-                    axios
-                        .get(url)
-                        .then((res) => {
-                            const data = res.data || {};
-                            const highest = Number(data.highest);
-                            const msgs = Array.isArray(data.messages)
-                                ? data.messages
-                                : [];
-
-                            // === Sinkronisasi harga tertinggi ===
-                            if (!isNaN(highest)) {
-                                const highestEl =
-                                    document.getElementById("highestPrice");
-                                if (highestEl)
-                                    highestEl.innerText =
-                                        "Rp " + window.formatRp(highest);
-                                // pass server nominals / step when available
-                                window.updateNominalDropdown(
-                                    highest,
-                                    data.nextNominals || data.nominals || null,
-                                    data.step || null
-                                );
-                            }
-
-                            // === Sinkronisasi riwayat bid jika ada yang lebih baru ===
-                            if (msgs.length > 0) {
-                                if (
-                                    !window.app.messages.length ||
-                                    window.app.messages[0].message !==
-                                        msgs[0].message
-                                ) {
-                                    window.app.messages.unshift(msgs[0]);
-                                }
-                            }
-                        })
-                        .catch((err) => {
-                            if (isDebugEnv())
-                                console.warn("[Poll] State fetch failed", err);
-                        });
+                    if (Date.now() - lastEvent < POLL_MS) return;
+                    this.refreshStateImmediate();
                 }, POLL_MS);
             },
 
-            // === Mengirim bid baru ke server ===
+            /**
+             * ===============================
+             * KIRIM BID (OPTIMISTIC – FINAL)
+             * ===============================
+             */
             addMessage(msg) {
                 axios
                     .post("/bid/messages", msg)
                     .then((res) => {
-                        if (isDebugEnv())
-                            console.log(
-                                "[addMessage] Bid berhasil dikirim:",
-                                res.data
+                        const sd = res.data?.data || {};
+
+                        // ✅ CHAT LANGSUNG MUNCUL
+                        this.messages.unshift({
+                            user: sd.user,
+                            message: sd.message,
+                            tanggal: sd.tanggal,
+                        });
+
+                        // ✅ HIGHEST PRICE
+                        const highest =
+                            typeof sd.highest !== "undefined"
+                                ? Number(sd.highest)
+                                : Number(sd.message);
+
+                        if (!isNaN(highest)) {
+                            updateHighestPrice(highest);
+                            safeUpdateNominalDropdown(
+                                highest,
+                                sd.nextNominals || sd.nominals || null,
+                                sd.step || null
                             );
-
-                        // === Update UI secara instan untuk pengirim (optimistic update) ===
-                        if (
-                            res.data.status === "Message Sent!" &&
-                            res.data.data
-                        ) {
-                            const serverData = res.data.data || {};
-
-                            // === Tambahkan riwayat bid baru (gunakan message dari server) ===
-                            this.messages.unshift({
-                                user: serverData.user,
-                                message: serverData.message,
-                                tanggal: serverData.tanggal,
-                            });
-
-                            // === Prefer highest dari server jika tersedia ===
-                            const highestFromServer =
-                                typeof serverData.highest !== "undefined"
-                                    ? Number(serverData.highest)
-                                    : NaN;
-
-                            const displayPrice = !isNaN(highestFromServer)
-                                ? highestFromServer
-                                : Number(serverData.message);
-
-                            if (!isNaN(displayPrice)) {
-                                const highestEl =
-                                    document.getElementById("highestPrice");
-                                if (highestEl) {
-                                    highestEl.innerText =
-                                        "Rp " + window.formatRp(displayPrice);
-
-                                    highestEl.style.transition =
-                                        "all 0.3s ease";
-                                    highestEl.style.backgroundColor =
-                                        "#fef3c7";
-                                    setTimeout(() => {
-                                        highestEl.style.backgroundColor =
-                                            "transparent";
-                                    }, 800);
-                                }
-
-                                // === Update dropdown kelipatan nominal ===
-                                if (
-                                    typeof updateNominalDropdown === "function"
-                                ) {
-                                    // prefer server-provided nominals if present in response.data.data
-                                    const sd = (res.data && res.data.data) || {};
-                                    updateNominalDropdown(
-                                        displayPrice,
-                                        sd.nextNominals || sd.nominals || null,
-                                        sd.step || null
-                                    );
-                                }
-                            }
-
-                            if (isDebugEnv())
-                                console.log(
-                                    "[addMessage] ✓ UI updated immediately for bidder"
-                                );
                         }
-
-                        // === User lain otomatis update dari Echo ===
                     })
                     .catch((err) => {
-                        if (isDebugEnv())
-                            console.error("[addMessage] Bid gagal:", err);
-
-                        // Jika collision / sudah diambil user lain -> refresh state segera
-                        const msg = err.response && err.response.data && err.response.data.message
-                            ? err.response.data.message
-                            : "";
-
-                        if (err.response && (err.response.status === 409 || msg.includes("Harga bid ini sudah diambil user lain"))) {
-                            if (isDebugEnv()) console.log('[addMessage] Detected bid collision. Refreshing state immediately.');
-                            this.refreshStateImmediate();
-                        } else if (err.response && err.response.status === 422) {
-                            // Validasi (mis: bid lebih kecil atau tidak sesuai kelipatan) -> refresh juga untuk sinkronisasi
-                            if (isDebugEnv()) console.log('[addMessage] Validation error. Refreshing state to sync.');
+                        if ([409, 422].includes(err?.response?.status)) {
                             this.refreshStateImmediate();
                         }
-
                         alert("Gagal mengirim bid. Silakan coba lagi.");
                     });
             },
