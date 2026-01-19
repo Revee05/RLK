@@ -228,7 +228,7 @@
 
                             {{-- BUTTON --}}
                             <div class="related-more-wrap">
-                                <a href="{{ route('lelang.products.json') }}" class="btn-related-more">
+                                <a href="{{ route('lelang') }}" class="btn-related-more">
                                     See More Product
                                 </a>
                             </div>
