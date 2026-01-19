@@ -1,0 +1,228 @@
+/* === FORM === */
+.block {
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 12px;
+  background: #fafafa;
+}
+
+.block {
+  background: #fff;
+  border: 1px solid #e0e0e0;
+  border-radius: 6px;
+  padding: 10px;
+  margin-bottom: 10px;
+  cursor: grab;
+}
+
+.block.dragging {
+  opacity: 0.5;
+}
+
+.block-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 12px;
+  margin-bottom: 6px;
+  color: #666;
+}
+
+.block textarea {
+  width: 100%;
+  min-height: 80px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  padding: 8px;
+  resize: vertical;
+}
+
+.block img {
+  max-width: 100%;
+  border-radius: 6px;
+  margin-top: 6px;
+}
+
+.editor-toolbar {
+  margin-top: 10px;
+  display: flex;
+  gap: 10px;
+}
+
+.editor-toolbar button {
+  border: none;
+  padding: 6px 12px;
+  border-radius: 6px;
+  background: #e74a3b;
+  color: #fff;
+  cursor: pointer;
+}
+
+.editor-toolbar button:hover {
+  background: #d13c2f;
+}
+
+.remove {
+  cursor: pointer;
+  color: red;
+  font-size: 14px;
+}
+
+.text-block .block-toolbar {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 6px;
+}
+
+.text-block button,
+.text-block select {
+  border: 1px solid #ccc;
+  background: #fff;
+  padding: 4px 6px;
+  cursor: pointer;
+  border-radius: 4px;
+}
+
+.text-block .editable {
+  min-height: 120px;
+  border: 1px solid #ddd;
+  padding: 10px;
+  border-radius: 4px;
+}
+
+.text-content:empty:before {
+  content: attr(data-placeholder);
+  color: #9ca3af;
+  pointer-events: none;
+  display: block;
+}
+
+/* supaya pas fokus masih keliatan rapi */
+.text-content:focus:empty:before {
+  color: #d1d5db;
+}
+
+/* ===== TEXT BLOCK BOX ===== */
+.text-content {
+  min-height: 120px;
+  padding: 12px 14px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  background: #fff;
+  line-height: 1.7;
+  font-size: 14px;
+}
+
+.text-content:focus {
+  outline: none;
+  border-color: #4e73df;
+  box-shadow: 0 0 0 1px #4e73df33;
+}
+
+/* ===== PLACEHOLDER ===== */
+.text-content:empty::before {
+  content: attr(data-placeholder);
+  color: #9ca3af;
+  pointer-events: none;
+  display: block;
+}
+
+.editor-block{
+  border:1px solid #ddd;
+  padding:10px;
+  margin-bottom:15px;
+  background:#fff;
+  border-radius:6px;
+}
+
+.toolbar{
+  display:flex;
+  gap:5px;
+  margin-bottom:6px;
+}
+
+.toolbar button,
+.toolbar select{
+  border:1px solid #ccc;
+  background:#f8f9fa;
+  padding:4px 6px;
+  border-radius:4px;
+}
+
+.text-content{
+  min-height:120px;
+  padding:10px;
+  border:1px solid #ccc;
+  border-radius:5px;
+}
+
+.text-content:empty::before{
+  content:attr(data-placeholder);
+  color:#999;
+}
+
+.img-head{
+  font-weight:bold;
+  margin-bottom:5px;
+}
+
+.preview{
+  max-width:200px;
+  margin-top:8px;
+}
+
+.image-block{
+  text-align:center;
+}
+
+.image-picker{
+  display:block;
+  border:2px dashed #ccc;
+  padding:20px;
+  border-radius:8px;
+  cursor:pointer;
+}
+
+.image-picker:hover{
+  border-color:#999;
+}
+
+.pick-text{
+  color:#777;
+  font-size:14px;
+}
+
+.image-preview{
+  max-width:100%;
+  margin-top:10px;
+  border-radius:6px;
+}
+
+.text-content:empty::before {
+  content: attr(data-placeholder);
+  color: #999;
+  pointer-events: none;
+}
+
+.tool-btn {
+  border: 1px solid #ddd;
+  background: #fff;
+  padding: 4px 8px;
+  cursor: pointer;
+}
+
+.tool-btn.active {
+  background: #111827;
+  color: #fff;
+  border-color: #111827;
+}
+
+.link-modal {
+  position: absolute;
+  background: #fff;
+  border: 1px solid #ddd;
+  padding: 8px;
+  display: flex;
+  gap: 6px;
+  box-shadow: 0 4px 10px rgba(0,0,0,.1);
+}
