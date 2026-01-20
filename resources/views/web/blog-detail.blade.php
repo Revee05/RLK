@@ -26,42 +26,46 @@
       {{ $blog->created_at->translatedFormat('l, d F Y H:i:s') }}
     </div>
 
-    {{-- Gambar utama --}}
-    @if(!empty($blog->image))
-    <div class="blog-image">
-      <img src="{{ asset('uploads/blogs/'.$blog->image) }}" alt="{{ $blog->title }}">
-    </div>
+    {{-- Cover --}}
+    @if($blog->image)
+      <div class="blog-cover">
+        <img src="{{ asset('uploads/blogs/'.$blog->image) }}" alt="{{ $blog->title }}">
+      </div>
     @endif
 
+    {{-- BODY --}}
     @php
-        $bodyParts = preg_split('/(<\/p>)/i', $blog->body);
-        $images = $blog->images->where('filename', '!=', $blog->image)->values();
-        $imgIndex = 0;
+      $blocks = json_decode($blog->body, true);
+      if (!is_array($blocks)) {
+        $blocks = [];
+      }
     @endphp
 
-    <div class="blog-body">
-      @foreach($bodyParts as $index => $part)
-        {!! $part !!}
+    <article class="blog-body">
+      @foreach($blocks as $block)
 
-        {{-- Sisipkan gambar setelah setiap 2 paragraf, kalau masih ada --}}
-        @if(($index + 1) % 2 == 0 && isset($images[$imgIndex]))
-          @if(isset($images[$imgIndex + 1]))
-            {{-- Kalau ada dua gambar berikutnya --}}
-            <div class="inline-image-pair">
-              <img src="{{ asset('uploads/blogs/'.$images[$imgIndex]->filename) }}" alt="Gambar pendukung">
-              <img src="{{ asset('uploads/blogs/'.$images[$imgIndex + 1]->filename) }}" alt="Gambar pendukung">
-            </div>
-            @php $imgIndex += 2; @endphp
-          @else
-            {{-- Kalau tinggal satu gambar --}}
-            <div class="inline-image">
-              <img src="{{ asset('uploads/blogs/'.$images[$imgIndex]->filename) }}" alt="Gambar pendukung">
-            </div>
-            @php $imgIndex++; @endphp
+        {{-- TEXT --}}
+        @if(($block['type'] ?? '') === 'text')
+          <div class="blog-text">
+            {!! $block['html'] ?? '' !!}
+          </div>
+        @endif
+
+        {{-- IMAGE --}}
+        @if(($block['type'] ?? '') === 'image')
+          @php
+            $img = DB::table('blog_images')->find($block['image_id'] ?? 0);
+          @endphp
+
+          @if($img)
+            <figure class="blog-image-inline">
+              <img src="{{ asset('uploads/blogs/'.$img->filename) }}">
+            </figure>
           @endif
         @endif
+
       @endforeach
-    </div>
+    </article>
 
     {{-- Penulis --}}
     @if(!empty($blog->author))

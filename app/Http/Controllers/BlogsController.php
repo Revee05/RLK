@@ -99,6 +99,8 @@ class BlogsController extends Controller
                 }
             }
 
+            $this->syncUnusedImages($postId, $request->body);
+
             /* === TAGS === */
             if (!empty($request->tagger)) {
                 foreach ($request->tagger as $tag) {
@@ -110,6 +112,10 @@ class BlogsController extends Controller
                     Log::info('[BLOG] TAG saved', ['tag' => $tag]);
                 }
             }
+
+            /* ===== SYNC IMAGE KE POST ===== */
+            $this->attachImagesToPost($postId, $request->body);
+            $this->syncUnusedImages($postId, $request->body);
 
             DB::commit();
             Log::info('[BLOG] STORE success', ['post_id' => $postId]);
@@ -158,7 +164,7 @@ class BlogsController extends Controller
                 'updated_at'  => now(),
             ];
 
-            /* === COVER (OPTIONAL) === */
+            /* === COVER === */
             if ($request->hasFile('cover')) {
                 $cover = $request->file('cover');
                 $coverName = uniqid() . '.' . $cover->extension();
@@ -172,26 +178,9 @@ class BlogsController extends Controller
             }
 
             DB::table('posts')->where('id', $id)->update($data);
-
-            /* === IMAGE ARTIKEL === */
-            if ($request->hasFile('images')) {
-                foreach ($request->file('images') as $file) {
-                    $name = uniqid() . '.' . $file->extension();
-                    $file->move(public_path('uploads/blogs'), $name);
-
-                    DB::table('blog_images')->insert([
-                        'post_id'    => $id,
-                        'filename'   => $name,
-                        'created_at' => now(),
-                        'updated_at' => now(),
-                    ]);
-
-                    Log::info('[BLOG] IMAGE added (update)', [
-                        'post_id'  => $id,
-                        'filename' => $name
-                    ]);
-                }
-            }
+            
+            $this->attachImagesToPost($id, $request->body);
+            $this->syncUnusedImages($id, $request->body);
 
             DB::commit();
             Log::info('[BLOG] UPDATE success', ['post_id' => $id]);
@@ -234,7 +223,70 @@ class BlogsController extends Controller
         }
     }
 
-    
+    public function uploadContentImage(Request $request)
+    {
+        $request->validate([
+            'image'   => 'required|image|max:2048',
+            'post_id' => 'required|exists:posts,id'
+        ]);
+
+        $file = $request->file('image');
+        $name = uniqid() . '.' . $file->getClientOriginalExtension();
+        $file->move(public_path('uploads/blogs'), $name);
+
+        $id = DB::table('blog_images')->insertGetId([
+            'post_id'    => $request->post_id,
+            'filename'   => $filename,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        return response()->json([
+            'success'  => true,
+            'id'       => $id,
+            'filename' => $filename,
+            'url'      => asset('uploads/blogs/'.$filename)
+        ]);
+    }
+
+    private function syncUnusedImages($postId, $body)
+    {
+        $blocks = json_decode($body, true);
+        if (!is_array($blocks)) return;
+
+        $usedIds = collect($blocks)
+            ->where('type', 'image')
+            ->pluck('image_id')
+            ->filter()
+            ->map(fn ($v) => (int) $v)
+            ->toArray();
+
+        $images = DB::table('blog_images')->where('post_id', $postId)->get();
+
+        foreach ($images as $img) {
+            if (!in_array($img->id, $usedIds)) {
+                $path = public_path('uploads/blogs/' . $img->filename);
+                if (file_exists($path)) unlink($path);
+                DB::table('blog_images')->where('id', $img->id)->delete();
+            }
+        }
+    }
+
+    /* ================= ATTACH IMAGE TO POST ================= */
+    private function attachImagesToPost($postId, $body)
+    {
+        $blocks = json_decode($body, true);
+        if (!is_array($blocks)) return;
+
+        foreach ($blocks as $block) {
+            if ($block['type'] === 'image' && !empty($block['image_id'])) {
+                DB::table('blog_images')
+                    ->where('id', $block['image_id'])
+                    ->update(['post_id' => $postId]);
+            }
+        }
+    }
+
     public function status($id)
     {
         $post = DB::table('posts')->find($id);
@@ -277,104 +329,5 @@ class BlogsController extends Controller
             'count' => $tags->count()
         ]);
         return response()->json($tags);
-    }
-
-    public function deleteImage($id)
-    {
-        Log::warning('[BLOG] IMAGE delete start', [
-            'image_id' => $id,
-            'user_id'  => Auth::id()
-        ]);
-
-        $image = DB::table('blog_images')->find($id);
-        if (!$image) {
-            Log::error('[BLOG] IMAGE delete failed - not found', ['image_id' => $id]);
-            return response()->json(['success' => false, 'message' => 'Image not found']);
-        }
-
-        $path = public_path('uploads/blogs/' . $image->filename);
-        if (file_exists($path)) {
-            unlink($path);
-            Log::info('[BLOG] IMAGE file deleted', ['filename' => $image->filename]);
-        }
-    
-        DB::table('blog_images')->where('id', $id)->delete();
-
-        Log::warning('[BLOG] IMAGE delete success', [
-            'image_id' => $id,
-            'post_id'  => $image->post_id
-        ]);
-
-        return response()->json(['success' => true]);
-    }
-
-    public function replaceImage(Request $request, $id)
-    {
-        Log::info('[BLOG] IMAGE replace start', [
-            'image_id' => $id,
-            'user_id'  => Auth::id()
-        ]);
-
-        $image = DB::table('blog_images')->find($id);
-        if (!$image || !$request->hasFile('new_image')) {
-            Log::error('[BLOG] IMAGE replace failed - invalid request', [
-                'image_id' => $id
-            ]);
-            return response()->json(['success' => false, 'message' => 'Invalid request']);
-        }
-
-        $file = $request->file('new_image');
-        $filename = time() . '_' . $file->getClientOriginalName();
-        $file->move(public_path('uploads/blogs'), $filename);
-
-        $oldPath = public_path('uploads/blogs/' . $image->filename);
-        if (file_exists($oldPath)) {
-            unlink($oldPath);
-            Log::info('[BLOG] IMAGE old file deleted', ['filename' => $image->filename]);
-        }
-
-        DB::table('blog_images')->where('id', $id)->update([
-            'filename'   => $filename,
-            'updated_at' => now(),
-        ]);
-
-        Log::info('[BLOG] IMAGE replace success', [
-            'image_id' => $id,
-            'new_file' => $filename
-        ]);
-        
-        return response()->json([
-            'success' => true,
-            'new_url' => asset('uploads/blogs/' . $filename)
-        ]);
-    }
-
-    public function setCover($imageId, $postId)
-    {
-        Log::info('[BLOG] SET COVER start', [
-            'image_id' => $imageId,
-            'post_id'  => $postId,
-            'user_id'  => Auth::id()
-        ]);
-
-        $img = DB::table('blog_images')->where('id', $imageId)->first();
-        if (!$img) {
-            Log::error('[BLOG] SET COVER failed - image not found', [
-                'image_id' => $imageId
-            ]);
-            return response()->json(['success' => false, 'message' => 'Image not found']);
-        }
-
-        DB::table('posts')->where('id', $postId)->update([
-            'image'      => $img->filename,
-            'updated_at' => now(),
-        ]);
-
-        Log::info('[BLOG] SET COVER success', [
-            'post_id'  => $postId,
-            'filename' => $img->filename
-        ]);
-
-        return response()->json(['success' => true]);
     }
 }

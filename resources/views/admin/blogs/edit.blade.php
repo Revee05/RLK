@@ -104,4 +104,10 @@
 
     });
     </script>
+<script>
+  window.IMAGE_MAP = @json(
+    $blog->contentImages
+      ->pluck('url', 'id')
+  );
+</script>
 @endsection
