@@ -1,4 +1,4 @@
-@extends('web.partials.layout')
+@extends('web.partials.blog-layout')
 
 @section('css')
 <link rel="stylesheet" href="{{ asset('css/blog/blog-detail.css') }}">
@@ -35,42 +35,60 @@
 
     {{-- BODY --}}
     @php
-      $blocks = json_decode($blog->body, true);
-      if (!is_array($blocks)) {
-        $blocks = [];
-      }
+      $rawBody = $blog->getOriginal('body');
+      $blocks = json_decode($rawBody, true);
+
+      $imageIds = collect($blocks)
+        ->where('type', 'image')
+        ->pluck('image_id')
+        ->filter()
+        ->unique()
+        ->toArray();
+
+      $images = DB::table('blog_images')
+        ->whereIn('id', $imageIds)
+        ->get()
+        ->keyBy('id');
     @endphp
 
     <article class="blog-body">
-      @foreach($blocks as $block)
+      {{-- JIKA BODY JSON --}}
+      @if(is_array($blocks))
+        @foreach($blocks as $block)
 
-        {{-- TEXT --}}
-        @if(($block['type'] ?? '') === 'text')
-          <div class="blog-text">
-            {!! $block['html'] ?? '' !!}
-          </div>
-        @endif
+          {{-- TEXT --}}
+          @if(($block['type'] ?? '') === 'text')
+            <div class="blog-text">
+              {!! $block['html'] !!}
+            </div>
+          @endif
 
-        {{-- IMAGE --}}
-        @if(($block['type'] ?? '') === 'image')
-          @php
-            $img = DB::table('blog_images')->find($block['image_id'] ?? 0);
-          @endphp
-
-          @if($img)
+          {{-- IMAGE --}}
+          @if(
+              ($block['type'] ?? '') === 'image' &&
+              !empty($block['image_id']) &&
+              isset($images[$block['image_id']])
+          )
             <figure class="blog-image-inline">
-              <img src="{{ asset('uploads/blogs/'.$img->filename) }}">
+              <img
+                src="{{ asset('uploads/blogs/'.$images[$block['image_id']]->filename) }}"
+                alt=""
+              >
             </figure>
           @endif
-        @endif
 
-      @endforeach
+        @endforeach
+      
+        {{-- JIKA BODY HTML LAMA --}}
+      @else
+        {!! $rawBody !!}
+      @endif
     </article>
 
     {{-- Penulis --}}
     @if(!empty($blog->author))
     <div class="blog-author">
-      <img src="{{ asset('uploads/authors/'.$blog->author->photo ?? 'default.jpg') }}" alt="{{ $blog->author->name }}">
+      <img src="{{ asset('uploads/authors/' . ($blog->author->photo ?? 'default.jpeg')) }}">
       <div class="author-info">
         <h5>Written by {{ ucwords($blog->author->name) }}</h5>
         <p>{{ $blog->author->bio ?? 'Penulis di platform Rasanya Lelang Karya yang berfokus pada seni dan budaya.' }}</p>

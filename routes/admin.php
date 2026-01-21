@@ -33,7 +33,7 @@ Route::resource('/blogs','BlogsController',['as'=>'admin']);
 Route::delete('blogs/image/{id}/delete', 'BlogsController@deleteImage');
 Route::post('blogs/image/{id}/replace', 'BlogsController@replaceImage');
 Route::post('blogs/image/{id}/set-cover/{blogId}', 'BlogsController@setCover');
-Route::post('blogs/content/upload', 'BlogsController@uploadContentImage');
+Route::post('blogs/content/upload', 'BlogsController@uploadContentImage')->name('admin.blogs.content.upload');
 Route::delete('blogs/content/image/{id}', 'BlogsController@deleteContentImage');
 
 

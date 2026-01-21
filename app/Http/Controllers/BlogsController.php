@@ -99,8 +99,6 @@ class BlogsController extends Controller
                 }
             }
 
-            $this->syncUnusedImages($postId, $request->body);
-
             /* === TAGS === */
             if (!empty($request->tagger)) {
                 foreach ($request->tagger as $tag) {
@@ -227,7 +225,7 @@ class BlogsController extends Controller
     {
         $request->validate([
             'image'   => 'required|image|max:2048',
-            'post_id' => 'required|exists:posts,id'
+            //'post_id' => 'required|exists:posts,id'
         ]);
 
         $file = $request->file('image');
@@ -235,8 +233,8 @@ class BlogsController extends Controller
         $file->move(public_path('uploads/blogs'), $name);
 
         $id = DB::table('blog_images')->insertGetId([
-            'post_id'    => $request->post_id,
-            'filename'   => $filename,
+            'post_id'    => $request->post_id ?? null,
+            'filename'   => $name,
             'created_at' => now(),
             'updated_at' => now(),
         ]);
@@ -244,8 +242,8 @@ class BlogsController extends Controller
         return response()->json([
             'success'  => true,
             'id'       => $id,
-            'filename' => $filename,
-            'url'      => asset('uploads/blogs/'.$filename)
+            'filename' => $name,
+            'url'      => asset('uploads/blogs/'.$name)
         ]);
     }
 

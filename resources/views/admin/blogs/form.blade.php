@@ -324,19 +324,35 @@
       img.classList.remove('d-none');
       btn.textContent = 'Ganti Gambar';
 
+      const postId = document.getElementById('post_id')?.value;
+
       const fd = new FormData();
       fd.append('image', file);
 
-      const res = await fetch('/admin/blogs/content/upload', {
+      if (postId) {
+        fd.append('post_id', postId);
+      }
+
+      const res = await fetch("{{ route('admin.blogs.content.upload') }}", {
         method: 'POST',
         headers: {
           'X-CSRF-TOKEN': '{{ csrf_token() }}'
         },
+        credentials: 'same-origin',
         body: fd
       });
       
-      const json = await res.json();
+      const text = await res.text();
 
+      let json;
+      try {
+        json = JSON.parse(text);
+      } catch (e) {
+        console.error('SERVER RETURN HTML:', text);
+        alert('Upload gagal (bukan JSON)');
+        return;
+      }
+    
       if (!json.success) {
         alert('Upload gagal');
         return;
