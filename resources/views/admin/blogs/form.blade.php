@@ -71,7 +71,7 @@
             </button>
           </div>
 
-          <input type="hidden" name="body" id="content_blocks">
+          <input type="hidden" name="body" id="body">
 
           {{-- Link Modal --}}
           <div id="linkModal" class="link-modal d-none">
@@ -137,6 +137,17 @@
 @endsection
 
 @section('js')
+
+{{-- DATA DARI SERVER --}}
+<script>
+  window.BLOG_RAW_BODY = @json($blog->body ?? '');
+  window.IMAGE_MAP = @json(
+    isset($images)
+      ? collect($images)->mapWithKeys(fn($i)=>[$i->id => asset('uploads/blogs/'.$i->filename)])
+      : []
+  );
+</script>
+
 <script>
   /* =====================================================
     COVER
@@ -669,7 +680,7 @@
       }
     });
 
-    document.getElementById('content_blocks').value = JSON.stringify(blocks);
+    document.getElementById('body').value = JSON.stringify(blocks);
   });
 
   /* =====================================================
@@ -679,34 +690,66 @@
   document.getElementById('add-image').onclick = addImageBlock;
 
   /* =====================================================
-    LOAD EDIT CONTENT
-  ===================================================== */
+   LOAD EDIT CONTENT (FINAL – STABIL)
+   ===================================================== */
   document.addEventListener('DOMContentLoaded', () => {
-    @if(isset($blog))
-      const blocks = JSON.parse(@json($blog->body));
+
+    /* === LOAD BODY === */
+    if (window.BLOG_RAW_BODY) {
+
+      let blocks = [];
+      const raw = window.BLOG_RAW_BODY;
+
+      const isJson = (str) => {
+        if (typeof str !== 'string') return false;
+        str = str.trim();
+        if (!str.startsWith('[')) return false;
+        try { JSON.parse(str); return true; } catch { return false; }
+      };
+
+      if (isJson(raw)) {
+        blocks = JSON.parse(raw);
+      } else {
+        // HTML lama
+        blocks = [{ type: 'text', html: raw }];
+      }
 
       blocks.forEach(b => {
+
         if (b.type === 'text') {
           addTextBlock();
           editor.lastElementChild
             .querySelector('.text-content').innerHTML = b.html;
         }
 
-        if (b.type === 'image') {
+        if (b.type === 'image' && window.IMAGE_MAP?.[b.image_id]) {
           addImageBlock();
-          const block = editor.lastElementChild;
-          block.querySelector('.image-id').value = b.image_id;
-          block.querySelector('.preview').src =
-            IMAGE_MAP[b.image_id];
-          block.querySelector('.preview').classList.remove('d-none');
-        }
-      });
 
-      updatePreview();
+          const block = editor.lastElementChild;
+          const img   = block.querySelector('.preview');
+
+          block.querySelector('.image-id').value = b.image_id;
+
+          img.src = IMAGE_MAP[b.image_id];
+          img.classList.remove('d-none');
+
+          block.querySelector('.img-btn').textContent = 'Ganti Gambar';
+        }
+
+      });
+    }
+
+    /* === LOAD COVER === */
+    @if(!empty($blog->image))
+      coverImg.src = "{{ asset('uploads/blogs/'.$blog->image) }}";
+      coverImg.classList.remove('d-none');
+      coverBtn.textContent = 'Ganti Cover';
     @endif
+
+    updatePreview();
   });
 
-  /* ================= HELPERS ================= */
+  /* ================= HELPERS ================= 
   function addTextBlockFromHTML(html){ addTextBlock(); editor.lastElementChild.querySelector('.text-content').innerHTML = html; }
   function addImageBlockFromSrc(src){
     addImageBlock();
@@ -728,7 +771,7 @@
     hidden.value = image.id;
 
     block.querySelector('.img-btn').textContent = 'Ganti Gambar';
-  }
+  } */
 
 </script>
 @endsection
