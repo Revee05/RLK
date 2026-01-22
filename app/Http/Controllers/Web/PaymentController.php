@@ -252,77 +252,8 @@ class PaymentController extends Controller
         // =======================================================
         //   PENGURANGAN STOK — HANYA KALAU STATUS = PAID
         // =======================================================
-        if ($status === 'PAID' && $orderType === 'merch') {
-
-            // Idempotency → kalau sudah pernah dapat PAID, jangan kurangi stok lagi
-            if ($order->stock_reduced == 1) {
-                Log::info("Stok sudah pernah dikurangi, SKIP", ['invoice' => $order->invoice]);
-                return response()->json(['message' => 'OK'], 200);
-            }
-
-            $items = json_decode($order->items, true) ?? [];
-
-            DB::beginTransaction();
-            try {
-
-                foreach ($items as $item) {
-                    $qty = $item['qty'] ?? 1;
-
-                    // =========================
-                    // JIKA ADA SIZE
-                    // =========================
-                    if (!empty($item['size_id'])) {
-
-                        $size = MerchProductVariantSize::where(
-                            'id',
-                            $item['size_id']
-                        )->lockForUpdate()->first();
-
-                        if (!$size || $size->stock < $qty) {
-                            throw new \Exception('Stok size tidak cukup');
-                        }
-
-                        $size->decrement('stock', $qty);
-
-                        Log::info('Stok SIZE dikurangi', [
-                            'size_id' => $item['size_id'],
-                            'qty' => $qty
-                        ]);
-                    } 
-                    // =========================
-                    // VARIANT (TANPA SIZE)
-                    // =========================
-                    elseif (!empty($item['variant_id'])) {
-
-                        $variant = MerchProductVariant::where(
-                            'id',
-                            $item['variant_id']
-                        )->lockForUpdate()->first();
-
-                        if (!$variant || $variant->stock < $qty) {
-                            throw new \Exception('Stok variant tidak cukup');
-                        }
-
-                        $variant->decrement('stock', $qty);
-
-                        Log::info('Stok VARIANT dikurangi', [
-                            'variant_id' => $item['variant_id'],
-                            'qty' => $qty
-                        ]);
-                    }
-                }
-
-
-                // Tandai stok sudah dikurangi (biar idempotent)
-                $order->stock_reduced = 1;
-                $order->save();
-
-                DB::commit();
-
-            } catch (\Exception $e) {
-                DB::rollBack();
-                Log::error("Gagal mengurangi stok", ['message' => $e->getMessage()]);
-            }
+        if ($status === 'PAID') {
+            $this->reduceStock($order, $orderType);
         }
         
         // ========================
@@ -458,6 +389,9 @@ class PaymentController extends Controller
                             'invoice' => $invoice,
                             'paid_at' => now()->toDateTimeString()
                         ]);
+
+                        // Kurangi stok jika belum dikurangi
+                        $this->reduceStock($order, $orderType);
                         break;
 
                     case 'EXPIRED':
@@ -567,5 +501,114 @@ class PaymentController extends Controller
         return redirect()
             ->route('payment.status', $invoice)
             ->with('success', 'Pesanan berhasil dibatalkan.');
+    }
+
+    /**
+     * Helper method untuk mengurangi stock
+     * Digunakan oleh webhook callback dan status check
+     */
+    protected function reduceStock($order, $orderType)
+    {
+        // Idempotency → kalau sudah pernah dapat PAID, jangan kurangi stok lagi
+        if ($order->stock_reduced == 1) {
+            Log::info("Stok sudah pernah dikurangi, SKIP", ['invoice' => $order->invoice]);
+            return;
+        }
+
+        $items = json_decode($order->items, true) ?? [];
+
+        if (empty($items)) {
+            Log::warning("Order items kosong, tidak ada stock yang dikurangi", ['invoice' => $order->invoice]);
+            return;
+        }
+
+        DB::beginTransaction();
+        try {
+            foreach ($items as $item) {
+                $qty = $item['qty'] ?? 1;
+
+                // =========================
+                // MERCHANDISE: JIKA ADA SIZE
+                // =========================
+                if (!empty($item['size_id'])) {
+                    $size = MerchProductVariantSize::where('id', $item['size_id'])
+                        ->lockForUpdate()->first();
+
+                    if (!$size || $size->stock < $qty) {
+                        throw new \Exception('Stok size tidak cukup');
+                    }
+
+                    $size->decrement('stock', $qty);
+
+                    Log::info('Stok SIZE dikurangi', [
+                        'size_id' => $item['size_id'],
+                        'qty' => $qty,
+                        'stock_remaining' => $size->stock
+                    ]);
+                } 
+                // =========================
+                // MERCHANDISE: VARIANT (TANPA SIZE)
+                // =========================
+                elseif (!empty($item['variant_id'])) {
+                    $variant = MerchProductVariant::where('id', $item['variant_id'])
+                        ->lockForUpdate()->first();
+
+                    if (!$variant || $variant->stock < $qty) {
+                        throw new \Exception('Stok variant tidak cukup');
+                    }
+
+                    $variant->decrement('stock', $qty);
+
+                    Log::info('Stok VARIANT dikurangi', [
+                        'variant_id' => $item['variant_id'],
+                        'qty' => $qty,
+                        'stock_remaining' => $variant->stock
+                    ]);
+                }
+                // =========================
+                // LELANG: PRODUK AUCTION
+                // =========================
+                elseif (!empty($item['product_id']) && ($item['type'] ?? '') === 'lelang') {
+                    $product = \App\Products::where('id', $item['product_id'])
+                        ->lockForUpdate()->first();
+
+                    if (!$product) {
+                        throw new \Exception('Produk lelang tidak ditemukan');
+                    }
+
+                    if ($product->stock < $qty) {
+                        throw new \Exception('Stok produk lelang tidak cukup');
+                    }
+
+                    $product->decrement('stock', $qty);
+
+                    Log::info('Stok PRODUK LELANG dikurangi', [
+                        'product_id' => $item['product_id'],
+                        'qty' => $qty,
+                        'stock_remaining' => $product->stock
+                    ]);
+                }
+            }
+
+            // Tandai stok sudah dikurangi (biar idempotent)
+            $order->stock_reduced = 1;
+            $order->save();
+
+            DB::commit();
+
+            Log::info('Pengurangan stok berhasil', [
+                'invoice' => $order->invoice,
+                'order_type' => $orderType,
+                'items_count' => count($items)
+            ]);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error("Gagal mengurangi stok", [
+                'message' => $e->getMessage(),
+                'invoice' => $order->invoice ?? null,
+                'order_type' => $orderType ?? null
+            ]);
+        }
     }
 }
