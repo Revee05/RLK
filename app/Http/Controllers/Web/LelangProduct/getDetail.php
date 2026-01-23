@@ -120,12 +120,37 @@ class getDetail extends Controller
 
 
             // 6. Ambil Related Products
-            $related = Products::where('kategori_id', $product->kategori_id)
-                ->where('id', '!=', $product->id)
-                ->inRandomOrder()
-                ->limit(4)
-                ->with('imageUtama')
-                ->get();
+            $now = Carbon::now();
+
+            // 1. Coba ambil produk satu kategori
+            $related = Products::where('id', '!=', $product->id)
+            ->where('status', 1)
+            ->where('end_date', '>', $now)
+            ->where(function ($q) use ($product) {
+                $q->where('kategori_id', $product->kategori_id)
+                ->orWhere('karya_id', $product->karya_id);
+            })
+            ->orderByRaw("
+                CASE 
+                    WHEN kategori_id = ? THEN 1
+                    WHEN karya_id = ? THEN 2
+                    ELSE 3
+                END
+            ", [$product->kategori_id, $product->karya_id])
+            ->orderBy('end_date', 'asc')
+            ->limit(2)
+            ->get();
+
+
+            // 2. Jika kosong, ambil dari kategori lain (fallback)
+            if ($related->isEmpty()) {
+                $related = Products::where('id', '!=', $product->id)
+                    ->where('status', 1)
+                    ->where('end_date', '>', $now)
+                    ->orderBy('end_date', 'asc')
+                    ->limit(2)
+                    ->get();
+            }
 
 
             // 7. Return ke View

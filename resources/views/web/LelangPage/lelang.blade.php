@@ -103,7 +103,9 @@
 
         // --- RESULT BADGE (tampil ketika status = 2 AND lelang sudah selesai) ---
         let resultBadge = '';
-        if (product.status === 2) {
+        if (!currentUserId) {
+            // tidak menampilkan badge
+        } else if (product.status === 2) {
             // pastikan lelang sudah selesai (jika ada end_date)
             let ended = true;
             if (product.end_date_iso) {
