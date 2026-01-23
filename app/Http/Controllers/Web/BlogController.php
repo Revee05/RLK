@@ -84,21 +84,30 @@ class BlogController extends Controller
                 ->where('status','PUBLISHED')
                 ->first();
             
-            if ($blog) {
-                $relatedBlogs = Posts::Blog()
-                    ->where('id', '!=', $blog->id)
-                    ->where('status', 'PUBLISHED')
-                    ->latest()
-                    ->take(3)
-                    ->get();
-
-                return view('web.blog-detail',compact('blog', 'relatedBlogs'));
+            if (!$blog) {
+                abort(404);
             }
-            
-            abort(404);
+
+            // 🔹 decode body
+            $blocks = json_decode($blog->body, true);
+            if (!is_array($blocks)) {
+                $blocks = [];
+            }
+
+            // 🔹 mapping images: [id => image]
+            $images = $blog->images->keyBy('id');
+
+            $relatedBlogs = Posts::Blog()
+                ->where('id', '!=', $blog->id)
+                ->where('status', 'PUBLISHED')
+                ->latest()
+                ->take(3)
+                ->get();
+
+            return view('web.blog-detail', compact('blog', 'blocks', 'images', 'relatedBlogs'));
 
         } catch (Exception $e) {
-            Log::error('Page :'. $e->getMessage());
+            Log::error('Blog detail error: '. $e->getMessage());
             abort(500);
         }
     }

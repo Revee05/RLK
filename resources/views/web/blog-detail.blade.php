@@ -1,4 +1,4 @@
-@extends('web.partials.layout')
+@extends('web.partials.blog-layout')
 
 @section('css')
 <link rel="stylesheet" href="{{ asset('css/blog/blog-detail.css') }}">
@@ -26,47 +26,69 @@
       {{ $blog->created_at->translatedFormat('l, d F Y H:i:s') }}
     </div>
 
-    {{-- Gambar utama --}}
-    @if(!empty($blog->image))
-    <div class="blog-image">
-      <img src="{{ asset('uploads/blogs/'.$blog->image) }}" alt="{{ $blog->title }}">
-    </div>
+    {{-- Cover --}}
+    @if($blog->image)
+      <div class="blog-cover">
+        <img src="{{ asset('uploads/blogs/'.$blog->image) }}" alt="{{ $blog->title }}">
+      </div>
     @endif
 
+    {{-- BODY --}}
     @php
-        $bodyParts = preg_split('/(<\/p>)/i', $blog->body);
-        $images = $blog->images->where('filename', '!=', $blog->image)->values();
-        $imgIndex = 0;
+      $rawBody = $blog->getOriginal('body');
+      $blocks = json_decode($rawBody, true);
+
+      $imageIds = collect($blocks)
+        ->where('type', 'image')
+        ->pluck('image_id')
+        ->filter()
+        ->unique()
+        ->toArray();
+
+      $images = DB::table('blog_images')
+        ->whereIn('id', $imageIds)
+        ->get()
+        ->keyBy('id');
     @endphp
 
-    <div class="blog-body">
-      @foreach($bodyParts as $index => $part)
-        {!! $part !!}
+    <article class="blog-body">
+      {{-- JIKA BODY JSON --}}
+      @if(is_array($blocks))
+        @foreach($blocks as $block)
 
-        {{-- Sisipkan gambar setelah setiap 2 paragraf, kalau masih ada --}}
-        @if(($index + 1) % 2 == 0 && isset($images[$imgIndex]))
-          @if(isset($images[$imgIndex + 1]))
-            {{-- Kalau ada dua gambar berikutnya --}}
-            <div class="inline-image-pair">
-              <img src="{{ asset('uploads/blogs/'.$images[$imgIndex]->filename) }}" alt="Gambar pendukung">
-              <img src="{{ asset('uploads/blogs/'.$images[$imgIndex + 1]->filename) }}" alt="Gambar pendukung">
+          {{-- TEXT --}}
+          @if(($block['type'] ?? '') === 'text')
+            <div class="blog-text">
+              {!! $block['html'] !!}
             </div>
-            @php $imgIndex += 2; @endphp
-          @else
-            {{-- Kalau tinggal satu gambar --}}
-            <div class="inline-image">
-              <img src="{{ asset('uploads/blogs/'.$images[$imgIndex]->filename) }}" alt="Gambar pendukung">
-            </div>
-            @php $imgIndex++; @endphp
           @endif
-        @endif
-      @endforeach
-    </div>
+
+          {{-- IMAGE --}}
+          @if(
+              ($block['type'] ?? '') === 'image' &&
+              !empty($block['image_id']) &&
+              isset($images[$block['image_id']])
+          )
+            <figure class="blog-image-inline">
+              <img
+                src="{{ asset('uploads/blogs/'.$images[$block['image_id']]->filename) }}"
+                alt=""
+              >
+            </figure>
+          @endif
+
+        @endforeach
+      
+        {{-- JIKA BODY HTML LAMA --}}
+      @else
+        {!! $rawBody !!}
+      @endif
+    </article>
 
     {{-- Penulis --}}
     @if(!empty($blog->author))
     <div class="blog-author">
-      <img src="{{ asset('uploads/authors/'.$blog->author->photo ?? 'default.jpg') }}" alt="{{ $blog->author->name }}">
+      <img src="{{ asset('uploads/authors/' . ($blog->author->photo ?? 'default.jpeg')) }}">
       <div class="author-info">
         <h5>Written by {{ ucwords($blog->author->name) }}</h5>
         <p>{{ $blog->author->bio ?? 'Penulis di platform Rasanya Lelang Karya yang berfokus pada seni dan budaya.' }}</p>

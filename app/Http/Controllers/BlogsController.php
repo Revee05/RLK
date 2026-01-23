@@ -10,11 +10,10 @@ use Illuminate\Support\Str;
 
 class BlogsController extends Controller
 {
-    /** =======================
-     *  INDEX
-     *  ======================= */
     public function index()
     {
+        Log::info('[BLOG] INDEX accessed', ['user_id' => Auth::id()]);
+
         $blogs = DB::table('posts as p')
             ->leftJoin('kategori as k', 'k.id', '=', 'p.kategori_id')
             ->where('p.post_type', 'blog')
@@ -25,79 +24,102 @@ class BlogsController extends Controller
         return view('admin.blogs.index', compact('blogs'));
     }
 
-    /** =======================
-     *  CREATE
-     *  ======================= */
     public function create()
     {
-        $cats = DB::table('kategori')
-            ->where('cat_type', 'blog')
-            ->pluck('name', 'id');
+        Log::info('[BLOG] CREATE page opened', ['user_id' => Auth::id()]);
 
+        $cats = DB::table('kategori')->where('cat_type', 'blog')->pluck('name', 'id');
         $tags = DB::table('tags')->pluck('name', 'id');
 
         return view('admin.blogs.create', compact('cats', 'tags'));
     }
 
-    /** =======================
-     *  STORE
-     *  ======================= */
     public function store(Request $request)
     {
+        Log::info('[BLOG] STORE start', ['user_id' => Auth::id()]);
+
         $request->validate([
             'title'  => 'required',
             'body'   => 'required',
-            'status' => 'required',
+            'status' => 'required|in:DRAFT,PUBLISHED',
         ]);
 
         DB::beginTransaction();
         try {
-            $blogId = DB::table('posts')->insertGetId([
+
+            /* === COVER === */
+            $coverName = null;
+            if ($request->hasFile('cover')) {
+                $cover = $request->file('cover');
+                $coverName = uniqid() . '.' . $cover->extension();
+                $cover->move(public_path('uploads/blogs'), $coverName);
+
+                Log::info('[BLOG] COVER uploaded', [
+                    'filename' => $coverName,
+                    'user_id'  => Auth::id()
+                ]);
+            }
+
+            /* === POST === */
+            $postId = DB::table('posts')->insertGetId([
                 'user_id'     => Auth::id(),
                 'title'       => $request->title,
                 'kategori_id' => $request->kategori_id,
                 'slug'        => Str::slug($request->title, '-'),
                 'body'        => $request->body,
                 'status'      => $request->status,
+                'image'       => $coverName,
                 'post_type'   => 'blog',
                 'created_at'  => now(),
                 'updated_at'  => now(),
             ]);
 
-            /** === Upload Gambar === */
-            if ($request->hasFile('fotoblog')) {
-                $dir = public_path('uploads/blogs');
-                if (!file_exists($dir)) mkdir($dir, 0777, true);
+            Log::info('[BLOG] POST created', [
+                'post_id' => $postId,
+                'status'  => $request->status
+            ]);
 
-                foreach ($request->file('fotoblog') as $i => $file) {
-                    $fileName = uniqid() . '.' . $file->getClientOriginalExtension();
-                    $file->move($dir, $fileName);
+            /* === IMAGE ARTIKEL === */
+            if ($request->hasFile('images')) {
+                foreach ($request->file('images') as $file) {
+                    $name = uniqid() . '.' . $file->extension();
+                    $file->move(public_path('uploads/blogs'), $name);
 
                     DB::table('blog_images')->insert([
-                        'post_id'    => $blogId,
-                        'filename'   => $fileName,
+                        'post_id'    => $postId,
+                        'filename'   => $name,
                         'created_at' => now(),
                         'updated_at' => now(),
                     ]);
 
-                    if ($i === 0) {
-                        DB::table('posts')->where('id', $blogId)->update(['image' => $fileName]);
-                    }
+                    Log::info('[BLOG] IMAGE added', [
+                        'post_id'  => $postId,
+                        'filename' => $name
+                    ]);
                 }
             }
 
-            /** === Simpan Tags === */
+            /* === TAGS === */
             if (!empty($request->tagger)) {
                 foreach ($request->tagger as $tag) {
                     DB::table('tags')->updateOrInsert(
                         ['slug' => Str::slug($tag, '-')],
                         ['name' => $tag, 'slug' => Str::slug($tag, '-')]
                     );
+
+                    Log::info('[BLOG] TAG saved', ['tag' => $tag]);
                 }
             }
 
+            /* ===== SYNC IMAGE KE POST ===== */
+            $this->attachImagesToPost($postId, $request->body);
+            $this->syncUnusedImages($postId, $request->body);
+
             DB::commit();
+            Log::info('[BLOG] STORE success', ['post_id' => $postId]);
+
             return redirect()->route('admin.blogs.index')->with('message', 'Blog berhasil disimpan!');
+        
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error('Blog Store Error: ' . $e->getMessage());
@@ -105,35 +127,32 @@ class BlogsController extends Controller
         }
     }
 
-    /** =======================
-     *  EDIT
-     *  ======================= */
     public function edit($id)
     {
-        $blog = DB::table('posts')->find($id);
-        $cats = DB::table('kategori')
-            ->where('cat_type', 'blog')
-            ->pluck('name', 'id');
-        $tags = DB::table('tags')->pluck('name', 'id');
+        Log::info('[BLOG] EDIT opened', ['post_id' => $id]);
+
+        $blog   = DB::table('posts')->find($id);
+        $cats   = DB::table('kategori')->where('cat_type', 'blog')->pluck('name', 'id');
+        $tags   = DB::table('tags')->pluck('name', 'id');
         $images = DB::table('blog_images')->where('post_id', $id)->get();
 
         return view('admin.blogs.edit', compact('blog', 'cats', 'tags', 'images'));
     }
 
-    /** =======================
-     *  UPDATE
-     *  ======================= */
     public function update(Request $request, $id)
     {
+        Log::info('[BLOG] UPDATE start', ['post_id' => $id]);
+
         $request->validate([
             'title'  => 'required',
             'body'   => 'required',
-            'status' => 'required',
+            'status' => 'required|in:DRAFT,PUBLISHED',
         ]);
 
         DB::beginTransaction();
         try {
-            DB::table('posts')->where('id', $id)->update([
+
+            $data = [
                 'user_id'     => Auth::id(),
                 'title'       => $request->title,
                 'kategori_id' => $request->kategori_id,
@@ -141,40 +160,45 @@ class BlogsController extends Controller
                 'body'        => $request->body,
                 'status'      => $request->status,
                 'updated_at'  => now(),
-            ]);
+            ];
 
-            /** === Upload gambar baru === */
-            if ($request->hasFile('fotoblog')) {
-                $dir = public_path('uploads/blogs');
-                if (!file_exists($dir)) mkdir($dir, 0777, true);
+            /* === COVER === */
+            if ($request->hasFile('cover')) {
+                $cover = $request->file('cover');
+                $coverName = uniqid() . '.' . $cover->extension();
+                $cover->move(public_path('uploads/blogs'), $coverName);
+                $data['image'] = $coverName;
 
-                foreach ($request->file('fotoblog') as $file) {
-                    $fileName = uniqid() . '.' . $file->getClientOriginalExtension();
-                    $file->move($dir, $fileName);
-
-                    DB::table('blog_images')->insert([
-                        'post_id'    => $id,
-                        'filename'   => $fileName,
-                        'created_at' => now(),
-                        'updated_at' => now(),
-                    ]);
-                }
+                Log::info('[BLOG] COVER updated', [
+                    'post_id'  => $id,
+                    'filename' => $coverName
+                ]);
             }
 
+            DB::table('posts')->where('id', $id)->update($data);
+            
+            $this->attachImagesToPost($id, $request->body);
+            $this->syncUnusedImages($id, $request->body);
+
             DB::commit();
+            Log::info('[BLOG] UPDATE success', ['post_id' => $id]);
+
             return redirect()->route('admin.blogs.index')->with('message', 'Blog berhasil diperbarui!');
+
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('Blog Update Error: ' . $e->getMessage());
+            Log::error('[BLOG] UPDATE failed', [
+                'post_id' => $id,
+                'error'   => $e->getMessage()
+            ]);
             return back()->with('error', 'Terjadi kesalahan saat memperbarui blog.');
         }
     }
 
-    /** =======================
-     *  DELETE
-     *  ======================= */
     public function destroy($id)
     {
+        Log::warning('[BLOG] DELETE start', ['post_id' => $id]);
+
         DB::beginTransaction();
         try {
             $images = DB::table('blog_images')->where('post_id', $id)->get();
@@ -187,6 +211,8 @@ class BlogsController extends Controller
             DB::table('posts')->where('id', $id)->delete();
 
             DB::commit();
+            Log::warning('[BLOG] DELETE success', ['post_id' => $id]);
+
             return back()->with('message', 'Blog berhasil dihapus!');
         } catch (\Exception $e) {
             DB::rollBack();
@@ -195,11 +221,101 @@ class BlogsController extends Controller
         }
     }
 
-    /** =======================
-     *  TAG AJAX (untuk select2)
-     *  ======================= */
+    public function uploadContentImage(Request $request)
+    {
+        $request->validate([
+            'image'   => 'required|image|max:2048',
+            //'post_id' => 'required|exists:posts,id'
+        ]);
+
+        $file = $request->file('image');
+        $name = uniqid() . '.' . $file->getClientOriginalExtension();
+        $file->move(public_path('uploads/blogs'), $name);
+
+        $id = DB::table('blog_images')->insertGetId([
+            'post_id'    => $request->post_id ?? null,
+            'filename'   => $name,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        return response()->json([
+            'success'  => true,
+            'id'       => $id,
+            'filename' => $name,
+            'url'      => asset('uploads/blogs/'.$name)
+        ]);
+    }
+
+    private function syncUnusedImages($postId, $body)
+    {
+        $blocks = json_decode($body, true);
+        if (!is_array($blocks)) return;
+
+        $usedIds = collect($blocks)
+            ->where('type', 'image')
+            ->pluck('image_id')
+            ->filter()
+            ->map(fn ($v) => (int) $v)
+            ->toArray();
+
+        $images = DB::table('blog_images')->where('post_id', $postId)->get();
+
+        foreach ($images as $img) {
+            if (!in_array($img->id, $usedIds)) {
+                $path = public_path('uploads/blogs/' . $img->filename);
+                if (file_exists($path)) unlink($path);
+                DB::table('blog_images')->where('id', $img->id)->delete();
+            }
+        }
+    }
+
+    /* ================= ATTACH IMAGE TO POST ================= */
+    private function attachImagesToPost($postId, $body)
+    {
+        $blocks = json_decode($body, true);
+        if (!is_array($blocks)) return;
+
+        foreach ($blocks as $block) {
+            if ($block['type'] === 'image' && !empty($block['image_id'])) {
+                DB::table('blog_images')
+                    ->where('id', $block['image_id'])
+                    ->update(['post_id' => $postId]);
+            }
+        }
+    }
+
+    public function status($id)
+    {
+        $post = DB::table('posts')->find($id);
+        if (!$post) {
+            Log::warning('[BLOG] STATUS failed - not found', ['post_id' => $id]);
+            return back()->with('error', 'Blog tidak ditemukan.');
+        }
+
+        $newStatus = ($post->status === 'PUBLISHED') ? 'DRAFT' : 'PUBLISHED';
+
+        DB::table('posts')->where('id', $id)->update([
+            'status'     => $newStatus,
+            'updated_at' => now(),
+        ]);
+
+        Log::info('[BLOG] STATUS changed', [
+            'post_id' => $id,
+            'from'    => $post->status,
+            'to'      => $newStatus
+        ]);
+
+        return back()->with('message', 'Status blog diperbarui!');
+    }
+
     public function getTag(Request $request)
     {
+        Log::info('[BLOG] TAG search start', [
+            'keyword' => $request->search,
+            'user_id' => Auth::id()
+        ]);
+        
         $search = $request->search;
         $tags = DB::table('tags')
             ->when($search, fn($q) => $q->where('name', 'like', "%$search%"))
@@ -207,77 +323,9 @@ class BlogsController extends Controller
             ->orderBy('name')
             ->get();
 
+        Log::info('[BLOG] TAG search result', [
+            'count' => $tags->count()
+        ]);
         return response()->json($tags);
-    }
-
-    /** =======================
-     *  DELETE GAMBAR
-     *  ======================= */
-    public function deleteImage($id)
-    {
-        $image = DB::table('blog_images')->find($id);
-        if (!$image) return response()->json(['success' => false]);
-
-        $path = public_path('uploads/blogs/' . $image->filename);
-        if (file_exists($path)) unlink($path);
-        DB::table('blog_images')->where('id', $id)->delete();
-
-        return response()->json(['success' => true]);
-    }
-
-    /** =======================
-     *  GANTI GAMBAR
-     *  ======================= */
-    public function replaceImage(Request $request, $id)
-    {
-        $image = DB::table('blog_images')->find($id);
-        if (!$image || !$request->hasFile('new_image')) {
-            return response()->json(['success' => false]);
-        }
-
-        $file = $request->file('new_image');
-        $filename = time() . '_' . $file->getClientOriginalName();
-        $file->move(public_path('uploads/blogs'), $filename);
-
-        $oldPath = public_path('uploads/blogs/' . $image->filename);
-        if (file_exists($oldPath)) unlink($oldPath);
-
-        DB::table('blog_images')->where('id', $id)->update(['filename' => $filename]);
-
-        return response()->json([
-            'success' => true,
-            'new_url' => asset('uploads/blogs/' . $filename)
-        ]);
-    }
-
-    /** =======================
-     *  SET COVER IMAGE
-     *  ======================= */
-    public function setCover($id, $blogId)
-    {
-        $img = DB::table('blog_images')->where('id', $id)->first();
-        if (!$img) return response()->json(['success' => false]);
-
-        DB::table('posts')->where('id', $blogId)->update(['image' => $img->filename]);
-        return response()->json(['success' => true]);
-    }
-
-    /** =======================
-     *  SET / TOGGLE STATUS
-     *  ======================= */
-    public function status($id)
-    {
-        $post = DB::table('posts')->find($id);
-        if (!$post) {
-            return back()->with('error', 'Blog tidak ditemukan.');
-        }
-
-        $newStatus = ($post->status === 'PUBLISHED') ? 'DRAFT' : 'PUBLISHED';
-        DB::table('posts')->where('id', $id)->update([
-            'status'     => $newStatus,
-            'updated_at' => now(),
-        ]);
-
-        return back()->with('message', 'Status blog diperbarui!');
     }
 }

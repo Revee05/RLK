@@ -79,16 +79,9 @@ class Posts extends Model
         return Carbon::parse($this->created_at)->isoFormat('dddd, D MMMM Y H:mm:ss');
     }
 
-    // Decode HTML entity agar konten tampil bersih di view
     public function getBodyAttribute($value)
     {
-        // Decode semua karakter HTML (misal &lt;p&gt; jadi <p>)
-        $decoded = html_entity_decode($value);
-
-        // Kadang ada karakter aneh kayak ",="" ... yang perlu dibersihkan
-        $cleaned = preg_replace('/[",=]+[ ]*[";,]+/', '', $decoded);
-
-        return $cleaned;
+        return html_entity_decode($value, ENT_QUOTES | ENT_HTML5);
     }
 
     public function images()

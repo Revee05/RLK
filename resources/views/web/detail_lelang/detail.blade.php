@@ -94,9 +94,9 @@
                             <div class="details-grid">
                                 <div>
                                     <!-- <p class="label-teal">Material</p>
-                                                            <p>{{ $product->material ?? '-' }}</p> -->
+                                                                <p>{{ $product->material ?? '-' }}</p> -->
                                     <!-- <p class="label-teal">Dimensi</p>
-                                                            <p>{{ $product->dimension ?? '-' }}</p> -->
+                                                                <p>{{ $product->dimension ?? '-' }}</p> -->
                                     <p class="label-teal">Berat</p>
                                     <p>{{ $product->weight ?? '-' }} gr</p>
                                 </div>
@@ -193,47 +193,7 @@
                         </div>
 
                         {{-- RELATED --}}
-                        @if (isset($related) && count($related) > 0)
-                            <div class="related-title">Related products</div>
-
-                            <div class="related-grid-modern">
-                                @foreach ($related->take(2) as $r)
-                                    <a href="{{ route('lelang.detail', $r->slug) }}" class="related-link">
-
-                                        <div class="related-card-modern">
-
-                                            {{-- IMAGE --}}
-                                            <div class="related-image-wrap">
-                                                <img src="{{ asset($r->imageUtama ? $r->imageUtama->path : 'assets/img/default.jpg') }}"
-                                                    alt="{{ $r->title }}">
-
-                                                {{-- TIMER BADGE --}}
-                                                <div class="related-timer">
-                                                    {{ $r->remaining_time ?? '00:01:09:32' }}
-                                                </div>
-                                            </div>
-
-                                            {{-- CONTENT --}}
-                                            <div class="related-content">
-                                                <div class="related-name">{{ $r->title }}</div>
-                                                <div class="related-sub">Bidding Tertinggi:</div>
-                                                <div class="related-price">Rp
-                                                    {{ number_format($r->highest_bid ?? $r->price, 0, ',', '.') }}</div>
-                                            </div>
-
-                                        </div>
-                                    </a>
-                                @endforeach
-                            </div>
-
-                            {{-- BUTTON --}}
-                            <div class="related-more-wrap">
-                                <a href="{{ route('lelang') }}" class="btn-related-more">
-                                    See More Product
-                                </a>
-                            </div>
-                        @endif
-
+                        @include('web.detail_lelang.related_product', ['related' => $related ?? []])
                     </div>
 
                     {{-- RIGHT COLUMN (Dipisah ke file bid_lelang.blade.php) --}}
@@ -408,7 +368,7 @@
                 channel.listen('BidSent', (e) => {
                     console.log('[Blade] BidSent received:', e);
                 });
-                
+
                 channel.listen('MessageSent', (e) => {
                     console.log('[MessageSent] Event diterima di detail.blade.php:', e);
                 });
@@ -652,6 +612,51 @@
                     }
                 }
             }
+        });
+    </script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+
+            function pad(n) {
+                return n < 10 ? '0' + n : n;
+            }
+
+            function parseDate(str) {
+                if (!str) return null;
+                let t = str.replace(' ', 'T');
+                const d = new Date(t);
+                return isNaN(d.getTime()) ? null : d;
+            }
+
+            function updateRelatedTimers() {
+                document.querySelectorAll('.related-timer[data-end]').forEach(el => {
+                    const end = parseDate(el.dataset.end);
+                    if (!end) {
+                        el.innerText = '--:--:--:--';
+                        return;
+                    }
+
+                    const now = new Date();
+                    let s = Math.floor((end - now) / 1000);
+
+                    if (s <= 0) {
+                        el.innerText = 'SELESAI';
+                        return;
+                    }
+
+                    const d = Math.floor(s / 86400);
+                    s %= 86400;
+                    const h = Math.floor(s / 3600);
+                    s %= 3600;
+                    const m = Math.floor(s / 60);
+                    const sec = s % 60;
+
+                    el.innerText = `${pad(d)}:${pad(h)}:${pad(m)}:${pad(sec)}`;
+                });
+            }
+
+            updateRelatedTimers();
+            setInterval(updateRelatedTimers, 1000);
         });
     </script>
 @endsection
