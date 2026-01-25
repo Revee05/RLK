@@ -145,7 +145,7 @@
                     <div class="card-body">
                         <h5>{{ $blog->title }}</h5>
                         
-                        <p>{!! Str::limit(strip_tags($blog->body), 150) !!}</p>
+                        <p>{{ Str::limit($blog->excerpt, 150) }}</p>
                         
                         {{-- UPDATE: TEXT BUTTON UNIFIED --}}
                         <a href="{{route('web.blog.detail',$blog->slug)}}" class="btn-blog-responsive">

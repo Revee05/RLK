@@ -4,6 +4,7 @@ namespace App;
 
 use Illuminate\Database\Eloquent\Model;
 use Carbon\Carbon;
+use Illuminate\Support\Str;
 
 class Posts extends Model
 {
@@ -87,5 +88,32 @@ class Posts extends Model
     public function images()
     {
         return $this->hasMany(\App\BlogImage::class, 'post_id');
+    }
+
+    public function getExcerptAttribute()
+    {
+        $body = $this->attributes['body'] ?? '';
+
+        if (!$body) {
+            return '';
+        }
+
+        // Coba decode JSON (editor baru)
+        $decoded = json_decode($body, true);
+
+        if (is_array($decoded)) {
+            foreach ($decoded as $block) {
+                if (
+                    isset($block['type']) &&
+                    $block['type'] === 'text' &&
+                    !empty($block['html'])
+                ) {
+                    return strip_tags(html_entity_decode($block['html']));
+                }
+            }
+        }
+
+        // Fallback untuk konten lama (HTML biasa)
+        return strip_tags(html_entity_decode($body));
     }
 }
