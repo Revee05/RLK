@@ -59,9 +59,9 @@
                         <li class="nav-item" role="presentation">
                             <button class="nav-link" id="belum-bayar-tab" data-bs-toggle="tab" data-bs-target="#belum-bayar" type="button" role="tab" aria-controls="belum-bayar" aria-selected="false">Belum Bayar</button>
                         </li>
-                        <li class="nav-item" role="presentation">
+                        <!-- <li class="nav-item" role="presentation">
                             <button class="nav-link" id="diproses-tab" data-bs-toggle="tab" data-bs-target="#diproses" type="button" role="tab" aria-controls="diproses" aria-selected="false">Diproses</button>
-                        </li>
+                        </li> -->
                         <li class="nav-item" role="presentation">
                             <button class="nav-link" id="selesai-tab" data-bs-toggle="tab" data-bs-target="#selesai" type="button" role="tab" aria-controls="selesai" aria-selected="false">Selesai</button>
                         </li>
