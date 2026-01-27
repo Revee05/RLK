@@ -103,16 +103,22 @@
             <div class="form-group">
               <label>Status</label>
               <select name="status" class="form-control">
-                <option value="DRAFT" {{ old('status', $blog->status ?? '') == 'DRAFT' ? 'selected' : '' }}>📝 DRAFT</option>
-                <option value="PUBLISHED" {{ old('status', $blog->status ?? '') == 'PUBLISHED' ? 'selected' : '' }}>✅ PUBLISHED</option>
+                <option value="DRAFT" {{ old('status', $blog->status ?? '') == 'DRAFT' ? 'selected' : '' }}>DRAFT</option>
+                <option value="PUBLISHED" {{ old('status', $blog->status ?? '') == 'PUBLISHED' ? 'selected' : '' }}>PUBLISHED</option>
               </select>
             </div>
           </div>
 
           <div class="col-md-4">
             <div class="form-group">
-              <label>Tags</label>
-              <select id="selTag" name="tagger[]" multiple="multiple" class="form-control"></select>
+              <label>Tag</label>
+              <select id="selTag" name="tagger[]" multiple class="form-control">
+                  @if(isset($selectedTags))
+                      @foreach($selectedTags as $tag)
+                          <option value="{{ $tag }}" selected>{{ $tag }}</option>
+                      @endforeach
+                  @endif
+              </select>
             </div>
           </div>
         </div>
@@ -147,6 +153,8 @@
       : []
   );
 </script>
+
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 
 <script>
   /* =====================================================
@@ -305,6 +313,7 @@
         <span class="image-title">Gambar</span>
 
         <div class="image-actions">
+          <span>Batas ukuran file: 3 mb</span><br>
           <button type="button" class="img-btn btn-outline-primary">Pilih Gambar</button>
           <button type="button" class="tool-btn remove btn-outline-primary">Hapus</button>
         </div>
@@ -418,11 +427,8 @@
       const block = e.target.closest('.editor-block');
       const imgId = block.querySelector('.image-id')?.value;
 
-      if (imgId) {
-        fetch('/admin/blogs/content/image/' + imgId, {
-          method: 'DELETE',
-          headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}' }
-        });
+      if (e.target.classList.contains('remove')) {
+        const block = e.target.closest('.editor-block');
       }
 
       block.remove();
@@ -683,6 +689,29 @@
     document.getElementById('body').value = JSON.stringify(blocks);
   });
 
+  $(document).ready(function () {
+    $('#selTag').select2({
+      dropdownParent: $('#selTag').parent(),
+      placeholder: 'Pilih atau ketik tag',
+      tags: true,
+      multiple: true,
+      width: '100%',
+      minimumInputLength: 1,
+      ajax: {
+        url: "{{ route('admin.blogs.tag') }}",
+        dataType: 'json',
+        delay: 250,
+        data: function (params) {
+          return { search: params.term };
+        },
+        processResults: function (data) {
+          return { results: data };
+        }
+      }
+    });
+  });
+
+
   /* =====================================================
     BUTTON ADD
   ===================================================== */
@@ -748,30 +777,6 @@
 
     updatePreview();
   });
-
-  /* ================= HELPERS ================= 
-  function addTextBlockFromHTML(html){ addTextBlock(); editor.lastElementChild.querySelector('.text-content').innerHTML = html; }
-  function addImageBlockFromSrc(src){
-    addImageBlock();
-    const block = editor.lastElementChild;
-    const img = block.querySelector('img.preview');
-    const hidden = block.querySelector('.image-id');
-    img.src = src; img.classList.remove('d-none'); hidden.value = src.split('/').pop();
-    const btn = block.querySelector('.img-btn'); btn.textContent = 'Ganti Gambar';
-  }
-
-  function addImageBlockFromData(image){
-    addImageBlock();
-    const block  = editor.lastElementChild;
-    const img    = block.querySelector('img.preview');
-    const hidden = block.querySelector('.image-id');
-
-    img.src = image.url;
-    img.classList.remove('d-none');
-    hidden.value = image.id;
-
-    block.querySelector('.img-btn').textContent = 'Ganti Gambar';
-  } */
 
 </script>
 @endsection

@@ -5,6 +5,7 @@ namespace App;
 use Illuminate\Database\Eloquent\Model;
 use Carbon\Carbon;
 use Illuminate\Support\Str;
+use App\Tags;
 
 class Posts extends Model
 {
@@ -26,12 +27,6 @@ class Posts extends Model
         'views'
     ];
 
-    /*
-    |--------------------------------------------------------------------------
-    | SCOPES
-    |--------------------------------------------------------------------------
-    */
-
     // Hanya ambil data yang tipe-nya "page"
     public function scopePage($query)
     {
@@ -44,16 +39,15 @@ class Posts extends Model
         return $query->where('post_type', 'blog');
     }
 
-    /*
-    |--------------------------------------------------------------------------
-    | RELATIONSHIPS
-    |--------------------------------------------------------------------------
-    */
-
     // Relasi ke tabel tags (many to many)
     public function tags()
     {
-        return $this->belongsToMany(Tags::class)->withTimestamps();
+        return $this->belongsToMany(
+            Tags::class,
+            'posts_tags',   // tabel pivot
+            'posts_id',     // FK ke posts
+            'tags_id'       // FK ke tags
+        )->withTimestamps();
     }
 
     // Relasi ke kategori (many to one)
@@ -67,12 +61,6 @@ class Posts extends Model
     {
         return $this->belongsTo('App\User', 'user_id');
     }
-
-    /*
-    |--------------------------------------------------------------------------
-    | ACCESSORS
-    |--------------------------------------------------------------------------
-    */
 
     // Format tanggal ke gaya Indonesia
     public function getDateIndoAttribute()

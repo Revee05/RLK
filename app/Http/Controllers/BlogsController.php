@@ -101,11 +101,23 @@ class BlogsController extends Controller
 
             /* === TAGS === */
             if (!empty($request->tagger)) {
-                foreach ($request->tagger as $tag) {
+                foreach ($request->tagger as $tagName) {
+
                     DB::table('tags')->updateOrInsert(
-                        ['slug' => Str::slug($tag, '-')],
-                        ['name' => $tag, 'slug' => Str::slug($tag, '-')]
+                        ['slug' => Str::slug($tagName)],
+                        ['name' => $tagName, 'slug' => Str::slug($tagName)]
                     );
+
+                    $tag = DB::table('tags')
+                        ->where('slug', Str::slug($tagName))
+                        ->first();
+
+                    DB::table('posts_tags')->insert([
+                        'posts_id'   => $postId,
+                        'tags_id'    => $tag->id,
+                        'created_at' => now(),
+                        'updated_at' => now(),
+                    ]);
 
                     Log::info('[BLOG] TAG saved', ['tag' => $tag]);
                 }
@@ -133,10 +145,15 @@ class BlogsController extends Controller
 
         $blog   = DB::table('posts')->find($id);
         $cats   = DB::table('kategori')->where('cat_type', 'blog')->pluck('name', 'id');
-        $tags   = DB::table('tags')->pluck('name', 'id');
+        
+        $selectedTags = DB::table('posts_tags as pt')
+            ->join('tags as t', 't.id', '=', 'pt.tags_id')
+            ->where('pt.posts_id', $id)
+            ->pluck('t.name');
+            
         $images = DB::table('blog_images')->where('post_id', $id)->get();
 
-        return view('admin.blogs.edit', compact('blog', 'cats', 'tags', 'images'));
+        return view('admin.blogs.edit', compact('blog', 'cats', 'selectedTags', 'images'));
     }
 
     public function update(Request $request, $id)
@@ -176,6 +193,30 @@ class BlogsController extends Controller
             }
 
             DB::table('posts')->where('id', $id)->update($data);
+
+            /* ===== UPDATE TAGS ===== */
+            DB::table('posts_tags')->where('posts_id', $id)->delete();
+
+            if (!empty($request->tagger)) {
+                foreach ($request->tagger as $tagName) {
+
+                    DB::table('tags')->updateOrInsert(
+                        ['slug' => Str::slug($tagName)],
+                        ['name' => $tagName, 'slug' => Str::slug($tagName)]
+                    );
+
+                    $tag = DB::table('tags')
+                        ->where('slug', Str::slug($tagName))
+                        ->first();
+
+                    DB::table('posts_tags')->insert([
+                        'posts_id'   => $id,
+                        'tags_id'    => $tag->id,
+                        'created_at' => now(),
+                        'updated_at' => now(),
+                    ]);
+                }
+            }
             
             $this->attachImagesToPost($id, $request->body);
             $this->syncUnusedImages($id, $request->body);
@@ -221,11 +262,31 @@ class BlogsController extends Controller
         }
     }
 
+    public function getTag(Request $request)
+    {
+        Log::info('[BLOG] TAG search start', [
+            'keyword' => $request->search,
+            'user_id' => Auth::id()
+        ]);
+        
+        $search = $request->search;
+        $tags = DB::table('tags')
+            ->when($search, fn($q) => $q->where('name', 'like', "%$search%"))
+            ->select('name as id', 'name as text')
+            ->orderBy('name')
+            ->get();
+
+        Log::info('[BLOG] TAG search result', [
+            'count' => $tags->count()
+        ]);
+        return response()->json($tags);
+    }
+
+    /* ================= IMAGE UPLOAD ================= */
     public function uploadContentImage(Request $request)
     {
         $request->validate([
-            'image'   => 'required|image|max:2048',
-            //'post_id' => 'required|exists:posts,id'
+            'image'   => 'required|image|max:3072',
         ]);
 
         $file = $request->file('image');
@@ -247,6 +308,21 @@ class BlogsController extends Controller
         ]);
     }
 
+    /* ================= ATTACH IMAGE TO POST ================= */
+    private function attachImagesToPost($postId, $body)
+    {
+        $blocks = json_decode($body, true);
+        if (!is_array($blocks)) return;
+
+        foreach ($blocks as $block) {
+            if ($block['type'] === 'image' && !empty($block['image_id'])) {
+                DB::table('blog_images')
+                    ->where('id', $block['image_id'])
+                    ->update(['post_id' => $postId]);
+            }
+        }
+    }
+
     private function syncUnusedImages($postId, $body)
     {
         $blocks = json_decode($body, true);
@@ -266,21 +342,6 @@ class BlogsController extends Controller
                 $path = public_path('uploads/blogs/' . $img->filename);
                 if (file_exists($path)) unlink($path);
                 DB::table('blog_images')->where('id', $img->id)->delete();
-            }
-        }
-    }
-
-    /* ================= ATTACH IMAGE TO POST ================= */
-    private function attachImagesToPost($postId, $body)
-    {
-        $blocks = json_decode($body, true);
-        if (!is_array($blocks)) return;
-
-        foreach ($blocks as $block) {
-            if ($block['type'] === 'image' && !empty($block['image_id'])) {
-                DB::table('blog_images')
-                    ->where('id', $block['image_id'])
-                    ->update(['post_id' => $postId]);
             }
         }
     }
@@ -307,25 +368,5 @@ class BlogsController extends Controller
         ]);
 
         return back()->with('message', 'Status blog diperbarui!');
-    }
-
-    public function getTag(Request $request)
-    {
-        Log::info('[BLOG] TAG search start', [
-            'keyword' => $request->search,
-            'user_id' => Auth::id()
-        ]);
-        
-        $search = $request->search;
-        $tags = DB::table('tags')
-            ->when($search, fn($q) => $q->where('name', 'like', "%$search%"))
-            ->select('name as id', 'name as text')
-            ->orderBy('name')
-            ->get();
-
-        Log::info('[BLOG] TAG search result', [
-            'count' => $tags->count()
-        ]);
-        return response()->json($tags);
-    }
+    }    
 }
