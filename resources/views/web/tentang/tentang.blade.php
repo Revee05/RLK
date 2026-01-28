@@ -96,24 +96,8 @@
                 </p>
             </div>
 
-            <div class="row g-4 justify-content-center">
-                <div class="col-md-4">
-                    <div class="team-card h-100">
-                        <div class="team-card-img-wrapper">
-                            <img src="{{ asset('assets/img/tentang/tentang-1.webp') }}" alt="Arief Hadinata">
-                        </div>
-                        <div class="card-body">
-                            <h3 class="team-card-name">Arief Hadinata</h3>
-                            <p class="team-card-role">Co-Founder</p>
-                            <div class="team-card-socials">
-                                <a href="mailto:info@example.com" aria-label="Email"><i class="fas fa-envelope"></i></a>
-                                <a href="https://instagram.com/" target="_blank" aria-label="Instagram"><i
-                                        class="fab fa-instagram"></i></a>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-4">
+            <div class="row g-4 justify-content-start">
+                <div class="col-6 col-md-4">
                     <div class="team-card h-100">
                         <div class="team-card-img-wrapper">
                             <img src="{{ asset('assets/img/tentang/tentang-1.webp') }}" alt="Amanda Rizqyana">
@@ -122,14 +106,32 @@
                             <h3 class="team-card-name">Amanda Rizqyana</h3>
                             <p class="team-card-role">Founder</p>
                             <div class="team-card-socials">
-                                <a href="mailto:info@example.com" aria-label="Email"><i class="fas fa-envelope"></i></a>
-                                <a href="https://instagram.com/" target="_blank" aria-label="Instagram"><i
+                                <a href="mailto:amandarizqyana@hokgstudio.com" aria-label="Email"><i
+                                        class="fas fa-envelope"></i></a>
+                                <a href="https://www.instagram.com/amandarizqyana" target="_blank" aria-label="Instagram"><i
                                         class="fab fa-instagram"></i></a>
                             </div>
                         </div>
                     </div>
                 </div>
-                <div class="col-md-4">
+                <div class="col-6 col-md-4">
+                    <div class="team-card h-100">
+                        <div class="team-card-img-wrapper">
+                            <img src="{{ asset('assets/img/tentang/tentang-1.webp') }}" alt="Arief Hadinata">
+                        </div>
+                        <div class="card-body">
+                            <h3 class="team-card-name">Arief Hadinata</h3>
+                            <p class="team-card-role">Co-Founder</p>
+                            <div class="team-card-socials">
+                                <a href="mailto:ariefhadinata@hokgstudio.com" aria-label="Email"><i
+                                        class="fas fa-envelope"></i></a>
+                                <a href="https://www.instagram.com/ariefhadinata" target="_blank" aria-label="Instagram"><i
+                                        class="fab fa-instagram"></i></a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-6 col-md-4">
                     <div class="team-card h-100">
                         <div class="team-card-img-wrapper">
                             <img src="{{ asset('assets/img/tentang/tentang-1.webp') }}" alt="Bakhtiar Amrullah">
@@ -207,7 +209,7 @@
     </section>
 
     <!-- Activities Section -->
-    <section class="py-5">
+    <section class="pt-5 pb-1">
         <div class="container tentang-container">
             <div class="text-center mb-4">
                 <h2 class="display-5 fw-bold">
@@ -288,19 +290,18 @@
     </section>
 
     <!-- CTA Section -->
-    <section class="py-5">
+    <section class="tentang-cta-section">
         <div class="container tentang-container">
-            <div class="row justify-content-center">
-                <div class="col-lg-8 text-center">
-                    <h3 class="fw-bold mb-4">
-                        Bergabunglah dengan <span class="tentang-brand-color">Rasanya Lelang Karya</span> hari ini dan
-                        rasakan
-                        pengalaman berbelanja yang berbeda!
-                    </h3>
-                    <a href="{{ route('register') }}" class="btn btn-lg px-5 py-3 fw-bold text-white tentang-cta-btn">
-                        Daftar Sekarang
-                    </a>
-                </div>
+            <div class="tentang-cta-card">
+                <h2 class="headline">Butuh Respon Cepat</h2>
+                <p class="subheadline">
+                    Hubungi admin kami langsung melalui via WhatsApp untuk pertanyaan mendesak atau diskusi langsung terkait
+                    lelang maupun produk merchandise.
+                </p>
+                <a href="https://api.whatsapp.com/send/?phone=6282324730989&text=Halo%20admin%20RLK%2C%20saya%20ingin%20bertanya%20tentang%20lelang%20dan%20produk%20merchandise."
+                    target="_blank" class="btn tentang-cta-btn-white">
+                    Hubungi Sekarang
+                </a>
             </div>
         </div>
     </section>

@@ -88,7 +88,7 @@
     font-size: 1.5rem;
     font-weight: 700;
     color: #000000;
-    margin-bottom: 0.5rem;
+    margin-bottom: 0rem;
     line-height: 1.2;
 }
 
@@ -150,7 +150,6 @@
     /* make room for the overlapping avatar */
 }
 
-
 /* Cyan horizontal rule for the Tentang page */
 hr.tentang-hr-cyan {
     border: 0;
@@ -166,14 +165,56 @@ hr.tentang-hr-cyan {
     margin-bottom: 5rem !important; /* slightly larger than mb-5 (3rem) */
 }
 
-/* CTA Button */
-.tentang-cta-btn {
-    background-color: #58bcc2;
-    border-radius: 50px;
+/* CTA Section Improvements based on Figma Node 2864:1050 */
+.tentang-cta-section {
+    padding: 4rem 0 6rem;
 }
 
-.tentang-cta-btn:hover {
-    background-color: #47a5ab;
+.tentang-cta-card {
+    position: relative;
+    /* background:
+        linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)),
+        url("../../assets/img/tentang/tentang-1.webp");
+    background-size: cover;
+    background-position: center; */
+    background-color: #58bcc2;
+    border-radius: 15px;
+    padding: 4.5rem 2rem;
+    color: #ffffff;
+    box-shadow: 0px 0px 20px rgba(0, 0, 0, 0.2);
+    text-align: center;
+}
+
+.tentang-cta-card .headline {
+    font-size: 2rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+}
+
+.tentang-cta-card .subheadline {
+    font-size: 1.1rem;
+    max-width: 750px;
+    margin: 0 auto 2.5rem;
+    opacity: 0.95;
+    line-height: 1.6;
+}
+
+.tentang-cta-btn-white {
+    background-color: #ffffff;
+    color: #58bcc2 !important;
+    border-radius: 10px;
+    padding: 0.8rem 2.5rem;
+    font-weight: 700;
+    font-size: 1.25rem;
+    transition: all 0.3s ease;
+    border: none;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.tentang-cta-btn-white:hover {
+    background-color: #f8f9fa;
+    transform: translateY(-3px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
 }
 
 /* Accordion Styles */
@@ -222,6 +263,23 @@ hr.tentang-hr-cyan {
     border-radius: 0; /* let item control rounding */
 }
 
+@media (max-width: 480px) {
+    .team-card .card-body {
+        padding: 1rem;
+    }
+
+    .team-card-name {
+        font-size: 1rem;
+        margin-bottom: 0.25rem;
+        line-height: 1;
+    }
+
+    .team-card-role {
+        font-size: 0.75rem;
+        margin-bottom: 1rem;
+    }
+}
+
 /* Responsive media queries (kept at bottom as project convention) */
 @media (max-width: 767.98px) {
     .tentang-main-photo {
@@ -267,6 +325,18 @@ hr.tentang-hr-cyan {
 
     .service-card .card-body {
         padding-top: 3rem; /* room for the smaller overlapping avatar */
+    }
+
+    .tentang-cta-card {
+        padding: 3rem 1.5rem;
+    }
+
+    .tentang-cta-card .headline {
+        font-size: 1.5rem;
+    }
+
+    .tentang-cta-card .subheadline {
+        font-size: 0.95rem;
     }
 }
 
