@@ -51,26 +51,67 @@
     justify-content: center;
 }
 
-/* Team card with absolute avatar that overflows half above the card */
+/* Team card design based on Figma */
 .team-card {
+    background: #ffffff;
+    border-radius: 10px;
+    box-shadow: 0px 0px 20px -3px rgba(0, 0, 0, 0.25) !important;
+    height: 100%;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
     position: relative;
-    overflow: visible;
-    box-shadow: 0 2px 8px 0 rgba(0, 0, 0, 0.25) !important;
+    border: none;
 }
-.team-card .about-avatar-abs {
-    position: absolute;
-    top: -50px; /* half of avatar height (100px) to overflow half above */
-    left: 50%;
-    transform: translateX(-50%);
-    width: 100px;
-    height: 100px;
+
+.team-card-img-wrapper {
+    width: 100%;
+    aspect-ratio: 291 / 293;
+    overflow: hidden;
+}
+
+.team-card-img-wrapper img {
+    width: 100%;
+    height: 100%;
     object-fit: cover;
-    border-radius: 50%;
-    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12);
 }
+
 .team-card .card-body {
-    padding-top: 3.5rem;
-    /* make room for the overlapping avatar */
+    padding: 1.5rem;
+    text-align: left;
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+}
+
+.team-card-name {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #000000;
+    margin-bottom: 0.5rem;
+    line-height: 1.2;
+}
+
+.team-card-role {
+    font-size: 1rem;
+    color: #e83c91;
+    margin-bottom: 1rem;
+}
+
+.team-card-socials {
+    margin-top: auto;
+    display: flex;
+    gap: 1rem;
+}
+
+.team-card-socials a {
+    color: #43334c;
+    font-size: 1.25rem;
+    transition: color 0.2s;
+}
+
+.team-card-socials a:hover {
+    color: #e83c91;
 }
 
 /* Team Member Photo */
@@ -86,6 +127,29 @@
     line-height: 1.2;
     margin-bottom: 0;
 }
+
+/* services */
+.service-card {
+    position: relative;
+    overflow: visible;
+    box-shadow: 0 2px 8px 0 rgba(0, 0, 0, 0.25) !important;
+}
+.service-card .about-avatar-abs {
+    position: absolute;
+    top: -50px; /* half of avatar height (100px) to overflow half above */
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100px;
+    height: 100px;
+    object-fit: cover;
+    border-radius: 50%;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12);
+}
+.service-card .card-body {
+    padding-top: 3.5rem;
+    /* make room for the overlapping avatar */
+}
+
 
 /* Cyan horizontal rule for the Tentang page */
 hr.tentang-hr-cyan {
@@ -170,22 +234,6 @@ hr.tentang-hr-cyan {
         font-size: 1rem; /* smaller on small devices */
     }
 
-    /* Mobile tweaks: keep avatar overlapping but add space above the card so it doesn't touch previous element */
-    .team-card .about-avatar-abs {
-        position: absolute !important;
-        top: -40px !important; /* overlap half above, adjusted for smaller avatar */
-        left: 50% !important;
-        transform: translateX(-50%) !important;
-        width: 80px !important;
-        height: 80px !important;
-        margin: 0 !important;
-        display: block;
-    }
-
-    .team-card .card-body {
-        padding-top: 3rem; /* room for the smaller overlapping avatar */
-    }
-
     .mb-sm-down-5 {
         margin-bottom: 3rem !important; /* mirrors Bootstrap's mb-5 */
     }
@@ -203,6 +251,22 @@ hr.tentang-hr-cyan {
     /* Team member name smaller on mobile */
     .tentang-team-name {
         font-size: 1rem; /* smaller on phones */
+    }
+
+    /* Mobile tweaks: keep avatar overlapping but add space above the card so it doesn't touch previous element */
+    .service-card .about-avatar-abs {
+        position: absolute !important;
+        top: -40px !important; /* overlap half above, adjusted for smaller avatar */
+        left: 50% !important;
+        transform: translateX(-50%) !important;
+        width: 80px !important;
+        height: 80px !important;
+        margin: 0 !important;
+        display: block;
+    }
+
+    .service-card .card-body {
+        padding-top: 3rem; /* room for the smaller overlapping avatar */
     }
 }
 
