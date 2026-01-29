@@ -19,7 +19,7 @@
             @csrf
             <div class="input-group">
                 <input type="text" class="input-field input-cyan @error('name') is-invalid @enderror" name="name"
-                    value="{{ old('name') }}" required autocomplete="name" placeholder="Name" autofocus>
+                    value="{{ old('name') }}" required autocomplete="name" placeholder="Nama" autofocus>
                 @error('name')
                     <span class="invalid-feedback" role="alert">
                         <strong>{{ $message }}</strong>
@@ -39,6 +39,15 @@
                 <input type="email" class="input-field input-cyan @error('email') is-invalid @enderror" name="email"
                     value="{{ old('email') }}" required autocomplete="email" placeholder="Email">
                 @error('email')
+                    <span class="invalid-feedback" role="alert">
+                        <strong>{{ $message }}</strong>
+                    </span>
+                @enderror
+            </div>
+            <div class="input-group">
+                <input type="number" class="input-field input-cyan @error('number') is-invalid @enderror" name="number"
+                    value="{{ old('number') }}" required autocomplete="number" placeholder="Nomor Telepon">
+                @error('number')
                     <span class="invalid-feedback" role="alert">
                         <strong>{{ $message }}</strong>
                     </span>

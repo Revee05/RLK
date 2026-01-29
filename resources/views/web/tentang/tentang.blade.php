@@ -96,36 +96,56 @@
                 </p>
             </div>
 
-            <div class="row g-5 justify-content-center">
-                <div class="col-6 col-md-4 text-center">
-                    <img src="{{ asset('assets/img/tentang/tentang-1.webp') }}" alt="Arief Hadinata"
-                        class="mb-4 tentang-team-photo">
-                    <p class="fw-bold my-0 py-0 tentang-brand-color tentang-team-name">Arief Hadinata</p>
-                    <p class="my-0 py-0">Komisaris</p>
+            <div class="row g-4 justify-content-start">
+                <div class="col-6 col-md-4">
+                    <div class="team-card h-100">
+                        <div class="team-card-img-wrapper">
+                            <img src="{{ asset('assets/img/tentang/tentang-1.webp') }}" alt="Amanda Rizqyana">
+                        </div>
+                        <div class="card-body">
+                            <h3 class="team-card-name">Amanda Rizqyana</h3>
+                            <p class="team-card-role">Founder</p>
+                            <div class="team-card-socials">
+                                <a href="mailto:amandarizqyana@hokgstudio.com" aria-label="Email"><i
+                                        class="fas fa-envelope"></i></a>
+                                <a href="https://www.instagram.com/amandarizqyana" target="_blank" aria-label="Instagram"><i
+                                        class="fab fa-instagram"></i></a>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <div class="col-6 col-md-4 text-center">
-                    <img src="{{ asset('assets/img/tentang/tentang-1.webp') }}" alt="Amanda Rizqyana"
-                        class="mb-4 tentang-team-photo">
-                    <p class="fw-bold my-0 py-0 tentang-brand-color tentang-team-name">Amanda Rizqyana</p>
-                    <p class="my-0 py-0">Direktur Utama</p>
+                <div class="col-6 col-md-4">
+                    <div class="team-card h-100">
+                        <div class="team-card-img-wrapper">
+                            <img src="{{ asset('assets/img/tentang/tentang-1.webp') }}" alt="Arief Hadinata">
+                        </div>
+                        <div class="card-body">
+                            <h3 class="team-card-name">Arief Hadinata</h3>
+                            <p class="team-card-role">Co-Founder</p>
+                            <div class="team-card-socials">
+                                <a href="mailto:ariefhadinata@hokgstudio.com" aria-label="Email"><i
+                                        class="fas fa-envelope"></i></a>
+                                <a href="https://www.instagram.com/ariefhadinata" target="_blank" aria-label="Instagram"><i
+                                        class="fab fa-instagram"></i></a>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <div class="col-6 col-md-4 text-center">
-                    <img src="{{ asset('assets/img/tentang/tentang-1.webp') }}" alt="Bakhtiar Amrullah"
-                        class="mb-4 tentang-team-photo">
-                    <p class="fw-bold my-0 py-0 tentang-brand-color tentang-team-name">Bakhtiar Amrullah</p>
-                    <p class="my-0 py-0">Direktur</p>
-                </div>
-                <div class="col-6 col-md-4 text-center">
-                    <img src="{{ asset('assets/img/tentang/tentang-1.webp') }}" alt="Bramandita Iqbal N."
-                        class="mb-4 tentang-team-photo">
-                    <p class="fw-bold my-0 py-0 tentang-brand-color tentang-team-name">Bramandita Iqbal N.</p>
-                    <p class="my-0 py-0">Art Manager</p>
-                </div>
-                <div class="col-6 col-md-4 text-center">
-                    <img src="{{ asset('assets/img/tentang/tentang-1.webp') }}" alt="Restu Pamuji"
-                        class="mb-4 tentang-team-photo">
-                    <p class="fw-bold my-0 py-0 tentang-brand-color tentang-team-name">Restu Pamuji</p>
-                    <p class="my-0 py-0">Project Manager</p>
+                <div class="col-6 col-md-4">
+                    <div class="team-card h-100">
+                        <div class="team-card-img-wrapper">
+                            <img src="{{ asset('assets/img/tentang/tentang-1.webp') }}" alt="Bakhtiar Amrullah">
+                        </div>
+                        <div class="card-body">
+                            <h3 class="team-card-name">Bakhtiar Amrullah</h3>
+                            <p class="team-card-role">Co-Founder</p>
+                            <div class="team-card-socials">
+                                <a href="mailto:info@example.com" aria-label="Email"><i class="fas fa-envelope"></i></a>
+                                <a href="https://instagram.com/" target="_blank" aria-label="Instagram"><i
+                                        class="fab fa-instagram"></i></a>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -142,7 +162,7 @@
 
             <div class="row justify-content-center g-4 mt-5">
                 <div class="col-md-4 col-lg-3 mb-sm-down-5">
-                    <div class="card h-100 team-card text-center rounded-3 shadow-md px-3 py-1">
+                    <div class="card h-100 service-card text-center rounded-3 shadow-md px-3 py-1">
                         <img src="{{ asset('assets/img/tentang/tentang-1.webp') }}" alt="Art Auction"
                             class="about-avatar-abs">
                         <div class="card-body">
@@ -157,7 +177,7 @@
                 </div>
 
                 <div class="col-md-4 col-lg-3 mb-sm-down-5">
-                    <div class="card h-100 team-card text-center rounded-3 shadow-md px-3 py-1">
+                    <div class="card h-100 service-card text-center rounded-3 shadow-md px-3 py-1">
                         <img src="{{ asset('assets/img/tentang/tentang-2.webp') }}" alt="Buy it Now"
                             class="about-avatar-abs">
                         <div class="card-body">
@@ -171,7 +191,7 @@
                 </div>
 
                 <div class="col-md-4 col-lg-3 mb-sm-down-5">
-                    <div class="card h-100 team-card text-center rounded-3 shadow-md px-1 py-2">
+                    <div class="card h-100 service-card text-center rounded-3 shadow-md px-1 py-2">
                         <img src="{{ asset('assets/img/tentang/tentang-3.webp') }}" alt="Pricing Consultant"
                             class="about-avatar-abs">
                         <div class="card-body">
@@ -189,7 +209,7 @@
     </section>
 
     <!-- Activities Section -->
-    <section class="py-5">
+    <section class="pt-5 pb-1">
         <div class="container tentang-container">
             <div class="text-center mb-4">
                 <h2 class="display-5 fw-bold">
@@ -270,22 +290,21 @@
     </section>
 
     <!-- CTA Section -->
-    {{-- <section class="py-5">
+    <section class="tentang-cta-section">
         <div class="container tentang-container">
-            <div class="row justify-content-center">
-                <div class="col-lg-8 text-center">
-                    <h3 class="fw-bold mb-4">
-                        Bergabunglah dengan <span class="tentang-brand-color">Rasanya Lelang Karya</span> hari ini dan
-                        rasakan
-                        pengalaman berbelanja yang berbeda!
-                    </h3>
-                    <a href="{{ route('register') }}" class="btn btn-lg px-5 py-3 fw-bold text-white tentang-cta-btn">
-                        Daftar Sekarang
-                    </a>
-                </div>
+            <div class="tentang-cta-card">
+                <h2 class="headline">Butuh Respon Cepat</h2>
+                <p class="subheadline">
+                    Hubungi admin kami langsung melalui via WhatsApp untuk pertanyaan mendesak atau diskusi langsung terkait
+                    lelang maupun produk merchandise.
+                </p>
+                <a href="https://api.whatsapp.com/send/?phone=6282324730989&text=Halo%20admin%20RLK%2C%20saya%20ingin%20bertanya%20tentang%20lelang%20dan%20produk%20merchandise."
+                    target="_blank" class="btn tentang-cta-btn-white">
+                    Hubungi Sekarang
+                </a>
             </div>
         </div>
-    </section> --}}
+    </section>
 @endsection
 
 @push('styles')

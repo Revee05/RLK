@@ -82,6 +82,14 @@
                         </div>
 
                         <div class="form-group mb-3">
+                            {{ Form::label('name', 'Nomor Telepon') }}
+                            {{ Form::text('hp', $user->hp ?? '', ['class' => 'form-control input-field input-cyan' . ($errors->has('hp') ? ' is-invalid' : ''), 'placeholder' => 'Nomor Telepon']) }}
+                            @error('hp')
+                                <div class="invalid-feedback d-block">{{ $message }}</div>
+                            @enderror
+                        </div>
+
+                        <div class="form-group mb-3">
                             {{ Form::label('name', 'Jenis Kelamin') }}
                             {{ Form::select('jenis_kelamin', ['perempuan' => 'Perempuan', 'laki_laki' => 'Laki laki'], $user->jenis_kelamin, ['class' => 'form-control input-field input-cyan', 'placeholder' => 'Pilih Jenis Kelamin']) }}
                         </div>
