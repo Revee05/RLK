@@ -41,12 +41,17 @@ class MemberController extends Controller
             $this->validate($request, [
                 'name' => 'required|string|max:255',
                 'email' => 'required|email|unique:users,email,' . $id,
+                'hp' => 'required|digits_between:1,15',
             ], [
                 'name.required' => 'Nama wajib diisi',
                 'name.max' => 'Nama maksimal 255 karakter',
-                'email.required' => 'Email wajib diisi'
+                'email.required' => 'Email wajib diisi',
+                'email.email' => 'Format email tidak valid',
+                'email.unique' => 'Email sudah digunakan',
+                'hp.required' => 'Nomor Telepon wajib di isi',
+                'hp.digits_between' => 'Nomor Telepon harus berupa angka dan maksimal 15 digit',
             ]);
-            $input = $request->only(['name', 'email', 'jenis_kelamin']);
+            $input = $request->only(['name', 'email', 'jenis_kelamin', 'hp']);
         } else {
             $this->validate($request, [
                 'password' => 'required|min:6|confirmed',
