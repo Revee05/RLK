@@ -83,7 +83,7 @@
 
                         <div class="form-group mb-3">
                             {{ Form::label('name', 'Nomor Telepon') }}
-                            {{ Form::text('hp', $user->hp ?? '', ['class' => 'form-control input-field input-cyan' . ($errors->has('hp') ? ' is-invalid' : ''), 'placeholder' => 'Nomor Telepon']) }}
+                            {{ Form::number('hp', $user->hp ?? '', ['class' => 'form-control input-field input-cyan' . ($errors->has('hp') ? ' is-invalid' : ''), 'placeholder' => 'Nomor Telepon']) }}
                             @error('hp')
                                 <div class="invalid-feedback d-block">{{ $message }}</div>
                             @enderror
