@@ -25,41 +25,48 @@ use App\Models\MerchProduct;  // Model Merchandise
 
 class HomeController extends Controller
 {
-    /**
-     * =================================================================
-     * HALAMAN UTAMA (HOME)
-     * =================================================================
-     */
     public function index(Request $request)
     {
-        // 1. QUERY DATA
-        $products = Products::active()->orderBy('id', 'desc')->take(5)->get();
-        $sliders = Sliders::active()->get();
-        $blogs = Posts::Blog()->orderBy('id', 'desc')->where('status', 'PUBLISHED')->take(5)->get();
-        $featuredEvent = Event::whereIn('status', ['active', 'coming_soon'])
-            ->latest()
-            ->first();
+        // 1. QUERY SLIDER (LOGIKA PRIORITAS)
+        
+        // A. Ambil Event yang statusnya ACTIVE untuk Slider Utama
+        $eventSliders = Event::where('status', 'active')->latest()->get();
 
-        // 2. RESPON JSON
+        // B. Ambil Slider Biasa (Cadangan jika tidak ada event)
+        $defaultSliders = Sliders::active()->get();
+
+        // 2. QUERY DATA LAINNYA
+        $products = Products::active()->orderBy('id', 'desc')->take(5)->get();
+        $blogs = Posts::Blog()->orderBy('id', 'desc')->where('status', 'PUBLISHED')->take(5)->get();
+
+        // 3. QUERY DATA MERCHANDISE
+        $merchProducts = MerchProduct::with([
+            'defaultVariant.images' => fn($q) => $q->orderBy('id'),
+            'defaultVariant.sizes' => fn($q) => $q->orderBy('price')
+        ])
+        ->where('status', 'active')
+        ->orderBy('created_at', 'desc')
+        ->take(5)
+        ->get();
+
+        // 4. RESPON JSON (API)
         if ($request->ajax() || $request->wantsJson()) {
             return response()->json([
                 'success' => true,
                 'message' => 'Data Home berhasil diambil',
                 'data' => [
-                    'sliders' => $sliders,
-                    'featured_event' => $featuredEvent,
+                    'event_sliders' => $eventSliders, // Kirim data event
+                    'default_sliders' => $defaultSliders,
                     'products' => $products,
+                    'merchandise' => $merchProducts,
                     'blogs' => $blogs,
                 ],
-                'meta' => [
-                    'total_products' => $products->count(),
-                    'timestamp' => now()->toDateTimeString()
-                ]
             ]);
         }
 
-        // 3. RESPON VIEW
-        return view('web.home', compact('products', 'sliders', 'blogs', 'featuredEvent'));
+        // 5. RESPON VIEW
+        // Kita kirim $eventSliders dan $defaultSliders ke view
+        return view('web.home', compact('products', 'eventSliders', 'defaultSliders', 'blogs', 'merchProducts'));
     }
 
     /**

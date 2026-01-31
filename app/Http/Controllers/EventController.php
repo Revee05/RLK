@@ -2,147 +2,181 @@
 
 namespace App\Http\Controllers;
 
-use App\Event; // Pastikan ini 'App\Event', sesuai struktur Laravel 6
+use App\Event;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage; // Penting untuk upload gambar
+use Illuminate\Support\Facades\File; // Tambahan untuk hapus file manual
 
 class EventController extends Controller
 {
     /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
+     * Menampilkan daftar semua event.
      */
     public function index()
     {
         $events = Event::latest()->get();
-        // DIPERBAIKI: Path view diubah ke 'admin.master.events'
         return view('admin.master.events.index', compact('events'));
     }
 
     /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
+     * Menampilkan form untuk membuat event baru.
      */
     public function create()
     {
-        // DIPERBAIKI: Path view diubah ke 'admin.master.events'
         return view('admin.master.events.create');
     }
 
     /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
+     * Menyimpan event baru ke database.
      */
     public function store(Request $request)
     {
-        // Validasi input
-        $request->validate([
-            'title' => 'required|string|max:255',
-            'subtitle' => 'nullable|string|max:255',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
-            'link' => 'nullable|url',
-            'description' => 'nullable|string',
-            'status' => 'required|in:active,coming_soon,inactive',
-        ]);
+        // 1. Validasi Input
+        $this->validateRequest($request);
 
-        $data = $request->all();
+        // 2. Siapkan data selain gambar
+        $data = $request->except(['image', 'image_mobile']);
 
-        // Cek jika ada file gambar yang di-upload
+        // 3. Proses Upload Gambar Desktop (Landscape) ke public/uploads/events
         if ($request->hasFile('image')) {
-            // Simpan gambar di 'storage/app/public/events'
-            $path = $request->file('image')->store('events', 'public');
-            $data['image'] = $path;
+            $file = $request->file('image');
+            // Buat nama unik: timestamp_namapli.jpg
+            $filename = time() . '_desktop_' . $file->getClientOriginalName();
+            
+            // Pindahkan file ke public/uploads/events
+            $file->move(public_path('uploads/events'), $filename);
+            
+            // Simpan path relatif ke database
+            $data['image'] = 'uploads/events/' . $filename;
         }
 
-        // Buat data baru di database
+        // 4. Proses Upload Gambar Mobile (Portrait) ke public/uploads/events
+        if ($request->hasFile('image_mobile')) {
+            $file = $request->file('image_mobile');
+            $filename = time() . '_mobile_' . $file->getClientOriginalName();
+            
+            $file->move(public_path('uploads/events'), $filename);
+            
+            $data['image_mobile'] = 'uploads/events/' . $filename;
+        }
+
+        // 5. Simpan ke Database
         Event::create($data);
 
-        // Arahkan kembali ke halaman index (nama route tidak berubah)
-        return redirect()->route('admin.events.index')->with('success', 'Event berhasil ditambahkan.');
+        return redirect()->route('admin.events.index')
+            ->with('success', 'Event berhasil ditambahkan.');
     }
 
     /**
-     * Display the specified resource.
-     *
-     * @param  \App\Event  $event
-     * @return \Illuminate\Http\Response
-     */
-    public function show(Event $event)
-    {
-        // Fungsi ini tidak kita gunakan di admin, jadi bisa dikosongi
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  \App\Event  $event
-     * @return \Illuminate\Http\Response
+     * Menampilkan form edit event.
      */
     public function edit(Event $event)
     {
-        // DIPERBAIKI: Path view diubah ke 'admin.master.events'
         return view('admin.master.events.edit', compact('event'));
     }
 
     /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Event  $event
-     * @return \Illuminate\Http\Response
+     * Mengupdate data event yang sudah ada.
      */
     public function update(Request $request, Event $event)
     {
-        // Validasi input
-        $request->validate([
-            'title' => 'required|string|max:255',
-            'subtitle' => 'nullable|string|max:255',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048', // Boleh kosong saat update
-            'link' => 'nullable|url',
-            'description' => 'nullable|string',
-            'status' => 'required',
-        ]);
+        // 1. Validasi Input
+        $this->validateRequest($request);
 
-        $data = $request->all();
+        // 2. Siapkan data update
+        $data = $request->except(['image', 'image_mobile']);
 
-        // Cek jika ada gambar baru yang di-upload
+        // 3. Cek & Update Gambar Desktop
         if ($request->hasFile('image')) {
-            // Hapus gambar lama (jika ada)
-            if ($event->image) {
-                Storage::disk('public')->delete($event->image);
-            }
+            // Hapus gambar lama dulu
+            $this->deleteImage($event->image);
             
-            // Simpan gambar baru
-            $path = $request->file('image')->store('events', 'public');
-            $data['image'] = $path;
+            // Upload yang baru
+            $file = $request->file('image');
+            $filename = time() . '_desktop_' . $file->getClientOriginalName();
+            $file->move(public_path('uploads/events'), $filename);
+            
+            $data['image'] = 'uploads/events/' . $filename;
         }
 
-        // Update data di database
+        // 4. Cek & Update Gambar Mobile
+        if ($request->hasFile('image_mobile')) {
+            $this->deleteImage($event->image_mobile);
+            
+            $file = $request->file('image_mobile');
+            $filename = time() . '_mobile_' . $file->getClientOriginalName();
+            $file->move(public_path('uploads/events'), $filename);
+            
+            $data['image_mobile'] = 'uploads/events/' . $filename;
+        }
+
+        // 5. Update Database
         $event->update($data);
 
-        return redirect()->route('admin.events.index')->with('success', 'Event berhasil diperbarui.');
+        return redirect()->route('admin.events.index')
+            ->with('success', 'Event berhasil diperbarui.');
     }
 
     /**
-     * Remove the specified resource from storage.
-     *
-     * @param  \App\Event  $event
-     * @return \Illuminate\Http\Response
+     * Fitur Tambahan: Update Status Cepat.
+     */
+    public function updateStatus(Request $request, Event $event)
+    {
+        $request->validate([
+            'status' => 'required|in:active,coming_soon,inactive'
+        ]);
+
+        $event->update(['status' => $request->status]);
+
+        return redirect()->back()->with('success', 'Status publikasi berhasil diubah.');
+    }
+
+    /**
+     * Menghapus event dan gambarnya.
      */
     public function destroy(Event $event)
     {
-        // Hapus gambar dari storage (jika ada)
-        if ($event->image) {
-            Storage::disk('public')->delete($event->image);
-        }
+        // Hapus kedua file gambar dari folder uploads
+        $this->deleteImage($event->image);
+        $this->deleteImage($event->image_mobile);
 
         // Hapus data dari database
         $event->delete();
 
         return redirect()->back()->with('success', 'Event berhasil dihapus.');
+    }
+
+    // =========================================================================
+    // PRIVATE HELPER FUNCTIONS
+    // =========================================================================
+
+    /**
+     * Validasi request.
+     */
+    private function validateRequest(Request $request)
+    {
+        $request->validate([
+            'title'         => 'required|string|max:255',
+            'link'          => 'nullable|url',
+            'status'        => 'required|in:active,coming_soon,inactive',
+            'online_period' => 'nullable|string|max:255',
+            'offline_date'  => 'nullable|string|max:255',
+            'location'      => 'nullable|string|max:255',
+            'image'         => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
+            'image_mobile'  => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
+        ]);
+    }
+
+    /**
+     * Fungsi hapus gambar manual dari folder public/uploads.
+     */
+    private function deleteImage($path)
+    {
+        // $path contohnya: 'uploads/events/gambar.jpg'
+        if ($path) {
+            $fullPath = public_path($path); // Menjadi C:\laragon\www\RLK\public\uploads\events\gambar.jpg
+            if (file_exists($fullPath)) {
+                unlink($fullPath); // Hapus file fisik
+            }
+        }
     }
 }

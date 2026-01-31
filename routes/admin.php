@@ -10,6 +10,9 @@
 | contains the "admin" middleware group. Now create something great!
 |
 */
+
+use Illuminate\Support\Facades\Route;
+
 Auth::routes(['verify' => true]);
 Route::get('email/verify', 'Auth\VerificationController@show')->name('verification.notice');
 Route::group(['prefix' => '/admin','middleware' => ['auth','verified','IsAdmin']], function () {
@@ -42,6 +45,7 @@ Route::delete('blogs/content/image/{id}', 'BlogsController@deleteContentImage');
 ==   TAMBAHKAN ROUTE EVENT ANDA DI SINI BERSAMA BLOGS  ==
 =========================================================
 */
+Route::put('/events/{event}/status', 'EventController@updateStatus')->name('admin.events.status');
 Route::resource('/events','EventController',['as' => 'admin']);
 
 
