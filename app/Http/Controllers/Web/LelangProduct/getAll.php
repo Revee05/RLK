@@ -36,13 +36,32 @@ class getAll extends Controller
 
             $result = $this->composeGrid($featured, $normal);
 
-            $products = array_map(function ($p) use ($currentUserId) {
+            // Prepare list of product IDs shown on this batch so we can
+            // query whether the current user has placed a bid on any of them
+            $productIds = [];
+            foreach ($result as $item) {
+                if ($item && isset($item->id)) {
+                    $productIds[] = $item->id;
+                }
+            }
+
+            $biddedProductIds = [];
+            if ($currentUserId && count($productIds) > 0) {
+                $biddedProductIds = \App\Bid::whereIn('product_id', $productIds)
+                    ->where('user_id', $currentUserId)
+                    ->pluck('product_id')
+                    ->toArray();
+            }
+
+            $products = array_map(function ($p) use ($currentUserId, $biddedProductIds) {
                 if (!$p) return null;
 
                 // DATA HARGA TERTINGGI
                 // Kita ambil dari kolom virtual 'highest_bid_amount' yang dibuat di buildQuery
                 // Jika null (belum ada bid), kita set ke 0. Cast ke int untuk konsistensi.
                 $highestBid = (int) ($p->highest_bid_amount ?? 0);
+
+                $userHasBid = in_array($p->id, $biddedProductIds);
 
                 return [
                     'title' => $p->title,
@@ -59,6 +78,8 @@ class getAll extends Controller
                     'status' => $p->status,
                     'winner_id' => $p->winner_id ?? null,
                     'is_winner' => ($p->status == 2 && $p->winner_id && $currentUserId && ($p->winner_id == $currentUserId)),
+                    // apakah user saat ini pernah melakukan bid pada produk ini
+                    'has_bid' => (bool) $userHasBid,
                 ];
             }, $result);
 

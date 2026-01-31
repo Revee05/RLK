@@ -2,6 +2,7 @@
 
 @section('css')
     <link rel="stylesheet" href="{{ asset('css/checkout/checkout.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/checkout/shipper.css') }}">
 @endsection
 
 @section('content')

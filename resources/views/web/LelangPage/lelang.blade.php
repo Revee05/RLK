@@ -104,7 +104,7 @@
         // --- RESULT BADGE (tampil ketika status = 2 AND lelang sudah selesai) ---
         let resultBadge = '';
         if (!currentUserId) {
-            // tidak menampilkan badge
+            // tidak menampilkan badge untuk user yang tidak login
         } else if (product.status === 2) {
             // pastikan lelang sudah selesai (jika ada end_date)
             let ended = true;
@@ -112,15 +112,24 @@
                 ended = (new Date(product.end_date_iso).getTime() <= Date.now());
             }
             if (ended) {
+                // Jika backend memberikan is_winner dan has_bid, gunakan keduanya.
                 if (typeof product.is_winner !== 'undefined') {
-                    resultBadge = product.is_winner
-                        ? `<div class="lelang-result-badge" style="background:#28a745; color:#fff;">MENANG</div>`
-                        : `<div class="lelang-result-badge" style="background:#6c757d; color:#fff;">KALAH</div>`;
+                    if (product.is_winner) {
+                        resultBadge = `<div class="lelang-result-badge" style="background:#28a745; color:#fff;">MENANG</div>`;
+                    } else if (product.has_bid) {
+                        // tampilkan "KALAH" hanya jika user memang pernah melakukan bid
+                        resultBadge = `<div class="lelang-result-badge" style="background:#6c757d; color:#fff;">KALAH</div>`;
+                    } else {
+                        resultBadge = '';
+                    }
                 } else {
+                    // Fallback lama: gunakan winner_id dan has_bid jika tersedia
                     if (product.winner_id && currentUserId && product.winner_id == currentUserId) {
                         resultBadge = `<div class="lelang-result-badge" style="background:#28a745; color:#fff;">MENANG</div>`;
-                    } else {
+                    } else if (product.has_bid) {
                         resultBadge = `<div class="lelang-result-badge" style="background:#6c757d; color:#fff;">KALAH</div>`;
+                    } else {
+                        resultBadge = '';
                     }
                 }
             }
