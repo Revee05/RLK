@@ -21,7 +21,7 @@
                     </div>
 
                     <div class="form-group mb-3">
-                        <input type="text" class="form-control input-cyan" name="phone" placeholder="Nomor HP"
+                        <input type="number" class="form-control input-cyan" name="phone" placeholder="Nomor HP"
                             required>
                     </div>
 
