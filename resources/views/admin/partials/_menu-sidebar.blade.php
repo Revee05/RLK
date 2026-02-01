@@ -98,6 +98,12 @@
             <span>Sliders</span>
         </a>
     </li>
+    <li class="nav-item @yield('team')">
+        <a class="nav-link collapsed" href="{{ route('master.team.index') }}">
+            <i class="fas fa-users"></i>
+            <span>Tim</span>
+        </a>
+    </li>
     <li class="nav-item @yield('panduan')">
         <a class="nav-link collapsed " href="{{ route('admin.panduan.index') }}">
             <i class="fas fa-book-open"></i>

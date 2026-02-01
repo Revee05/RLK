@@ -97,56 +97,34 @@
             </div>
 
             <div class="row g-4 justify-content-start">
-                <div class="col-6 col-md-4">
-                    <div class="team-card h-100">
-                        <div class="team-card-img-wrapper">
-                            <img src="{{ asset('assets/img/tentang/tentang-1.webp') }}" alt="Amanda Rizqyana">
-                        </div>
-                        <div class="card-body">
-                            <h3 class="team-card-name">Amanda Rizqyana</h3>
-                            <p class="team-card-role">Founder</p>
-                            <div class="team-card-socials">
-                                <a href="mailto:amandarizqyana@hokgstudio.com" aria-label="Email"><i
-                                        class="fas fa-envelope"></i></a>
-                                <a href="https://www.instagram.com/amandarizqyana" target="_blank" aria-label="Instagram"><i
-                                        class="fab fa-instagram"></i></a>
+                @forelse($teamMembers as $member)
+                    <div class="col-6 col-md-4">
+                        <div class="team-card h-100">
+                            <div class="team-card-img-wrapper">
+                                <img src="{{ $member->avatar ? asset($member->avatar) : asset('assets/img/default.jpg') }}"
+                                    alt="{{ $member->name }}">
+                            </div>
+                            <div class="card-body">
+                                <h3 class="team-card-name">{{ $member->name }}</h3>
+                                <p class="team-card-role">{{ $member->role }}</p>
+                                <div class="team-card-socials">
+                                    @if ($member->email)
+                                        <a href="mailto:{{ $member->email }}" aria-label="Email"><i
+                                                class="fas fa-envelope"></i></a>
+                                    @endif
+                                    @if ($member->instagram)
+                                        <a href="{{ $member->instagram }}" target="_blank" aria-label="Instagram"><i
+                                                class="fab fa-instagram"></i></a>
+                                    @endif
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
-                <div class="col-6 col-md-4">
-                    <div class="team-card h-100">
-                        <div class="team-card-img-wrapper">
-                            <img src="{{ asset('assets/img/tentang/tentang-1.webp') }}" alt="Arief Hadinata">
-                        </div>
-                        <div class="card-body">
-                            <h3 class="team-card-name">Arief Hadinata</h3>
-                            <p class="team-card-role">Co-Founder</p>
-                            <div class="team-card-socials">
-                                <a href="mailto:ariefhadinata@hokgstudio.com" aria-label="Email"><i
-                                        class="fas fa-envelope"></i></a>
-                                <a href="https://www.instagram.com/ariefhadinata" target="_blank" aria-label="Instagram"><i
-                                        class="fab fa-instagram"></i></a>
-                            </div>
-                        </div>
+                @empty
+                    <div class="col-12">
+                        <p class="text-center mb-0">Data tim belum tersedia.</p>
                     </div>
-                </div>
-                <div class="col-6 col-md-4">
-                    <div class="team-card h-100">
-                        <div class="team-card-img-wrapper">
-                            <img src="{{ asset('assets/img/tentang/tentang-1.webp') }}" alt="Bakhtiar Amrullah">
-                        </div>
-                        <div class="card-body">
-                            <h3 class="team-card-name">Bakhtiar Amrullah</h3>
-                            <p class="team-card-role">Co-Founder</p>
-                            <div class="team-card-socials">
-                                <a href="mailto:info@example.com" aria-label="Email"><i class="fas fa-envelope"></i></a>
-                                <a href="https://instagram.com/" target="_blank" aria-label="Instagram"><i
-                                        class="fab fa-instagram"></i></a>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                @endforelse
             </div>
         </div>
     </section>

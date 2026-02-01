@@ -6,7 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
-use Validator;
+use Illuminate\Support\Facades\Validator;
 use Exception;
 use Carbon\Carbon;
 
@@ -14,7 +14,7 @@ use Carbon\Carbon;
 use App\Products;             // Model Lelang
 use App\ProductImage;
 use App\Bid;
-use App\user;
+use App\User;
 use App\Kategori;
 use App\Posts;                // Model Blog
 use App\Karya;                // Model Seniman
@@ -22,51 +22,67 @@ use App\Kelengkapan;
 use App\Sliders;
 use App\Event;
 use App\Models\MerchProduct;  // Model Merchandise
+use App\TeamMember;
 
 class HomeController extends Controller
 {
+    /**
+     * =================================================================
+     * HALAMAN UTAMA (HOME)
+     * =================================================================
+     */
     public function index(Request $request)
     {
-        // 1. QUERY SLIDER (LOGIKA PRIORITAS)
-        
-        // A. Ambil Event yang statusnya ACTIVE untuk Slider Utama
-        $eventSliders = Event::where('status', 'active')->latest()->get();
+        try {
+            // 1. QUERY SLIDER (LOGIKA PRIORITAS)
+            // A. Ambil Event yang statusnya ACTIVE untuk Slider Utama
+            $eventSliders = Event::where('status', 'active')->latest()->get();
 
-        // B. Ambil Slider Biasa (Cadangan jika tidak ada event)
-        $defaultSliders = Sliders::active()->get();
+            // B. Ambil Slider Biasa (Cadangan jika tidak ada event)
+            $defaultSliders = Sliders::active()->get();
 
-        // 2. QUERY DATA LAINNYA
-        $products = Products::active()->orderBy('id', 'desc')->take(5)->get();
-        $blogs = Posts::Blog()->orderBy('id', 'desc')->where('status', 'PUBLISHED')->take(5)->get();
+            // 2. QUERY DATA UTAMA
+            $products = Products::active()->orderBy('id', 'desc')->take(5)->get();
+            $blogs = Posts::Blog()->orderBy('id', 'desc')->where('status', 'PUBLISHED')->take(5)->get();
 
-        // 3. QUERY DATA MERCHANDISE
-        $merchProducts = MerchProduct::with([
-            'defaultVariant.images' => fn($q) => $q->orderBy('id'),
-            'defaultVariant.sizes' => fn($q) => $q->orderBy('price')
-        ])
-        ->where('status', 'active')
-        ->orderBy('created_at', 'desc')
-        ->take(5)
-        ->get();
+            // 3. QUERY DATA MERCHANDISE (Eager Loading Optimization)
+            $merchProducts = MerchProduct::with([
+                'defaultVariant.images' => fn($q) => $q->orderBy('id'),
+                'defaultVariant.sizes' => fn($q) => $q->orderBy('price')
+            ])
+            ->where('status', 'active')
+            ->orderBy('created_at', 'desc')
+            ->take(5)
+            ->get();
 
-        // 4. RESPON JSON (API)
-        if ($request->ajax() || $request->wantsJson()) {
-            return response()->json([
-                'success' => true,
-                'message' => 'Data Home berhasil diambil',
-                'data' => [
-                    'event_sliders' => $eventSliders, // Kirim data event
-                    'default_sliders' => $defaultSliders,
-                    'products' => $products,
-                    'merchandise' => $merchProducts,
-                    'blogs' => $blogs,
-                ],
-            ]);
+            // 4. RESPON JSON (API / AJAX)
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Data Home berhasil diambil',
+                    'data'    => [
+                        'event_sliders'   => $eventSliders,
+                        'default_sliders' => $defaultSliders,
+                        'products'        => $products,
+                        'merchandise'     => $merchProducts,
+                        'blogs'           => $blogs,
+                    ],
+                ]);
+            }
+
+            // 5. RESPON VIEW
+            return view('web.home', compact(
+                'products', 
+                'eventSliders', 
+                'defaultSliders', 
+                'blogs', 
+                'merchProducts'
+            ));
+
+        } catch (Exception $e) {
+            Log::error("Error Home Index: " . $e->getMessage());
+            abort(500);
         }
-
-        // 5. RESPON VIEW
-        // Kita kirim $eventSliders dan $defaultSliders ke view
-        return view('web.home', compact('products', 'eventSliders', 'defaultSliders', 'blogs', 'merchProducts'));
     }
 
     /**
@@ -94,14 +110,16 @@ class HomeController extends Controller
                 ->orderByRaw('CAST(price AS UNSIGNED) DESC')
                 ->get();
 
+            // Hitung Suggestion Bid
             $highestBid = $bidList->first() ? $bidList->first()->price : $product->price;
-            $step = intval($product->kelipatan);
+            $step       = intval($product->kelipatan);
+            $nominals   = [];
 
-            $nominals = [];
             for ($i = 1; $i <= 5; $i++) {
                 $nominals[] = $highestBid + ($step * $i);
             }
 
+            // Produk Terkait
             $related = Products::where('kategori_id', $product->kategori_id)
                 ->where('id', '!=', $product->id)
                 ->active()
@@ -110,11 +128,11 @@ class HomeController extends Controller
                 ->get();
 
             return view('web.detail_lelang.detail', [
-                'product'     => $product,
-                'bids'        => $bidList,
-                'highestBid'  => $highestBid,
-                'nominals'    => $nominals,
-                'related'     => $related,
+                'product'    => $product,
+                'bids'       => $bidList,
+                'highestBid' => $highestBid,
+                'nominals'   => $nominals,
+                'related'    => $related,
             ]);
 
         } catch (Exception $e) {
@@ -125,7 +143,7 @@ class HomeController extends Controller
 
     /**
      * =================================================================
-     * PENCARIAN (SEARCH) - SENIMAN REMOVED
+     * PENCARIAN (SEARCH)
      * =================================================================
      */
     public function search(Request $request)
@@ -158,23 +176,20 @@ class HomeController extends Controller
             // --- 2. SEARCH MERCHANDISE ---
             $merchandise = MerchProduct::where('status', 'active')
                 ->where('name', 'LIKE', "%$q%")
-                ->with(['defaultVariant.images' => function ($query) {
-                    $query->orderBy('id', 'asc');
-                }, 'defaultVariant.sizes'])
+                ->with(['defaultVariant.images' => fn($query) => $query->orderBy('id', 'asc'), 'defaultVariant.sizes'])
                 ->orderBy('created_at', 'desc')
                 ->take(8)
                 ->get();
 
-            // --- 3. SEARCH SENIMAN (RESTORED) ---
-            // Logika disesuaikan dengan SenimanController
+            // --- 3. SEARCH SENIMAN ---
             $seniman = Karya::query()
                 ->where(function ($query) use ($q) {
                     $query->where('name', 'LIKE', "%$q%")
-                          ->orWhere('julukan', 'LIKE', "%$q%")
-                          ->orWhere('bio', 'LIKE', "%$q%")
-                          ->orWhere('address', 'LIKE', "%$q%");
+                        ->orWhere('julukan', 'LIKE', "%$q%")
+                        ->orWhere('bio', 'LIKE', "%$q%")
+                        ->orWhere('address', 'LIKE', "%$q%");
                 })
-                ->with(['city']) // Eager load kota untuk ditampilkan di card
+                ->with(['city'])
                 ->orderBy('name', 'asc')
                 ->take(8)
                 ->get();
@@ -187,31 +202,6 @@ class HomeController extends Controller
                 ->take(8)
                 ->get();
 
-            // =============================================================
-            // LOGGING
-            // =============================================================
-            try {
-                $logData = [
-                    'meta' => [
-                        'keyword'    => $q,
-                        'user'       => Auth::check() ? Auth::user()->name . ' (ID:' . Auth::user()->id . ')' : 'Guest',
-                        'time'       => now()->toDateTimeString(),
-                    ],
-                    'results' => [
-                        'lelang' => $lelang->count(),
-                        'merchandise' => $merchandise->count(),
-                        'seniman' => $seniman->count(), // Log jumlah seniman
-                        'blog' => $blogs->count(),
-                    ]
-                ];
-                // Log logic (bisa diaktifkan jika perlu)
-                // Log::channel('search')->info(json_encode($logData));
-
-            } catch (Exception $logError) {
-                // Silent error
-            }
-
-            // Kembalikan ke view dengan data lengkap
             return view('web.search', compact('q', 'lelang', 'merchandise', 'blogs', 'seniman'));
 
         } catch (Exception $e) {
@@ -240,11 +230,14 @@ class HomeController extends Controller
                 return $query->where('slug', $slug);
             })->active()->orderBy('id', 'desc')->paginate(16);
 
-            if ($products->count() > 0 || $products) {
+            if ($products->count() > 0) {
                 return view('web.category', compact('products'));
             }
 
-            abort(404);
+            // Jika kategori ada tapi produk kosong, tetap tampilkan view (opsional) atau 404
+            // Disini saya biarkan 404 sesuai logic lama, tapi idealnya return view empty state
+            abort(404); 
+
         } catch (Exception $e) {
             Log::error('By Kategori Error :' . $e->getMessage());
             abort(404);
@@ -253,20 +246,24 @@ class HomeController extends Controller
 
     public function blogDetail($slug)
     {
-        $blog = Posts::where('slug', $slug)
-            ->where('post_type', 'blog')
-            ->where('status', 'PUBLISHED')
-            ->with(['author', 'images'])
-            ->firstOrFail();
+        try {
+            $blog = Posts::where('slug', $slug)
+                ->where('post_type', 'blog')
+                ->where('status', 'PUBLISHED')
+                ->with(['author', 'images'])
+                ->firstOrFail();
 
-        $relatedBlogs = Posts::where('post_type', 'blog')
-            ->where('status', 'PUBLISHED')
-            ->where('id', '!=', $blog->id)
-            ->inRandomOrder()
-            ->take(5)
-            ->get();
+            $relatedBlogs = Posts::where('post_type', 'blog')
+                ->where('status', 'PUBLISHED')
+                ->where('id', '!=', $blog->id)
+                ->inRandomOrder()
+                ->take(5)
+                ->get();
 
-        return view('web.blog_detail', compact('blog', 'relatedBlogs'));
+            return view('web.blog_detail', compact('blog', 'relatedBlogs'));
+        } catch (Exception $e) {
+            abort(404);
+        }
     }
 
     public function page($slug)
@@ -306,7 +303,7 @@ class HomeController extends Controller
         try {
             // Ambil Data Profil Seniman + Relasi Lokasi
             $senimanData = Karya::where('slug', $slug)
-                ->with(['city', 'province']) 
+                ->with(['city', 'province'])
                 ->firstOrFail();
 
             // Ambil Produk milik seniman
@@ -317,9 +314,8 @@ class HomeController extends Controller
 
             return view('web.seniman', [
                 'products' => $products,
-                'seniman'  => $senimanData 
+                'seniman'  => $senimanData
             ]);
-
         } catch (Exception $e) {
             Log::error('By Seniman Error :' . $e->getMessage());
             abort(404);
@@ -328,11 +324,13 @@ class HomeController extends Controller
 
     public function perusahaan()
     {
-        return view('web.tentang.tentang');
+        $teamMembers = TeamMember::orderBy('id')->get();
+        return view('web.tentang.tentang', compact('teamMembers'));
     }
 
     public function tim()
     {
-        return view('web.tentang.tim');
+        $teamMembers = TeamMember::orderBy('id')->get();
+        return view('web.tentang.tim', compact('teamMembers'));
     }
 }
