@@ -6,7 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
-use Validator;
+use Illuminate\Support\Facades\Validator;
 use Exception;
 use Carbon\Carbon;
 
@@ -14,7 +14,7 @@ use Carbon\Carbon;
 use App\Products;             // Model Lelang
 use App\ProductImage;
 use App\Bid;
-use App\user;
+use App\User;
 use App\Kategori;
 use App\Posts;                // Model Blog
 use App\Karya;                // Model Seniman
@@ -26,306 +26,311 @@ use App\TeamMember;
 
 class HomeController extends Controller
 {
-  /**
-   * =================================================================
-   * HALAMAN UTAMA (HOME)
-   * =================================================================
-   */
-  public function index(Request $request)
-  {
-    // 1. QUERY DATA
-    $products = Products::active()->orderBy('id', 'desc')->take(5)->get();
-    $sliders = Sliders::active()->get();
-    $blogs = Posts::Blog()->orderBy('id', 'desc')->where('status', 'PUBLISHED')->take(5)->get();
-    $featuredEvent = Event::whereIn('status', ['active', 'coming_soon'])
-      ->latest()
-      ->first();
+    /**
+     * =================================================================
+     * HALAMAN UTAMA (HOME)
+     * =================================================================
+     */
+    public function index(Request $request)
+    {
+        try {
+            // 1. QUERY SLIDER (LOGIKA PRIORITAS)
+            // A. Ambil Event yang statusnya ACTIVE untuk Slider Utama
+            $eventSliders = Event::where('status', 'active')->latest()->get();
 
-    // 2. RESPON JSON
-    if ($request->ajax() || $request->wantsJson()) {
-      return response()->json([
-        'success' => true,
-        'message' => 'Data Home berhasil diambil',
-        'data' => [
-          'sliders' => $sliders,
-          'featured_event' => $featuredEvent,
-          'products' => $products,
-          'blogs' => $blogs,
-        ],
-        'meta' => [
-          'total_products' => $products->count(),
-          'timestamp' => now()->toDateTimeString()
-        ]
-      ]);
+            // B. Ambil Slider Biasa (Cadangan jika tidak ada event)
+            $defaultSliders = Sliders::active()->get();
+
+            // 2. QUERY DATA UTAMA
+            $products = Products::active()->orderBy('id', 'desc')->take(5)->get();
+            $blogs = Posts::Blog()->orderBy('id', 'desc')->where('status', 'PUBLISHED')->take(5)->get();
+
+            // 3. QUERY DATA MERCHANDISE (Eager Loading Optimization)
+            $merchProducts = MerchProduct::with([
+                'defaultVariant.images' => fn($q) => $q->orderBy('id'),
+                'defaultVariant.sizes' => fn($q) => $q->orderBy('price')
+            ])
+            ->where('status', 'active')
+            ->orderBy('created_at', 'desc')
+            ->take(5)
+            ->get();
+
+            // 4. RESPON JSON (API / AJAX)
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Data Home berhasil diambil',
+                    'data'    => [
+                        'event_sliders'   => $eventSliders,
+                        'default_sliders' => $defaultSliders,
+                        'products'        => $products,
+                        'merchandise'     => $merchProducts,
+                        'blogs'           => $blogs,
+                    ],
+                ]);
+            }
+
+            // 5. RESPON VIEW
+            return view('web.home', compact(
+                'products', 
+                'eventSliders', 
+                'defaultSliders', 
+                'blogs', 
+                'merchProducts'
+            ));
+
+        } catch (Exception $e) {
+            Log::error("Error Home Index: " . $e->getMessage());
+            abort(500);
+        }
     }
 
-    // 3. RESPON VIEW
-    return view('web.home', compact('products', 'sliders', 'blogs', 'featuredEvent'));
-  }
+    /**
+     * =================================================================
+     * DETAIL PRODUK LELANG
+     * =================================================================
+     */
+    public function detail($slug)
+    {
+        $validator = Validator::make(['slug' => $slug], [
+            'slug' => ['required', 'exists:products,slug']
+        ]);
 
-  /**
-   * =================================================================
-   * DETAIL PRODUK LELANG
-   * =================================================================
-   */
-  public function detail($slug)
-  {
-    $validator = Validator::make(['slug' => $slug], [
-      'slug' => ['required', 'exists:products,slug']
-    ]);
+        if ($validator->fails()) {
+            abort(404);
+        }
 
-    if ($validator->fails()) {
-      abort(404);
+        try {
+            $product = Products::where('slug', $slug)
+                ->with(['imageUtama', 'images', 'kategori', 'karya', 'kelengkapans'])
+                ->firstOrFail();
+
+            $bidList = Bid::where('product_id', $product->id)
+                ->with('user')
+                ->orderByRaw('CAST(price AS UNSIGNED) DESC')
+                ->get();
+
+            // Hitung Suggestion Bid
+            $highestBid = $bidList->first() ? $bidList->first()->price : $product->price;
+            $step       = intval($product->kelipatan);
+            $nominals   = [];
+
+            for ($i = 1; $i <= 5; $i++) {
+                $nominals[] = $highestBid + ($step * $i);
+            }
+
+            // Produk Terkait
+            $related = Products::where('kategori_id', $product->kategori_id)
+                ->where('id', '!=', $product->id)
+                ->active()
+                ->take(4)
+                ->with('imageUtama')
+                ->get();
+
+            return view('web.detail_lelang.detail', [
+                'product'    => $product,
+                'bids'       => $bidList,
+                'highestBid' => $highestBid,
+                'nominals'   => $nominals,
+                'related'    => $related,
+            ]);
+
+        } catch (Exception $e) {
+            Log::error('Detail Product Error: ' . $e->getMessage());
+            abort(404);
+        }
     }
 
-    try {
-      $product = Products::where('slug', $slug)
-        ->with(['imageUtama', 'images', 'kategori', 'karya', 'kelengkapans'])
-        ->firstOrFail();
+    /**
+     * =================================================================
+     * PENCARIAN (SEARCH)
+     * =================================================================
+     */
+    public function search(Request $request)
+    {
+        try {
+            $q = $request->input('q');
 
-      $bidList = Bid::where('product_id', $product->id)
-        ->with('user')
-        ->orderByRaw('CAST(price AS UNSIGNED) DESC')
-        ->get();
+            $validator = Validator::make(['q' => $q], [
+                'q' => ['required', 'string', 'min:1', 'max:90']
+            ]);
 
-      $highestBid = $bidList->first() ? $bidList->first()->price : $product->price;
-      $step = intval($product->kelipatan);
+            if ($validator->fails()) {
+                return redirect()->route('home');
+            }
 
-      $nominals = [];
-      for ($i = 1; $i <= 5; $i++) {
-        $nominals[] = $highestBid + ($step * $i);
-      }
+            // --- 1. SEARCH LELANG ---
+            $searchNoSpace = preg_replace('/\s+/', '', strtolower($q));
 
-      $related = Products::where('kategori_id', $product->kategori_id)
-        ->where('id', '!=', $product->id)
-        ->active()
-        ->take(4)
-        ->with('imageUtama')
-        ->get();
+            $lelang = Products::query()
+                ->whereIn('status', [1, 2])
+                ->where(function ($query) use ($q, $searchNoSpace) {
+                    $query->where('title', 'LIKE', "%$q%")
+                        ->orWhereRaw("REPLACE(LOWER(title), ' ', '') LIKE ?", ['%' . $searchNoSpace . '%']);
+                })
+                ->with('imageUtama', 'kategori')
+                ->orderBy('id', 'desc')
+                ->take(8)
+                ->get();
 
-      return view('web.detail_lelang.detail', [
-        'product'     => $product,
-        'bids'        => $bidList,
-        'highestBid'  => $highestBid,
-        'nominals'    => $nominals,
-        'related'     => $related,
-      ]);
-    } catch (Exception $e) {
-      Log::error('Detail Product Error: ' . $e->getMessage());
-      abort(404);
-    }
-  }
+            // --- 2. SEARCH MERCHANDISE ---
+            $merchandise = MerchProduct::where('status', 'active')
+                ->where('name', 'LIKE', "%$q%")
+                ->with(['defaultVariant.images' => fn($query) => $query->orderBy('id', 'asc'), 'defaultVariant.sizes'])
+                ->orderBy('created_at', 'desc')
+                ->take(8)
+                ->get();
 
-  /**
-   * =================================================================
-   * PENCARIAN (SEARCH) - SENIMAN REMOVED
-   * =================================================================
-   */
-  public function search(Request $request)
-  {
-    try {
-      $q = $request->input('q');
+            // --- 3. SEARCH SENIMAN ---
+            $seniman = Karya::query()
+                ->where(function ($query) use ($q) {
+                    $query->where('name', 'LIKE', "%$q%")
+                        ->orWhere('julukan', 'LIKE', "%$q%")
+                        ->orWhere('bio', 'LIKE', "%$q%")
+                        ->orWhere('address', 'LIKE', "%$q%");
+                })
+                ->with(['city'])
+                ->orderBy('name', 'asc')
+                ->take(8)
+                ->get();
 
-      $validator = Validator::make(['q' => $q], [
-        'q' => ['required', 'string', 'min:1', 'max:90']
-      ]);
+            // --- 4. SEARCH BLOG ---
+            $blogs = Posts::Blog()
+                ->where('status', 'PUBLISHED')
+                ->where('title', 'LIKE', "%$q%")
+                ->orderBy('id', 'desc')
+                ->take(8)
+                ->get();
 
-      if ($validator->fails()) {
-        return redirect()->route('home');
-      }
+            return view('web.search', compact('q', 'lelang', 'merchandise', 'blogs', 'seniman'));
 
-      // --- 1. SEARCH LELANG ---
-      $searchNoSpace = preg_replace('/\s+/', '', strtolower($q));
-
-      $lelang = Products::query()
-        ->whereIn('status', [1, 2])
-        ->where(function ($query) use ($q, $searchNoSpace) {
-          $query->where('title', 'LIKE', "%$q%")
-            ->orWhereRaw("REPLACE(LOWER(title), ' ', '') LIKE ?", ['%' . $searchNoSpace . '%']);
-        })
-        ->with('imageUtama', 'kategori')
-        ->orderBy('id', 'desc')
-        ->take(8)
-        ->get();
-
-      // --- 2. SEARCH MERCHANDISE ---
-      $merchandise = MerchProduct::where('status', 'active')
-        ->where('name', 'LIKE', "%$q%")
-        ->with(['defaultVariant.images' => function ($query) {
-          $query->orderBy('id', 'asc');
-        }, 'defaultVariant.sizes'])
-        ->orderBy('created_at', 'desc')
-        ->take(8)
-        ->get();
-
-      // --- 3. SEARCH SENIMAN (RESTORED) ---
-      // Logika disesuaikan dengan SenimanController
-      $seniman = Karya::query()
-        ->where(function ($query) use ($q) {
-          $query->where('name', 'LIKE', "%$q%")
-            ->orWhere('julukan', 'LIKE', "%$q%")
-            ->orWhere('bio', 'LIKE', "%$q%")
-            ->orWhere('address', 'LIKE', "%$q%");
-        })
-        ->with(['city']) // Eager load kota untuk ditampilkan di card
-        ->orderBy('name', 'asc')
-        ->take(8)
-        ->get();
-
-      // --- 4. SEARCH BLOG ---
-      $blogs = Posts::Blog()
-        ->where('status', 'PUBLISHED')
-        ->where('title', 'LIKE', "%$q%")
-        ->orderBy('id', 'desc')
-        ->take(8)
-        ->get();
-
-      // =============================================================
-      // LOGGING
-      // =============================================================
-      try {
-        $logData = [
-          'meta' => [
-            'keyword'    => $q,
-            'user'       => Auth::check() ? Auth::user()->name . ' (ID:' . Auth::user()->id . ')' : 'Guest',
-            'time'       => now()->toDateTimeString(),
-          ],
-          'results' => [
-            'lelang' => $lelang->count(),
-            'merchandise' => $merchandise->count(),
-            'seniman' => $seniman->count(), // Log jumlah seniman
-            'blog' => $blogs->count(),
-          ]
-        ];
-        // Log logic (bisa diaktifkan jika perlu)
-        // Log::channel('search')->info(json_encode($logData));
-
-      } catch (Exception $logError) {
-        // Silent error
-      }
-
-      // Kembalikan ke view dengan data lengkap
-      return view('web.search', compact('q', 'lelang', 'merchandise', 'blogs', 'seniman'));
-    } catch (Exception $e) {
-      Log::error('Search Error :' . $e->getMessage());
-      return redirect()->route('home')->with('error', 'Terjadi kesalahan saat mencari.');
-    }
-  }
-
-  /**
-   * =================================================================
-   * HALAMAN KATEGORI LELANG
-   * =================================================================
-   */
-  public function category($slug)
-  {
-    $validator = Validator::make(['slug' => $slug], [
-      'slug' => ['required', 'exists:kategori,slug']
-    ]);
-
-    if ($validator->fails()) {
-      abort(404);
+        } catch (Exception $e) {
+            Log::error('Search Error :' . $e->getMessage());
+            return redirect()->route('home')->with('error', 'Terjadi kesalahan saat mencari.');
+        }
     }
 
-    try {
-      $products = Products::whereHas('kategori', function ($query) use ($slug) {
-        return $query->where('slug', $slug);
-      })->active()->orderBy('id', 'desc')->paginate(16);
+    /**
+     * =================================================================
+     * HALAMAN KATEGORI LELANG
+     * =================================================================
+     */
+    public function category($slug)
+    {
+        $validator = Validator::make(['slug' => $slug], [
+            'slug' => ['required', 'exists:kategori,slug']
+        ]);
 
-      if ($products->count() > 0 || $products) {
-        return view('web.category', compact('products'));
-      }
+        if ($validator->fails()) {
+            abort(404);
+        }
 
-      abort(404);
-    } catch (Exception $e) {
-      Log::error('By Kategori Error :' . $e->getMessage());
-      abort(404);
-    }
-  }
+        try {
+            $products = Products::whereHas('kategori', function ($query) use ($slug) {
+                return $query->where('slug', $slug);
+            })->active()->orderBy('id', 'desc')->paginate(16);
 
-  public function blogDetail($slug)
-  {
-    $blog = Posts::where('slug', $slug)
-      ->where('post_type', 'blog')
-      ->where('status', 'PUBLISHED')
-      ->with(['author', 'images'])
-      ->firstOrFail();
+            if ($products->count() > 0) {
+                return view('web.category', compact('products'));
+            }
 
-    $relatedBlogs = Posts::where('post_type', 'blog')
-      ->where('status', 'PUBLISHED')
-      ->where('id', '!=', $blog->id)
-      ->inRandomOrder()
-      ->take(5)
-      ->get();
+            // Jika kategori ada tapi produk kosong, tetap tampilkan view (opsional) atau 404
+            // Disini saya biarkan 404 sesuai logic lama, tapi idealnya return view empty state
+            abort(404); 
 
-    return view('web.blog_detail', compact('blog', 'relatedBlogs'));
-  }
-
-  public function page($slug)
-  {
-    $validator = Validator::make(['slug' => $slug], [
-      'slug' => ['required', 'exists:posts,slug']
-    ]);
-
-    if ($validator->fails()) {
-      abort(404);
+        } catch (Exception $e) {
+            Log::error('By Kategori Error :' . $e->getMessage());
+            abort(404);
+        }
     }
 
-    try {
-      $page = Posts::where('slug', $slug)->where('status', 'PUBLISHED')->firstOrFail();
-      return view('web.page', compact('page'));
-    } catch (Exception $e) {
-      Log::error('Page Error :' . $e->getMessage());
-      abort(404);
-    }
-  }
+    public function blogDetail($slug)
+    {
+        try {
+            $blog = Posts::where('slug', $slug)
+                ->where('post_type', 'blog')
+                ->where('status', 'PUBLISHED')
+                ->with(['author', 'images'])
+                ->firstOrFail();
 
-  /**
-   * =================================================================
-   * HALAMAN FILTER BY SENIMAN (LELANG)
-   * =================================================================
-   */
-  public function seniman($slug)
-  {
-    $validator = Validator::make(['slug' => $slug], [
-      'slug' => ['required', 'exists:karya,slug']
-    ]);
+            $relatedBlogs = Posts::where('post_type', 'blog')
+                ->where('status', 'PUBLISHED')
+                ->where('id', '!=', $blog->id)
+                ->inRandomOrder()
+                ->take(5)
+                ->get();
 
-    if ($validator->fails()) {
-      abort(404);
+            return view('web.blog_detail', compact('blog', 'relatedBlogs'));
+        } catch (Exception $e) {
+            abort(404);
+        }
     }
 
-    try {
-      // Ambil Data Profil Seniman + Relasi Lokasi
-      $senimanData = Karya::where('slug', $slug)
-        ->with(['city', 'province'])
-        ->firstOrFail();
+    public function page($slug)
+    {
+        $validator = Validator::make(['slug' => $slug], [
+            'slug' => ['required', 'exists:posts,slug']
+        ]);
 
-      // Ambil Produk milik seniman
-      $products = Products::where('karya_id', $senimanData->id)
-        ->active()
-        ->orderBy('id', 'desc')
-        ->paginate(16);
+        if ($validator->fails()) {
+            abort(404);
+        }
 
-      return view('web.seniman', [
-        'products' => $products,
-        'seniman'  => $senimanData
-      ]);
-    } catch (Exception $e) {
-      Log::error('By Seniman Error :' . $e->getMessage());
-      abort(404);
+        try {
+            $page = Posts::where('slug', $slug)->where('status', 'PUBLISHED')->firstOrFail();
+            return view('web.page', compact('page'));
+        } catch (Exception $e) {
+            Log::error('Page Error :' . $e->getMessage());
+            abort(404);
+        }
     }
-  }
 
-  public function perusahaan()
-  {
-    $teamMembers = TeamMember::orderBy('id')->get();
-    return view('web.tentang.tentang', compact('teamMembers'));
-  }
+    /**
+     * =================================================================
+     * HALAMAN FILTER BY SENIMAN (LELANG)
+     * =================================================================
+     */
+    public function seniman($slug)
+    {
+        $validator = Validator::make(['slug' => $slug], [
+            'slug' => ['required', 'exists:karya,slug']
+        ]);
 
-  public function tim()
-  {
-    $teamMembers = TeamMember::orderBy('id')->get();
-    return view('web.tentang.tim', compact('teamMembers'));
-  }
+        if ($validator->fails()) {
+            abort(404);
+        }
+
+        try {
+            // Ambil Data Profil Seniman + Relasi Lokasi
+            $senimanData = Karya::where('slug', $slug)
+                ->with(['city', 'province'])
+                ->firstOrFail();
+
+            // Ambil Produk milik seniman
+            $products = Products::where('karya_id', $senimanData->id)
+                ->active()
+                ->orderBy('id', 'desc')
+                ->paginate(16);
+
+            return view('web.seniman', [
+                'products' => $products,
+                'seniman'  => $senimanData
+            ]);
+        } catch (Exception $e) {
+            Log::error('By Seniman Error :' . $e->getMessage());
+            abort(404);
+        }
+    }
+
+    public function perusahaan()
+    {
+        $teamMembers = TeamMember::orderBy('id')->get();
+        return view('web.tentang.tentang', compact('teamMembers'));
+    }
+
+    public function tim()
+    {
+        $teamMembers = TeamMember::orderBy('id')->get();
+        return view('web.tentang.tim', compact('teamMembers'));
+    }
 }

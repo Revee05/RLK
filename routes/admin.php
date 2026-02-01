@@ -10,6 +10,9 @@
 | contains the "admin" middleware group. Now create something great!
 |
 */
+
+use Illuminate\Support\Facades\Route;
+
 Auth::routes(['verify' => true]);
 Route::get('email/verify', 'Auth\VerificationController@show')->name('verification.notice');
 Route::group(['prefix' => '/admin', 'middleware' => ['auth', 'verified', 'IsAdmin']], function () {
@@ -41,7 +44,8 @@ Route::group(['prefix' => '/admin', 'middleware' => ['auth', 'verified', 'IsAdmi
 ==   TAMBAHKAN ROUTE EVENT ANDA DI SINI BERSAMA BLOGS  ==
 =========================================================
 */
-  Route::resource('/events', 'EventController', ['as' => 'admin']);
+Route::put('/events/{event}/status', 'EventController@updateStatus')->name('admin.events.status');
+Route::resource('/events','EventController',['as' => 'admin']);
 
 
   Route::group(['prefix' => '/master'], function () {

@@ -2,17 +2,14 @@
    # BASE STYLES & LAYOUT
    ========================================================= */
 
-/* Main Content Wrapper */
 .main-content {
     position: relative;
 }
 
-/* Section Padding */
 .section-padding {
     padding: 60px 0;
 }
 
-/* Section Titles */
 .section-title {
     font-weight: 700;
     margin-bottom: 30px;
@@ -21,7 +18,7 @@
 }
 
 /* =========================================================
-   # HERO SECTION (Title & Search)
+   # HERO SECTION
    ========================================================= */
 
 .hero-section {
@@ -43,7 +40,7 @@
     margin: 15px auto;
 }
 
-/* Hero Search Bar Styling */
+/* --- Hero Search Bar --- */
 .hero-search {
     max-width: 300px;
     margin: 25px auto;
@@ -65,125 +62,181 @@
 }
 
 .hero-search input::placeholder {
-    color: white;
-    opacity: 0.9;
+    color: white; opacity: 0.9;
 }
 
 .hero-search input:focus {
-    outline: none;
-    box-shadow: none;
-    background: transparent;
+    outline: none; box-shadow: none; background: transparent;
 }
 
 .hero-search input:focus::placeholder {
-    color: white;
-    opacity: 0.7;
+    color: white; opacity: 0.7;
 }
 
 .hero-search button {
-    border: none;
-    background: transparent;
-    color: white;
-    padding-left: 15px;
-    padding-right: 20px;
-    display: flex;
-    align-items: center;
-    border-radius: 0;
+    border: none; background: transparent; color: white;
+    padding-left: 15px; padding-right: 20px;
+    display: flex; align-items: center; border-radius: 0;
 }
 
+/* FIX: BROWSER AUTOFILL STYLE 
+   Mencegah background input berubah jadi putih saat memilih dari history/autocomplete.
+   Warna disesuaikan dengan #00b8a9.
+*/
+.hero-search input:-webkit-autofill,
+.hero-search input:-webkit-autofill:hover, 
+.hero-search input:-webkit-autofill:focus, 
+.hero-search input:-webkit-autofill:active {
+    -webkit-box-shadow: 0 0 0 30px #00b8a9 inset !important;
+    -webkit-text-fill-color: white !important;
+    transition: background-color 5000s ease-in-out 0s;
+}
 
 /* =========================================================
-   # SLIDER / CAROUSEL
+   # SLIDER / CAROUSEL (DESKTOP)
    ========================================================= */
 
 .slider-container {
-    border-radius: 15px;
-    overflow: hidden;
-    position: relative;
+    border-radius: 15px; 
+    overflow: hidden; 
+    position: relative; 
+    width: 100%;
+    
+    /* --- DESKTOP RATIO: 1440 x 600 --- */
+    aspect-ratio: 1440 / 600; 
 }
 
-.carousel-item {
-    height: 500px;
+.carousel-inner, .carousel-item {
+    height: 100% !important; 
 }
 
 .carousel-item img {
-    height: 100%;
-    width: 100%;
-    object-fit: cover;
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: cover !important; 
+    object-position: center !important; 
 }
 
-/* Carousel Overlay Box (Event Info) */
+/* --- KOTAK NAVY STATIS (LOCKED POSITION - DESKTOP) --- */
+.static-navy-box {
+    /* POSISI DESKTOP */
+    position: absolute !important;
+    bottom: 50px !important;  
+    left: 60px !important;    
+    z-index: 100 !important;  
+    
+    /* UKURAN DESKTOP (TETAP KECIL 380px) */
+    max-width: 500px !important; 
+    width: 90% !important;    
+    padding: 20px !important;    
+    border-radius: 10px !important;
+    
+    /* VISUAL */
+    background-color: #0d1b2a !important; 
+    box-shadow: 0 10px 30px rgba(0,0,0,0.4) !important; 
+    
+    pointer-events: none; 
+    transition: opacity 0.2s ease-in-out !important;
+}
+
+.static-navy-box h3 {
+    font-family: 'Playfair Display', serif !important;
+    font-weight: 700 !important;
+    
+    /* UPDATED: DESKTOP FONT SIZE */
+    font-size: 32px !important; 
+    
+    color: white !important;
+    margin-top: 0 !important;
+    margin-bottom: 12px !important;
+    line-height: 1.2 !important;
+}
+
+.static-navy-box p {
+    color: #ffffff !important;
+    
+    /* UPDATED: DESKTOP FONT SIZE (Lelang Online/Offline) */
+    font-size: 20px !important; 
+    
+    margin-bottom: 5px !important;
+    display: flex !important; 
+    align-items: flex-start !important;
+}
+
+.static-navy-box p span.text-white-50 {
+    color: rgba(255, 255, 255, 0.8) !important;
+}
+
+.static-navy-box i {
+    width: 20px !important; 
+    text-align: center !important;
+    margin-right: 8px !important;
+    margin-top: 4px !important; 
+}
+
+.static-navy-box .navy-location { 
+    /* Font size khusus Alamat (Desktop) */
+    font-size: 14px !important;
+    
+    margin-top: 10px !important;
+    line-height: 1.4 !important;
+    color: #cccccc !important;
+}
+
+/* Style Overlay Lama (Fallback) */
 .hero-overlay-box {
-    position: absolute;
-    bottom: 25px;
-    left: 25px;
+    position: absolute; bottom: 25px; left: 25px;
     background-color: rgba(13, 27, 42, 0.9);
-    color: white;
-    padding: 25px;
-    border-radius: 10px;
-    max-width: 400px;
-    z-index: 10;
+    color: white; padding: 25px;
+    border-radius: 10px; max-width: 400px; z-index: 10;
 }
 
-.hero-overlay-box h4 {
-    font-weight: 700;
-}
+.hero-overlay-box h4 { font-weight: 700; }
 
 .hero-overlay-box .btn-detail {
-    background-color: white;
-    color: black;
-    border: none;
-    border-radius: 50px;
-    padding: 8px 25px;
-    font-weight: 600;
-    margin-top: 10px;
+    background-color: white; color: black; border: none;
+    border-radius: 50px; padding: 8px 25px;
+    font-weight: 600; margin-top: 10px;
 }
 
-
 /* =========================================================
-   # OWL DOTS STYLING
+   # OWL DOTS
    ========================================================= */
 
 .owl-theme .owl-dots {
-    text-align: center;
-    margin-top: 30px;
-    display: flex; 
-    justify-content: center;
-    align-items: center; 
+    text-align: center; margin-top: 30px;
+    display: flex; justify-content: center; align-items: center; 
 }
 
 .owl-theme .owl-dots .owl-dot {
-    outline: none;
-    display: inline-block; 
-    margin: 0 4px; 
+    outline: none; display: inline-block; margin: 0 4px; 
 }
 
 .owl-theme .owl-dots .owl-dot span {
-    width: 6px !important;   
-    height: 6px !important;  
-    border-radius: 50%;
-    background: #6CC4C4 !important; /* Warna Tosca */
-    display: inline-flex; 
-    vertical-align: middle; 
-    transition: all 0.3s ease;
-    opacity: 1;
-    margin: 0; 
+    width: 6px !important; height: 6px !important;  
+    border-radius: 50%; background: #6CC4C4 !important;
+    display: inline-flex; vertical-align: middle; 
+    transition: all 0.3s ease; opacity: 1; margin: 0; 
 }
 
 .owl-theme .owl-dots .owl-dot.active span {
-    width: 15px !important;  
-    height: 15px !important; 
-    background: #0D1B2A !important; /* Warna Hitam/Gelap */
-    border-radius: 50%; 
+    width: 15px !important; height: 15px !important; 
+    background: #0D1B2A !important; border-radius: 50%; 
     box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-    display: inline-flex; 
-    vertical-align: middle; 
-    margin: 0; 
+    display: inline-flex; vertical-align: middle; margin: 0; 
 }
 
 /* =========================================================
-   # AUCTION CARD STYLES (LELANG)
+   # AUCTION CARD (LELANG)
    ========================================================= */
+
+a.card-auction {
+    text-decoration: none !important;
+    color: inherit !important;
+    display: flex;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+}
 
 .card-auction {
     padding: 45px;
@@ -195,292 +248,390 @@
     overflow: hidden;
     display: flex;
     flex-direction: column;
+    cursor: pointer; 
+    position: relative;
+    transition: all 0.3s ease; 
+}
+
+a.card-auction * {
+    pointer-events: none;
+}
+
+@media (hover: hover) {
+    .card-auction:hover {
+        transform: translateY(-5px) scale(1.01);
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+        border-color: transparent;
+    }
+    .card-auction:hover h5 { color: #00b8a9; }
+    .card-auction:hover .btn-visual { 
+        background-color: #212529; color: white; 
+        border-color: #212529;
+    }
+}
+
+.card-auction:active {
+    background-color: #f8f9fa;
+    transform: scale(0.98);
 }
 
 .card-auction img {
-    width: 100%;
-    height: 300px; /* Fixed height for image */
-    object-fit: cover; /* Prevents image stretching */
+    width: 100%; height: 300px; object-fit: cover;
 }
 
 .card-auction .card-body {
-    padding: 20px;
-    text-align: center;
-    display: flex;
-    flex-direction: column;
-    flex-grow: 1;
+    padding: 20px; text-align: center;
+    display: flex; flex-direction: column; flex-grow: 1;
 }
 
 .card-auction .card-body h5 {
-    font-weight: 600;
-    font-size: 1.1rem;
-    margin-top: 0;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    font-weight: 600; font-size: 1.1rem; margin-top: 0;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    color: #212529; transition: color 0.3s ease;
 }
 
 .card-auction .card-body p {
-    font-size: 0.95rem;
-    color: #6c757d;
-    margin-bottom: 20px;
-    flex-grow: 1;
+    font-size: 0.95rem; color: #6c757d; margin-bottom: 20px; flex-grow: 1;
 }
 
-.card-auction .card-body .btn {
-    border-radius: 50px;
-    padding: 8px 30px;
-    font-weight: 600;
-    align-self: center;
-    margin-top: auto;
-}
-
-/* Auction Button Variants */
-.btn-outline-custom {
-    border: 1px solid #212529;
-    color: #212529;
-}
-
-.btn-outline-custom:hover {
-    background-color: #212529;
-    color: white;
+.btn-visual {
+    border-radius: 50px; padding: 8px 30px; font-weight: 600;
+    align-self: center; margin-top: auto;
+    border: 1px solid #212529; 
+    color: #212529; 
+    background: white;
+    transition: all 0.3s ease;
+    display: inline-block;
+    pointer-events: none; 
 }
 
 /* =========================================================
-   # NEW: SEE ALL LINK (Lihat Semua)
+   # LIHAT SEMUA LINK
    ========================================================= */
 
 .see-all-text {
-    font-weight: 700; /* Bold */
-    text-decoration: underline; /* Garis Bawah */
-    color: #212529;
-    font-size: 1rem;
-    transition: color 0.3s ease;
+    font-weight: 700; text-decoration: underline;
+    color: #212529; font-size: 1rem; transition: color 0.3s ease;
     cursor: pointer;
 }
 
 .see-all-text:hover {
-    color: #00b8a9; /* Warna Tosca saat hover */
-    text-decoration: underline;
+    color: #00b8a9; text-decoration: underline;
 }
 
+/* =========================================
+   # MERCHANDISE SECTION
+   ========================================= */
+
+.merch-section {
+    background-color: #fff; border: none; 
+}
+
+.card-merch {
+    border: none; border-radius: 12px;
+    background: linear-gradient(135deg, #f8fafc 80%, #e3e9f3 100%);
+    overflow: hidden; position: relative;
+    transition: all 0.3s ease; height: 100%;
+    display: flex; flex-direction: column;
+    box-shadow: 0 4px 16px rgba(5,26,54,0.08), 0 1.5px 4px rgba(5,26,54,0.10);
+    touch-action: manipulation;
+}
+
+@media (hover: hover) {
+    .card-merch:hover {
+        transform: translateY(-3px) scale(1.01);
+        box-shadow: 0 8px 20px rgba(5,26,54,0.15);
+    }
+    .card-merch:hover .merch-img-wrapper img {
+        transform: scale(1.05);
+    }
+}
+
+.merch-img-wrapper {
+    position: relative; height: 250px; overflow: hidden;
+    background-color: #fff; display: flex; align-items: center;
+    justify-content: center; border-bottom: 1px solid rgba(0,0,0,0.03);
+}
+
+.merch-img-wrapper img {
+    width: 100%; height: 100%; object-fit: contain;
+    padding: 10px; transition: transform 0.3s ease;
+}
+
+.discount-badge {
+    position: absolute; top: 0; left: 0; z-index: 2;
+    background: linear-gradient(90deg, #ff5858 60%, #ffb347 100%);
+    color: #fff; font-weight: bold; font-size: 0.8rem;
+    padding: 4px 12px; border-bottom-right-radius: 12px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1); pointer-events: none;
+}
+
+.favorite-icon-home {
+    position: absolute; bottom: 10px; right: 10px;
+    width: 60px !important; height: 60px !important;
+    cursor: pointer; z-index: 10;
+    transition: transform 0.2s; filter: drop-shadow(0 2px 3px rgba(0,0,0,0.2)); 
+    pointer-events: auto !important;
+}
+
+.favorite-icon-home:hover { transform: scale(1.2); }
+
+.card-merch .card-body {
+    padding: 15px; text-align: left;
+    display: flex; flex-direction: column;
+    justify-content: space-between; flex-grow: 1;
+}
+
+.merch-title {
+    font-size: 1rem; font-weight: 600; color: #051A36;
+    margin-bottom: 8px; display: -webkit-box;
+    -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+    overflow: hidden; text-decoration: none; line-height: 1.4;
+}
+
+.merch-title:hover { color: #00b8a9; text-decoration: none; }
+
+.merch-price-box {
+    margin-top: auto; display: flex; align-items: baseline;
+    flex-wrap: wrap; gap: 5px;
+}
+
+.merch-price {
+    color: #00b8a9; font-weight: 700; font-size: 1rem;
+}
+
+.merch-price-slash {
+    text-decoration: line-through; color: #adb5bd; font-size: 0.8rem;
+}
 
 /* =========================================================
-   # BLOG SECTION & CARD STYLES
+   # BLOG CARD STYLES
    ========================================================= */
 
-.blog-section {
-    background-color: #ffffff;
+.blog-section { background-color: #ffffff; }
+
+a.card-blog {
+    text-decoration: none !important;
+    color: inherit !important;
+    display: flex;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
 }
 
-/* Blog Card Styling */
 .card-blog {
-    padding: 45px;
-    background-color: white;
+    padding: 45px; background-color: white;
     border: 1px solid #dee2e6;
     box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.08);
-    border-radius: 6px;
-    overflow: hidden;
-    width: 100%;
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-    
+    border-radius: 6px; overflow: hidden;
+    width: 100%; height: 100%;
+    display: flex; flex-direction: column;
+    cursor: pointer;
+    position: relative;
+    transition: all 0.3s ease;
+}
+
+a.card-blog * {
+    pointer-events: none;
+}
+
+@media (hover: hover) {
+    .card-blog:hover {
+        transform: translateY(-5px) scale(1.01);
+        box-shadow: 0 10px 25px rgba(5, 26, 54, 0.15);
+        border-color: transparent;
+    }
+    .card-blog:hover h5 { color: #00b8a9; }
+    .card-blog:hover .btn-visual { 
+        background-color: #212529; color: white; 
+        border-color: #212529;
+    }
+}
+
+.card-blog:active {
+    background-color: #f8f9fa;
+    transform: scale(0.98);
 }
 
 .card-blog img {
-    width: 100%;
-    height: 220px;
-    object-fit: cover;
+    width: 100%; height: 220px; object-fit: cover;
 }
 
 .card-blog .card-body {
-    padding: 25px;
-    display: flex;
-    flex-direction: column;
-    flex-grow: 1;
+    padding: 25px; display: flex;
+    flex-direction: column; flex-grow: 1;
 }
 
 .card-blog h5 {
-    font-weight: 600;
+    font-weight: 600; color: #212529; transition: color 0.3s ease;
 }
 
 .card-blog p {
-    font-size: 0.95rem;
-    color: #6c757d;
-    display: -webkit-box;
-    -webkit-line-clamp: 3;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-    flex-grow: 1;
+    font-size: 0.95rem; color: #6c757d;
+    display: -webkit-box; -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical; overflow: hidden;
+    flex-grow: 1; margin-bottom: 15px;
 }
 
-/* =========================================================
-   # BUTTON BLOG RESPONSIVE (UPDATED)
-   ========================================================= */
-
-.btn-blog-responsive {
-    /* Base Button Style (Desktop) */
-    border: 1px solid #212529;
-    color: #212529;
-    border-radius: 50px;
-    padding: 8px 30px;
-    font-weight: 600;
-    align-self: center; /* Desktop: Center */
-    margin-top: auto;
-    text-decoration: none;
-    transition: all 0.3s ease;
-    display: inline-block;
-}
-
-/* Desktop Hover Effect */
-.btn-blog-responsive:hover {
-    background-color: #212529;
-    color: white;
-}
-
-/* Fix for equal height on Blog Carousel items */
-.blog-slider .owl-stage {
-    display: flex;
-    padding-bottom: 15px;
+.blog-slider .owl-stage { 
+    display: flex; padding-bottom: 15px; 
 }
 
 .blog-slider .owl-item {
-    height: auto;
+     height: auto; 
 }
 
-.blog-slider .item.d-flex {
-    width: 100%;
-    height: 100%;
+.blog-slider .item.d-flex { 
+    width: 100%; height: 100%; 
 }
-
 
 /* =========================================================
-   # RESPONSIVE DESIGN: MOBILE / TABLET (< 768px)
+   # RESPONSIVE (MOBILE ADJUSTMENTS - FIX INLINE TEXT)
    ========================================================= */
 
-@media (max-width: 767px) {
-    /* --- Font & General Sizes --- */
-    .hero-section h1 {
-        font-size: 2.2rem;
-        margin-top: 10px;
-        margin-bottom: 10px;
-    }
-
-    .hero-section p {
-        font-size: 0.95rem;
-    }
-
-    .hero-search {
-        max-width: 280px;
-        margin: 20px auto;
-    }
-
-    .carousel-item {
-        height: 350px;
-    }
-
-    /* --- Overlay Box Mobile --- */
-    .hero-overlay-box {
-        left: 40px;   
-        right: 40px;
-        bottom: 20px; 
-        max-width: none;
-        padding: 14px 17px; 
-        text-align: center;
-    }
-
-    .hero-overlay-box h4 {
-        font-size: 1.1rem; 
-        margin-bottom: 2px; 
-    }
-
-    .hero-overlay-box p {
-        font-size: 0.75rem; 
-        margin-bottom: 8px; 
-        line-height: 1.3; 
-    }
-
-    .hero-overlay-box .btn-detail {
-        padding: 4px 12px; 
-        font-size: 0.75rem;
-        margin-top: 0;
-    }
-
-    /* --- Header Flex (Judul & Lihat Semua) --- */
-    .header-flex {
-        flex-direction: row !important; 
-        align-items: baseline !important; 
-    }
-
-    .section-title {
-        font-size: 1.5rem;
-        margin-bottom: 20px;
-        text-align: left !important;
-        flex-grow: 1;
-    }
-
-    .see-all-text {
-        font-size: 0.9rem;
-    }
-
-    /* --- Blog Styling Mobile --- */
+@media (max-width: 991px) { /* Tablet & Mobile */
     
-    .btn-blog-responsive {
-        font-size: 0.9rem;
-        padding: 7px 25px; 
-        margin-top: 10px;
+    /* 1. TAMPILKAN KOTAK NAVY */
+    .static-navy-box {
+        display: block !important; 
+        left: 50% !important;
+        transform: translateX(-50%) !important; 
+        bottom: 15px !important; 
+        width: 90% !important;
+        max-width: none !important;
+        padding: 15px !important; /* Padding Kecil */
+    }
+
+    /* 2. UKURAN FONT MOBILE (Dikecilkan sesuai FIGMA) */
+    .static-navy-box h3 {
+        font-size: 16px !important; /* MOBILE TITLE */
+        margin-bottom: 8px !important;
+    }
+
+    /* 3. LOGIKA AGAR TEKS SEJAJAR (INLINE) */
+    .static-navy-box p {
+        position: relative !important;
+        padding-left: 20px !important; /* Ruang untuk icon */
+        display: block !important;
+        margin-bottom: 4px !important;
         
-        /* PERBAIKAN: Ubah dari flex-start (kiri) menjadi center (tengah) */
-        align-self: center !important;  
+        font-size: 10px !important; /* MOBILE INFO LELANG */
+        
+        text-align: left !important;
+        line-height: 1.3 !important;
     }
 
-    /* PENTING: Kontainer Card tetap rata kiri untuk teks */
-    .card-blog .card-body {
-        align-items: flex-start !important; /* Default item rata kiri */
-        text-align: left !important;        /* Teks rata kiri */
+    .static-navy-box i {
+        position: absolute !important;
+        left: 0 !important;
+        top: 2px !important;
+        width: 15px !important;
+        
+        font-size: 10px !important; /* Icon mengikuti font size text */
+        
+        margin: 0 !important;
     }
 
-    /* --- Card Content Mobile --- */
-    .card-auction,
-    .card-blog {
+    /* --- INI KUNCI AGAR SEJAJAR --- */
+    /* Sembunyikan tag <br> yang dibuat oleh JS */
+    .static-navy-box p br {
+        display: none !important;
+    }
+
+    /* Paksa Span Tanggal untuk Inline (Sebelah Label) */
+    .static-navy-box p span.ms-4, 
+    .static-navy-box p span.text-white-50 {
+        margin-left: 4px !important; /* Jarak kecil dari label */
+        display: inline !important; /* Jangan turun baris */
+        margin-top: 0 !important;
+        color: rgba(255,255,255,0.9) !important;
+    }
+
+    /* Alamat (Boleh wrapping) */
+    .static-navy-box .navy-location {
+        font-size: 7px !important; /* MOBILE ADDRESS */
+        
+        margin-top: 8px !important;
+    }
+
+    /* Sembunyikan Info Alternatif */
+    .d-block.d-md-none.bg-dark {
+        display: none !important;
+    }
+}
+
+@media (max-width: 767px) {
+    .hero-section h1 { font-size: 2.2rem; margin: 10px 0; }
+    .hero-section p { font-size: 0.95rem; }
+    .hero-search { max-width: 280px; margin: 20px auto; }
+    
+    /* --- MOBILE RATIO --- */
+    .slider-container { 
+        aspect-ratio: 800 / 1000 !important; 
+    }
+
+    .hero-overlay-box {
+        left: 40px; right: 40px; bottom: 20px; 
+        max-width: none; padding: 14px 17px; text-align: center;
+    }
+    .hero-overlay-box h4 { font-size: 1.1rem; margin-bottom: 2px; }
+    .hero-overlay-box p { font-size: 0.75rem; margin-bottom: 8px; }
+    .hero-overlay-box .btn-detail { padding: 4px 12px; font-size: 0.75rem; }
+
+    .header-flex { flex-direction: row !important; align-items: baseline !important; }
+    .section-title { font-size: 1.5rem; margin-bottom: 20px; }
+    .see-all-text { font-size: 0.9rem; }
+
+    /* --- CARD STYLE --- */
+    
+    .blog-slider .owl-stage, 
+    #auction-carousel .owl-stage {
+        display: flex !important;
+    }
+    
+    .blog-slider .owl-item,
+    #auction-carousel .owl-item {
+        display: flex;
+        height: auto;
+    }
+    
+    .card-auction, .card-blog { 
         padding: 15px; 
         margin-bottom: 15px;
+        height: 100% !important; 
+        display: flex !important;
+        flex-direction: column !important;
     }
 
-    .card-auction img {
-        height: 300px;
+    .card-auction img { height: 300px; }
+    .card-blog img { height: 150px; }
+    
+    .card-auction .card-body, .card-blog .card-body { 
+        padding: 15px; 
+        display: flex !important;
+        flex-direction: column !important;
+        flex: 1 !important; 
+        text-align: left !important; 
+        align-items: flex-start !important; 
     }
 
-    .card-blog img {
-        height: 150px;
+    .card-auction .card-body h5 { font-size: 1rem; }
+    .card-blog h5 { font-size: 1.05rem; }
+    
+    .card-auction .card-body p, .card-blog p { 
+        font-size: 0.85rem; 
+        margin-bottom: 15px;
+        flex-grow: 1; 
+        text-align: left !important; 
     }
 
-    .card-auction .card-body,
-    .card-blog .card-body {
-        padding: 15px;
-    }
-
-    .card-auction .card-body h5 {
-        font-size: 1rem;
-    }
-
-    .card-blog h5 {
-        font-size: 1.05rem;
-    }
-
-    .card-auction .card-body p,
-    .card-blog p {
-        font-size: 0.85rem;
-    }
-
-    .card-auction .card-body .btn{
-        padding: 7px 25px;
-        font-size: 0.9rem;
-        background-color: #00b8a9;
-    }
-
-    .card-auction .card-body a{
-        color: white;
+    .btn-visual {
+        font-size: 0.9rem; 
+        padding: 7px 25px; 
+        background-color: white; 
+        color: #212529; 
+        border: 1px solid #212529;
+        margin-top: auto !important; 
+        align-self: center !important; 
+        display: inline-block;
     }
 }

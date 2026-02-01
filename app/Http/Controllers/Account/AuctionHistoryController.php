@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
 use App\Bid;       
 use App\Products; 
-use App\Order; // Model Order wajib di-import
+use App\Order; 
 
 class AuctionHistoryController extends Controller
 {
@@ -16,33 +16,30 @@ class AuctionHistoryController extends Controller
     {
         $userId = Auth::id();
 
-        // 1. Ambil ID bid TERBARU milik user untuk setiap produk (Group by product)
+        // 1. Ambil ID bid TERBARU
         $latestBidIds = Bid::where('user_id', $userId)
                             ->selectRaw('MAX(id) as id')
                             ->groupBy('product_id');
 
-        // 2. Ambil data bid lengkap berdasarkan ID di atas
+        // 2. Ambil data bid lengkap
         $myBids = Bid::with('product')
                     ->whereIn('id', $latestBidIds)
-                    ->orderBy('updated_at', 'desc') // Urutkan dari aktivitas terbaru
+                    ->orderBy('updated_at', 'desc')
                     ->get();
 
         $itemsWon = 0;
         $highestBidUser = 0;
 
-        // 3. Mapping data untuk menentukan status (Menang/Kalah/Memimpin)
+        // 3. Mapping data
         $history = $myBids->map(function ($bid) use (&$itemsWon, &$highestBidUser, $userId) {
             $product = $bid->product;
             
-            // Ambil harga tertinggi global saat ini di produk tersebut
             $globalHighestPrice = $product->bid()->max('price');
             
-            // Cek waktu
             $now = Carbon::now();
             $endDate = Carbon::parse($product->end_date);
             $hasEnded = $now->greaterThan($endDate);
             
-            // Cek apakah bid user ini adalah yang tertinggi
             $isWinnerCandidate = ($bid->price >= $globalHighestPrice);
 
             // Default Values
@@ -53,7 +50,7 @@ class AuctionHistoryController extends Controller
             // --- LOGIKA UTAMA ---
             
             if ($product->status == 3) {
-                // KASUS 1: Dibatalkan oleh Admin
+                // KASUS 1: Dibatalkan oleh Admin (Produknya yang cancel)
                 $statusLabel = $isWinnerCandidate ? 'Dibatalkan' : 'Kalah';
                 $badgeClass = $isWinnerCandidate ? 'badge-status canceled' : 'badge-status lose';
                 $actionUrl = '#'; 
@@ -62,51 +59,65 @@ class AuctionHistoryController extends Controller
                 // KASUS 2: Lelang Masih Berjalan
                 if ($isWinnerCandidate) {
                     $statusLabel = 'Memimpin';
-                    $badgeClass = 'badge-status process'; // Kuning/Biru Muda
+                    $badgeClass = 'badge-status process'; 
                 } else {
                     $statusLabel = 'Terlampaui';
-                    $badgeClass = 'badge-status outbid'; // Merah/Orange
+                    $badgeClass = 'badge-status outbid'; 
                 }
                 $actionUrl = route('lelang.detail', $product->slug);
 
             } else {
                 // KASUS 3: Lelang Sudah Berakhir
                 if ($isWinnerCandidate) {
-                    $itemsWon++;
                     
-                    // Cek apakah data sudah masuk ke tabel 'orders'
-                    // Artinya user sudah checkout atau invoice sudah terbit
-                    $orderExists = Order::where('user_id', $userId)
-                                        ->where('product_id', $product->id)
-                                        ->exists();
+                    // --- PERUBAHAN DI SINI ---
+                    // Ambil data order asli, bukan hanya cek exist
+                    $existingOrder = Order::where('user_id', $userId)
+                                          ->where('product_id', $product->id)
+                                          ->latest() // Ambil yang paling baru jika ada duplikat
+                                          ->first();
 
-                    // Tampilan Badge TETAP HIJAU
-                    $badgeClass = 'badge-status win';
-                    $statusLabel = 'Menang'; 
+                    if ($existingOrder) {
+                        // SUDAH CHECKOUT (Data ada di tabel orders)
+                        
+                        // Cek status di tabel orders (sesuai gambar: 'expired', 'pending', dll)
+                        if ($existingOrder->status == 'expired') {
+                            // Jika Expired, maka dianggap BATAL (hangus)
+                            $statusLabel = 'Dibatalkan';
+                            $badgeClass = 'badge-status canceled'; // Pastikan ada style CSS untuk class ini (biasanya warna abu/merah)
+                            $actionUrl = '#'; // Atau link ke detail untuk lihat kenapa batal
+                            
+                            // Note: $itemsWon TIDAK ditambah karena batal/expired
+                        } else {
+                            // Status: pending, success, capture, settlement, dll.
+                            $itemsWon++; 
+                            $statusLabel = 'Menang'; 
+                            $badgeClass = 'badge-status win';
+                            
+                            // Arahkan ke Riwayat Pembelian
+                            $actionUrl = route('account.purchase.history'); 
+                        }
 
-                    if ($orderExists) {
-                        // SUDAH CHECKOUT -> Arahkan ke Riwayat Pembelian
-                        // Menggunakan nama route dari RiwayatPembelianController yang kamu kirim
-                        $actionUrl = route('account.purchase.history'); 
                     } else {
-                        // BELUM CHECKOUT -> Arahkan ke Keranjang
+                        // BELUM CHECKOUT (Belum ada di tabel orders) -> Arahkan ke Keranjang
+                        $itemsWon++;
+                        $statusLabel = 'Menang'; 
+                        $badgeClass = 'badge-status win';
                         $actionUrl = route('cart.index');
                     }
 
                 } else {
                     // KALAH LELANG
                     $statusLabel = 'Kalah';
-                    $badgeClass = 'badge-status lose'; // Merah
+                    $badgeClass = 'badge-status lose';
                     $actionUrl = route('lelang.detail', $product->slug);
                 }
             }
 
-            // Update statistik bid tertinggi user
             if ($bid->price > $highestBidUser) { 
                 $highestBidUser = $bid->price; 
             }
 
-            // Simpan data tambahan ke object bid untuk dipakai di View
             $bid->highest_global = $globalHighestPrice;
             $bid->status_label = $statusLabel;
             $bid->badge_class = $badgeClass;
@@ -117,7 +128,7 @@ class AuctionHistoryController extends Controller
 
         $totalBids = $myBids->count();
 
-        // RESPONSE JSON (Untuk Load More / Ajax)
+        // RESPONSE JSON
         if ($request->ajax()) {
             $tableHtml = view('account.auction._table_rows', ['history' => $history])->render();
             return response()->json([
@@ -131,7 +142,7 @@ class AuctionHistoryController extends Controller
             ]);
         }
 
-        // RESPONSE VIEW BIASA
+        // RESPONSE VIEW
         return view('account.auction.auction_history', [
             'history' => $history,
             'totalBids' => $totalBids,
