@@ -2,6 +2,12 @@
    # BASE STYLES & LAYOUT
    ========================================================= */
 
+/* --- UPDATE TERAKHIR: GLOBAL FONT HELVETICA --- */
+/* Menerapkan Helvetica ke seluruh elemen website */
+body, h1, h2, h3, h4, h5, h6, p, span, a, input, button, div, .section-title {
+    font-family: 'Helvetica', 'Arial', sans-serif !important;
+}
+
 .main-content {
     position: relative;
 }
@@ -40,49 +46,96 @@
     margin: 15px auto;
 }
 
-/* --- Hero Search Bar --- */
+/* --- Hero Search Bar (FINAL FIX: LEFT ALIGN & MINIMAL PADDING) --- */
 .hero-search {
-    max-width: 300px;
+    max-width: 450px;
     margin: 25px auto;
     display: flex;
     border: 1px solid #00b8a9;
     border-radius: 50px;
     background-color: #00b8a9;
     overflow: hidden;
+    position: relative;
 }
 
 .hero-search input.form-control {
     border: none;
     background: transparent;
     flex-grow: 1;
-    padding: 12px 20px;
+    
+    /* Padding kiri diperkecil jadi 20px */
+    padding: 12px 20px !important; 
+    
+    /* Paksa Rata Kiri */
+    text-align: left !important; 
+    
     color: white;
     font-size: 1rem;
     font-weight: 500;
+    z-index: 2;
+    position: relative;
 }
 
 .hero-search input::placeholder {
-    color: white; opacity: 0.9;
+    color: transparent; /* Sembunyikan placeholder asli */
 }
 
 .hero-search input:focus {
     outline: none; box-shadow: none; background: transparent;
 }
 
-.hero-search input:focus::placeholder {
-    color: white; opacity: 0.7;
-}
-
 .hero-search button {
     border: none; background: transparent; color: white;
-    padding-left: 15px; padding-right: 20px;
+    padding-left: 10px; /* Perkecil juga padding tombol biar seimbang */
+    padding-right: 20px;
     display: flex; align-items: center; border-radius: 0;
+    z-index: 2;
 }
 
-/* FIX: BROWSER AUTOFILL STYLE 
-   Mencegah background input berubah jadi putih saat memilih dari history/autocomplete.
-   Warna disesuaikan dengan #00b8a9.
-*/
+/* --- Style Placeholder Palsu --- */
+.responsive-placeholder {
+    position: absolute;
+    
+    /* Samakan dengan padding input */
+    left: 20px !important; 
+    
+    top: 50%;
+    transform: translateY(-50%);
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 1rem;
+    font-weight: 500;
+    pointer-events: none; 
+    user-select: none;
+    transition: opacity 0.2s ease;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    right: 50px;
+    z-index: 1;
+    
+    /* Pastikan placeholder juga rata kiri */
+    text-align: left !important;
+}
+
+/* Logic Ganti Teks Placeholder */
+.responsive-placeholder::before {
+    content: "Cari Produk Lelang/Merchandise/Seniman/Blog";
+}
+
+@media (max-width: 767px) {
+    .responsive-placeholder::before {
+        content: "Cari";
+    }
+}
+
+/* Sembunyikan placeholder jika input di-klik atau ada isinya */
+.hero-search input:focus + .responsive-placeholder,
+.hero-search input:not(:placeholder-shown) + .responsive-placeholder {
+    opacity: 0;
+    visibility: hidden;
+}
+
+/* FIX: BROWSER AUTOFILL STYLE */
 .hero-search input:-webkit-autofill,
 .hero-search input:-webkit-autofill:hover, 
 .hero-search input:-webkit-autofill:focus, 
@@ -101,8 +154,6 @@
     overflow: hidden; 
     position: relative; 
     width: 100%;
-    
-    /* --- DESKTOP RATIO: 1440 x 600 --- */
     aspect-ratio: 1440 / 600; 
 }
 
@@ -119,23 +170,18 @@
 
 /* --- KOTAK NAVY STATIS (LOCKED POSITION - DESKTOP) --- */
 .static-navy-box {
-    /* POSISI DESKTOP */
     position: absolute !important;
     bottom: 50px !important;  
     left: 60px !important;    
     z-index: 100 !important;  
     
-    /* UKURAN DESKTOP (TETAP KECIL 380px) */
     max-width: 600px !important; 
     width: 90% !important;    
     padding: 20px !important;    
     border-radius: 10px !important;
     
-    /* VISUAL */
     background-color: #0d1b2a !important; 
     box-shadow: 0 10px 30px rgba(0,0,0,0.4) !important; 
-    
-    /* FONT FAMILY GLOBAL UNTUK KOTAK INI (Updated to Helvetica) */
     font-family: 'Helvetica', 'Arial', sans-serif !important;
 
     pointer-events: none; 
@@ -143,13 +189,9 @@
 }
 
 .static-navy-box h3 {
-    /* FONT FAMILY JUDUL (Updated to Helvetica) */
     font-family: 'Helvetica', 'Arial', sans-serif !important;
     font-weight: 700 !important;
-    
-    /* UPDATED: DESKTOP FONT SIZE */
     font-size: 32px !important; 
-    
     color: white !important;
     margin-top: 0 !important;
     margin-bottom: 12px !important;
@@ -158,10 +200,7 @@
 
 .static-navy-box p {
     color: #ffffff !important;
-    
-    /* UPDATED: DESKTOP FONT SIZE (Lelang Online/Offline) */
     font-size: 20px !important; 
-    
     margin-bottom: 5px !important;
     display: flex !important; 
     align-items: flex-start !important;
@@ -179,9 +218,7 @@
 }
 
 .static-navy-box .navy-location { 
-    /* Font size khusus Alamat (Desktop) */
     font-size: 14px !important;
-    
     margin-top: 10px !important;
     line-height: 1.4 !important;
     color: #cccccc !important;
@@ -323,19 +360,40 @@ a.card-auction * {
     color: #00b8a9; text-decoration: underline;
 }
 
-/* =========================================
-   # MERCHANDISE SECTION
-   ========================================= */
+/* =========================================================
+   # MERCHANDISE SECTION (FIXED HEIGHT & RATA)
+   ========================================================= */
 
 .merch-section {
     background-color: #fff; border: none; 
+}
+
+/* FIX: Equal Height Columns for Owl Carousel */
+#merch-carousel .owl-stage {
+    display: flex;
+    flex-wrap: wrap;
+}
+
+#merch-carousel .owl-item {
+    display: flex;
+    height: auto !important;
+}
+
+#merch-carousel .item {
+    width: 100%;
+    display: flex; 
 }
 
 .card-merch {
     border: none; border-radius: 12px;
     background: linear-gradient(135deg, #f8fafc 80%, #e3e9f3 100%);
     overflow: hidden; position: relative;
-    transition: all 0.3s ease; height: 100%;
+    transition: all 0.3s ease; 
+    
+    /* FIX: Tinggi card dipaksa penuh mengikuti container */
+    height: 100%; 
+    width: 100%;
+    
     display: flex; flex-direction: column;
     box-shadow: 0 4px 16px rgba(5,26,54,0.08), 0 1.5px 4px rgba(5,26,54,0.10);
     touch-action: manipulation;
@@ -352,9 +410,12 @@ a.card-auction * {
 }
 
 .merch-img-wrapper {
-    position: relative; height: 250px; overflow: hidden;
+    position: relative; 
+    height: 250px; /* Tinggi gambar tetap */
+    overflow: hidden;
     background-color: #fff; display: flex; align-items: center;
     justify-content: center; border-bottom: 1px solid rgba(0,0,0,0.03);
+    flex-shrink: 0; 
 }
 
 .merch-img-wrapper img {
@@ -381,22 +442,37 @@ a.card-auction * {
 .favorite-icon-home:hover { transform: scale(1.2); }
 
 .card-merch .card-body {
-    padding: 15px; text-align: left;
-    display: flex; flex-direction: column;
-    justify-content: space-between; flex-grow: 1;
+    padding: 15px; 
+    text-align: left;
+    display: flex; 
+    flex-direction: column;
+    flex-grow: 1; /* Body mengisi sisa ruang yang ada */
 }
 
 .merch-title {
-    font-size: 1rem; font-weight: 600; color: #051A36;
-    margin-bottom: 8px; display: -webkit-box;
-    -webkit-line-clamp: 2; -webkit-box-orient: vertical;
-    overflow: hidden; text-decoration: none; line-height: 1.4;
+    font-size: 1rem; 
+    font-weight: 600; 
+    color: #051A36;
+    margin-bottom: 8px; 
+    
+    /* FIX: Membatasi Judul & Memberi Tinggi Pasti */
+    display: -webkit-box;
+    -webkit-line-clamp: 2; /* Maksimal 2 baris */
+    -webkit-box-orient: vertical;
+    overflow: hidden; 
+    text-decoration: none; 
+    line-height: 1.4; 
+    
+    /* Height Fixed = line-height (1.4) * 2 baris * 16px font ~ 46px */
+    height: 46px; 
 }
 
 .merch-title:hover { color: #00b8a9; text-decoration: none; }
 
 .merch-price-box {
-    margin-top: auto; display: flex; align-items: baseline;
+    /* Mendorong harga selalu ke paling bawah card */
+    margin-top: auto; 
+    display: flex; align-items: baseline;
     flex-wrap: wrap; gap: 5px;
 }
 
@@ -406,6 +482,16 @@ a.card-auction * {
 
 .merch-price-slash {
     text-decoration: line-through; color: #adb5bd; font-size: 0.8rem;
+}
+
+/* Responsive Fix khusus Merch */
+@media (max-width: 767px) {
+    .merch-img-wrapper { height: 180px; } /* Gambar lebih kecil di HP */
+    .card-merch .card-body { padding: 12px; }
+    .merch-title { 
+        font-size: 0.95rem; 
+        height: 44px; /* Sesuaikan tinggi judul di HP */
+    }
 }
 
 /* =========================================================
@@ -502,24 +588,22 @@ a.card-blog * {
         bottom: 15px !important; 
         width: 90% !important;
         max-width: none !important;
-        padding: 15px !important; /* Padding Kecil */
+        padding: 15px !important; 
     }
 
-    /* 2. UKURAN FONT MOBILE (Dikecilkan sesuai FIGMA) */
+    /* 2. UKURAN FONT MOBILE */
     .static-navy-box h3 {
-        font-size: 16px !important; /* MOBILE TITLE */
+        font-size: 16px !important; 
         margin-bottom: 8px !important;
     }
 
     /* 3. LOGIKA AGAR TEKS SEJAJAR (INLINE) */
     .static-navy-box p {
         position: relative !important;
-        padding-left: 20px !important; /* Ruang untuk icon */
+        padding-left: 20px !important; 
         display: block !important;
         margin-bottom: 4px !important;
-        
-        font-size: 10px !important; /* MOBILE INFO LELANG */
-        
+        font-size: 10px !important; 
         text-align: left !important;
         line-height: 1.3 !important;
     }
@@ -529,35 +613,27 @@ a.card-blog * {
         left: 0 !important;
         top: 2px !important;
         width: 15px !important;
-        
-        font-size: 10px !important; /* Icon mengikuti font size text */
-        
+        font-size: 10px !important; 
         margin: 0 !important;
     }
 
-    /* --- INI KUNCI AGAR SEJAJAR --- */
-    /* Sembunyikan tag <br> yang dibuat oleh JS */
     .static-navy-box p br {
         display: none !important;
     }
 
-    /* Paksa Span Tanggal untuk Inline (Sebelah Label) */
     .static-navy-box p span.ms-4, 
     .static-navy-box p span.text-white-50 {
-        margin-left: 4px !important; /* Jarak kecil dari label */
-        display: inline !important; /* Jangan turun baris */
+        margin-left: 4px !important; 
+        display: inline !important; 
         margin-top: 0 !important;
         color: rgba(255,255,255,0.9) !important;
     }
 
-    /* Alamat (Boleh wrapping) */
     .static-navy-box .navy-location {
-        font-size: 7px !important; /* MOBILE ADDRESS */
-        
+        font-size: 7px !important; 
         margin-top: 8px !important;
     }
 
-    /* Sembunyikan Info Alternatif */
     .d-block.d-md-none.bg-dark {
         display: none !important;
     }
@@ -566,9 +642,10 @@ a.card-blog * {
 @media (max-width: 767px) {
     .hero-section h1 { font-size: 2.2rem; margin: 10px 0; }
     .hero-section p { font-size: 0.95rem; }
+    
+    /* Mobile Search Margin */
     .hero-search { max-width: 280px; margin: 20px auto; }
     
-    /* --- MOBILE RATIO --- */
     .slider-container { 
         aspect-ratio: 800 / 1000 !important; 
     }

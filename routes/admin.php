@@ -12,6 +12,7 @@
 */
 
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Auth;
 
 Auth::routes(['verify' => true]);
 Route::get('email/verify', 'Auth\VerificationController@show')->name('verification.notice');
