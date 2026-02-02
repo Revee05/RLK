@@ -154,3 +154,22 @@ Route::post('/favorite/toggle', [\App\Http\Controllers\Web\FavoriteController::c
 // =============================
 Route::get('/panduan', 'PanduanController@index')->name('panduan.index');
 Route::get('/panduan/load/{slug}', 'PanduanController@loadPanduan');
+
+// =============================
+// NOTIFICATION
+// =============================
+// Read
+Route::middleware('auth')->post('/notifications/{id}/read', function ($id) {
+    \App\UserBannerNotification::where('id',$id)
+        ->where('user_id',auth()->id())
+        ->update(['is_read'=>1]);
+    return ['ok'=>true];
+});
+// Polling
+Route::middleware('auth')->get('/notifications/banner', function () {
+    return UserBannerNotification::where('user_id', auth()->id())
+        ->where('is_read', 0)
+        ->latest()
+        ->take(5)
+        ->get();
+});
