@@ -85,16 +85,36 @@
       @endif
     </article>
 
-    {{-- Penulis --}}
-    @if(!empty($blog->author))
-    <div class="blog-author">
-      <img src="{{ asset('uploads/authors/' . ($blog->author->photo ?? 'default.jpeg')) }}">
-      <div class="author-info">
-        <h5>Written by {{ ucwords($blog->author->name) }}</h5>
-        <p>{{ $blog->author->bio ?? 'Penulis di platform Rasanya Lelang Karya yang berfokus pada seni dan budaya.' }}</p>
+    <div class="blog-authors {{ !empty($blog->editor_name) ? 'two-cols' : 'one-col' }}">
+
+      {{-- WRITTEN BY --}}
+      <div class="author-card">
+        <img src="{{ asset('uploads/authors/default.jpeg') }}" alt="Author">
+
+        <div class="author-info">
+          <small class="text-muted">Written by</small>
+          <h5>{{ $blog->author_display }}</h5>
+          <p>
+            Penulis di platform Rasanya Lelang Karya yang berfokus pada seni dan budaya.
+          </p>
+        </div>
       </div>
+
+      {{-- EDITED BY --}}
+      @if(!empty($blog->editor_name))
+        <div class="author-card">
+          <img src="{{ asset('uploads/authors/default.jpeg') }}" alt="Editor">
+
+          <div class="author-info">
+            <small class="text-muted">Edited by</small>
+            <h5>{{ $blog->editor_display }}</h5>
+            <p>
+              Editor konten di platform Rasanya Lelang Karya.
+            </p>
+          </div>
+        </div>
+      @endif
     </div>
-    @endif
 
     {{-- Artikel terkait --}}
     @if(!empty($relatedBlogs) && $relatedBlogs->count() > 0)
@@ -107,9 +127,14 @@
         @foreach($relatedBlogs as $rel)
           <div class="related-card">
             <a href="{{ url('blog/'.$rel->slug) }}" class="text-decoration-none text-dark">
-              <img src="{{ asset('uploads/blogs/'.$rel->image) }}" alt="{{ $rel->title }}">
+              
+              <img 
+                src="{{ asset('uploads/blogs/'.($rel->image ?? 'default.jpeg')) }}" 
+                alt="{{ $rel->title }}"
+              >
+
               <h6>{{ $rel->title }}</h6>
-              <p>{{ $rel->author->name ?? 'Anonim' }}</p>
+              <p>{{ $rel->author_display }}</p>
             </a>
           </div>
         @endforeach
