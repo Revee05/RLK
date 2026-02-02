@@ -16,6 +16,9 @@ use App\CartItem;
 use App\Mail\OrderShipped;    // Email Pemenang
 use App\Mail\BidNotification; // Email Kalah
 
+// --NOTIF--
+use App\Services\NotificationService;
+
 class CloseExpiredAuctions extends Command
 {
     protected $signature = 'lelang:close-expired';
@@ -25,6 +28,8 @@ class CloseExpiredAuctions extends Command
     {
         $this->info('--- Memulai Pengecekan Lelang ---');
         $now = Carbon::now();
+
+        $notify = app(NotificationService::class);
 
         // 1. Cari Produk Aktif (status 1) yang waktunya sudah habis
         $expiredProducts = Products::where('status', 1)
@@ -73,6 +78,19 @@ class CloseExpiredAuctions extends Command
                         $this->info("🛒 Product {$product->id} masuk cart User ID {$winningBid->user_id}.");
                     }
 
+                    DB::commit();
+
+                    // =====================================================
+                    // NOTIF REALTIME PEMENANG
+                    // =====================================================
+                    $notify->winner(
+                        $winningBid->user_id,
+                        $product->id,
+                        $product->title,
+                        $winningBid->price,
+                        route('cart.index')
+                    );
+
                     // 3. Kirim Email ke Pemenang (Logika Lama)
                     try {
                         if ($winningBid->user && !empty($winningBid->user->email)) {
@@ -111,10 +129,10 @@ class CloseExpiredAuctions extends Command
                     $product->status = 3; // Expired/Hangus
                     $product->winner_id = null;
                     $product->save();
+                    DB::commit();
                     $this->info("❌ Product {$product->id} hangus (tidak ada bid).");
                 }
 
-                DB::commit();
             } catch (\Exception $e) {
                 DB::rollback();
                 $this->error("Error ID {$product->id}: " . $e->getMessage());
