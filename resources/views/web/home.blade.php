@@ -30,7 +30,15 @@
                 <h1>Koleksi Karya Seniman Terbaik dari Indonesia</h1>
                 <p>Temukan Nilai Sesungguhnya dari Sebuah Karya Melalui Lelang Terbuka di Rasanya Lelang Karya</p>
                 <form action="{{route('web.search')}}" method="GET" class="hero-search">
-                    <input type="text" class="form-control search-input-none" placeholder="Cari" name="q">
+                    {{-- 1. Placeholder WAJIB diisi spasi kosong " " agar CSS selector berfungsi --}}
+                    <input type="text" 
+                        class="form-control search-input-none" 
+                        placeholder=" " 
+                        name="q">
+                    
+                    {{-- 2. Tambahkan SPAN ini tepat di bawah input --}}
+                    <span class="responsive-placeholder"></span>
+
                     <button type="submit"><i class="fa fa-search"></i></button>
                 </form>
             </div>
