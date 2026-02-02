@@ -35,6 +35,32 @@
           value="{{ old('title',$blog->title ?? '') }}">
         </div>
 
+        {{-- Penulis & Editor --}}
+        <div class="row">
+          <div class="col-md-6">
+            <div class="form-group">
+              <label>Penulis</label>
+              <input type="text"
+                    name="author_name"
+                    class="form-control"
+                    placeholder="Nama penulis"
+                    value="{{ old('author_name', $blog->author_name ?? '') }}"
+                    required>
+            </div>
+          </div>
+
+          <div class="col-md-6">
+            <div class="form-group">
+              <label>Editor <small class="text-muted">(opsional)</small></label>
+              <input type="text"
+                    name="editor_name"
+                    class="form-control"
+                    placeholder="Nama editor"
+                    value="{{ old('editor_name', $blog->editor_name ?? '') }}">
+            </div>
+          </div>
+        </div>
+
         {{-- COVER --}}
         <div class="form-group">
           <label>Cover Blog</label>
