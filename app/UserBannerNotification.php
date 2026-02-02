@@ -4,13 +4,13 @@ namespace App;
 
 use Illuminate\Database\Eloquent\Model;
 
-class UserNotification extends Model
+class UserBannerNotification extends Model
 {
+    protected $table = 'user_banner_notification';
+
     protected $fillable = [
         'user_id',
-        'notif_web',
-        'notif_email',
-        'notif_whatsapp',
+        'product_id',
         'type',
         'title',
         'price',

@@ -1,4 +1,4 @@
-@extends('web.partials.blog-layout')
+@extends('web.partials.layout')
 
 @section('css')
 <link rel="stylesheet" href="{{ asset('css/blog/blog-detail.css') }}">
