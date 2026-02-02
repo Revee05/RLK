@@ -51,15 +51,10 @@
     <!-- content -->
     @yield('content')
 
-        <!-- Footer-->
-        @include('web.partials.footer')
-        @include('web.partials.modals.terms_modal')
-        <!-- Bootstrap core JS-->
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
-        <!-- Core theme JS-->
-        <script src="{{asset('theme/js/scripts.js')}}"></script>
+        <!-- (moved) scripts and footer are included once below -->
     <!-- Footer-->
     @include('web.partials.footer')
+    @include('web.partials.modals.terms_modal')
 
     {{-- Popup Notification --}}
     @include('web.partials.winner-popup')
