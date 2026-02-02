@@ -15,7 +15,7 @@
 
             {{-- Legal / policy links: ubah href jika ada route spesifik --}}
             <div class="footer__links">
-                <a href="#">Terms of Service</a> | <a href="#">Privacy Policy</a>
+                <a href="#">Terms of Service & Privacy Policy</a>
             </div>
         </div>
 

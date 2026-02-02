@@ -93,6 +93,13 @@
                                 <div class="text-dark">{{ $model->payment_method ?? '-' }}</div>
                             </div>
                             <div class="mb-2">
+                                <small class="text-muted">Metode Pengiriman</small>
+                                @php
+                                    $shipping = $model->shipping_method ?? $model->kurir ?? $model->ekspedisi ?? $model->delivery_method ?? null;
+                                @endphp
+                                <div class="text-dark">{{ !empty($shipping) ? $shipping : 'Self Pick Up' }}</div>
+                            </div>
+                            <div class="mb-2">
                                 <small class="text-muted">Alamat</small>
                                 <div class="text-dark">{!! nl2br(e(formatAddress($model))) !!}</div>
                             </div>
@@ -107,7 +114,14 @@
                 <div class="card-header py-2"><strong>Ringkasan Pembayaran</strong></div>
                 <div class="card-body">
                     <table class="table table-sm table-borderless mb-0">
-                        <tr><th class="p-1">Total Ongkir</th><td class="p-1 text-right">Rp {{ fmtRp($model->total_ongkir ?? $model->total_ongkir ?? 0) }}</td></tr>
+                        @php
+                            $shipping = $model->shipping_method ?? $model->kurir ?? $model->ekspedisi ?? $model->delivery_method ?? null;
+                        @endphp
+                        @if(empty($shipping))
+                            <tr><th class="p-1">Total Ongkir</th><td class="p-1 text-right">Self Pick Up</td></tr>
+                        @else
+                            <tr><th class="p-1">Total Ongkir</th><td class="p-1 text-right">Rp {{ fmtRp($model->total_ongkir ?? 0) }}</td></tr>
+                        @endif
                         <tr><th class="p-1">Total Tagihan</th><td class="p-1 text-right">Rp {{ fmtRp($model->total_tagihan ?? $model->total_tagihan ?? 0) }}</td></tr>
                         <tr><th class="p-1">Paid At</th><td class="p-1 text-right">{{ $model->paid_at ?? '-' }}</td></tr>
                         <tr><th class="p-1">Note</th><td class="p-1 text-right">{{ $model->note ?? '-' }}</td></tr>
