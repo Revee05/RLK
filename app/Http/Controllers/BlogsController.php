@@ -42,6 +42,8 @@ class BlogsController extends Controller
             'title'  => 'required',
             'body'   => 'required',
             'status' => 'required|in:DRAFT,PUBLISHED',
+            'author_name' => 'required',
+            'editor_name' => 'nullable',
         ]);
 
         DB::beginTransaction();
@@ -62,7 +64,9 @@ class BlogsController extends Controller
 
             /* === POST === */
             $postId = DB::table('posts')->insertGetId([
-                'user_id'     => Auth::id(),
+                'user_id'     => Auth::id(), 
+                'author_name' => $request->author_name,
+                'editor_name' => $request->editor_name,
                 'title'       => $request->title,
                 'kategori_id' => $request->kategori_id,
                 'slug'        => Str::slug($request->title, '-'),
@@ -164,13 +168,17 @@ class BlogsController extends Controller
             'title'  => 'required',
             'body'   => 'required',
             'status' => 'required|in:DRAFT,PUBLISHED',
+            'author_name' => 'required',
+            'editor_name' => 'nullable',
         ]);
 
         DB::beginTransaction();
         try {
 
             $data = [
-                'user_id'     => Auth::id(),
+                'user_id'     => Auth::id(), 
+                'author_name' => $request->author_name,
+                'editor_name' => $request->editor_name,
                 'title'       => $request->title,
                 'kategori_id' => $request->kategori_id,
                 'slug'        => Str::slug($request->title, '-'),

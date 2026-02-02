@@ -14,8 +14,8 @@ class Posts extends Model
 
     // Kolom yang boleh diisi
     protected $fillable = [
-        'id',
-        'user_id',
+        'author_name',
+        'editor_name',
         'image',
         'slug',
         'title',
@@ -44,9 +44,9 @@ class Posts extends Model
     {
         return $this->belongsToMany(
             Tags::class,
-            'posts_tags',   // tabel pivot
-            'posts_id',     // FK ke posts
-            'tags_id'       // FK ke tags
+            'posts_tags',   
+            'posts_id',     
+            'tags_id'       
         )->withTimestamps();
     }
 
@@ -54,12 +54,6 @@ class Posts extends Model
     public function kategori()
     {
         return $this->belongsTo('App\Kategori', 'kategori_id');
-    }
-
-    // Relasi ke user (author)
-    public function author()
-    {
-        return $this->belongsTo('App\User', 'user_id');
     }
 
     // Format tanggal ke gaya Indonesia
@@ -103,5 +97,20 @@ class Posts extends Model
 
         // Fallback untuk konten lama (HTML biasa)
         return strip_tags(html_entity_decode($body));
+    }
+
+    public function getAuthorDisplayAttribute()
+    {
+        return ucwords($this->author_name ?: 'Admin');
+    }
+
+    public function getEditorDisplayAttribute()
+    {
+        return $this->editor_name ? ucwords($this->editor_name) : null;
+    }
+
+    public function author()
+    {
+        return $this->belongsTo('App\User', 'user_id');
     }
 }
