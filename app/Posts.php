@@ -108,4 +108,9 @@ class Posts extends Model
     {
         return $this->editor_name ? ucwords($this->editor_name) : null;
     }
+
+    public function author()
+    {
+        return $this->belongsTo('App\User', 'user_id');
+    }
 }

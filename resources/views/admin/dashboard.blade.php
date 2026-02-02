@@ -266,7 +266,7 @@
                                             <td class="fw-semibold list-cell">{{ $blog->title }}</td>
 
                                             <td class="list-cell">
-                                                {{ $blog->author->name ?? '-' }}
+                                                {{ $blog->author_display }}
                                             </td>
 
                                             <td class="list-cell">{{ optional($blog->created_at)->format('d M Y') }}</td>
