@@ -15,6 +15,14 @@
                 </a>
             @endif
         </div>
+
+        {{-- Error global login gagal --}}
+       @if(session('error'))
+            <div class="login-popup-error">
+                {{ session('error') }}
+            </div>
+        @endif
+        
         <form class="form" method="POST" action="{{ route('new.login') }}">
             @csrf
             <div class="input-group">
