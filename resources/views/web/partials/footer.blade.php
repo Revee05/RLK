@@ -15,7 +15,7 @@
 
             {{-- Legal / policy links: ubah href jika ada route spesifik --}}
             <div class="footer__links">
-                <a href="#">Terms of Service & Privacy Policy</a>
+                <a href="#" data-bs-toggle="modal" data-bs-target="#termsModal">Terms of Service & Privacy Policy</a>
             </div>
         </div>
 
@@ -24,15 +24,14 @@
             {{-- Section: Tentang - links terkait informasi perusahaan/organisasi --}}
             <div class="footer__section">
                 <div class="footer__title">Tentang</div>
-                <a href="#">Tentang Perusahaan</a>
-                <a href="#">Tentang Tim Kerja</a>
+                <a class="@yield('tentang')" href="{{ route('perusahaan') }}">Tentang Kami</a>
             </div>
 
             {{-- Section: Panduan - panduan pengguna untuk beli/jual --}}
             <div class="footer__section">
                 <div class="footer__title">Panduan</div>
-                <a href="#">Panduan Beli</a>
-                <a href="#">Panduan Jual</a>
+                <a href="{{ route('panduan.index') }}" class="@yield('panduan')">Panduan Jual</a>
+                <a href="{{ route('panduan.index') }}" class="@yield('panduan')">Panduan</a>
             </div>
         </div>
 

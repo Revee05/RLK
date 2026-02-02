@@ -30,11 +30,18 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot()
     {
-        //check table is exists
+        // check table exists and share safe defaults to views
         if (Schema::hasTable('setting')) {
-            $setting = Setting::first();
-            $social = $setting->social ?? '';
-            View::share(['setting' => $setting,'social'=>$social]);
+            try {
+                $setting = Setting::first() ?: new Setting();
+                $social = $setting->social ?? [];
+                View::share(['setting' => $setting, 'social' => $social]);
+            } catch (\Exception $e) {
+                View::share(['setting' => new Setting(), 'social' => []]);
+            }
+        } else {
+            // ensure keys exist to avoid undefined variable/offsets in Blade
+            View::share(['setting' => new Setting(), 'social' => []]);
         }
         if (Schema::hasTable('kategori')) {
             $kategori = Kategori::all();
