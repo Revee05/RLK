@@ -73,7 +73,7 @@ class CloseExpiredAuctions extends Command
                             'type'             => 'lelang', 
                             'quantity'         => 1,
                             'price'            => $winningBid->price,
-                            'expires_at'       => Carbon::now()->addDays(7), // Expired 7 hari
+                            'expires_at'       => Carbon::now()->addDays(3), // Expired 7 hari
                         ]);
                         $this->info("🛒 Product {$product->id} masuk cart User ID {$winningBid->user_id}.");
                     }

@@ -51,8 +51,10 @@
     <!-- content -->
     @yield('content')
 
+        <!-- (moved) scripts and footer are included once below -->
     <!-- Footer-->
     @include('web.partials.footer')
+    @include('web.partials.modals.terms_modal')
 
     {{-- Popup Notification --}}
     @include('web.partials.winner-popup')
