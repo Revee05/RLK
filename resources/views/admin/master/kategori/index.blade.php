@@ -4,9 +4,11 @@
 @if($getType == 'product')
     @section('collapseMaster','show')
     @section('kategoriproduct','active')
+    @section('master-product','active')
 @else
     @section('collapseBlog','show')
     @section('kategoriblog','active')
+    @section('blog','active')
 @endif
 
 @section('css')

@@ -1,7 +1,7 @@
 @extends('admin.partials._layout')
 {{-- @section('title','Daftar Product') --}}
 {{-- @section('collapseMaster','show') --}}
-{{-- @section('product','active') --}}
+@section('daftar-pemenang','active')
 @section('css')
 <!-- Custom styles for this page -->
 <link href="{{asset('assets/vendor/datatables/dataTables.bootstrap4.min.css')}}" rel="stylesheet">

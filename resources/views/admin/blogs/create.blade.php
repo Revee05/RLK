@@ -1,6 +1,7 @@
 @extends('admin.partials._layout')
 @section('title','Create posts')
 @section('collapseBlog','show')
+@section('blog','active')
 @section('addblog','active')
 
 @section('css')

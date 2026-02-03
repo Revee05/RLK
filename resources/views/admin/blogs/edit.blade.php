@@ -2,6 +2,7 @@
 @section('title','Edit blog')
 @section('collapseBlog','show')
 @section('blogs','active')
+@section('blog','active')
 @section('css')
 <style type="text/css">
 .preview-cover {

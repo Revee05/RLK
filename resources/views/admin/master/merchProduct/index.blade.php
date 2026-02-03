@@ -3,6 +3,7 @@
 @section('title', 'Daftar Merchandise Product')
 @section('collapseMerch', 'show')
 @section('merchproduct', 'active')
+@section('merch', 'active')
 
 <style>
     .shrinkable-name {

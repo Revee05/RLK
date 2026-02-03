@@ -195,3 +195,27 @@
     font-size: 1.2rem;
     line-height: 0;
 }
+
+/* ==============================================
+   MOBILE 
+============================================== */
+@media (max-width: 576px) {
+
+  .row.g-3 > div[class^="col-"] {
+    margin-bottom: 16px;
+  }
+
+  .row.g-3 > div[class^="col-"]:nth-last-child(-n+2) {
+    margin-bottom: 0;
+  }
+
+  .row.g-4 > div[class^="col-"] {
+    margin-bottom: 18px;
+  }
+
+  /* card terakhir tiap row tidak terlalu jauh */
+  .row.g-4 > div[class^="col-"]:last-child {
+    margin-bottom: 0;
+  }
+  
+}

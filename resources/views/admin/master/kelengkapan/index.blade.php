@@ -2,6 +2,7 @@
 @section('title','Daftar kelengkapan')
 @section('collapseMaster','show')
 @section('kelengkapan','active')
+@section('master-product','active')
 @section('css')
 <!-- Custom styles for this page -->
 <link href="{{asset('assets/vendor/datatables/dataTables.bootstrap4.min.css')}}" rel="stylesheet">

@@ -3,6 +3,7 @@
 @section('title','Add Merch Category')
 @section('collapseMerch','show')
 @section('merchcategory','active')
+@section('merch','active')
 @section('content')
 <div class="container">
     <h4>Tambah Kategori Merchandise</h4>

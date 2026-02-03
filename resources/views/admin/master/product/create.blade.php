@@ -2,6 +2,7 @@
 @section('title','Create product')
 @section('collapseMaster','show')
 @section('addproduct','active')
+@section('master-product','active')
 @section('content')
 <style type="text/css">
 select option {
