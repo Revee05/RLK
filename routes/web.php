@@ -10,7 +10,7 @@
 | contains the "web" middleware group. Now create something great!
 |
 */
-
+use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\Web\CheckoutMerchController;
 use App\Http\Controllers\Web\CartController;
 use App\Http\Controllers\PanduanController;
@@ -19,6 +19,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Account\AuctionHistoryController;
 use App\Http\Controllers\UsersController;
 use App\Http\Controllers\HomeController;
+use App\UserBannerNotification;
 
 require_once  __DIR__ . "/admin.php";
 require_once  __DIR__ . "/account.php";
