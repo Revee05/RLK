@@ -105,6 +105,30 @@
     <script src="{{ asset('assets/vendor/jquery-easing/jquery.easing.min.js') }}"></script>
     <!-- Custom scripts for all pages-->
     <script src="{{ asset('assets/js/sb-admin-2.js') }}"></script>
+    <script>
+        function handleSidebarResponsive() {
+            const width = window.innerWidth;
+            const body = document.body;
+            const sidebar = document.querySelector('.sidebar');
+
+            if (width < 768) {
+                // Mode mobile
+                body.classList.add('sidebar-toggled');
+                sidebar.classList.add('toggled');
+            } else {
+                // Mode desktop
+                body.classList.remove('sidebar-toggled');
+                sidebar.classList.remove('toggled');
+            }
+        }
+
+        // Jalankan saat load
+        document.addEventListener("DOMContentLoaded", handleSidebarResponsive);
+
+        // Jalankan saat resize
+        window.addEventListener("resize", handleSidebarResponsive);
+    </script>
+
     <script type="text/javascript">
         // Do not auto-hide alerts that explicitly request persistence
         $('div.alert-info').not('.alert-secondary').not('.persistent-alert').delay(2000).slideUp(300);

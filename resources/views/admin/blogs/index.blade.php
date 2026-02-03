@@ -2,6 +2,7 @@
 @section('title','Daftar Blogs')
 @section('collapseBlog','show')
 @section('blogs','active')
+@section('blog','active')
 @section('css')
 <!-- Custom styles for this post -->
 <link href="{{asset('assets/vendor/datatables/dataTables.bootstrap4.min.css')}}" rel="stylesheet">

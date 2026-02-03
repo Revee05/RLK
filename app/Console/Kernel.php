@@ -21,6 +21,7 @@ class Kernel extends ConsoleKernel
          // --- TAMBAHAN BARU ---
          // Daftarkan command robot lelang baru kita di sini
          Commands\CloseExpiredAuctions::class,
+         Commands\CleanOldNotifications::class,
     ];
 
     /**
@@ -48,6 +49,7 @@ class Kernel extends ConsoleKernel
         $schedule->command('auction:expire')->daily();
 
         $schedule->command('cart:cleanup-auction')->hourly();
+        $schedule->command('notif:cleanup')->weekly();
     }
 
     /**

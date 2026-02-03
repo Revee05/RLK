@@ -1,4 +1,4 @@
-<ul class="navbar-nav bg-gradient-primary sidebar sidebar-toggled toggled sidebar-dark accordion" id="accordionSidebar">
+<ul class="navbar-nav bg-gradient-primary sidebar sidebar-dark accordion" id="accordionSidebar">
     <a class="sidebar-brand d-flex align-items-center justify-content-center" href="{{ route('admin.dashboard') }}">
         <div class="sidebar-brand-icon">
             {{-- <i class="fas fa-laugh-wink"></i> --}}
@@ -16,7 +16,7 @@
     <div class="sidebar-heading">
         Master
     </div>
-    <li class="nav-item">
+    <li class="nav-item @yield('master-product')">
         <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseTwo"
             aria-expanded="true" aria-controls="collapseTwo">
             <i class="fas fa-cart-plus"></i>
@@ -36,7 +36,7 @@
         </div>
     </li>
 
-    <li class="nav-item">
+    <li class="nav-item @yield('merch')">
         <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseMerch"
             aria-expanded="true" aria-controls="collapseMerch">
             <i class="fas fa-cart-plus"></i>
@@ -68,7 +68,7 @@
         </div>
     </li>
 
-    <li class="nav-item">
+    <li class="nav-item @yield('blog')">
         <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseBlog"
             aria-expanded="true" aria-controls="collapseBlog">
             <i class="fas fa-book"></i>
@@ -117,7 +117,7 @@
             <span>Daftar Penawaran</span>
         </a>
     </li> -->
-    <li class="nav-item @yield('slider')">
+    <li class="nav-item @yield('daftar-pemenang')">
         <a class="nav-link collapsed" href="{{ route('admin.daftar-pemenang.index') }}">
             <i class="fas fa-users"></i>
             <span>Pemenang Lelang</span>

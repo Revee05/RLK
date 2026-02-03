@@ -2,6 +2,7 @@
 @section('title','Edit Seniman')
 @section('collapseMaster','show')
 @section('karya','active')
+@section('master-product','active')
 @section('css')
 <style type="text/css">
 .preview-cover {

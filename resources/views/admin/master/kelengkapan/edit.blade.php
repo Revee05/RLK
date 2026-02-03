@@ -2,6 +2,7 @@
 @section('title','Edit kelengkapan')
 @section('collapseMaster','show')
 @section('kelengkapan','active')
+@section('master-product','active')
 @section('content')
 <!-- Begin Page Content -->
 <div class="container-fluid">
